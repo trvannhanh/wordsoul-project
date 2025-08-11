@@ -1,0 +1,6 @@
+@WordSoulApi_HostAddress = http://localhost:5110
+
+GET {{WordSoulApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
