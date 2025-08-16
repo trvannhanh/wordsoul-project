@@ -45,7 +45,8 @@ builder.Services.AddScoped<IVocabularyRepository, VocabularyRepository>();
 builder.Services.AddScoped<IVocabularyService, VocabularyService>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-
+builder.Services.AddScoped<IPetService, PetService>();
+builder.Services.AddScoped<IPetRepository, PetRepository>();
 
 var app = builder.Build();
 
