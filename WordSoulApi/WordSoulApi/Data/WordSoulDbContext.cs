@@ -153,6 +153,14 @@ namespace WordSoulApi.Data
                 .WithMany(q => q.AnswerRecords)
                 .HasForeignKey(ar => ar.QuizQuestionId)
                 .OnDelete(DeleteBehavior.Cascade); // Cascade delete if quiz question is deleted
+
+            //LearningSession 1 - N AnswerRecord relationship
+            modelBuilder.Entity<LearningSession>()
+                .HasMany(ls => ls.AnswerRecords)
+                .WithOne(a => a.LearningSession)
+                .HasForeignKey(a => a.LearningSessionId)
+                .OnDelete(DeleteBehavior.Restrict); // Restrict delete to prevent accidental loss of answer records
+
         }
     }
 
