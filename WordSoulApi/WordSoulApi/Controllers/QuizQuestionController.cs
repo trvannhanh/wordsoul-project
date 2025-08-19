@@ -15,6 +15,7 @@ namespace WordSoulApi.Controllers
             _quizQuestionService = quizQuestionService;
         }
 
+        // chỉ dành cho admin
         [HttpGet]
         public async Task<IActionResult> GetAllQuizQuestions()
         {
@@ -22,6 +23,7 @@ namespace WordSoulApi.Controllers
             return Ok(quizQuestions);
         }
 
+        // Authorized
         [HttpGet("{id}")]
         public async Task<IActionResult> GetQuizQuestionById(int id)
         {
@@ -30,6 +32,7 @@ namespace WordSoulApi.Controllers
             return Ok(quizQuestion);
         }
 
+        // chỉ dành cho admin
         [HttpPost]
         public async Task<IActionResult> CreateQuizQuestion(CreateQuizQuestionDto quizQuestionDto)
         {
@@ -38,6 +41,7 @@ namespace WordSoulApi.Controllers
             return CreatedAtAction(nameof(GetQuizQuestionById), new { id = createdQuizQuestion.Id }, createdQuizQuestion);
         }
 
+        // chỉ dành cho admin
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateQuizQuestion(int id, AdminQuizQuestionDto quizQuestionDto)
         {
@@ -47,6 +51,7 @@ namespace WordSoulApi.Controllers
             return Ok(updatedQuizQuestion);
         }
 
+        //chỉ dành cho admin
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteQuizQuestion(int id)
         {
@@ -54,5 +59,10 @@ namespace WordSoulApi.Controllers
             if (!result) return NotFound();
             return NoContent();
         }
+
+
+        
+
+
     }
 }

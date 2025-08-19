@@ -33,16 +33,32 @@ namespace WordSoulApi.Services.Implementations
                     VocabularyId = quizQuestion.VocabularyId,
                     IsActive = quizQuestion.IsActive
                 });
+
             }
             return quizQuestionDtos;
             
         }
 
-        public async Task<AdminQuizQuestionDto?> GetQuizQuestionByIdAsync(int id)
+        public async Task<QuizQuestionDto?> GetQuizQuestionByIdAsync(int id)
         {
             var quizQuestion = await _quizQuestionRepository.GetQuizQuestionByIdAsync(id);
             if (quizQuestion == null) return null;
-            return new AdminQuizQuestionDto
+
+            //// if (User.IsInRole("Admin"))
+            //{
+            //    return new AdminQuizQuestionDto
+            //    {
+            //        Id = quizQuestion.Id,
+            //        Prompt = quizQuestion.Prompt,
+            //        Options = quizQuestion.Options,
+            //        CorrectAnswer = quizQuestion.CorrectAnswer,
+            //        Explanation = quizQuestion.Explanation,
+            //        QuestionType = quizQuestion.QuestionType,
+            //        VocabularyId = quizQuestion.VocabularyId,
+            //        IsActive = quizQuestion.IsActive
+            //    };
+            //}
+            return new QuizQuestionDto
             {
                 Id = quizQuestion.Id,
                 Prompt = quizQuestion.Prompt,
@@ -51,7 +67,6 @@ namespace WordSoulApi.Services.Implementations
                 Explanation = quizQuestion.Explanation,
                 QuestionType = quizQuestion.QuestionType,
                 VocabularyId = quizQuestion.VocabularyId,
-                IsActive = quizQuestion.IsActive
             };
         }
 
