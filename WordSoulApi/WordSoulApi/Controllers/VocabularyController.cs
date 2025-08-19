@@ -41,6 +41,7 @@ namespace WordSoulApi.Controllers
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateVocabulary(int id, VocabularyDto vocabularyDto)
+
         {
             var updatedVocabulary = await _vocabularyService.UpdateVocabularyAsync(id, vocabularyDto);
             if (updatedVocabulary == null) return NotFound();
@@ -64,6 +65,7 @@ namespace WordSoulApi.Controllers
             var vocabularies = await _vocabularyService.GetVocabulariesByWordsAsync(searchDto);
             return Ok(vocabularies);
         }
+
 
 
         // api lấy danh sách câu hỏi quiz theo từ vựng

@@ -47,6 +47,7 @@ namespace WordSoulApi.Services.Implementations
             return petDtos;
         }
 
+
         public async Task<PetDto?> GetPetByIdAsync(int id)
         {
             var pet = await _petRepository.GetPetByIdAsync(id);

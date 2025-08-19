@@ -48,8 +48,8 @@ namespace WordSoulApi.Controllers
             if (updatedPet == null) return NotFound();
             return Ok(updatedPet);
         }
-
         // chỉ dành cho admin
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePet(int id)
         {
@@ -60,7 +60,6 @@ namespace WordSoulApi.Controllers
 
 
         // api lọc pet theo loại, tên, cấp độ, trạng thái
-
 
 
     }

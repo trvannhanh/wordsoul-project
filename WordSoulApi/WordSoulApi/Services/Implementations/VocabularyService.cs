@@ -36,6 +36,7 @@ namespace WordSoulApi.Services.Implementations
             return vocabularyDtos;
         }
 
+
         public async Task<VocabularyDto?> GetVocabularyByIdAsync(int id)
         {
             var vocabulary = await _vocabularyRepository.GetVocabularyByIdAsync(id);
@@ -54,6 +55,7 @@ namespace WordSoulApi.Services.Implementations
             };
         }
 
+
         public async Task<VocabularyDto> CreateVocabularyAsync(VocabularyDto vocabularyDto)
         {
             var vocabulary = new Vocabulary
@@ -69,6 +71,7 @@ namespace WordSoulApi.Services.Implementations
             };
             var createdVocabulary = await _vocabularyRepository.CreateVocabularyAsync(vocabulary);
             return new VocabularyDto
+
             {
                 Id = createdVocabulary.Id,
                 Word = createdVocabulary.Word,

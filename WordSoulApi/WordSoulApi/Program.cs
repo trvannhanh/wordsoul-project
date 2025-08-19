@@ -45,21 +45,14 @@ builder.Services.AddScoped<IVocabularyRepository, VocabularyRepository>();
 builder.Services.AddScoped<IVocabularyService, VocabularyService>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-<<<<<<< HEAD
-
-=======
 builder.Services.AddScoped<IPetService, PetService>();
 builder.Services.AddScoped<IPetRepository, PetRepository>();
-<<<<<<< Updated upstream
-=======
 builder.Services.AddScoped<IQuizQuestionService, QuizQuestionService>();
 builder.Services.AddScoped<IQuizQuestionRepository, QuizQuestionRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IVocabularySetService, VocabularySetService>();
 builder.Services.AddScoped<IVocabularySetRepository, VocabularySetRepository>();
->>>>>>> Stashed changes
->>>>>>> 6e45bb1 (backup: save all changes before splitting features)
 
 var app = builder.Build();
 
