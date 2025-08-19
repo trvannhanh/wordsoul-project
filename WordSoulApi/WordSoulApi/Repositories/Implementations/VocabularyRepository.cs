@@ -39,8 +39,7 @@ namespace WordSoulApi.Repositories.Implementations
             if (vocabulary == null) return false;
 
             _context.Vocabularies.Remove(vocabulary);
-            await _context.SaveChangesAsync();
-            return true;
+            return await _context.SaveChangesAsync() > 0;
         }
 
         public async Task<IEnumerable<Vocabulary>> GetVocabulariesByWordsAsync(List<string> words)

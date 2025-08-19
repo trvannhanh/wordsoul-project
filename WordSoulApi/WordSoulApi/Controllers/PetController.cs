@@ -30,6 +30,7 @@ namespace WordSoulApi.Controllers
             return Ok(pet);
         }
 
+        // chỉ dành cho admin
         [HttpPost]
         public async Task<IActionResult> CreatePet(CreatePetDto petDto)
         {
@@ -38,6 +39,7 @@ namespace WordSoulApi.Controllers
             return CreatedAtAction(nameof(GetPetById), new { id = createdPet.Id }, createdPet);
         }
 
+        // chỉ dành cho admin
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdatePet(int id, AdminPetDto petDto)
         {
@@ -46,6 +48,7 @@ namespace WordSoulApi.Controllers
             if (updatedPet == null) return NotFound();
             return Ok(updatedPet);
         }
+        // chỉ dành cho admin
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePet(int id)
@@ -54,5 +57,10 @@ namespace WordSoulApi.Controllers
             if (!result) return NotFound();
             return NoContent();
         }
+
+
+        // api lọc pet theo loại, tên, cấp độ, trạng thái
+
+
     }
 }

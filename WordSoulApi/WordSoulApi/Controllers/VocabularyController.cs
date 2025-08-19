@@ -15,6 +15,7 @@ namespace WordSoulApi.Controllers
             _vocabularyService = vocabularyService;
         }
 
+        // chỉ dành cho admin
         [HttpGet]
         public async Task<IActionResult> GetAllVocabularies()
         {
@@ -22,6 +23,7 @@ namespace WordSoulApi.Controllers
             return Ok(vocabularies);
         }
 
+        // Authorized
         [HttpGet("{id}")]
         public async Task<IActionResult> GetVocabularyById(int id)
         {
@@ -31,14 +33,15 @@ namespace WordSoulApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateVocabulary(AdminVocabularyDto vocabularyDto)
+        public async Task<IActionResult> CreateVocabulary(VocabularyDto vocabularyDto)
         {
             var createdVocabulary = await _vocabularyService.CreateVocabularyAsync(vocabularyDto);
             return CreatedAtAction(nameof(GetVocabularyById), new { id = createdVocabulary.Id }, createdVocabulary);
         } 
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateVocabulary(int id, AdminVocabularyDto vocabularyDto)
+        public async Task<IActionResult> UpdateVocabulary(int id, VocabularyDto vocabularyDto)
+
         {
             var updatedVocabulary = await _vocabularyService.UpdateVocabularyAsync(id, vocabularyDto);
             if (updatedVocabulary == null) return NotFound();
@@ -62,6 +65,12 @@ namespace WordSoulApi.Controllers
             var vocabularies = await _vocabularyService.GetVocabulariesByWordsAsync(searchDto);
             return Ok(vocabularies);
         }
+
+
+
+        // api lấy danh sách câu hỏi quiz theo từ vựng
+
+        // lọc từ vựng theo chủ đề, độ khó, loại từ, v.v.
     }
 }
     

@@ -14,13 +14,13 @@ namespace WordSoulApi.Services.Implementations
             _vocabularyRepository = vocabularyRepository;
         }
 
-        public async Task<IEnumerable<AdminVocabularyDto>> GetAllVocabulariesAsync()
+        public async Task<IEnumerable<VocabularyDto>> GetAllVocabulariesAsync()
         {
             var vocabularies = await _vocabularyRepository.GetAllVocabulariesAsync();
-            var vocabularyDtos = new List<AdminVocabularyDto>();
+            var vocabularyDtos = new List<VocabularyDto>();
             foreach (var vocabulary in vocabularies)
             {
-                vocabularyDtos.Add(new AdminVocabularyDto
+                vocabularyDtos.Add(new VocabularyDto
                 {
                     Id = vocabulary.Id,
                     Word = vocabulary.Word,
@@ -36,11 +36,12 @@ namespace WordSoulApi.Services.Implementations
             return vocabularyDtos;
         }
 
-        public async Task<AdminVocabularyDto?> GetVocabularyByIdAsync(int id)
+
+        public async Task<VocabularyDto?> GetVocabularyByIdAsync(int id)
         {
             var vocabulary = await _vocabularyRepository.GetVocabularyByIdAsync(id);
             if (vocabulary == null) return null;
-            return new AdminVocabularyDto
+            return new VocabularyDto
             {
                 Id = vocabulary.Id,
                 Word = vocabulary.Word,
@@ -54,7 +55,8 @@ namespace WordSoulApi.Services.Implementations
             };
         }
 
-        public async Task<AdminVocabularyDto> CreateVocabularyAsync(AdminVocabularyDto vocabularyDto)
+
+        public async Task<VocabularyDto> CreateVocabularyAsync(VocabularyDto vocabularyDto)
         {
             var vocabulary = new Vocabulary
             {
@@ -68,7 +70,8 @@ namespace WordSoulApi.Services.Implementations
                 PronunciationUrl = vocabularyDto.PronunciationUrl
             };
             var createdVocabulary = await _vocabularyRepository.CreateVocabularyAsync(vocabulary);
-            return new AdminVocabularyDto
+            return new VocabularyDto
+
             {
                 Id = createdVocabulary.Id,
                 Word = createdVocabulary.Word,
@@ -82,7 +85,7 @@ namespace WordSoulApi.Services.Implementations
             };
         }
 
-        public async Task<AdminVocabularyDto> UpdateVocabularyAsync(int id, AdminVocabularyDto vocabularyDto)
+        public async Task<VocabularyDto> UpdateVocabularyAsync(int id, VocabularyDto vocabularyDto)
         {
             var existingVocabulary = await _vocabularyRepository.GetVocabularyByIdAsync(id);
             if (existingVocabulary == null)
@@ -100,7 +103,7 @@ namespace WordSoulApi.Services.Implementations
             existingVocabulary.PronunciationUrl = vocabularyDto.PronunciationUrl;
 
             var updatedVocabulary = await _vocabularyRepository.UpdateVocabularyAsync(existingVocabulary);
-            return new AdminVocabularyDto
+            return new VocabularyDto
             {
                 Id = updatedVocabulary.Id,
                 Word = updatedVocabulary.Word,
@@ -119,14 +122,14 @@ namespace WordSoulApi.Services.Implementations
             return await _vocabularyRepository.DeleteVocabularyAsync(id);
         }
 
-        public async Task<IEnumerable<AdminVocabularyDto>> GetVocabulariesByWordsAsync(SearchVocabularyDto searchVocabularyDto)
+        public async Task<IEnumerable<VocabularyDto>> GetVocabulariesByWordsAsync(SearchVocabularyDto searchVocabularyDto)
         {
             if (searchVocabularyDto == null || searchVocabularyDto.Words == null || !searchVocabularyDto.Words.Any())
-                return new List<AdminVocabularyDto>();
+                return new List<VocabularyDto>();
 
 
             var vocabularies = await _vocabularyRepository.GetVocabulariesByWordsAsync(searchVocabularyDto.Words);
-            var vocabularyDtos = vocabularies.Select(v => new AdminVocabularyDto
+            var vocabularyDtos = vocabularies.Select(v => new VocabularyDto
             {
                 Id = v.Id,
                 Word = v.Word,

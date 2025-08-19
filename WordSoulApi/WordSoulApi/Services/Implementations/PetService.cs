@@ -14,12 +14,13 @@ namespace WordSoulApi.Services.Implementations
             _petRepository = petRepository;
         }
 
-        public async Task<IEnumerable<AdminPetDto>> GetAllPetsAsync()
+        public async Task<IEnumerable<PetDto>> GetAllPetsAsync()
         {
             var pets = await _petRepository.GetAllPetsAsync();
-            var petDtos = new List<AdminPetDto>();
+            var petDtos = new List<PetDto>();
             foreach (var pet in pets)
             {
+                // cần thêm if role admin 
                 petDtos.Add(new AdminPetDto
                 {
                     Id = pet.Id,
@@ -29,16 +30,29 @@ namespace WordSoulApi.Services.Implementations
                     Rarity = pet.Rarity,
                     Type = pet.Type,
                     CreatedAt = pet.CreatedAt,
-                    IsActive = pet.IsActive,
+                    IsActive = pet.IsActive
                 });
+
+                //if role user  (Authorize)
+                //petDtos.Add(new PetDto
+                //{
+                //    Id = pet.Id,
+                //    Name = pet.Name,
+                //    Description = pet.Description,
+                //    ImageUrl = pet.ImageUrl,
+                //    Rarity = pet.Rarity,
+                //    Type = pet.Type
+                //});
             }
             return petDtos;
         }
 
-        public async Task<AdminPetDto?> GetPetByIdAsync(int id)
+
+        public async Task<PetDto?> GetPetByIdAsync(int id)
         {
             var pet = await _petRepository.GetPetByIdAsync(id);
             if (pet == null) return null;
+            // cần thêm if role admin
             return new AdminPetDto
             {
                 Id = pet.Id,
@@ -48,11 +62,21 @@ namespace WordSoulApi.Services.Implementations
                 Rarity = pet.Rarity,
                 Type = pet.Type,
                 CreatedAt = pet.CreatedAt,
-                IsActive = pet.IsActive,
+                IsActive = pet.IsActive
             };
+            //if role user (Authorize)
+            //return new PetDto
+            //{
+            //    Id = pet.Id,
+            //    Name = pet.Name,
+            //    Description = pet.Description,
+            //    ImageUrl = pet.ImageUrl,
+            //    Rarity = pet.Rarity,
+            //    Type = pet.Type
+            //};
         }
 
-        public async Task<CreatePetDto> CreatePetAsync(CreatePetDto petDto)
+        public async Task<PetDto> CreatePetAsync(CreatePetDto petDto)
         {
             var pet = new Pet
             {
@@ -60,19 +84,19 @@ namespace WordSoulApi.Services.Implementations
                 Description = petDto.Description,
                 ImageUrl = petDto.ImageUrl,
                 Rarity = petDto.Rarity,
-                Type = petDto.Type,
-                CreatedAt = DateTime.UtcNow,
-                IsActive = true
+                Type = petDto.Type
             };
             var createdPet = await _petRepository.CreatePetAsync(pet);
-            return new CreatePetDto
+            return new AdminPetDto
             {
                 Id = createdPet.Id,
                 Name = createdPet.Name,
                 Description = createdPet.Description,
                 ImageUrl = createdPet.ImageUrl,
                 Rarity = createdPet.Rarity,
-                Type = createdPet.Type
+                Type = createdPet.Type,
+                CreatedAt = createdPet.CreatedAt,
+                IsActive = createdPet.IsActive
             };
         }
 
@@ -90,7 +114,7 @@ namespace WordSoulApi.Services.Implementations
             existingPet.Rarity = petDto.Rarity;
             existingPet.Type = petDto.Type;
             existingPet.IsActive = petDto.IsActive;
-            existingPet.CreatedAt = DateTime.UtcNow;
+            existingPet.CreatedAt = petDto.CreatedAt;
 
             var updatedPet = await _petRepository.UpdatePetAsync(existingPet);
             return new AdminPetDto

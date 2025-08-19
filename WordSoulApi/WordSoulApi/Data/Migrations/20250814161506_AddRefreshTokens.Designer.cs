@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WordSoulApi.Data;
 
@@ -11,9 +12,11 @@ using WordSoulApi.Data;
 namespace WordSoulApi.Migrations
 {
     [DbContext(typeof(WordSoulDbContext))]
-    partial class WordSoulDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250814161506_AddRefreshTokens")]
+    partial class AddRefreshTokens
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -43,9 +46,6 @@ namespace WordSoulApi.Migrations
                     b.Property<bool>("IsCorrect")
                         .HasColumnType("bit");
 
-                    b.Property<int>("LearningSessionId")
-                        .HasColumnType("int");
-
                     b.Property<int>("QuizQuestionId")
                         .HasColumnType("int");
 
@@ -53,8 +53,6 @@ namespace WordSoulApi.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("LearningSessionId");
 
                     b.HasIndex("QuizQuestionId");
 
@@ -86,7 +84,7 @@ namespace WordSoulApi.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("VocabularySetId")
+                    b.Property<int>("VocabularySetId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -147,9 +145,6 @@ namespace WordSoulApi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Explanation")
                         .HasColumnType("nvarchar(max)");
 
@@ -161,6 +156,7 @@ namespace WordSoulApi.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Prompt")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("QuestionType")
@@ -420,12 +416,6 @@ namespace WordSoulApi.Migrations
 
             modelBuilder.Entity("WordSoulApi.Models.Entities.AnswerRecord", b =>
                 {
-                    b.HasOne("WordSoulApi.Models.Entities.LearningSession", "LearningSession")
-                        .WithMany("AnswerRecords")
-                        .HasForeignKey("LearningSessionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("WordSoulApi.Models.Entities.QuizQuestion", "QuizQuestion")
                         .WithMany("AnswerRecords")
                         .HasForeignKey("QuizQuestionId")
@@ -437,8 +427,6 @@ namespace WordSoulApi.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("LearningSession");
 
                     b.Navigation("QuizQuestion");
 
@@ -456,7 +444,8 @@ namespace WordSoulApi.Migrations
                     b.HasOne("WordSoulApi.Models.Entities.VocabularySet", "VocabularySet")
                         .WithMany("LearningSessions")
                         .HasForeignKey("VocabularySetId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.Navigation("User");
 
@@ -590,8 +579,6 @@ namespace WordSoulApi.Migrations
 
             modelBuilder.Entity("WordSoulApi.Models.Entities.LearningSession", b =>
                 {
-                    b.Navigation("AnswerRecords");
-
                     b.Navigation("SessionVocabularies");
                 });
 

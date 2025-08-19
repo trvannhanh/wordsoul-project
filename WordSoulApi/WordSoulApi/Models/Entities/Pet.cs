@@ -4,9 +4,9 @@ namespace WordSoulApi.Models.Entities
     public class Pet
     {
         public int Id { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public string ImageUrl { get; set; }
+        public required string Name { get; set; }
+        public string? Description { get; set; }
+        public string? ImageUrl { get; set; }
         public PetRarity Rarity { get; set; }
         public PetType Type { get; set; } 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

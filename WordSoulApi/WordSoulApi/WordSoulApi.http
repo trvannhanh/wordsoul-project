@@ -1,6 +1,17 @@
-@WordSoulApi_HostAddress = http://localhost:5110
+@WordSoulApi_HostAddress = https://localhost:7272
 
-GET {{WordSoulApi_HostAddress}}/weatherforecast/
+GET {{WordSoulApi_HostAddress}}/api/Vocabulary
 Accept: application/json
+
+###
+
+POST {{WordSoulApi_HostAddress}}/api/Vocabulary
+Content-Type: application/json
+
+{
+    "word": "Hello",
+    "definition": "Xin chào",
+    "example": "Hello, how are you?"
+}
 
 ###

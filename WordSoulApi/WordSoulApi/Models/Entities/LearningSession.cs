@@ -9,9 +9,10 @@
         public DateTime EndTime { get; set; }
         public int UserId { get; set; }
         public User User { get; set; } // Navigation property to User
-        public int VocabularySetId { get; set; }
-        public VocabularySet VocabularySet { get; set; } // Navigation property to VocabularySet
+        public int? VocabularySetId { get; set; }
+        public VocabularySet? VocabularySet { get; set; } // Navigation property to VocabularySet
         public List<SessionVocabulary> SessionVocabularies { get; set; } = new List<SessionVocabulary>();
+        public List<AnswerRecord> AnswerRecords { get; set; } = new List<AnswerRecord>();
     }
     public enum SessionStatus
     {

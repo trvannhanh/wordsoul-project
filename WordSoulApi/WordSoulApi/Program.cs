@@ -51,6 +51,8 @@ builder.Services.AddScoped<IQuizQuestionService, QuizQuestionService>();
 builder.Services.AddScoped<IQuizQuestionRepository, QuizQuestionRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IVocabularySetService, VocabularySetService>();
+builder.Services.AddScoped<IVocabularySetRepository, VocabularySetRepository>();
 
 var app = builder.Build();
 
@@ -65,6 +67,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

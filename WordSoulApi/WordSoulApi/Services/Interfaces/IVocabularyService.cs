@@ -4,11 +4,11 @@ namespace WordSoulApi.Services.Interfaces
 {
     public interface IVocabularyService
     {
-        Task<AdminVocabularyDto> CreateVocabularyAsync(AdminVocabularyDto vocabularyDto);
+        Task<VocabularyDto> CreateVocabularyAsync(VocabularyDto vocabularyDto);
         Task<bool> DeleteVocabularyAsync(int id);
-        Task<IEnumerable<AdminVocabularyDto>> GetAllVocabulariesAsync();
-        Task<IEnumerable<AdminVocabularyDto>> GetVocabulariesByWordsAsync(SearchVocabularyDto searchVocabularyDto);
-        Task<AdminVocabularyDto?> GetVocabularyByIdAsync(int id);
-        Task<AdminVocabularyDto> UpdateVocabularyAsync(int id, AdminVocabularyDto vocabularyDto);
+        Task<IEnumerable<VocabularyDto>> GetAllVocabulariesAsync();
+        Task<IEnumerable<VocabularyDto>> GetVocabulariesByWordsAsync(SearchVocabularyDto searchVocabularyDto);
+        Task<VocabularyDto?> GetVocabularyByIdAsync(int id);
+        Task<VocabularyDto> UpdateVocabularyAsync(int id, VocabularyDto vocabularyDto);
     }
 }
