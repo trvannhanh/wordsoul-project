@@ -4,7 +4,6 @@ namespace WordSoulApi.Models.DTOs.Pet
 {
     public class CreatePetDto
     {
-        public int Id { get; set; }
         public required string Name { get; set; }
         public required string Description { get; set; }
         public required string ImageUrl { get; set; }

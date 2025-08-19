@@ -36,8 +36,7 @@ namespace WordSoulApi.Repositories.Implementations
             var pet = await _context.Pets.FindAsync(id);
             if (pet == null) return false;
             _context.Pets.Remove(pet);
-            await _context.SaveChangesAsync();
-            return true;
+            return await _context.SaveChangesAsync() > 0;
         }
     }
 }
