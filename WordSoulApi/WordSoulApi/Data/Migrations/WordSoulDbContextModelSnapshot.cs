@@ -8,7 +8,7 @@ using WordSoulApi.Data;
 
 #nullable disable
 
-namespace WordSoulApi.Data.Migrations
+namespace WordSoulApi.Migrations
 {
     [DbContext(typeof(WordSoulDbContext))]
     partial class WordSoulDbContextModelSnapshot : ModelSnapshot
@@ -22,7 +22,7 @@ namespace WordSoulApi.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("WordSoulApi.Models.AnswerRecord", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.AnswerRecord", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -43,6 +43,9 @@ namespace WordSoulApi.Data.Migrations
                     b.Property<bool>("IsCorrect")
                         .HasColumnType("bit");
 
+                    b.Property<int>("LearningSessionId")
+                        .HasColumnType("int");
+
                     b.Property<int>("QuizQuestionId")
                         .HasColumnType("int");
 
@@ -51,6 +54,8 @@ namespace WordSoulApi.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("LearningSessionId");
+
                     b.HasIndex("QuizQuestionId");
 
                     b.HasIndex("UserId");
@@ -58,7 +63,7 @@ namespace WordSoulApi.Data.Migrations
                     b.ToTable("AnswerRecords");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.LearningSession", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.LearningSession", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -81,7 +86,7 @@ namespace WordSoulApi.Data.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<int>("VocabularySetId")
+                    b.Property<int?>("VocabularySetId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -93,7 +98,7 @@ namespace WordSoulApi.Data.Migrations
                     b.ToTable("LearningSessions");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.Pet", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.Pet", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -130,7 +135,7 @@ namespace WordSoulApi.Data.Migrations
                     b.ToTable("Pets");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.QuizQuestion", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.QuizQuestion", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -141,6 +146,9 @@ namespace WordSoulApi.Data.Migrations
                     b.Property<string>("CorrectAnswer")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Explanation")
                         .HasColumnType("nvarchar(max)");
@@ -153,7 +161,6 @@ namespace WordSoulApi.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Prompt")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("QuestionType")
@@ -169,7 +176,7 @@ namespace WordSoulApi.Data.Migrations
                     b.ToTable("QuizQuestions");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.SessionVocabulary", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.SessionVocabulary", b =>
                 {
                     b.Property<int>("LearningSessionId")
                         .HasColumnType("int");
@@ -187,7 +194,7 @@ namespace WordSoulApi.Data.Migrations
                     b.ToTable("SessionVocabularies");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.SetRewardPet", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.SetRewardPet", b =>
                 {
                     b.Property<int>("PetId")
                         .HasColumnType("int");
@@ -205,7 +212,7 @@ namespace WordSoulApi.Data.Migrations
                     b.ToTable("SetRewardPets");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.SetVocabulary", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.SetVocabulary", b =>
                 {
                     b.Property<int>("VocabularySetId")
                         .HasColumnType("int");
@@ -223,7 +230,7 @@ namespace WordSoulApi.Data.Migrations
                     b.ToTable("SetVocabularies");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.User", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -245,6 +252,12 @@ namespace WordSoulApi.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("RefreshTokenExpiryTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("Role")
                         .HasColumnType("int");
 
@@ -257,7 +270,7 @@ namespace WordSoulApi.Data.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.UserOwnedPet", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.UserOwnedPet", b =>
                 {
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -281,7 +294,7 @@ namespace WordSoulApi.Data.Migrations
                     b.ToTable("UserOwnedPets");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.UserVocabularyProgress", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.UserVocabularyProgress", b =>
                 {
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -311,7 +324,7 @@ namespace WordSoulApi.Data.Migrations
                     b.ToTable("UserVocabularyProgresses");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.UserVocabularySet", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.UserVocabularySet", b =>
                 {
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -332,7 +345,7 @@ namespace WordSoulApi.Data.Migrations
                     b.ToTable("UserVocabularySets");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.Vocabulary", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.Vocabulary", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -372,7 +385,7 @@ namespace WordSoulApi.Data.Migrations
                     b.ToTable("Vocabularies");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.VocabularySet", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.VocabularySet", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -405,47 +418,54 @@ namespace WordSoulApi.Data.Migrations
                     b.ToTable("VocabularySets");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.AnswerRecord", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.AnswerRecord", b =>
                 {
-                    b.HasOne("WordSoulApi.Models.QuizQuestion", "QuizQuestion")
+                    b.HasOne("WordSoulApi.Models.Entities.LearningSession", "LearningSession")
+                        .WithMany("AnswerRecords")
+                        .HasForeignKey("LearningSessionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("WordSoulApi.Models.Entities.QuizQuestion", "QuizQuestion")
                         .WithMany("AnswerRecords")
                         .HasForeignKey("QuizQuestionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WordSoulApi.Models.User", "User")
+                    b.HasOne("WordSoulApi.Models.Entities.User", "User")
                         .WithMany("AnswerRecords")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("LearningSession");
 
                     b.Navigation("QuizQuestion");
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.LearningSession", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.LearningSession", b =>
                 {
-                    b.HasOne("WordSoulApi.Models.User", "User")
+                    b.HasOne("WordSoulApi.Models.Entities.User", "User")
                         .WithMany("LearningSessions")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WordSoulApi.Models.VocabularySet", "VocabularySet")
+                    b.HasOne("WordSoulApi.Models.Entities.VocabularySet", "VocabularySet")
                         .WithMany("LearningSessions")
                         .HasForeignKey("VocabularySetId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("User");
 
                     b.Navigation("VocabularySet");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.QuizQuestion", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.QuizQuestion", b =>
                 {
-                    b.HasOne("WordSoulApi.Models.Vocabulary", "Vocabulary")
+                    b.HasOne("WordSoulApi.Models.Entities.Vocabulary", "Vocabulary")
                         .WithMany("QuizQuestions")
                         .HasForeignKey("VocabularyId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -454,15 +474,15 @@ namespace WordSoulApi.Data.Migrations
                     b.Navigation("Vocabulary");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.SessionVocabulary", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.SessionVocabulary", b =>
                 {
-                    b.HasOne("WordSoulApi.Models.LearningSession", "LearningSession")
+                    b.HasOne("WordSoulApi.Models.Entities.LearningSession", "LearningSession")
                         .WithMany("SessionVocabularies")
                         .HasForeignKey("LearningSessionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WordSoulApi.Models.Vocabulary", "Vocabulary")
+                    b.HasOne("WordSoulApi.Models.Entities.Vocabulary", "Vocabulary")
                         .WithMany("SessionVocabularies")
                         .HasForeignKey("VocabularyId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -473,15 +493,15 @@ namespace WordSoulApi.Data.Migrations
                     b.Navigation("Vocabulary");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.SetRewardPet", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.SetRewardPet", b =>
                 {
-                    b.HasOne("WordSoulApi.Models.Pet", "Pet")
+                    b.HasOne("WordSoulApi.Models.Entities.Pet", "Pet")
                         .WithMany("SetRewardPets")
                         .HasForeignKey("PetId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WordSoulApi.Models.VocabularySet", "VocabularySet")
+                    b.HasOne("WordSoulApi.Models.Entities.VocabularySet", "VocabularySet")
                         .WithMany("SetRewardPets")
                         .HasForeignKey("VocabularySetId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -492,15 +512,15 @@ namespace WordSoulApi.Data.Migrations
                     b.Navigation("VocabularySet");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.SetVocabulary", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.SetVocabulary", b =>
                 {
-                    b.HasOne("WordSoulApi.Models.Vocabulary", "Vocabulary")
+                    b.HasOne("WordSoulApi.Models.Entities.Vocabulary", "Vocabulary")
                         .WithMany("SetVocabularies")
                         .HasForeignKey("VocabularyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WordSoulApi.Models.VocabularySet", "VocabularySet")
+                    b.HasOne("WordSoulApi.Models.Entities.VocabularySet", "VocabularySet")
                         .WithMany("SetVocabularies")
                         .HasForeignKey("VocabularySetId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -511,15 +531,15 @@ namespace WordSoulApi.Data.Migrations
                     b.Navigation("VocabularySet");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.UserOwnedPet", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.UserOwnedPet", b =>
                 {
-                    b.HasOne("WordSoulApi.Models.Pet", "Pet")
+                    b.HasOne("WordSoulApi.Models.Entities.Pet", "Pet")
                         .WithMany("UserOwnedPets")
                         .HasForeignKey("PetId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("WordSoulApi.Models.User", "User")
+                    b.HasOne("WordSoulApi.Models.Entities.User", "User")
                         .WithMany("UserOwnedPets")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -530,15 +550,15 @@ namespace WordSoulApi.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.UserVocabularyProgress", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.UserVocabularyProgress", b =>
                 {
-                    b.HasOne("WordSoulApi.Models.User", "User")
+                    b.HasOne("WordSoulApi.Models.Entities.User", "User")
                         .WithMany("UserVocabularyProgresses")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WordSoulApi.Models.Vocabulary", "Vocabulary")
+                    b.HasOne("WordSoulApi.Models.Entities.Vocabulary", "Vocabulary")
                         .WithMany("UserVocabularyProgresses")
                         .HasForeignKey("VocabularyId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -549,15 +569,15 @@ namespace WordSoulApi.Data.Migrations
                     b.Navigation("Vocabulary");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.UserVocabularySet", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.UserVocabularySet", b =>
                 {
-                    b.HasOne("WordSoulApi.Models.User", "User")
+                    b.HasOne("WordSoulApi.Models.Entities.User", "User")
                         .WithMany("UserVocabularySets")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WordSoulApi.Models.VocabularySet", "VocabularySet")
+                    b.HasOne("WordSoulApi.Models.Entities.VocabularySet", "VocabularySet")
                         .WithMany("UserVocabularySets")
                         .HasForeignKey("VocabularySetId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -568,24 +588,26 @@ namespace WordSoulApi.Data.Migrations
                     b.Navigation("VocabularySet");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.LearningSession", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.LearningSession", b =>
                 {
+                    b.Navigation("AnswerRecords");
+
                     b.Navigation("SessionVocabularies");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.Pet", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.Pet", b =>
                 {
                     b.Navigation("SetRewardPets");
 
                     b.Navigation("UserOwnedPets");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.QuizQuestion", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.QuizQuestion", b =>
                 {
                     b.Navigation("AnswerRecords");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.User", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.User", b =>
                 {
                     b.Navigation("AnswerRecords");
 
@@ -598,7 +620,7 @@ namespace WordSoulApi.Data.Migrations
                     b.Navigation("UserVocabularySets");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.Vocabulary", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.Vocabulary", b =>
                 {
                     b.Navigation("QuizQuestions");
 
@@ -609,7 +631,7 @@ namespace WordSoulApi.Data.Migrations
                     b.Navigation("UserVocabularyProgresses");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.VocabularySet", b =>
+            modelBuilder.Entity("WordSoulApi.Models.Entities.VocabularySet", b =>
                 {
                     b.Navigation("LearningSessions");
 

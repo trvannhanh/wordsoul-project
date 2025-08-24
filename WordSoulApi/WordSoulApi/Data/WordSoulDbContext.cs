@@ -24,6 +24,11 @@ namespace WordSoulApi.Data
             base.OnModelCreating(modelBuilder);
             // Additional model configurations can go here
 
+            // Đảm bảo unique constraint trên (UserId, LearningSessionId, QuizQuestionId)
+            modelBuilder.Entity<AnswerRecord>()
+                .HasIndex(ar => new { ar.UserId, ar.LearningSessionId, ar.QuizQuestionId })
+                .IsUnique();
+
             //Vocabulary 1 - N QuizQuestion relationship
             modelBuilder.Entity<Vocabulary>()
                 .HasMany(v => v.QuizQuestions)
@@ -153,6 +158,14 @@ namespace WordSoulApi.Data
                 .WithMany(q => q.AnswerRecords)
                 .HasForeignKey(ar => ar.QuizQuestionId)
                 .OnDelete(DeleteBehavior.Cascade); // Cascade delete if quiz question is deleted
+
+            //LearningSession 1 - N AnswerRecord relationship
+            modelBuilder.Entity<LearningSession>()
+                .HasMany(ls => ls.AnswerRecords)
+                .WithOne(a => a.LearningSession)
+                .HasForeignKey(a => a.LearningSessionId)
+                .OnDelete(DeleteBehavior.Restrict); // Restrict delete to prevent accidental loss of answer records
+
         }
     }
 
