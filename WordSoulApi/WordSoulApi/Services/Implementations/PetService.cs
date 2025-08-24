@@ -1,6 +1,6 @@
 ﻿using WordSoulApi.Models.DTOs.Pet;
 using WordSoulApi.Models.Entities;
-using WordSoulApi.Repositories.Implementations;
+using WordSoulApi.Repositories.Interfaces;
 using WordSoulApi.Services.Interfaces;
 
 namespace WordSoulApi.Services.Implementations
@@ -14,6 +14,7 @@ namespace WordSoulApi.Services.Implementations
             _petRepository = petRepository;
         }
 
+        // Lây tất cả pet
         public async Task<IEnumerable<PetDto>> GetAllPetsAsync()
         {
             var pets = await _petRepository.GetAllPetsAsync();
@@ -48,6 +49,7 @@ namespace WordSoulApi.Services.Implementations
         }
 
 
+        // Lấy pet theo ID
         public async Task<PetDto?> GetPetByIdAsync(int id)
         {
             var pet = await _petRepository.GetPetByIdAsync(id);
@@ -76,6 +78,8 @@ namespace WordSoulApi.Services.Implementations
             //};
         }
 
+
+        // Tạo pet mới
         public async Task<PetDto> CreatePetAsync(CreatePetDto petDto)
         {
             var pet = new Pet
@@ -100,6 +104,8 @@ namespace WordSoulApi.Services.Implementations
             };
         }
 
+
+        // Cập nhật pet
         public async Task<AdminPetDto> UpdatePetAsync(int id, AdminPetDto petDto)
         {
             var existingPet = await _petRepository.GetPetByIdAsync(id);
@@ -129,10 +135,13 @@ namespace WordSoulApi.Services.Implementations
                 IsActive = updatedPet.IsActive
             };
         }
-
+         
+        // Xóa pet theo ID
         public async Task<bool> DeletePetAsync(int id)
         {
             return await _petRepository.DeletePetAsync(id);
         }
+
+
     }
 }

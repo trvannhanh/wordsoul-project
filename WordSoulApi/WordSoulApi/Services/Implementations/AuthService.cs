@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -14,6 +13,7 @@ namespace WordSoulApi.Services.Implementations
 {
     public class AuthService : IAuthService
     {
+        // Tiêm các phụ thuộc cần thiết
         private readonly IAuthRepository _authRepository;
         private readonly IConfiguration _configuration;
 
@@ -23,6 +23,7 @@ namespace WordSoulApi.Services.Implementations
             _configuration = configuration;
         }
 
+        // Đăng nhập người dùng và trả về TokenResponseDto nếu thành công, ngược lại trả về null
         public async Task<TokenResponseDto?> LoginAsync(LoginDto loginDto)
         {
             var user = await _authRepository.LoginUserAsync(loginDto.Username);
@@ -36,6 +37,7 @@ namespace WordSoulApi.Services.Implementations
 
         }
 
+        // Tạo phản hồi token bao gồm AccessToken và RefreshToken
         private async Task<TokenResponseDto> CreateTokenResponse(User user)
         {
             return new TokenResponseDto
@@ -45,6 +47,7 @@ namespace WordSoulApi.Services.Implementations
             };
         }
 
+        // Đăng ký người dùng mới và trả về User nếu thành công, ngược lại trả về null
         public async Task<User> RegisterAsync(RegisterDto registerDto)
         {
             if (await _authRepository.UserExistsAsync(registerDto.Username))
@@ -65,6 +68,7 @@ namespace WordSoulApi.Services.Implementations
             return registeredUser;
         }
 
+        // Làm mới token sử dụng RefreshToken và trả về TokenResponseDto nếu thành công, ngược lại trả về null
         public async Task<TokenResponseDto?> RefreshTokenAsync(RefreshTokenRequestDto request)
         {
             var user = await ValidateRefreshTokenAsync(request.Id, request.RefreshToken);
@@ -74,6 +78,7 @@ namespace WordSoulApi.Services.Implementations
             return await CreateTokenResponse(user);
         }
 
+        // Xác thực RefreshToken
         private async Task<User?> ValidateRefreshTokenAsync(int userId, string refreshToken)
         {
             var user = await _authRepository.GetUserByIdAsync(userId);
@@ -85,6 +90,7 @@ namespace WordSoulApi.Services.Implementations
 
             return user;
         }
+        // Tạo mã làm mới token
         private string GenerateRefreshToken()
         {
             var randomNumber = new byte[32];
@@ -93,6 +99,7 @@ namespace WordSoulApi.Services.Implementations
             return Convert.ToBase64String(randomNumber);
         }
 
+        // Tạo và lưu mã làm mới token vào cơ sở dữ liệu
         private async Task<string> GenerateAndSaveRefreshTokenAsync(User user)
         {
             var refreshToken = GenerateRefreshToken();
@@ -102,6 +109,7 @@ namespace WordSoulApi.Services.Implementations
             return refreshToken;
         }
 
+        // Tạo JWT token dựa trên thông tin người dùng
         private string CreateToken(User user)
         {
             var claims = new List<Claim>

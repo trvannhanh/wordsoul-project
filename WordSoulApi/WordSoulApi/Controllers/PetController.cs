@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WordSoulApi.Models.DTOs.Pet;
 using WordSoulApi.Services.Interfaces;
@@ -15,6 +16,8 @@ namespace WordSoulApi.Controllers
             _petService = petService;
         }
 
+        // GET: api/Pet : Lấy tất cả pet
+        [Authorize(Roles = "Admin,User")]
         [HttpGet]
         public async Task<IActionResult> GetAllPets()
         {
@@ -22,6 +25,8 @@ namespace WordSoulApi.Controllers
             return Ok(pets);
         }
 
+        // GET: api/Pet/{id} : Lấy pet theo ID
+        [Authorize(Roles = "Admin,User")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPetById(int id)
         {
@@ -30,7 +35,8 @@ namespace WordSoulApi.Controllers
             return Ok(pet);
         }
 
-        // chỉ dành cho admin
+        // POST: api/Pet : Tạo pet mới
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> CreatePet(CreatePetDto petDto)
         {
@@ -39,7 +45,8 @@ namespace WordSoulApi.Controllers
             return CreatedAtAction(nameof(GetPetById), new { id = createdPet.Id }, createdPet);
         }
 
-        // chỉ dành cho admin
+        // PUT: api/Pet/{id} : Cập nhật pet theo ID
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdatePet(int id, AdminPetDto petDto)
         {
@@ -48,8 +55,9 @@ namespace WordSoulApi.Controllers
             if (updatedPet == null) return NotFound();
             return Ok(updatedPet);
         }
-        // chỉ dành cho admin
 
+        // DELETE: api/Pet/{id} : Xóa pet theo ID
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePet(int id)
         {

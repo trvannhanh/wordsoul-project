@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WordSoulApi.Models.DTOs.QuizQuestion;
 using WordSoulApi.Services.Interfaces;
@@ -15,7 +16,8 @@ namespace WordSoulApi.Controllers
             _quizQuestionService = quizQuestionService;
         }
 
-        // chỉ dành cho admin
+        // GET : api/QuizQuestion : Lấy tất cả câu hỏi trắc nghiệm
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAllQuizQuestions()
         {
@@ -23,7 +25,8 @@ namespace WordSoulApi.Controllers
             return Ok(quizQuestions);
         }
 
-        // Authorized
+        // GET : api/QuizQuestion/{id} : Lấy câu hỏi trắc nghiệm theo ID
+        [Authorize(Roles = "Admin,User")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetQuizQuestionById(int id)
         {
@@ -32,7 +35,8 @@ namespace WordSoulApi.Controllers
             return Ok(quizQuestion);
         }
 
-        // chỉ dành cho admin
+        // POST : api/QuizQuestion : Tạo câu hỏi trắc nghiệm mới
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> CreateQuizQuestion(CreateQuizQuestionDto quizQuestionDto)
         {
@@ -41,7 +45,8 @@ namespace WordSoulApi.Controllers
             return CreatedAtAction(nameof(GetQuizQuestionById), new { id = createdQuizQuestion.Id }, createdQuizQuestion);
         }
 
-        // chỉ dành cho admin
+        // PUT : api/QuizQuestion/{id} : Cập nhật câu hỏi trắc nghiệm theo ID
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateQuizQuestion(int id, AdminQuizQuestionDto quizQuestionDto)
         {
@@ -51,7 +56,8 @@ namespace WordSoulApi.Controllers
             return Ok(updatedQuizQuestion);
         }
 
-        //chỉ dành cho admin
+        // DELETE : api/QuizQuestion/{id} : Xóa câu hỏi trắc nghiệm theo ID
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteQuizQuestion(int id)
         {
@@ -61,8 +67,7 @@ namespace WordSoulApi.Controllers
         }
 
 
-        
-
+     
 
     }
 }

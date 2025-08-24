@@ -22,6 +22,7 @@ namespace WordSoulApi.Services.Implementations
             _logger = logger;
         }
 
+        // Lấy tất cả các bộ từ vựng với phân trang
         public async Task<IEnumerable<VocabularySetDto>> GetAllVocabularySetsAsync(int pageNumber = 1, int pageSize = 10)
         {
             _logger.LogInformation("Retrieving all vocabulary sets with pageNumber: {PageNumber}, pageSize: {PageSize}", pageNumber, pageSize);
@@ -36,6 +37,7 @@ namespace WordSoulApi.Services.Implementations
             return vocabularySetDtos;
         }
 
+        // Lấy bộ từ vựng theo ID
         public async Task<VocabularySetDto?> GetVocabularySetByIdAsync(int id)
         {
             _logger.LogInformation("Retrieving vocabulary set with ID: {Id}", id);
@@ -49,6 +51,7 @@ namespace WordSoulApi.Services.Implementations
             return MapToDto(vocabularySet);
         }
 
+        // Tạo bộ từ vựng mới
         public async Task<VocabularySetDto> CreateVocabularySetAsync(CreateVocabularySetDto createDto)
         {
             _logger.LogInformation("Creating vocabulary set with title: {Title}", createDto.Title);
@@ -90,6 +93,7 @@ namespace WordSoulApi.Services.Implementations
             return MapToDto(createdVocabularySet);
         }
 
+        // Cập nhật bộ từ vựng
         public async Task<VocabularySetDto?> UpdateVocabularySetAsync(int id, UpdateVocabularySetDto updateDto)
         {
             _logger.LogInformation("Updating vocabulary set with ID: {Id}", id);
@@ -141,6 +145,7 @@ namespace WordSoulApi.Services.Implementations
             return MapToDto(updatedVocabularySet);
         }
 
+        // Xóa bộ từ vựng theo ID
         public async Task<bool> DeleteVocabularySetAsync(int id)
         {
             _logger.LogInformation("Deleting vocabulary set with ID: {Id}", id);
@@ -155,6 +160,7 @@ namespace WordSoulApi.Services.Implementations
             }
             return result;
         }
+
 
         private VocabularySetDto MapToDto(VocabularySet vocabularySet)
         {
@@ -171,6 +177,7 @@ namespace WordSoulApi.Services.Implementations
             };
         }
 
+        // Tìm kiếm bộ từ vựng với các tiêu chí khác nhau và phân trang
         public async Task<IEnumerable<VocabularySetDto>> SearchVocabularySetAsync(string? title, VocabularySetTheme? theme, VocabularyDifficultyLevel? difficulty,
                                                                         DateTime? createdAfter, int pageNumber, int pageSize)
         {

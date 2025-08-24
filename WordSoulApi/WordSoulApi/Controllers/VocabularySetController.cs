@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using WordSoulApi.Extensions;
 using WordSoulApi.Models.DTOs.VocabularySet;
 using WordSoulApi.Models.Entities;
+using WordSoulApi.Services.Implementations;
 using WordSoulApi.Services.Interfaces;
 
 namespace WordSoulApi.Controllers
@@ -12,12 +14,18 @@ namespace WordSoulApi.Controllers
     public class VocabularySetController : ControllerBase
     {
         private readonly IVocabularySetService _vocabularySetService;
+        private readonly IUserVocabularySetService _userVocabularySetService;
+        private readonly ILogger<VocabularySetController> _logger;
 
-        public VocabularySetController(IVocabularySetService vocabularySetService)
+        public VocabularySetController(IVocabularySetService vocabularySetService, IUserVocabularySetService userVocabularySetService, ILogger<VocabularySetController> logger)
         {
             _vocabularySetService = vocabularySetService;
+            _userVocabularySetService = userVocabularySetService;
+            _logger = logger;
         }
 
+        // GET: api/vocabulary-sets : Lấy tất cả bộ từ vựng với phân trang
+        [Authorize(Roles = "Admin,User")]
         [HttpGet]
         public async Task<IActionResult> GetAllVocabularySets(int pageNumber = 1, int pageSize = 10)
         {
@@ -25,17 +33,28 @@ namespace WordSoulApi.Controllers
             return Ok(vocabularySets);
         }
 
+        // GET: api/vocabulary-sets/{id} : Lấy bộ từ vựng theo ID
+        [Authorize(Roles = "Admin,User")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetVocabularySetById(int id)
         {
-            var vocabularySet = await _vocabularySetService.GetVocabularySetByIdAsync(id);
-            if (vocabularySet == null)
+            if (id <= 0) return BadRequest("Invalid VocabularySet ID");
+
+            try
             {
-                return NotFound();
+                var vocabularySet = await _vocabularySetService.GetVocabularySetByIdAsync(id);
+                if (vocabularySet == null) return NotFound();
+                return Ok(vocabularySet);
             }
-            return Ok(vocabularySet);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving vocabulary set with ID: {Id}", id);
+                return StatusCode(500, "Internal server error");
+            }
         }
 
+        // POST: api/vocabulary-sets : Tạo bộ từ vựng mới
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateVocabularySet([FromBody] CreateVocabularySetDto createDto)
@@ -60,8 +79,9 @@ namespace WordSoulApi.Controllers
             }
         }
 
-        [HttpPut("{id}")]
+        // PUT: api/vocabulary-sets/{id} : Cập nhật bộ từ vựng theo ID
         [Authorize(Roles = "Admin")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> UpdateVocabularySet(int id, [FromBody] UpdateVocabularySetDto updateDto)
         {
             if (updateDto == null)
@@ -88,8 +108,9 @@ namespace WordSoulApi.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
+        // DELETE: api/vocabulary-sets/{id} : Xóa bộ từ vựng theo ID
         [Authorize(Roles = "Admin")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteVocabularySet(int id)
         {
             var result = await _vocabularySetService.DeleteVocabularySetAsync(id);
@@ -100,6 +121,8 @@ namespace WordSoulApi.Controllers
             return NoContent();
         }
 
+        // GET: api/vocabulary-sets/search : Tìm kiếm bộ từ vựng với các tiêu chí khác nhau và phân trang
+        [Authorize(Roles = "Admin,User")]
         [HttpGet("search")]
         public async Task<IActionResult> SearchVocabularySets(string? title, VocabularySetTheme? theme, VocabularyDifficultyLevel? difficulty,
                                                                 DateTime? createdAfter, int pageNumber = 1, int pageSize = 10)
@@ -110,6 +133,31 @@ namespace WordSoulApi.Controllers
             return Ok(results);
         }
 
+        // POST: api/vocabulary-sets/{vocabId} : Thêm bộ từ vựng vào người dùng hiện tại
+        [Authorize(Roles = "User")]
+        [HttpPost("{vocabId}")]
+        public async Task<IActionResult> AddVocabularySet(int vocabId)
+        {
+            if (vocabId <= 0) return BadRequest("Invalid VocabularySet ID");
+
+            var userId = User.GetUserId();
+            if (userId == 0) return Unauthorized();
+
+            try
+            {
+                await _userVocabularySetService.AddVocabularySetToUserAsync(userId, vocabId);
+                return Ok(new { message = "VocabularySet added successfully", userId, vocabId });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error adding VocabularySet {VocabId} for User {UserId}", vocabId, userId);
+                return StatusCode(500, "Internal server error");
+            }
+        }
 
 
         // api lấy danh sách pet theo bộ từ vựng

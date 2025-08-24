@@ -24,6 +24,11 @@ namespace WordSoulApi.Data
             base.OnModelCreating(modelBuilder);
             // Additional model configurations can go here
 
+            // Đảm bảo unique constraint trên (UserId, LearningSessionId, QuizQuestionId)
+            modelBuilder.Entity<AnswerRecord>()
+                .HasIndex(ar => new { ar.UserId, ar.LearningSessionId, ar.QuizQuestionId })
+                .IsUnique();
+
             //Vocabulary 1 - N QuizQuestion relationship
             modelBuilder.Entity<Vocabulary>()
                 .HasMany(v => v.QuizQuestions)

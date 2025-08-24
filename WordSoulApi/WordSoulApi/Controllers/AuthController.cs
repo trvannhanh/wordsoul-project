@@ -15,6 +15,7 @@ namespace WordSoulApi.Controllers
             _authService = authService;
         }
 
+        // POST: api/Auth/register : Đăng ký người dùng mới
         [HttpPost("register")]
         public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
         {
@@ -34,6 +35,7 @@ namespace WordSoulApi.Controllers
             });
         }
 
+        // POST: api/Auth/login : Đăng nhập và nhận token
         [HttpPost("login")]
         public async Task<ActionResult<TokenResponseDto>> Login(LoginDto loginDto)
         {
@@ -45,6 +47,7 @@ namespace WordSoulApi.Controllers
             return Ok(result);
         }
 
+        // POST: api/Auth/refresh-token : Làm mới token
         [HttpPost("refresh-token")]
         public async Task<ActionResult<TokenResponseDto>> RefreshToken(RefreshTokenRequestDto refreshTokenRequestDto)
         {

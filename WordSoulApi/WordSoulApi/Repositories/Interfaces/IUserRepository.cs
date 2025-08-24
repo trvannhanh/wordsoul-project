@@ -4,11 +4,13 @@ namespace WordSoulApi.Repositories.Interfaces
 {
     public interface IUserRepository
     {
-        Task AddVocabularySetToUserAsync(UserVocabularySet userVocabularySet);
-        Task<bool> CheckUserVocabualryExist(int userId, int vocabId);
+        // Xóa người dùng theo ID
         Task<bool> DeleteUserAsync(int id);
+        // Lấy tất cả người dùng
         Task<IEnumerable<User>> GetAllUsersAsync();
+        // Lấy người dùng theo ID
         Task<User?> GetUserByIdAsync(int id);
+        // Cập nhật thông tin người dùng
         Task<User> UpdateUserAsync(User user);
     }
 }

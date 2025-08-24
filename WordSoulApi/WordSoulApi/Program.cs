@@ -41,21 +41,43 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 // Register repository and service
+// Vocabulary
 builder.Services.AddScoped<IVocabularyRepository, VocabularyRepository>();
 builder.Services.AddScoped<IVocabularyService, VocabularyService>();
+// Auth & User
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IPetService, PetService>();
-builder.Services.AddScoped<IPetRepository, PetRepository>();
-builder.Services.AddScoped<IQuizQuestionService, QuizQuestionService>();
-builder.Services.AddScoped<IQuizQuestionRepository, QuizQuestionRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+// Pet 
+builder.Services.AddScoped<IPetService, PetService>();
+builder.Services.AddScoped<IPetRepository, PetRepository>();
+// Quiz Question
+builder.Services.AddScoped<IQuizQuestionService, QuizQuestionService>();
+builder.Services.AddScoped<IQuizQuestionRepository, QuizQuestionRepository>();
+// Vocabulary Set
 builder.Services.AddScoped<IVocabularySetService, VocabularySetService>();
 builder.Services.AddScoped<IVocabularySetRepository, VocabularySetRepository>();
+// Learning Session
+builder.Services.AddScoped<ILearningSessionService, LearningSessionService>();
+builder.Services.AddScoped<ILearningSessionRepository, LearningSessionRepository>();
+// Answer Record 
+builder.Services.AddScoped<IAnswerRecordRepository, AnswerRecordRepository>();
+// User Vocabulary Progress
+builder.Services.AddScoped<IUserVocabularyProgressRepository, UserVocabularyProgressRepository>();
+builder.Services.AddScoped<IUserVocabularyProgressService, UserVocabularyProgressService>();
+// Set Reward Pet
+builder.Services.AddScoped<ISetRewardPetRepository, SetRewardPetRepository>();
+// User Owned Pet
+builder.Services.AddScoped<IUserOwnedPetRepository, UserOwnedPetRepository>();
+builder.Services.AddScoped<IUserOwnedPetService, UserOwnedPetService>();
+// User Vocabulary Set
+builder.Services.AddScoped<IUserVocabularySetRepository, UserVocabularySetRepository>();
+builder.Services.AddScoped<IUserVocabularySetService, UserVocabularySetService>();
+
+
 
 var app = builder.Build();
-
 
 
 // Configure the HTTP request pipeline.

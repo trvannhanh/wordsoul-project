@@ -13,16 +13,19 @@ namespace WordSoulApi.Repositories.Implementations
             _context = context;
         }
 
+        // Lấy tất cả người dùng
         public async Task<IEnumerable<User>> GetAllUsersAsync()
         {
             return await _context.Users.AsNoTracking().ToListAsync();
         }
 
+        // Lấy người dùng theo ID
         public async Task<User?> GetUserByIdAsync(int id)
         {
             return await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
         }
 
+        // Cập nhật thông tin người dùng
         public async Task<User> UpdateUserAsync(User user)
         {
             _context.Users.Update(user);
@@ -30,6 +33,7 @@ namespace WordSoulApi.Repositories.Implementations
             return user;
         }
 
+        // Xóa người dùng theo ID
         public async Task<bool> DeleteUserAsync(int id)
         {
             var user = await GetUserByIdAsync(id);
@@ -38,16 +42,5 @@ namespace WordSoulApi.Repositories.Implementations
             return await _context.SaveChangesAsync() > 0;
         }
 
-        public async Task<bool> CheckUserVocabualryExist(int userId, int vocabId)
-        {
-            var exists = await _context.UserVocabularySets.AnyAsync(x => x.UserId == userId && x.VocabularySetId == vocabId);
-            return exists;
-        }
-
-        public async Task AddVocabularySetToUserAsync(UserVocabularySet userVocabularySet)
-        {
-            _context.UserVocabularySets.Add(userVocabularySet);
-            await _context.SaveChangesAsync();
-        }
     }
 }

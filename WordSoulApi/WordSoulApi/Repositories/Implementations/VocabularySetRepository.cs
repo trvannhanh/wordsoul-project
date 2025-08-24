@@ -14,6 +14,7 @@ namespace WordSoulApi.Repositories.Implementations
             _context = context;
         }
 
+        // Lấy tất cả các bộ từ vựng với phân trang
         public async Task<IEnumerable<VocabularySet>> GetAllVocabularySetsAsync(int pageNumber = 1, int pageSize = 10)
         {
             return await _context.VocabularySets
@@ -25,6 +26,7 @@ namespace WordSoulApi.Repositories.Implementations
                 .ToListAsync();
         }
 
+        // Lấy bộ từ vựng theo ID, bao gồm các từ vựng liên quan
         public async Task<VocabularySet?> GetVocabularySetByIdAsync(int id)
         {
             return await _context.VocabularySets
@@ -34,6 +36,7 @@ namespace WordSoulApi.Repositories.Implementations
                 .FirstOrDefaultAsync(vs => vs.Id == id);
         }
 
+        // Tạo bộ từ vựng mới
         public async Task<VocabularySet> CreateVocabularySetAsync(VocabularySet vocabularySet)
         {
             _context.VocabularySets.Add(vocabularySet);
@@ -41,6 +44,8 @@ namespace WordSoulApi.Repositories.Implementations
             return vocabularySet;
         }
 
+
+        // Cập nhật bộ từ vựng
         public async Task<VocabularySet?> UpdateVocabularySetAsync(VocabularySet vocabularySet)
         {
             var existingVocabularySet = await _context.VocabularySets
@@ -62,6 +67,8 @@ namespace WordSoulApi.Repositories.Implementations
             return existingVocabularySet;
         }
 
+
+        // Xóa bộ từ vựng theo ID
         public async Task<bool> DeleteVocabularySetAsync(int id)
         {
             var vocabularySet = await _context.VocabularySets
@@ -76,6 +83,8 @@ namespace WordSoulApi.Repositories.Implementations
             return await _context.SaveChangesAsync() > 0;
         }
 
+
+        // Tìm kiếm bộ từ vựng với các tiêu chí và phân trang
         public async Task<IEnumerable<VocabularySet>> SearchVocabularySetAsync(string? title, VocabularySetTheme? theme, VocabularyDifficultyLevel? difficulty,
                                                                     DateTime? createdAfter, int pageNumber, int pageSize)
         {
@@ -101,5 +110,7 @@ namespace WordSoulApi.Repositories.Implementations
                 .Take(pageSize)
                 .ToListAsync();
         }
+
+
     }
 }

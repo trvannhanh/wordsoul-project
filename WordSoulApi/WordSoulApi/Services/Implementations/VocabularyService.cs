@@ -14,6 +14,7 @@ namespace WordSoulApi.Services.Implementations
             _vocabularyRepository = vocabularyRepository;
         }
 
+        // Lấy tất cả các từ vựng
         public async Task<IEnumerable<VocabularyDto>> GetAllVocabulariesAsync()
         {
             var vocabularies = await _vocabularyRepository.GetAllVocabulariesAsync();
@@ -36,7 +37,7 @@ namespace WordSoulApi.Services.Implementations
             return vocabularyDtos;
         }
 
-
+        // Lấy từ vựng theo ID
         public async Task<VocabularyDto?> GetVocabularyByIdAsync(int id)
         {
             var vocabulary = await _vocabularyRepository.GetVocabularyByIdAsync(id);
@@ -56,6 +57,7 @@ namespace WordSoulApi.Services.Implementations
         }
 
 
+        // Tạo từ vựng mới
         public async Task<VocabularyDto> CreateVocabularyAsync(VocabularyDto vocabularyDto)
         {
             var vocabulary = new Vocabulary
@@ -85,6 +87,7 @@ namespace WordSoulApi.Services.Implementations
             };
         }
 
+        // Cập nhật từ vựng
         public async Task<VocabularyDto> UpdateVocabularyAsync(int id, VocabularyDto vocabularyDto)
         {
             var existingVocabulary = await _vocabularyRepository.GetVocabularyByIdAsync(id);
@@ -117,11 +120,13 @@ namespace WordSoulApi.Services.Implementations
             };
         }
 
+        // Xóa từ vựng theo ID
         public async Task<bool> DeleteVocabularyAsync(int id)
         {
             return await _vocabularyRepository.DeleteVocabularyAsync(id);
         }
 
+        // Lấy các từ vựng theo danh sách từ
         public async Task<IEnumerable<VocabularyDto>> GetVocabulariesByWordsAsync(SearchVocabularyDto searchVocabularyDto)
         {
             if (searchVocabularyDto == null || searchVocabularyDto.Words == null || !searchVocabularyDto.Words.Any())

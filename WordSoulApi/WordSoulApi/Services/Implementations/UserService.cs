@@ -13,6 +13,7 @@ namespace WordSoulApi.Services.Implementations
             _userRepository = userRepository;
         }
 
+        // Lấy tất cả người dùng
         public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
         {
             var users = await _userRepository.GetAllUsersAsync();
@@ -27,6 +28,7 @@ namespace WordSoulApi.Services.Implementations
             });
         }
 
+        // Lấy người dùng theo ID
         public async Task<UserDto?> GetUserByIdAsync(int id)
         {
             var user = await _userRepository.GetUserByIdAsync(id);
@@ -42,6 +44,7 @@ namespace WordSoulApi.Services.Implementations
             };
         }
 
+        // Cập nhật thông tin người dùng
         public async Task<UserDto> UpdateUserAsync(int id, UserDto userDto)
         {
             var user = await _userRepository.GetUserByIdAsync(id);
@@ -63,6 +66,7 @@ namespace WordSoulApi.Services.Implementations
             };
         }
 
+        // Xóa người dùng theo ID
         public async Task<bool> DeleteUserAsync(int id)
         {
             var user = await _userRepository.GetUserByIdAsync(id);
@@ -70,19 +74,6 @@ namespace WordSoulApi.Services.Implementations
             return await _userRepository.DeleteUserAsync(id);
         }
 
-        public async Task AddVocabularySetToUserAsync(int userId, int vocabId)
-        {
-            var exists = _userRepository.CheckUserVocabualryExist(userId, vocabId);
-            if (exists != null)
-            {
-                var relation = new UserVocabularySet
-                {
-                    UserId = userId,
-                    VocabularySetId = vocabId
-                };
 
-                await _userRepository.AddVocabularySetToUserAsync(relation);
-            }
-        }
     }
 }

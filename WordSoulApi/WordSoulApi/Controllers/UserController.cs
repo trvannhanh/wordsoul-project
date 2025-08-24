@@ -12,12 +12,15 @@ namespace WordSoulApi.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        public UserController(IUserService userService)
+        private readonly IUserVocabularySetService _userVocabularySetService;
+        public UserController(IUserService userService, IUserVocabularySetService userVocabularySetService)
         {
             _userService = userService;
+            _userVocabularySetService = userVocabularySetService;
         }
 
-        // chỉ dành cho admin
+        //GET: api/User : Lấy tất cả người dùng
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAllUsers()
         {
@@ -25,7 +28,8 @@ namespace WordSoulApi.Controllers
             return Ok(users);
         }
 
-        //Authorized
+        // GET: api/User/{id} : Lấy người dùng theo ID
+        [Authorize(Roles = "Admin,User")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUserById(int id)
         {
@@ -34,7 +38,8 @@ namespace WordSoulApi.Controllers
             return Ok(user);
         }
 
-        //Authorized
+        // PUT: api/User/{id} : Cập nhật người dùng theo ID
+        [Authorize(Roles = "Admin,User")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(int id, UserDto userDto)
         {
@@ -44,7 +49,8 @@ namespace WordSoulApi.Controllers
             return Ok(updatedUser);
         }
 
-        // chỉ dành cho admin
+        // DELETE: api/User/{id} : Xóa người dùng theo ID
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
@@ -54,16 +60,7 @@ namespace WordSoulApi.Controllers
 
         }
 
-        [Authorize(Roles = "User")]
-        [HttpPost("me/vocabulary-sets/{vocabId}")]
-        public async Task<IActionResult> AddVocabularySet(int vocabId)
-        {
-            var userId = User.GetUserId();
-            if (userId == 0)
-                return Unauthorized();
-            await _userService.AddVocabularySetToUserAsync(userId, vocabId);
-            return Ok(new { message = "VocabularySet added successfully" });
-        }
+        
 
         // api lấy thông tin người dùng hiện tại
 
