@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WordSoulApi.Extensions;
@@ -11,8 +12,9 @@ using WordSoulApi.Services.Interfaces;
 
 namespace WordSoulApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/learning-sessions")]
     [ApiController]
+    [EnableCors("AllowLocalhost")]
     public class LearningSessionController : ControllerBase
     {
         private readonly ILearningSessionService _learningSessionService;
@@ -28,7 +30,7 @@ namespace WordSoulApi.Controllers
             _logger = logger;
         }
 
-        // POST: api/LearningSession/{vocaSetId} : Tạo một phiên học mới cho người dùng hiện tại dựa trên bộ từ vựng đã chọn
+        // POST: api/learning-sessions/{vocaSetId} : Tạo một phiên học mới cho người dùng hiện tại dựa trên bộ từ vựng đã chọn
         [Authorize(Roles = "User")]
         [HttpPost("{vocaSetId}")]
         public async Task<IActionResult> CreateLearningSession(int vocaSetId)
@@ -59,7 +61,7 @@ namespace WordSoulApi.Controllers
             }
         }
 
-        // GET: api/LearningSession/{sessionId}/questions : Lấy danh sách câu hỏi cho phiên học cụ thể
+        // GET: api/learning-sessions/{sessionId}/questions : Lấy danh sách câu hỏi cho phiên học cụ thể
         [Authorize(Roles = "User")]
         [HttpGet("{sessionId}/questions")]
         public async Task<ActionResult<IEnumerable<QuizQuestionDto>>> GetSessionQuestions(int sessionId)
@@ -77,9 +79,9 @@ namespace WordSoulApi.Controllers
             }
         }
 
-        // POST: api/LearningSession/{sessionId}/answer : Gửi câu trả lời cho một câu hỏi trong phiên học
+        // POST: api/learning-sessions/{sessionId}/answers : Gửi câu trả lời cho một câu hỏi trong phiên học
         [Authorize(Roles = "User")]
-        [HttpPost("{sessionId}/answer")]
+        [HttpPost("{sessionId}/answers")]
         public async Task<ActionResult<SubmitAnswerResponseDto>> SubmitAnswer(int sessionId, [FromBody] SubmitAnswerRequestDto request)
         {
             // Lấy userId từ token
@@ -115,9 +117,9 @@ namespace WordSoulApi.Controllers
             }
         }
 
-        // POST: api/LearningSession/{sessionId}/update-progress/{vocabId} : Cập nhật tiến trình học tập của người dùng cho từ vựng cụ thể trong phiên học
+        // POST: api/learning-sessions/{sessionId}/progress/{vocabId} : Cập nhật tiến trình học tập của người dùng cho từ vựng cụ thể trong phiên học
         [Authorize(Roles = "User")]
-        [HttpPost("{sessionId}/update-progress/{vocabId}")]
+        [HttpPost("{sessionId}/progress/{vocabId}")]
         public async Task<ActionResult<UpdateProgressResponseDto>> UpdateProgress(int sessionId, int vocabId)
         {
             if (sessionId <= 0 || vocabId <= 0)
@@ -149,7 +151,7 @@ namespace WordSoulApi.Controllers
             }
         }
 
-        // POST: api/LearningSession/{sessionId}/complete : Hoàn thành phiên học và cập nhật trạng thái của tất cả từ vựng trong phiên học
+        // POST: api/learning-sessions/{sessionId}/complete : Hoàn thành phiên học và cập nhật trạng thái của tất cả từ vựng trong phiên học
         [Authorize(Roles = "User")]
         [HttpPost("{sessionId}/complete")]
         public async Task<ActionResult<CompleteSessionResponseDto>> CompleteSession(int sessionId)

@@ -71,8 +71,6 @@ namespace WordSoulApi.Services.Implementations
                 Id = quizQuestion.Id,
                 Prompt = quizQuestion.Prompt,
                 Options = quizQuestion.Options,
-                CorrectAnswer = quizQuestion.CorrectAnswer,
-                Explanation = quizQuestion.Explanation,
                 QuestionType = quizQuestion.QuestionType,
                 VocabularyId = quizQuestion.VocabularyId,
             };
@@ -231,7 +229,6 @@ namespace WordSoulApi.Services.Implementations
                 Prompt = q.Prompt,
                 QuestionType = q.QuestionType,
                 Options = q.Options,
-                CorrectAnswer = q.CorrectAnswer,
                 VocabularyId = q.VocabularyId
             })
             .GroupBy(q => q.QuestionType)

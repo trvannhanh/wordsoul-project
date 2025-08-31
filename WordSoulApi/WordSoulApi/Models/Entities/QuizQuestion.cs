@@ -20,8 +20,6 @@
     public enum QuestionType
     {
         MultipleChoice, // e.g., "multiple-choice"
-        TrueFalse, // e.g., "true/false"
         FillInTheBlank, // e.g., "fill-in-the-blank"
-        ShortAnswer // e.g., "short-answer"
     }
 }

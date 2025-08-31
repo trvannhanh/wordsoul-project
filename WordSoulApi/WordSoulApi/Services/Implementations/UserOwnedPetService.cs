@@ -11,20 +11,22 @@ namespace WordSoulApi.Services.Implementations
         private readonly ILearningSessionRepository _learningSessionRepository;
         private readonly ISetRewardPetRepository _setRewardPetRepository;
         private readonly IUserOwnedPetRepository _userOwnedPetRepository;
+        private readonly IUserVocabularySetRepository _userVocabularySetRepository;
         private readonly IUserRepository _userRepository;
-        public UserOwnedPetService(ILearningSessionRepository learningSessionRepository, ISetRewardPetRepository setRewardPetRepository, IUserOwnedPetRepository userOwnedPetRepository, IUserRepository userRepository)
+        public UserOwnedPetService(ILearningSessionRepository learningSessionRepository, ISetRewardPetRepository setRewardPetRepository, IUserOwnedPetRepository userOwnedPetRepository, IUserRepository userRepository, IUserVocabularySetRepository userVocabularySetRepository)
         {
             _learningSessionRepository = learningSessionRepository;
             _setRewardPetRepository = setRewardPetRepository;
             _userOwnedPetRepository = userOwnedPetRepository;
             _userRepository = userRepository;
+            _userVocabularySetRepository = userVocabularySetRepository;
         }
 
         // Thử cấp pet khi người dùng hoàn thành milestone
         public async Task<(int grantedPet, bool alreadyOwned, int bonusXp)> TryGrantPetByMilestoneAsync(int userId, int vocabularySetId)
         {
             // Kiểm tra số session đã hoàn thành
-            int completedSessions = await _learningSessionRepository.CountCompletedLearningSessionAsync(userId, vocabularySetId);
+            int completedSessions = await _userVocabularySetRepository.GetCompletedLearningSessionAsync(userId, vocabularySetId);
 
             // Mỗi 5 session hoàn thành sẽ có cơ hội nhận pet
             if (completedSessions % 5 != 0)

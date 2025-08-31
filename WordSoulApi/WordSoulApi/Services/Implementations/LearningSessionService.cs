@@ -99,6 +99,9 @@ namespace WordSoulApi.Services.Implementations
             session.EndTime = DateTime.UtcNow;
             await _sessionRepo.UpdateLearningSessionAsync(session);
 
+            // Cập nhật số session đã hoàn thành trong UserVocabularySet
+            await _userVocabularySetRepository.UpdateCompletedLearningSessionAsync(userId, session.VocabularySetId, 1);
+
             int xpEarned = 10; // giá trị có thể cấu hình
             // Cộng XP cho người dùng
             var user = await _userRepository.GetUserByIdAsync(userId);
