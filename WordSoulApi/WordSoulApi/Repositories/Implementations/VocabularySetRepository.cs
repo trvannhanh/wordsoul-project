@@ -19,8 +19,6 @@ namespace WordSoulApi.Repositories.Implementations
         {
             return await _context.VocabularySets
                 .AsNoTracking()
-                .Include(vs => vs.SetVocabularies)
-                .ThenInclude(sv => sv.Vocabulary)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -34,6 +32,41 @@ namespace WordSoulApi.Repositories.Implementations
                 .Include(vs => vs.SetVocabularies)
                 .ThenInclude(sv => sv.Vocabulary)
                 .FirstOrDefaultAsync(vs => vs.Id == id);
+        }
+
+        // Lấy bộ từ vựng theo ID kèm chi tiết các từ vựng bên trong với phân trang
+        public async Task<VocabularySet?> GetVocabularySetFullDetailsAsync(int id, int page, int pageSize)
+        {
+            return await _context.VocabularySets
+                .AsNoTracking()
+                .Include(vs => vs.SetVocabularies) // Include SetVocabularies at the root level
+                .ThenInclude(sv => sv.Vocabulary)  // Then include the related Vocabulary
+                .Where(vs => vs.Id == id)
+                .Select(vs => new VocabularySet
+                {
+                    Id = vs.Id,
+                    Title = vs.Title,
+                    Theme = vs.Theme,
+                    ImageUrl = vs.ImageUrl,
+                    Description = vs.Description,
+                    DifficultyLevel = vs.DifficultyLevel,
+                    IsActive = vs.IsActive,
+                    CreatedAt = vs.CreatedAt,
+                    SetVocabularies = vs.SetVocabularies
+                        .OrderBy(sv => sv.VocabularyId) // Consistent ordering
+                        .Skip((page - 1) * pageSize)
+                        .Take(pageSize)
+                        .ToList()
+                })
+                .FirstOrDefaultAsync();
+        }
+
+        // Đếm tổng từ vựng trong bộ
+        public async Task<int> CountVocabulariesInSetAsync(int vocabularySetId)
+        {
+            return await _context.SetVocabularies
+                .AsNoTracking()
+                .CountAsync(sv => sv.VocabularySetId == vocabularySetId);
         }
 
         // Tạo bộ từ vựng mới

@@ -5,6 +5,7 @@
         public int Id { get; set; }
         public string Word { get; set; }
         public string Meaning { get; set; }
+        public string? Pronunciation { get; set; } // e.g., "/wɜːrd/"
         public PartOfSpeech PartOfSpeech { get; set; }
         public CEFRLevel CEFRLevel { get; set; } // Common European Framework of Reference for Languages level
         public string Description { get; set; } // e.g., "A word used to describe something", "An action or state of being"

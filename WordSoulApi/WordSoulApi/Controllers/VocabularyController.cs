@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WordSoulApi.Models.DTOs.Vocabulary;
@@ -6,8 +7,9 @@ using WordSoulApi.Services.Interfaces;
 
 namespace WordSoulApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/vocabularies")]
     [ApiController]
+    [EnableCors("AllowLocalhost")]
     public class VocabularyController : ControllerBase
     {
         private readonly IVocabularyService _vocabularyService;
@@ -16,7 +18,7 @@ namespace WordSoulApi.Controllers
             _vocabularyService = vocabularyService;
         }
 
-        // GET: api/Vocabulary : Lấy tất cả từ vựng
+        // GET: api/vocabularies : Lấy tất cả từ vựng
         [Authorize(Roles = "Admin,User")]
         [HttpGet]
         public async Task<IActionResult> GetAllVocabularies()
@@ -25,7 +27,7 @@ namespace WordSoulApi.Controllers
             return Ok(vocabularies);
         }
 
-        // GET: api/Vocabulary/{id} : Lấy từ vựng theo ID
+        // GET: api/vocabularies/{id} : Lấy từ vựng theo ID
         [Authorize(Roles = "Admin,User")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetVocabularyById(int id)
@@ -35,7 +37,7 @@ namespace WordSoulApi.Controllers
             return Ok(vocabulary);
         }
 
-        // POST: api/Vocabulary : Tạo từ vựng mới
+        // POST: api/vocabularies : Tạo từ vựng mới
         [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> CreateVocabulary(VocabularyDto vocabularyDto)
@@ -44,7 +46,7 @@ namespace WordSoulApi.Controllers
             return CreatedAtAction(nameof(GetVocabularyById), new { id = createdVocabulary.Id }, createdVocabulary);
         }
 
-        // PUT: api/Vocabulary/{id} : Cập nhật từ vựng theo ID
+        // PUT: api/vocabularies/{id} : Cập nhật từ vựng theo ID
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateVocabulary(int id, VocabularyDto vocabularyDto)
@@ -54,7 +56,7 @@ namespace WordSoulApi.Controllers
             return Ok(updatedVocabulary);
         }
 
-        // DELETE: api/Vocabulary/{id} : Xóa từ vựng theo ID
+        // DELETE: api/vocabularies/{id} : Xóa từ vựng theo ID
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteVocabulary(int id)
@@ -64,7 +66,7 @@ namespace WordSoulApi.Controllers
             return NoContent();
         }
 
-        // POST: api/Vocabulary/search : Tìm kiếm từ vựng theo danh sách từ
+        // POST: api/vocabularies/search : Tìm kiếm từ vựng theo danh sách từ
         [Authorize(Roles = "Admin,User")]
         [HttpPost("search")]
         public async Task<IActionResult> SearchVocabularies(SearchVocabularyDto searchDto)

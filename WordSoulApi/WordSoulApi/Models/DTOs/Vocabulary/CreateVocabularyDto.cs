@@ -10,6 +10,8 @@ namespace WordSoulApi.Models.DTOs.Vocabulary
 
         [Required(ErrorMessage = "Meaning is required")]
         public required string Meaning { get; set; }
+        public string? Pronunciation { get; set; } // e.g., "/wɜːrd/"
+
         [Required(ErrorMessage = "Part of speech is required")]
         public PartOfSpeech PartOfSpeech { get; set; }
         public CEFRLevel CEFRLevel { get; set; } // Common European Framework of Reference for Languages level

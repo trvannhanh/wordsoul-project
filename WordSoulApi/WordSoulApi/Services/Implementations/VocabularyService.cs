@@ -6,7 +6,7 @@ using WordSoulApi.Services.Interfaces;
 namespace WordSoulApi.Services.Implementations
 {
     public class VocabularyService : IVocabularyService
-    {
+    {   
         private readonly IVocabularyRepository _vocabularyRepository;
 
         public VocabularyService(IVocabularyRepository vocabularyRepository)
@@ -64,6 +64,7 @@ namespace WordSoulApi.Services.Implementations
             {
                 Word = vocabularyDto.Word,
                 Meaning = vocabularyDto.Meaning,
+                Pronunciation = vocabularyDto.Pronunciation,
                 PartOfSpeech = vocabularyDto.PartOfSpeech,
                 CEFRLevel = vocabularyDto.CEFRLevel,
                 Description = vocabularyDto.Description,
@@ -78,6 +79,7 @@ namespace WordSoulApi.Services.Implementations
                 Id = createdVocabulary.Id,
                 Word = createdVocabulary.Word,
                 Meaning = createdVocabulary.Meaning,
+                Pronunciation = createdVocabulary.Pronunciation,
                 PartOfSpeech = createdVocabulary.PartOfSpeech,
                 CEFRLevel = createdVocabulary.CEFRLevel,
                 Description = createdVocabulary.Description,
@@ -98,6 +100,7 @@ namespace WordSoulApi.Services.Implementations
 
             existingVocabulary.Word = vocabularyDto.Word;
             existingVocabulary.Meaning = vocabularyDto.Meaning;
+            existingVocabulary.Pronunciation = vocabularyDto.Pronunciation;
             existingVocabulary.PartOfSpeech = vocabularyDto.PartOfSpeech;
             existingVocabulary.CEFRLevel = vocabularyDto.CEFRLevel;
             existingVocabulary.Description = vocabularyDto.Description;
@@ -111,6 +114,7 @@ namespace WordSoulApi.Services.Implementations
                 Id = updatedVocabulary.Id,
                 Word = updatedVocabulary.Word,
                 Meaning = updatedVocabulary.Meaning,
+                Pronunciation = updatedVocabulary.Pronunciation,
                 PartOfSpeech = updatedVocabulary.PartOfSpeech,
                 CEFRLevel = updatedVocabulary.CEFRLevel,
                 Description = updatedVocabulary.Description,

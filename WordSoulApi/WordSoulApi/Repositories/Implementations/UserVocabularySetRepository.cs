@@ -29,5 +29,35 @@ namespace WordSoulApi.Repositories.Implementations
             _context.UserVocabularySets.Add(userVocabularySet);
             await _context.SaveChangesAsync();
         }
+
+        // Đếm số session đã hoàn thành cho một người dùng trong một bộ từ vựng
+        public async Task<int> GetCompletedLearningSessionAsync(int userId, int vocabularySetId)
+        {
+            // 1. Lấy số session đã hoàn thành từ bảng UserVocabularySets
+            var userVocabSet = await _context.UserVocabularySets
+                .AsNoTracking()
+                .Where(uvs => uvs.UserId == userId && uvs.VocabularySetId == vocabularySetId)
+                .Select(uvs => uvs.totalCompletedSession)
+                .FirstOrDefaultAsync();
+
+            return userVocabSet;
+        }
+
+        // Cập nhật số session đã hoàn thành cho một người dùng trong một bộ từ vựng
+        public async Task UpdateCompletedLearningSessionAsync(int userId, int vocabularySetId, int increment = 1)
+        {
+            var userVocabSet = await _context.UserVocabularySets
+                .FirstOrDefaultAsync(uvs => uvs.UserId == userId && uvs.VocabularySetId == vocabularySetId);
+            if (userVocabSet != null)
+            {
+                userVocabSet.totalCompletedSession += increment;
+                _context.UserVocabularySets.Update(userVocabSet);
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                throw new InvalidOperationException("User does not own this vocabulary set.");
+            }
+        }
     }
 }
