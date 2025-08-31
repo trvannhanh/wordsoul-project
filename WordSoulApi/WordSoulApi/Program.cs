@@ -1,3 +1,4 @@
+﻿using CloudinaryDotNet;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -24,6 +25,19 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<WordSoulDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
+// Thêm dịch vụ CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocalhost", builder =>
+    {
+        builder.WithOrigins("http://localhost:5173", "http://localhost:3000")
+               .AllowAnyMethod()
+               .AllowAnyHeader()
+               .AllowCredentials();
+    });
+});
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -74,7 +88,21 @@ builder.Services.AddScoped<IUserOwnedPetService, UserOwnedPetService>();
 // User Vocabulary Set
 builder.Services.AddScoped<IUserVocabularySetRepository, UserVocabularySetRepository>();
 builder.Services.AddScoped<IUserVocabularySetService, UserVocabularySetService>();
+// Upload Assests
+builder.Services.AddScoped<IUploadAssetsService, UploadAssetsService>();
 
+
+// Configure Cloudinary
+builder.Services.AddSingleton<Cloudinary>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var cloudinarySettings = configuration.GetSection("Cloudinary");
+    var account = new Account(
+        cloudinarySettings["CloudName"],
+        cloudinarySettings["ApiKey"],
+        cloudinarySettings["ApiSecret"]);
+    return new Cloudinary(account);
+});
 
 
 var app = builder.Build();
@@ -86,6 +114,9 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
     app.MapOpenApi();
 }
+
+// Sử dụng CORS trước các middleware khác
+app.UseCors("AllowLocalhost");
 
 app.UseHttpsRedirection();
 

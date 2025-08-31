@@ -77,8 +77,6 @@ namespace WordSoulApi.Services.Implementations
             {
                 VocabularyId = vocabId,
                 ProficiencyLevel = progress.ProficiencyLevel,
-                LastUpdated = progress.LastUpdated,
-                NextReviewTime = progress.NextReviewTime
             };
         }
     }

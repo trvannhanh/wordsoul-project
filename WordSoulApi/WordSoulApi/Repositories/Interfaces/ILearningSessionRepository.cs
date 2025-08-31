@@ -6,8 +6,6 @@ namespace WordSoulApi.Repositories.Interfaces
     {
         Task<bool> CheckUserLearningSessionExist(int userId, int sessionId);
 
-        // Đếm số session đã hoàn thành cho một người dùng trong một bộ từ vựng
-        Task<int> CountCompletedLearningSessionAsync(int userId, int vocabularySetId);
         // Tạo một LearningSession mới
         Task<LearningSession> CreateLearningSessionAsync(LearningSession learningSession);
         Task<LearningSession?> GetLearningSessionByIdAsync(int sessionId);

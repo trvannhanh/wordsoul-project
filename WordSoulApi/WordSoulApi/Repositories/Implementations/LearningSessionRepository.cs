@@ -36,17 +36,7 @@ namespace WordSoulApi.Repositories.Implementations
                 .FirstOrDefaultAsync(ls => ls.Id == sessionId);
         }
 
-        // Đếm số session đã hoàn thành cho một người dùng trong một bộ từ vựng
-        public async Task<int> CountCompletedLearningSessionAsync(int userId, int vocabularySetId)
-        {
-            // 1. Đếm số session đã hoàn thành
-            int completedSessions = await _context.LearningSessions
-                .CountAsync(ls => ls.UserId == userId
-                               && ls.VocabularySetId == vocabularySetId
-                               && ls.IsCompleted);
-
-            return completedSessions;
-        }
+        
 
         // Kiểm tra LearningSession thuộc về User
         public async Task<bool> CheckUserLearningSessionExist(int userId, int sessionId)

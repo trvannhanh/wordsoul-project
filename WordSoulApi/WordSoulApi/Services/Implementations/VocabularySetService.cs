@@ -38,7 +38,7 @@ namespace WordSoulApi.Services.Implementations
         }
 
         // Lấy bộ từ vựng theo ID
-        public async Task<VocabularySetDto?> GetVocabularySetByIdAsync(int id)
+        public async Task<VocabularySetDetailDto?> GetVocabularySetByIdAsync(int id)
         {
             _logger.LogInformation("Retrieving vocabulary set with ID: {Id}", id);
             var vocabularySet = await _vocabularySetRepository.GetVocabularySetByIdAsync(id);
@@ -48,14 +48,28 @@ namespace WordSoulApi.Services.Implementations
                 return null;
             }
 
-            return MapToDto(vocabularySet);
+            return MapToDetailDto(vocabularySet);
+        }
+
+        // Lấy bộ từ vựng theo ID kèm chi tiết các từ vựng bên trong với phân trang
+        public async Task<VocabularySetFullDetailDto?> GetVocabularySetFullDetailsAsync(int id, int page, int pageSize)
+        {
+            _logger.LogInformation("Retrieving full details for vocabulary set with ID: {Id}, Page: {Page}, PageSize: {PageSize}", id, page, pageSize);
+            var vocabularySet = await _vocabularySetRepository.GetVocabularySetFullDetailsAsync(id, page, pageSize); // Use the detailed repository method
+            if (vocabularySet == null)
+            {
+                _logger.LogWarning("Vocabulary set with ID: {Id} not found", id);
+                return null;
+            }
+
+            return MapToFullDetailDto(vocabularySet, page, pageSize); // Maps to VocabularySetFullDetailDto with full vocabularies
         }
 
         // Tạo bộ từ vựng mới
-        public async Task<VocabularySetDto> CreateVocabularySetAsync(CreateVocabularySetDto createDto)
+        public async Task<VocabularySetDto> CreateVocabularySetAsync(CreateVocabularySetDto createDto, string? imageUrl)
         {
             _logger.LogInformation("Creating vocabulary set with title: {Title}", createDto.Title);
-
+                
             if (string.IsNullOrWhiteSpace(createDto.Title))
             {
                 _logger.LogError("Title is required for creating a vocabulary set");
@@ -77,6 +91,7 @@ namespace WordSoulApi.Services.Implementations
             {
                 Title = createDto.Title,
                 Theme = createDto.Theme,
+                ImageUrl = imageUrl,
                 Description = createDto.Description,
                 DifficultyLevel = createDto.DifficultyLevel,
                 IsActive = createDto.IsActive,
@@ -168,7 +183,23 @@ namespace WordSoulApi.Services.Implementations
             {
                 Id = vocabularySet.Id,
                 Title = vocabularySet.Title,
+                Theme = vocabularySet.Theme.ToString(),
+                ImageUrl = vocabularySet.ImageUrl,
+                Description = vocabularySet.Description,
+                DifficultyLevel = vocabularySet.DifficultyLevel.ToString(),
+                IsActive = vocabularySet.IsActive,
+                CreatedAt = vocabularySet.CreatedAt,
+            };
+        }
+
+        private VocabularySetDetailDto MapToDetailDto(VocabularySet vocabularySet)
+        {
+            return new VocabularySetDetailDto
+            {
+                Id = vocabularySet.Id,
+                Title = vocabularySet.Title,
                 Theme = vocabularySet.Theme,
+                ImageUrl = vocabularySet.ImageUrl,
                 Description = vocabularySet.Description,
                 DifficultyLevel = vocabularySet.DifficultyLevel,
                 IsActive = vocabularySet.IsActive,
@@ -177,20 +208,56 @@ namespace WordSoulApi.Services.Implementations
             };
         }
 
+        private VocabularySetFullDetailDto MapToFullDetailDto(VocabularySet vocabularySet, int page, int pageSize)
+        {
+            var totalVocabularies = _vocabularySetRepository.CountVocabulariesInSetAsync(vocabularySet.Id).Result; // Count total for pagination metadata
+            return new VocabularySetFullDetailDto
+            {
+                Id = vocabularySet.Id,
+                Title = vocabularySet.Title,
+                Theme = vocabularySet.Theme.ToString(),
+                ImageUrl = vocabularySet.ImageUrl,
+                Description = vocabularySet.Description,
+                DifficultyLevel = vocabularySet.DifficultyLevel.ToString(),
+                IsActive = vocabularySet.IsActive,
+                CreatedAt = vocabularySet.CreatedAt,
+                Vocabularies = vocabularySet.SetVocabularies.Select(sv => new VocabularyDetailDto
+                {
+                    Id = sv.VocabularyId,
+                    Word = sv.Vocabulary.Word,
+                    Meaning = sv.Vocabulary.Meaning,
+                    ImageUrl = sv.Vocabulary.ImageUrl,
+                    Pronunciation = sv.Vocabulary.Pronunciation,
+                    PartOfSpeech = sv.Vocabulary.PartOfSpeech.ToString()
+                }).ToList(),
+                TotalVocabularies = totalVocabularies,
+                CurrentPage = page,
+                PageSize = pageSize
+            };
+        }
+
         // Tìm kiếm bộ từ vựng với các tiêu chí khác nhau và phân trang
         public async Task<IEnumerable<VocabularySetDto>> SearchVocabularySetAsync(string? title, VocabularySetTheme? theme, VocabularyDifficultyLevel? difficulty,
                                                                         DateTime? createdAfter, int pageNumber, int pageSize)
         {
             var sets = await _vocabularySetRepository.SearchVocabularySetAsync(title, theme, difficulty, createdAfter, pageNumber, pageSize);
-
-            return sets.Select(vs => new VocabularySetDto
+            var vocabularySetDtos = new List<VocabularySetDto>();
+            foreach (var vocabularySet in sets)
             {
-                Id = vs.Id,
-                Title = vs.Title,
-                Theme = vs.Theme,
-                DifficultyLevel = vs.DifficultyLevel,
-                CreatedAt = vs.CreatedAt
-            });
+                vocabularySetDtos.Add(MapToDto(vocabularySet));
+            }
+
+            return vocabularySetDtos;
+
+
+            //return sets.Select(vs => new VocabularySetDto
+            //{
+            //    Id = vs.Id,
+            //    Title = vs.Title,
+            //    Theme = vs.Theme.ToString(),
+            //    DifficultyLevel = vs.DifficultyLevel.ToString(),
+            //    CreatedAt = vs.CreatedAt
+            //});
         }
 
     }

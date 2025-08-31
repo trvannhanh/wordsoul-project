@@ -1,0 +1,51 @@
+/* Import Google Font trước */
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=VT323&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Press+Start+2P&display=swap');
+
+/* Sau đó mới đến Tailwind */
+@import "tailwindcss";
+
+@font-face {
+  font-family: "PixelFont";
+  src: url("./src/assets/font/font-pixel.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@theme {
+  --font-pixel: "PixelFont", sans-serif;
+}
+
+/* Khai báo theme (font) */
+@theme {
+  --font-press: "Press Start 2P", system-ui, sans-serif;
+}
+
+@theme {
+  --font-vt323: "VT323", monospace;
+}
+
+@theme {
+  --font-noto: 'Noto Sans', system-ui, sans-serif;
+}
+
+/* Custom class */
+.custom-cursor {
+  cursor: url("./assets/cursor.png"), auto;
+}
+
+.background-color{
+  background-color: rgb(2, 6, 23);
+}
+
+@keyframes play {
+  from {
+    background-position-x: 0px;
+    background-position-y: 4%;
+  }
+  to {
+    background-position-x: -512px; /* 64px * 8 frames */
+    background-position-y: 4%;
+  }
+}

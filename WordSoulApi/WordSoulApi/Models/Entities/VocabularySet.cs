@@ -5,7 +5,8 @@
         public int Id { get; set; }
         public required string Title { get; set; } // e.g., "Daily Vocabulary", "Advanced English"
         public VocabularySetTheme Theme { get; set; }
-        public string? Description { get; set; } 
+        public string? Description { get; set; }
+        public string? ImageUrl { get; set; }
         public VocabularyDifficultyLevel DifficultyLevel { get; set; } 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow; 
         public bool IsActive { get; set; } = true;

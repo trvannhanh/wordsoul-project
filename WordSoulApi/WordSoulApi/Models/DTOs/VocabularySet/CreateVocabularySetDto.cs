@@ -7,6 +7,7 @@ namespace WordSoulApi.Models.DTOs.VocabularySet
     {
         [Required(ErrorMessage = "Title is required")]
         public required string Title { get; set; }
+        public IFormFile? ImageFile { get; set; }
         [Required(ErrorMessage = "Theme is required")]
         public VocabularySetTheme Theme { get; set; }
         public string? Description { get; set; }

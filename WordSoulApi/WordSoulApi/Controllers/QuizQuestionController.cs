@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WordSoulApi.Models.DTOs.QuizQuestion;
@@ -6,8 +7,9 @@ using WordSoulApi.Services.Interfaces;
 
 namespace WordSoulApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/quiz-questions")]
     [ApiController]
+    [EnableCors("AllowLocalhost")]
     public class QuizQuestionController : ControllerBase
     {
         private readonly IQuizQuestionService _quizQuestionService;
@@ -16,7 +18,7 @@ namespace WordSoulApi.Controllers
             _quizQuestionService = quizQuestionService;
         }
 
-        // GET : api/QuizQuestion : Lấy tất cả câu hỏi trắc nghiệm
+        // GET : api/quiz-questions : Lấy tất cả câu hỏi trắc nghiệm
         [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAllQuizQuestions()
@@ -25,7 +27,7 @@ namespace WordSoulApi.Controllers
             return Ok(quizQuestions);
         }
 
-        // GET : api/QuizQuestion/{id} : Lấy câu hỏi trắc nghiệm theo ID
+        // GET : api/quiz-questions/{id} : Lấy câu hỏi trắc nghiệm theo ID
         [Authorize(Roles = "Admin,User")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetQuizQuestionById(int id)
@@ -35,7 +37,7 @@ namespace WordSoulApi.Controllers
             return Ok(quizQuestion);
         }
 
-        // POST : api/QuizQuestion : Tạo câu hỏi trắc nghiệm mới
+        // POST : api/quiz-questions : Tạo câu hỏi trắc nghiệm mới
         [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> CreateQuizQuestion(CreateQuizQuestionDto quizQuestionDto)
@@ -45,7 +47,7 @@ namespace WordSoulApi.Controllers
             return CreatedAtAction(nameof(GetQuizQuestionById), new { id = createdQuizQuestion.Id }, createdQuizQuestion);
         }
 
-        // PUT : api/QuizQuestion/{id} : Cập nhật câu hỏi trắc nghiệm theo ID
+        // PUT : api/quiz-questions/{id} : Cập nhật câu hỏi trắc nghiệm theo ID
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateQuizQuestion(int id, AdminQuizQuestionDto quizQuestionDto)
@@ -56,7 +58,7 @@ namespace WordSoulApi.Controllers
             return Ok(updatedQuizQuestion);
         }
 
-        // DELETE : api/QuizQuestion/{id} : Xóa câu hỏi trắc nghiệm theo ID
+        // DELETE : api/quiz-questions/{id} : Xóa câu hỏi trắc nghiệm theo ID
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteQuizQuestion(int id)
