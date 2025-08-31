@@ -1,12 +1,15 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using WordSoulApi.Models.DTOs.User;
+using WordSoulApi.Services.Implementations;
 using WordSoulApi.Services.Interfaces;
 
 namespace WordSoulApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     [ApiController]
+    [EnableCors("AllowLocalhost")]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
@@ -15,7 +18,7 @@ namespace WordSoulApi.Controllers
             _authService = authService;
         }
 
-        // POST: api/Auth/register : Đăng ký người dùng mới
+        // POST: api/auth/register : Đăng ký người dùng mới
         [HttpPost("register")]
         public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
         {
@@ -35,7 +38,7 @@ namespace WordSoulApi.Controllers
             });
         }
 
-        // POST: api/Auth/login : Đăng nhập và nhận token
+        // POST: api/auth/login : Đăng nhập và nhận token
         [HttpPost("login")]
         public async Task<ActionResult<TokenResponseDto>> Login(LoginDto loginDto)
         {
@@ -47,7 +50,7 @@ namespace WordSoulApi.Controllers
             return Ok(result);
         }
 
-        // POST: api/Auth/refresh-token : Làm mới token
+        // POST: api/auth/refresh-token : Làm mới token
         [HttpPost("refresh-token")]
         public async Task<ActionResult<TokenResponseDto>> RefreshToken(RefreshTokenRequestDto refreshTokenRequestDto)
         {
@@ -58,12 +61,6 @@ namespace WordSoulApi.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "Admin")]
-        [HttpGet]
-        public IActionResult AuthenticationOnly()
-        {
-            return Ok("You are authenticated!");
-        }
 
 
 
