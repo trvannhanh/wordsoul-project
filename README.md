@@ -13,8 +13,11 @@
 
 <p align="center">
   <a href="#key-features">Tính năng chính</a> •
+  <a href="#-công-nghệ-sử-dụng">Công nghệ sử dụng</a> •
+  <a href="#-kiến-trúc--nguyên-tắc">Kiến trúc & Nguyên tắc</a> •
+  <a href="#-yêu-cầu-cài-đặt">Yêu cầu cài đặt</a> •
   <a href="#how-to-use">Cách chạy project</a> •
-  <a href="#credits">Credits</a> •
+  <a href="#credits">Credits</a>
 </p>
 
 ---
@@ -34,7 +37,20 @@
 
 - **Backend**: ASP.NET Core Web API, Entity Framework Core, SQL Server  
 - **Frontend**: React, Vite, TypeScript, TailwindCSS  
-- **Khác**: Cloudinary (lưu trữ hình ảnh), REST API, Modular Monolith architecture (Controller, Service, Repository, Interface)  
+- **Khác**: Cloudinary (lưu trữ hình ảnh), REST API
+
+---
+
+## 🔑 Kiến trúc & Nguyên tắc
+
+- Sử dụng **Dependency Injection (DI)** để tách biệt các thành phần, giảm sự phụ thuộc lẫn nhau và tăng khả năng mở rộng, kiểm thử.  
+- Tuân theo các nguyên tắc **SOLID** nhằm đảm bảo mã nguồn rõ ràng, dễ bảo trì:  
+  - **S**: Single Responsibility Principle – Mỗi lớp chỉ đảm nhận một trách nhiệm duy nhất.  
+  - **O**: Open/Closed Principle – Dễ mở rộng tính năng, hạn chế chỉnh sửa trực tiếp mã gốc.  
+  - **L**: Liskov Substitution Principle – Có thể thay thế đối tượng bằng lớp con mà không phá vỡ tính đúng đắn.  
+  - **I**: Interface Segregation Principle – Chia nhỏ interface, tránh tạo interface quá lớn.  
+  - **D**: Dependency Inversion Principle – Lớp cấp cao không phụ thuộc trực tiếp vào lớp cấp thấp, mà thông qua abstraction (interface).  
+- Thiết kế theo mô hình **Modular Monolith** với các tầng rõ ràng: Controller, Service, Repository.  
 
 ---
 
