@@ -14,9 +14,7 @@
 <p align="center">
   <a href="#key-features">Tính năng chính</a> •
   <a href="#how-to-use">Cách chạy project</a> •
-  <a href="#download">Download</a> •
   <a href="#credits">Credits</a> •
-  <a href="#license">License</a>
 </p>
 
 ---
