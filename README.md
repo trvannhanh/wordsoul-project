@@ -35,7 +35,7 @@
 
 ## 🛠 Công nghệ sử dụng
 
-- **Backend**: ASP.NET Core Web API, Entity Framework Core, SQL Server  
+- **Backend**: ASP.NET Core Web API, Entity Framework Core, SQL Server, JWT Authentication  
 - **Frontend**: React, Vite, TypeScript, TailwindCSS  
 - **Khác**: Cloudinary (lưu trữ hình ảnh), REST API
 
