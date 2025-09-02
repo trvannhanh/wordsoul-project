@@ -66,9 +66,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 // Pet 
 builder.Services.AddScoped<IPetService, PetService>();
 builder.Services.AddScoped<IPetRepository, PetRepository>();
-// Quiz Question
-builder.Services.AddScoped<IQuizQuestionService, QuizQuestionService>();
-builder.Services.AddScoped<IQuizQuestionRepository, QuizQuestionRepository>();
+
 // Vocabulary Set
 builder.Services.AddScoped<IVocabularySetService, VocabularySetService>();
 builder.Services.AddScoped<IVocabularySetRepository, VocabularySetRepository>();
