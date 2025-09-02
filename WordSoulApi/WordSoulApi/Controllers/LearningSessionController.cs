@@ -18,14 +18,12 @@ namespace WordSoulApi.Controllers
     public class LearningSessionController : ControllerBase
     {
         private readonly ILearningSessionService _learningSessionService;
-        private readonly IQuizQuestionService _quizService;
         private readonly IUserVocabularyProgressService _progressService;
         private readonly ILogger<LearningSessionController> _logger;
 
-        public LearningSessionController(ILearningSessionService learningSessionService, IQuizQuestionService quizService, IUserVocabularyProgressService progressService, ILogger<LearningSessionController> logger)
+        public LearningSessionController(ILearningSessionService learningSessionService, IUserVocabularyProgressService progressService, ILogger<LearningSessionController> logger)
         {
             _learningSessionService = learningSessionService;
-            _quizService = quizService;
             _progressService = progressService;
             _logger = logger;
         }
@@ -68,7 +66,7 @@ namespace WordSoulApi.Controllers
         {
             try
             {
-                var questions = await _quizService.GetSessionQuestionsAsync(sessionId);
+                var questions = await _learningSessionService.GetSessionQuestionsAsync(sessionId);
                 if (!questions.Any()) return NotFound(new { message = "No questions found for this session." });
                 return Ok(questions);
             }
@@ -92,7 +90,7 @@ namespace WordSoulApi.Controllers
             // Kiểm tra request hợp lệ
             try
             {
-                var result = await _quizService.SubmitAnswerAsync(userId, sessionId, request);
+                var result = await _learningSessionService.SubmitAnswerAsync(userId, sessionId, request);
                 return Ok(result);
             }
             catch (UnauthorizedAccessException ex)
@@ -102,7 +100,7 @@ namespace WordSoulApi.Controllers
             }
             catch (KeyNotFoundException ex)
             {
-                _logger.LogWarning(ex, "Question not found for user {UserId}, session {SessionId}, question {QuestionId}", userId, sessionId, request.QuestionId);
+                _logger.LogWarning(ex, "Question not found for user {UserId}, session {SessionId}, vocabulary {VocabularyId}", userId, sessionId, request.VocabularyId);
                 return NotFound(ex.Message);
             }
             catch (ArgumentException ex)
@@ -112,7 +110,7 @@ namespace WordSoulApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Internal server error for user {UserId}, session {SessionId}, question {QuestionId}", userId, sessionId, request.QuestionId);
+                _logger.LogError(ex, "Internal server error for user {UserId}, session {SessionId}, vocabulary {VocabularyId}", userId, sessionId, request.VocabularyId);
                 return StatusCode(500, "Internal server error");
             }
         }

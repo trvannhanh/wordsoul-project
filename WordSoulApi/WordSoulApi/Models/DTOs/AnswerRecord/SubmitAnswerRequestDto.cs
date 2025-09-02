@@ -1,8 +1,11 @@
-﻿namespace WordSoulApi.Models.DTOs.AnswerRecord
+﻿using WordSoulApi.Models.Entities;
+
+namespace WordSoulApi.Models.DTOs.AnswerRecord
 {
     public class SubmitAnswerRequestDto
     {
-        public int QuestionId { get; set; }
+        public int VocabularyId { get; set; }
+        public QuestionType QuestionType { get; set; }
         public string Answer { get; set; } = string.Empty;
     }
 
@@ -10,7 +13,6 @@
     {
         public bool IsCorrect { get; set; }
         public string CorrectAnswer { get; set; } = string.Empty;
-        public string? Explanation { get; set; }
         public int AttemptNumber { get; set; }
     }
 }

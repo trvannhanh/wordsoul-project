@@ -8,7 +8,6 @@ namespace WordSoulApi.Data
         public DbSet<User> Users { get; set; }
         public DbSet<VocabularySet> VocabularySets { get; set; }
         public DbSet<Vocabulary> Vocabularies { get; set; }
-        public DbSet<QuizQuestion> QuizQuestions { get; set; }
         public DbSet<AnswerRecord> AnswerRecords { get; set; }
         public DbSet<Pet> Pets { get; set; }
         public DbSet<LearningSession> LearningSessions { get; set; }
@@ -24,14 +23,14 @@ namespace WordSoulApi.Data
             base.OnModelCreating(modelBuilder);
             // Additional model configurations can go here
 
-            // Đảm bảo unique constraint trên (UserId, LearningSessionId, QuizQuestionId)
+            // Đảm bảo unique constraint trên (UserId, LearningSessionId, QuizQuestionId, QuestionType)
             modelBuilder.Entity<AnswerRecord>()
-                .HasIndex(ar => new { ar.UserId, ar.LearningSessionId, ar.QuizQuestionId })
+                .HasIndex(ar => new { ar.UserId, ar.LearningSessionId, ar.VocabularyId, ar.QuestionType })
                 .IsUnique();
 
             //Vocabulary 1 - N QuizQuestion relationship
             modelBuilder.Entity<Vocabulary>()
-                .HasMany(v => v.QuizQuestions)
+                .HasMany(v => v.AnswerRecords)
                 .WithOne(q => q.Vocabulary)
                 .HasForeignKey(q => q.VocabularyId)
                 .OnDelete(DeleteBehavior.Cascade); // Cascade delete if vocabulary is deleted
@@ -153,11 +152,11 @@ namespace WordSoulApi.Data
                 .HasForeignKey(ar => ar.UserId)
                 .OnDelete(DeleteBehavior.Cascade); // Cascade delete if user is deleted
 
-            modelBuilder.Entity<AnswerRecord>()
-                .HasOne(ar => ar.QuizQuestion)
-                .WithMany(q => q.AnswerRecords)
-                .HasForeignKey(ar => ar.QuizQuestionId)
-                .OnDelete(DeleteBehavior.Cascade); // Cascade delete if quiz question is deleted
+            //modelBuilder.Entity<AnswerRecord>()
+            //    .HasOne(ar => ar.QuizQuestion)
+            //    .WithMany(q => q.AnswerRecords)
+            //    .HasForeignKey(ar => ar.QuizQuestionId)
+            //    .OnDelete(DeleteBehavior.Cascade); // Cascade delete if quiz question is deleted
 
             //LearningSession 1 - N AnswerRecord relationship
             modelBuilder.Entity<LearningSession>()

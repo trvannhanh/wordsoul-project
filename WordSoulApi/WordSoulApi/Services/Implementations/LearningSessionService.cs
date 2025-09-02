@@ -1,7 +1,8 @@
 ﻿using System;
+using WordSoulApi.Models.DTOs.AnswerRecord;
 using WordSoulApi.Models.DTOs.LearningSession;
+using WordSoulApi.Models.DTOs.QuizQuestion;
 using WordSoulApi.Models.Entities;
-using WordSoulApi.Repositories.Implementations;
 using WordSoulApi.Repositories.Interfaces;
 using WordSoulApi.Services.Interfaces;
 namespace WordSoulApi.Services.Implementations
@@ -11,21 +12,21 @@ namespace WordSoulApi.Services.Implementations
         private readonly ILearningSessionRepository _sessionRepo;
         private readonly IVocabularyRepository _vocabRepo;
         private readonly IUserVocabularySetRepository _userVocabularySetRepository;
-        private readonly IQuizQuestionRepository _quizQuestionRepository;
         private readonly IUserRepository _userRepository;
         private readonly IUserOwnedPetService _userOwnedPetService;
+        private readonly IAnswerRecordRepository _answerRecordRepository;
         private readonly ILogger<LearningSessionService> _logger;
 
 
-        public LearningSessionService(ILearningSessionRepository sessionRepo, IVocabularyRepository vocabRepo, IUserVocabularySetRepository userVocabularySetRepository, ILogger<LearningSessionService> logger, IQuizQuestionRepository quizQuestionRepository, IUserRepository userRepository, IUserOwnedPetService userOwnedPetService)
+        public LearningSessionService(ILearningSessionRepository sessionRepo, IVocabularyRepository vocabRepo, IUserVocabularySetRepository userVocabularySetRepository, ILogger<LearningSessionService> logger, IUserRepository userRepository, IUserOwnedPetService userOwnedPetService, IAnswerRecordRepository answerRecordRepository)
         {
             _sessionRepo = sessionRepo;
             _vocabRepo = vocabRepo;
             _userVocabularySetRepository = userVocabularySetRepository;
             _logger = logger;
-            _quizQuestionRepository = quizQuestionRepository;
             _userRepository = userRepository;
             _userOwnedPetService = userOwnedPetService;
+            _answerRecordRepository = answerRecordRepository;
         }
 
         // Tạo một phiên học mới cho người dùng
@@ -89,7 +90,7 @@ namespace WordSoulApi.Services.Implementations
             foreach (var vocabId in vocabIds)
             {
                 // Kiểm tra xem tất cả câu hỏi liên quan đến từ vựng đã được trả lời đúng chưa
-                var allCorrect = await _quizQuestionRepository.CheckAllQuestionsCorrectAsync(userId, sessionId, vocabId);
+                var allCorrect = await _answerRecordRepository.CheckAllQuestionsCorrectAsync(userId, sessionId, vocabId);
                 if (!allCorrect)
                     throw new InvalidOperationException($"Not all questions for vocabulary {vocabId} are answered correctly");
             }
@@ -121,6 +122,144 @@ namespace WordSoulApi.Services.Implementations
                 IsPetRewardGranted = rewards.alreadyOwned,
                 PetId = rewards.grantedPet,
                 Message = rewards.alreadyOwned ? "Session completed! You earned XP and a new Pet!" : "Session completed! You earned XP!"
+            };
+        }
+
+        // Lấy danh sách câu hỏi quiz cho một phiên học cụ thể
+        public async Task<IEnumerable<QuizQuestionDto>> GetSessionQuestionsAsync(int sessionId)
+        {
+            // Lấy danh sách từ vựng của phiên học
+            var vocabularies = await _vocabRepo.GetVocabulariesBySessionIdAsync(sessionId);
+
+            // Nếu không có từ nào
+            if (!vocabularies.Any())
+                return new List<QuizQuestionDto>();
+
+            // Láy các từ cần học 
+            var allWords = vocabularies.Select(v => v.Word).ToList();
+            // Tạo câu hỏi mới
+            var questions = new List<QuizQuestionDto>();
+
+            // với mỗi từ
+            foreach (var vocab in vocabularies)
+            {
+                // Flashcard
+                questions.Add(new QuizQuestionDto
+                {
+                    VocabularyId = vocab.Id,
+                    Word = vocab.Word,
+                    Meaning = vocab.Meaning,
+                    Pronunciation = vocab.Pronunciation,
+                    ImageUrl = vocab.ImageUrl,
+                    Description = vocab.Description,
+                    QuestionType = QuestionType.Flashcard
+                });
+
+                // FillInBlank
+                questions.Add(new QuizQuestionDto
+                {
+                    VocabularyId = vocab.Id,
+                    Word = vocab.Word,
+                    Meaning = vocab.Meaning,
+                    QuestionType = QuestionType.FillInBlank
+                });
+
+                // MultipleChoice
+                var wrongOptions = allWords.Where(w => w != vocab.Word)
+                                           .OrderBy(x => Guid.NewGuid())
+                                           .Take(3)
+                                           .ToList();
+
+                var options = wrongOptions.Append(vocab.Word).OrderBy(x => Guid.NewGuid()).ToList();
+
+                questions.Add(new QuizQuestionDto
+                {
+                    VocabularyId = vocab.Id,
+                    Word = vocab.Word,
+                    Meaning = vocab.Meaning,
+                    QuestionType = QuestionType.MultipleChoice,
+                    Options = options
+                });
+
+                // Listening
+                questions.Add(new QuizQuestionDto
+                {
+                    VocabularyId = vocab.Id,
+                    Word = vocab.Word,
+                    PronunciationUrl = vocab.PronunciationUrl,
+                    QuestionType = QuestionType.Listening
+                });
+            }
+
+            return questions;
+        }
+
+        // Xử lý khi người dùng gửi câu trả lời cho một câu hỏi quiz trong một phiên học cụ thể
+        public async Task<SubmitAnswerResponseDto> SubmitAnswerAsync(int userId, int sessionId, SubmitAnswerRequestDto request)
+        {
+            if (request == null || request.VocabularyId <= 0 || string.IsNullOrWhiteSpace(request.Answer))
+                throw new ArgumentException("Invalid request data");
+
+            // Kiểm tra user có tham gia session này không
+            var userSessionExist = await _sessionRepo.CheckUserLearningSessionExist(userId, sessionId);
+            if (!userSessionExist)
+                throw new UnauthorizedAccessException("User does not have access to this session");
+
+            // Lấy từ vựng
+            var vocab = await _vocabRepo.GetVocabularyByIdAsync(request.VocabularyId);
+            if (vocab == null) throw new KeyNotFoundException("Vocabulary not found");
+
+            // Số lần attempt trước đó
+            var attemptCount = await _answerRecordRepository.GetAttemptCountAsync(userId, sessionId, request.VocabularyId, request.QuestionType);
+
+            // Kiểm tra đúng/sai
+            bool isCorrect = request.QuestionType switch
+            {
+                QuestionType.FillInBlank or QuestionType.Listening =>
+                    string.Equals(request.Answer.Trim(), vocab.Word.Trim(), StringComparison.OrdinalIgnoreCase),
+
+                QuestionType.MultipleChoice =>
+                    request.Answer.Trim() == vocab.Word,
+
+                QuestionType.Flashcard =>
+                    true, // Flashcard luôn đúng
+
+                _ => false
+            };
+
+            var existingAnswerRecord = await _answerRecordRepository.GetAnswerRecordFromSession(sessionId, vocab.Id, userId,  request.QuestionType);
+            if(existingAnswerRecord == null)
+            {
+                // Tạo bản ghi
+                var record = new AnswerRecord
+                {
+                    UserId = userId,
+                    LearningSessionId = sessionId,
+                    VocabularyId = vocab.Id,
+                    QuestionType = request.QuestionType,
+                    Answer = request.Answer,
+                    AttemptCount = attemptCount + 1,
+                    IsCorrect = isCorrect,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _answerRecordRepository.CreateAnswerRecordAsync(record);
+            }
+            else
+            {
+                existingAnswerRecord.Answer = request.Answer;
+                existingAnswerRecord.AttemptCount = attemptCount + 1;
+                existingAnswerRecord.IsCorrect = isCorrect;
+                existingAnswerRecord.CreatedAt = DateTime.UtcNow;
+
+                await _answerRecordRepository.UpdateAnswerRecordAsync(existingAnswerRecord);
+            }
+
+            return new SubmitAnswerResponseDto
+            {
+                IsCorrect = isCorrect,
+                CorrectAnswer = vocab.Word,
+                AttemptNumber = attemptCount + 1
             };
         }
 
