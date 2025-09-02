@@ -12,7 +12,7 @@
 </h4>
 
 <p align="center">
-  <a href="#key-features">Tính năng chính</a> •
+  <a href="#tính-năng-chính">Tính năng chính</a> •
   <a href="#-công-nghệ-sử-dụng">Công nghệ sử dụng</a> •
   <a href="#-kiến-trúc--nguyên-tắc">Kiến trúc & Nguyên tắc</a> •
   <a href="#-yêu-cầu-cài-đặt">Yêu cầu cài đặt</a> •
@@ -22,7 +22,7 @@
 
 ---
 
-## Key Features
+## Tính năng chính
 
 - 📚 Học Từ Vựng: luyện tập từ mới theo từng chủ đề.
 - 🔄 Ôn tập: hệ thống nhắc lại để ghi nhớ lâu dài.
