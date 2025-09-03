@@ -1,70 +1,90 @@
 import { useEffect, useState } from "react";
-import SpriteCharacter from "../../components/SpriteCharacter";
-import { answerQuiz, completeSession, fetchQuizOfSession, updateProgress } from "../../services/learningSession";
-import type { QuizQuestion } from "../../types/Dto";
 import { useParams } from "react-router-dom";
-
-
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  answerQuiz,
+  completeSession,
+  fetchQuizOfSession,
+  updateProgress,
+} from "../../services/learningSession";
+import { QuestionType, type QuizQuestion } from "../../types/Dto";
 
 export default function LearningSession() {
   const { id } = useParams<{ id: string }>();
   const sessionId = Number(id);
+
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [retryQueue, setRetryQueue] = useState<QuizQuestion[]>([]);
-  const [remainingByVocab, setRemainingByVocab] = useState<Map<number, number>>(new Map());
+  const [remainingByVocab, setRemainingByVocab] = useState<Map<number, number>>(
+    new Map()
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load all questions when component mounts
+  // Load questions
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
         const data = await fetchQuizOfSession(sessionId);
         setQuestions(data);
+
         const map = new Map<number, number>();
-        data.forEach(q => map.set(q.vocabId, (map.get(q.vocabId) || 0) + 1));
+        data.forEach((q) =>
+          map.set(q.vocabularyId, (map.get(q.vocabularyId) || 0) + 1)
+        );
         setRemainingByVocab(map);
+
         setLoading(false);
-      } catch (error) {
-        setError('Failed to load quiz questions');
+      } catch {
+        setError("Failed to load quiz questions");
         setLoading(false);
-        console.error('Error fetching quiz questions:', error);
       }
     };
     fetchData();
   }, [sessionId]);
 
   async function handleAnswer(question: QuizQuestion, answer: string) {
-  const data = await answerQuiz(sessionId, { questionId: question.id, answer });
+    const res = await answerQuiz(sessionId, {
+      vocabularyId: question.vocabularyId,
+      questionType: question.questionType,
+      answer,
+    });
 
-  if (data.isCorrect) {
-    const newMap = new Map(remainingByVocab);
-    newMap.set(question.vocabId, (newMap.get(question.vocabId) || 1) - 1);
-    setRemainingByVocab(newMap);
+    if (res.isCorrect) {
+      const newMap = new Map(remainingByVocab);
+      newMap.set(
+        question.vocabularyId,
+        (newMap.get(question.vocabularyId) || 1) - 1
+      );
+      setRemainingByVocab(newMap);
 
-    if ((newMap.get(question.vocabId) || 0) === 0) {
-      await updateProgress(sessionId, question.vocabId);
-      console.log(`Vocab ${question.vocabId} hoàn thành!`);
+      if ((newMap.get(question.vocabularyId) || 0) === 0) {
+        await updateProgress(sessionId, question.vocabularyId);
+      }
+    } else {
+      setRetryQueue((prev) => [...prev, question]);
     }
-  } else {
-    setRetryQueue(prev => [...prev, question]); // không mutate
+
+    setCurrentIndex((prev) => prev + 1);
   }
 
-  setCurrentIndex(prev => prev + 1);
-}
+  const currentQuestion =
+    currentIndex < questions.length
+      ? questions[currentIndex]
+      : retryQueue.length > 0
+      ? retryQueue[0]
+      : null;
 
-const currentQuestion =
-  currentIndex < questions.length ? questions[currentIndex] : retryQueue[0];
-
-useEffect(() => {
-  if (!currentQuestion && questions.length > 0) {
-    const unfinished = Array.from(remainingByVocab.values()).some(v => v > 0);
-    if (!unfinished) handleCompleteSession();
-  }
-}, [currentQuestion]);
-
+  useEffect(() => {
+    if (!currentQuestion && questions.length > 0) {
+      const unfinished = Array.from(remainingByVocab.values()).some(
+        (v) => v > 0
+      );
+      if (!unfinished) handleCompleteSession();
+    }
+  }, [currentQuestion]);
 
   async function handleCompleteSession() {
     const data = await completeSession(sessionId);
@@ -76,54 +96,216 @@ useEffect(() => {
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
 
-  return (
-    <>
-      <div className="h-screen">
-        {/* Bên trên */}
-        <div className="relative w-full min-h-[15rem] max-h-[50rem] h-2/5 flex items-center justify-center top-[3.25rem]">
-          {/* Layer 1 (dưới cùng) */}
-          <div className="absolute w-full inset-0 bg-[url('./src/assets/background_layer_1.png')] bg-contain bg-center  z-0"></div>
-          {/* Layer 2 (giữa) */}
-          <div className="absolute w-full inset-0 bg-[url('./src/assets/background_layer_2.png')] bg-contain bg-center  z-10"></div>
-          {/* Layer 3 (trên cùng) */}
-          <div className="absolute w-full inset-0 bg-[url('./src/assets/background_layer_3.png')] bg-contain bg-center  z-20"></div>
-
-          {/* Nội dung trên cùng */}
-          <div className="relative z-30 text-white text-4xl font-pixel">
-            <p>{currentQuestion.prompt}</p>
-
+  // Render theo loại câu hỏi
+  const renderQuestion = (q: QuizQuestion) => {
+    switch (q.questionType) {
+      case QuestionType.Flashcard:
+        return (
+          <div className="bg-black h-15/16 w-15/16 border-4 border-black flex items-center justify-center">
+            <button
+              onClick={() => handleAnswer(q, "viewed")}
+              className="bg-emerald-600 w-4/12 h-5/12 border-2 border-white rounded-2xl font-pixel custom-cursor"
+            >
+              Đã Xem
+            </button>
           </div>
+        );
+      case QuestionType.FillInBlank:
+        return (
+          <div className="bg-black h-15/16 w-15/16 border-4 border-black flex items-center justify-center">
+            <input
+              type="text"
+              className="border p-2 rounded bg-white w-1/2"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleAnswer(q, (e.target as HTMLInputElement).value);
+                  (e.target as HTMLInputElement).value = "";
+                }
+              }}
+            />
+          </div>
+        );
+      case QuestionType.MultipleChoice:
+        return (
+          <div className="bg-black h-15/16 w-15/16 border-4 border-black flex items-center justify-center">
+            <div className="grid grid-cols-2 items-center h-full gap-y-2 gap-x-30">
+              {q.options?.map((opt) => (
+                <button
+                  key={opt}
+                  onClick={() => handleAnswer(q, opt)}
+                  className="bg-emerald-600 w-40 h-20 border-2 border-white rounded-2xl font-pixel custom-cursor"
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      case QuestionType.Listening:
+        return (
+          <div className="bg-black h-15/16 w-15/16 border-4 border-black flex items-center justify-center">
+            <input
+              type="text"
+              className="border p-2 rounded bg-white w-1/2"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleAnswer(q, (e.target as HTMLInputElement).value);
+                  (e.target as HTMLInputElement).value = "";
+                }
+              }}
+            />
+          </div>
+        );
+      default:
+        return <div>Unknown question type</div>;
+    }
+  };
 
+  // Render top screen content based on question type
+  const renderTopScreen = (q: QuizQuestion) => {
+    switch (q.questionType) {
+      case QuestionType.Flashcard:
+        return (
+          <div className="bg-black h-15/16 w-15/16 border-4 border-black flex items-center justify-center text-white font-pixel">
+            <div className="flex items-start justify-evenly gap-2">
+              <div className="flex-col w-1/3">
+                <h2 className="text-4xl">{q.word}</h2>
+                <p className="text-s">{q.pronunciation || "N/A"}</p>
+                <p className="text-s">{q.partOfSpeech || "N/A"}</p>
+                <p className="text-s">{q.cefrLevel || "N/A"}</p>
+              </div>
+              <div className="flex-col w-1/3">
+                <p className="text-4xl">{q.meaning}</p>
+                <p className="text-s">{q.description || "N/A"}</p>
+              </div>
+              <div className="w-1/3">
+                {q.imageUrl && (
+                  <img src={q.imageUrl} alt={q.word} className="w-32 h-32" />
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      case QuestionType.FillInBlank:
+        return (
+          <div className="bg-black h-15/16 w-15/16 border-4 border-black flex items-center justify-center text-white font-pixel">
+            <div className="flex items-start gap-2">
+              <div className="flex-col w-1/3">
+                <h2 className="text-4xl">{q.meaning}</h2>
+                <p className="text-s">{q.pronunciation || "N/A"}</p>
+              </div>
+            </div>
+          </div>
+        );
+      case QuestionType.MultipleChoice:
+        return (
+          <div className="bg-black h-15/16 w-15/16 border-4 border-black flex items-center justify-center text-white font-pixel">
+            <div className="flex items-start justify-evenly gap-2">
+              <div className="flex-col w-1/2">
+                <h2 className="text-4xl">{q.meaning}</h2>
+                <p className="text-s">{q.pronunciation || "N/A"}</p>
+                <p className="text-s">{q.partOfSpeech || "N/A"}</p>
+                <p className="text-s">{q.cefrLevel || "N/A"}</p>
+              </div>
+              <div className="w-1/2">
+                {q.imageUrl && (
+                  <img src={q.imageUrl} alt={q.meaning} className="w-32 h-32" />
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      case QuestionType.Listening:
+        return (
+          <div className="bg-black h-15/16 w-15/16 border-4 border-black flex items-center justify-center text-white font-pixel">
+            <div className="flex items-start justify-evenly gap-2">
+              <audio controls src={q.pronunciationUrl ?? ""}></audio>
+            </div>
+          </div>
+        );
+      default:
+        return <div>Unknown question type</div>;
+    }
+  };
 
-          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-30">
-            <SpriteCharacter />
+  return (
+    <div className="h-screen w-screen flex">
+      {/* Máy chơi game DS Bên trái */}
+      <div className="w-9/12 h-15/16 mt-12 flex-col justify-center items-center rounded-4xl border-2 border-white">
+        <div className="h-6/12 w-full flex align-middle justify-center items-center border-2 rounded-2xl bg-gray-900">
+          {/* Màn hình trên */}
+          <div className="bg-gray-800 h-10/12 w-8/12 border-4 border-black flex items-center justify-center rounded-xl">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`top-${currentQuestion.vocabularyId}-${currentQuestion.questionType}`}
+                initial={{ opacity: 0, rotateX: -90 }}
+                animate={{ opacity: 1, rotateX: 0 }}
+                exit={{ opacity: 0, rotateX: 90 }}
+                transition={{ duration: 0.5 }}
+                className="w-full h-full flex justify-center items-center"
+              >
+                {renderTopScreen(currentQuestion)}
+              </motion.div>
+            </AnimatePresence>
+          </div>  
+        </div>
+        <div className="bg-cyan-950 h-1/16 w-full rounded-2xl flex justify-center border-4 border-black">
+          <div className="bg-cyan-950 h-full w-9/12 rounded-s border-x-4 border-black flex items-center justify-center">
+            <div className="bg-black w-1/16 h-full rounded-4xl border-1 border-white"></div>
           </div>
         </div>
-        {/* Bên dưới */}
-
-        <div className="bg-amber-300 h-3/5 flex items-center">
-          <div className="container h-1/2 mx-auto w-7/12 grid grid-cols-2 gap-10 bg-amber-600 text-center">
-            {currentQuestion.options ? (
-              currentQuestion.options.map(opt => (
-                <div className="bg-white">
-                  <button className="bg-amber-200 w-full h-full text-3xl font-pixel custom-cursor" key={opt}
-                    onClick={() => handleAnswer(currentQuestion, opt)}>{opt}</button>
-                </div>
-              ))
-            ) : (
-              <input
-                type="text"
-                onKeyDown={e => {
-                  if (e.key === "Enter") {
-                    handleAnswer(currentQuestion, (e.target as HTMLInputElement).value);
-                    (e.target as HTMLInputElement).value = "";
-                  }
-                }}
-              />
-            )}
+        <div className="h-7/16 w-full flex align-middle items-center justify-evenly bg-gray-900 border-2 rounded-2xl">
+          {/* Nút điều hướng */}
+          <div className="w-2/16 h-5/12 relative">
+            <div className="absolute bg-gray-800 w-4/12 h-4/12 left-4/12 border-4 border-black">
+              <div className="absolute w-1/16 h-8/12 bg-white top-1 left-7/16"></div>
+            </div>
+            <div className="absolute bg-gray-800 w-4/12 h-4/12 top-4/12 border-4 border-black">
+              <div className="absolute w-8/12 h-1/16 bg-white top-7/16 left-1"></div>
+            </div>
+            <div className="absolute bg-gray-800 w-4/12 h-4/12 top-4/12 right-0 border-4 border-black">
+              <div className="absolute w-8/12 h-1/16 bg-white top-7/16 left-1"></div>
+            </div>
+            <div className="absolute bg-gray-800 w-4/12 h-4/12 left-4/12 bottom-0 border-4 border-black">
+              <div className="absolute w-1/16 h-8/12 bg-white top-1 left-7/16"></div>
+            </div>
+          </div>
+          {/* Màn hình dưới */}
+          <div className="bg-gray-800 h-10/12 w-8/12 border-4 border-black flex items-center justify-center rounded-xl">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`bottom-${currentQuestion.vocabularyId}-${currentQuestion.questionType}`}
+                initial={{ opacity: 0, rotateX: 90 }}
+                animate={{ opacity: 1, rotateX: 0 }}
+                exit={{ opacity: 0, rotateX: -90 }}
+                transition={{ duration: 0.5 }}
+                className="w-full h-full"
+              >
+                {renderQuestion(currentQuestion)}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+          {/* Nút bấm */}
+          <div className="w-2/16 h-5/12 relative">
+            <div className="absolute bg-gray-800 w-4/12 h-4/12 left-4/12 rounded-3xl text-center text-white border-4 border-black">
+              A
+            </div>
+            <div className="absolute bg-gray-800 w-4/12 h-4/12 top-4/12 rounded-3xl text-center text-white border-4 border-black">
+              B
+            </div>
+            <div className="absolute bg-gray-800 w-4/12 h-4/12 top-4/12 right-0 rounded-3xl text-center text-white border-4 border-black">
+              X
+            </div>
+            <div className="absolute bg-gray-800 w-4/12 h-4/12 left-4/12 bottom-0 rounded-3xl text-center text-white border-4 border-black">
+              Y
+            </div>
           </div>
         </div>
       </div>
-    </>
+      {/* Cột trạng thái Bên phải */}
+      <div className="w-3/12 h-full bg-black flex justify-center items-end">
+        <div className="h-10/12 w-5/12 bg-green-600"></div>
+      </div>
+    </div>
   );
-};
+}

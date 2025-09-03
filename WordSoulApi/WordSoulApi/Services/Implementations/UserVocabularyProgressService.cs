@@ -8,14 +8,14 @@ namespace WordSoulApi.Services.Implementations
 {
     public class UserVocabularyProgressService : IUserVocabularyProgressService
     {
-        private readonly IQuizQuestionRepository _quizQuestionRepository;
         private readonly IUserVocabularyProgressRepository _userVocabularyProgressRepository;
         private readonly ILearningSessionRepository _learningSessionRepository;
-        public UserVocabularyProgressService(IQuizQuestionRepository quizQuestionRepository, IUserVocabularyProgressRepository userVocabularyProgressRepository, ILearningSessionRepository learningSessionRepository)
+        private readonly IAnswerRecordRepository _answerRecordRepository;
+        public UserVocabularyProgressService(IUserVocabularyProgressRepository userVocabularyProgressRepository, ILearningSessionRepository learningSessionRepository, IAnswerRecordRepository answerRecordRepository)
         {
-            _quizQuestionRepository = quizQuestionRepository;
             _userVocabularyProgressRepository = userVocabularyProgressRepository;
             _learningSessionRepository = learningSessionRepository;
+            _answerRecordRepository = answerRecordRepository;
         }
 
 
@@ -29,7 +29,7 @@ namespace WordSoulApi.Services.Implementations
                 throw new UnauthorizedAccessException("User does not have access to this session");
 
             // Kiểm tra xem tất cả câu hỏi liên quan đến từ vựng đã được trả lời đúng chưa
-            bool allCorrect = await _quizQuestionRepository.CheckAllQuestionsCorrectAsync(userId, sessionId, vocabId);
+            bool allCorrect = await _answerRecordRepository.CheckAllQuestionsCorrectAsync(userId, sessionId, vocabId);
             if (!allCorrect)
                 throw new InvalidOperationException("Not all questions for this vocabulary have been answered correctly");
 
@@ -45,6 +45,8 @@ namespace WordSoulApi.Services.Implementations
                     TotalAttempt = 0,
                     ProficiencyLevel = 0
                 };
+
+                await _userVocabularyProgressRepository.CreateUserVocabularyProgressAsync(progress);
             }
 
             progress.CorrectAttempt++;

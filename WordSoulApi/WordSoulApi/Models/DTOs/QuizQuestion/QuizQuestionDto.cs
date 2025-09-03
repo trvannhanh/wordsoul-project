@@ -9,6 +9,8 @@ namespace WordSoulApi.Models.DTOs.QuizQuestion
         public string Word { get; set; }          // đáp án đúng
         public string Meaning { get; set; }
         public string? Pronunciation { get; set; }
+        public string? PartOfSpeech { get; set; }
+        public string? CEFRLevel { get; set; }
         public string? ImageUrl { get; set; }
         public string? Description { get; set; }
 

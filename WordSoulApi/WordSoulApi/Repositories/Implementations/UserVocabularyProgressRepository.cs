@@ -18,7 +18,6 @@ namespace WordSoulApi.Repositories.Implementations
         {
             // Sử dụng AsNoTracking để tối ưu hiệu suất khi chỉ đọc dữ liệu
             return await _context.UserVocabularyProgresses
-                 .AsNoTracking()
                  .FirstOrDefaultAsync(p => p.UserId == userId && p.VocabularyId == vocabularyId);
         }
 

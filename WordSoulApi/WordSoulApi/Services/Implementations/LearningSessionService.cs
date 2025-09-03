@@ -152,6 +152,8 @@ namespace WordSoulApi.Services.Implementations
                     Pronunciation = vocab.Pronunciation,
                     ImageUrl = vocab.ImageUrl,
                     Description = vocab.Description,
+                    PartOfSpeech = vocab.PartOfSpeech.ToString(),
+                    CEFRLevel = vocab.CEFRLevel.ToString(),
                     QuestionType = QuestionType.Flashcard
                 });
 
