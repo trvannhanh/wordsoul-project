@@ -8,9 +8,14 @@ namespace WordSoulApi.Models.DTOs.Pet
         public required string Name { get; set; }
         public required string Description { get; set; }
         public required string ImageUrl { get; set; }
-        public PetRarity Rarity { get; set; }
-        public PetType Type { get; set; }
+        public string Rarity { get; set; }
+        public string Type { get; set; }
         
+    }
+
+    public class UserPetDto : PetDto
+    {
+        public bool? isOwned { get; set; }
     }
 
     public class AdminPetDto : PetDto

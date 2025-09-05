@@ -9,7 +9,8 @@ namespace WordSoulApi.Repositories.Interfaces
         // Xóa pet theo ID
         Task<bool> DeletePetAsync(int id);
         // Lấy tất cả pet
-        Task<IEnumerable<Pet>> GetAllPetsAsync();
+        Task<IEnumerable<(Pet Pet, bool IsOwned)>> GetAllPetsAsync(int userId, string? name, PetRarity? rarity, PetType? type, bool? isOwned, int pageNumber, int pageSize);
+
         // Lấy pet theo ID
         Task<Pet?> GetPetByIdAsync(int id);
         // Cập nhật pet
