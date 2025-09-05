@@ -1,0 +1,26 @@
+import type { Pet } from "../types/Dto";
+
+interface PetCardProps {
+  pet: Pet;
+}
+
+const PetCard: React.FC<PetCardProps> = ({ pet }) => {
+  if (!pet.isOwned) {
+    return (
+      <div className="bg-black text-white border-white border-2  p-4 rounded-md shadow-md h-64 flex items-center justify-center">
+        <span className="text-4xl font-pixel">?</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white p-4 rounded-md shadow-md text-black h-64">
+      <img src={pet.imageUrl} alt={pet.name} className="w-full h-32 object-cover rounded-md mb-2" />
+      <h3 className="text-lg font-bold">{pet.name.trim()}</h3>
+      <p className="text-sm">Rarity: {pet.rarity}</p>
+      <p className="text-sm">Type: {pet.type}</p>
+    </div>
+  ); 
+};
+
+export default PetCard;

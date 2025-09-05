@@ -13,10 +13,64 @@ namespace WordSoulApi.Repositories.Implementations
             _context = context;
         }
 
-        // Lấy tất cả pet
-        public async Task<IEnumerable<Pet>> GetAllPetsAsync()
+        public async Task<IEnumerable<(Pet Pet, bool IsOwned)>> GetAllPetsAsync(
+            int userId,
+            string? name,
+            PetRarity? rarity,
+            PetType? type,
+            bool? isOwned,
+            int pageNumber,
+            int pageSize)
         {
-            return await _context.Pets.ToListAsync();
+            // Base query: left join Pets với UserOwnedPets
+            var query = _context.Pets
+                .GroupJoin(
+                    _context.UserOwnedPets.Where(up => up.UserId == userId),
+                    pet => pet.Id,
+                    userPet => userPet.PetId,
+                    (pet, userPetGroup) => new { Pet = pet, UserPetGroup = userPetGroup }
+                )
+                .SelectMany(
+                    x => x.UserPetGroup.DefaultIfEmpty(),
+                    (x, userPet) => new
+                    {
+                        Pet = x.Pet,
+                        IsOwned = userPet != null
+                    }
+                );
+
+            // Filter theo name
+            if (!string.IsNullOrEmpty(name))
+            {
+                query = query.Where(x => x.Pet.Name.Contains(name));
+            }
+
+            // Filter theo rarity
+            if (rarity.HasValue)
+            {
+                query = query.Where(x => x.Pet.Rarity == rarity.Value);
+            }
+
+            // Filter theo type
+            if (type.HasValue)
+            {
+                query = query.Where(x => x.Pet.Type == type.Value);
+            }
+
+            // Filter theo isOwned
+            if (isOwned.HasValue)
+            {
+                query = query.Where(x => x.IsOwned == isOwned.Value);
+            }
+
+            // Pagination
+            query = query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize);
+
+            var result = await query.ToListAsync();
+
+            return result.Select(x => (x.Pet, x.IsOwned));
         }
 
         // Lấy pet theo ID
