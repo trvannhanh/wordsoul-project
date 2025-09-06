@@ -82,12 +82,35 @@ namespace WordSoulApi.Repositories.Implementations
                 .ToListAsync();
         }
 
+        // Lấy các từ vựng cần ôn tập của user
+        public async Task<IEnumerable<Vocabulary>> GetUnreviewdVocabulariesFromSetAsync(int userId, int take = 5)
+        {
+            return await _context.UserVocabularyProgresses 
+                .AsNoTracking()
+                .Where(uvp => uvp.UserId == userId && uvp.NextReviewTime <= DateTime.UtcNow)
+                .Select(uvp => uvp.Vocabulary)
+                .Select (v => new Vocabulary { Id = v.Id})
+                .Take(take)
+                .ToListAsync();
+
+        }
+
         // Lấy danh sách ID từ vựng theo ID phiên học
         public async Task<IEnumerable<int>> GetVocabularyIdsBySessionIdAsync(int sessionId)
         {
             return await _context.SessionVocabularies
                 .Where(sv => sv.LearningSessionId == sessionId)
                 .Select(sv => sv.VocabularyId)
+                .ToListAsync();
+        }
+
+        //Lấy danh sách từ vựng của phiên học
+        public async Task<IEnumerable<Vocabulary>> GetVocabulariesBySessionIdAsync (int sessionId)
+        {
+            return await _context.SessionVocabularies
+                .AsNoTracking()
+                .Where(sv => sv.LearningSessionId == sessionId)
+                .Select(sv => sv.Vocabulary)
                 .ToListAsync();
         }
 

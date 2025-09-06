@@ -15,7 +15,7 @@ const Card: React.FC<CardProps> = ({ title, description, theme, difficultyLevel,
             {/* truyền vào id để link đến trang chi tiết */}
             <Link to={`/vocabularySet/${vocabularySetid}`} className="custom-cursor">
                 <img
-                    className="w-90 h-30 object-cover"
+                    className="w-full h-30 object-cover"
                     src={image}
                     alt={title}
                 />

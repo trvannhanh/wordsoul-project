@@ -11,6 +11,7 @@ export const endpoints = {
 
   // User
   currentUser: '/users/me',
+  userDashboard: '/users/user-dashboard',
 
   // VocabularySet
   vocabularySets: '/vocabulary-sets',
@@ -18,10 +19,15 @@ export const endpoints = {
 
   //LearningSession
   learningSession: (vocabSetId: number) => `/learning-sessions/${vocabSetId}`,
+  reviewSession:  '/learning-sessions',
   quizQuestions: (sessionId: number) => `/learning-sessions/${sessionId}/questions`,
-  answerRecord: (quizId : number) =>  `/learning-sessions/${quizId}/answers`,
+  answerRecord: (sessionId : number) =>  `/learning-sessions/${sessionId}/answers`,
   learningProgress: (sessionId : number, vocabId : number) => `/learning-sessions/${sessionId}/progress/${vocabId}`,
-  completeSession: (sessionId : number) => `/learning-sessions/${sessionId}/complete`
+  completeLearningSession: (sessionId : number) => `/learning-sessions/${sessionId}/learning-completion`,
+  completeReviewSession: (sessionId : number) => `/learning-sessions/${sessionId}/review-completion`,
+
+  //Pets
+  pets: '/pets'
 };
 
 // ---- Helpers ----

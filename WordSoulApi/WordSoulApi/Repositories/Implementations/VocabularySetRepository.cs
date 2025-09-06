@@ -14,16 +14,6 @@ namespace WordSoulApi.Repositories.Implementations
             _context = context;
         }
 
-        // Lấy tất cả các bộ từ vựng với phân trang
-        public async Task<IEnumerable<VocabularySet>> GetAllVocabularySetsAsync(int pageNumber = 1, int pageSize = 10)
-        {
-            return await _context.VocabularySets
-                .AsNoTracking()
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-        }
-
         // Lấy bộ từ vựng theo ID, bao gồm các từ vựng liên quan
         public async Task<VocabularySet?> GetVocabularySetByIdAsync(int id)
         {
@@ -118,7 +108,7 @@ namespace WordSoulApi.Repositories.Implementations
 
 
         // Tìm kiếm bộ từ vựng với các tiêu chí và phân trang
-        public async Task<IEnumerable<VocabularySet>> SearchVocabularySetAsync(string? title, VocabularySetTheme? theme, VocabularyDifficultyLevel? difficulty,
+        public async Task<IEnumerable<VocabularySet>> GetAllVocabularySetsAsync(string? title, VocabularySetTheme? theme, VocabularyDifficultyLevel? difficulty,
                                                                     DateTime? createdAfter, int pageNumber, int pageSize)
         {
             var query = _context.VocabularySets
