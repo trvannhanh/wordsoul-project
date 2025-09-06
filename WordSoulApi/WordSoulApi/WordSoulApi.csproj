@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CloudinaryDotNet" Version="1.27.7" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.1" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.5" />
@@ -24,6 +25,10 @@
     <Folder Include="Middleware\" />
     <Folder Include="Filters\" />
     <Folder Include="Helpers\" />
+    <Folder Include="Filters\" />
+    <Folder Include="Helpers\" />
+    <Folder Include="Middleware\" />
+    <Folder Include="wwwroot\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
