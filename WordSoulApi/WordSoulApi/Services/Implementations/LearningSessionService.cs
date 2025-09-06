@@ -29,31 +29,56 @@ namespace WordSoulApi.Services.Implementations
             _answerRecordRepository = answerRecordRepository;
         }
 
-        // Tạo một phiên học mới cho người dùng
         public async Task<LearningSessionDto> CreateLearningSessionAsync(int userId, int setId, int wordCount = 5)
         {
+            if (userId <= 0)
+                throw new ArgumentException("UserId must be greater than zero.", nameof(userId));
+            if (setId <= 0)
+                throw new ArgumentException("VocabularySetId must be greater than zero.", nameof(setId));
+            if (wordCount <= 0)
+                throw new ArgumentException("WordCount must be greater than zero.", nameof(wordCount));
 
-            // Kiểm tra xem người dùng đã có bộ từ vựng này chưa
             var exists = await _userVocabularySetRepository.CheckUserVocabualryExist(userId, setId);
-            if (!exists) // Thêm khi chưa tồn tại
+            if (!exists)
             {
-                _logger.LogWarning("User {UserId} doesn't owns VocabularySet {vocabSetId}", userId, setId);
-                throw new InvalidOperationException("VocabularySet doesn't exists for this user");
+                _logger.LogWarning("User {UserId} doesn't own VocabularySet {SetId}", userId, setId);
+                throw new InvalidOperationException("VocabularySet doesn't exist for this user");
             }
-            // Lấy danh sách từ chưa học
-            var vocabularies = await _vocabRepo.GetUnlearnedVocabulariesFromSetAsync(userId, setId, wordCount);
 
+            var vocabularies = await _vocabRepo.GetUnlearnedVocabulariesFromSetAsync(userId, setId, wordCount);
             if (!vocabularies.Any())
             {
-                _logger.LogInformation("No unlearned vocabularies for user {UserId} in set {vocabSetId}", userId, setId);
+                _logger.LogInformation("No unlearned vocabularies for user {UserId} in set {SetId}", userId, setId);
                 throw new InvalidOperationException("No unlearned vocabularies available in this set");
-            }    
-                
-            // Tạo session
+            }
+
+            return await CreateSessionAsync(userId, setId, SessionType.Learning, vocabularies);
+        }
+
+        public async Task<LearningSessionDto> CreateReviewingSessionAsync(int userId, int wordCount = 5)
+        {
+            if (userId <= 0)
+                throw new ArgumentException("UserId must be greater than zero.", nameof(userId));
+            if (wordCount <= 0)
+                throw new ArgumentException("WordCount must be greater than zero.", nameof(wordCount));
+
+            var vocabularies = await _vocabRepo.GetUnreviewdVocabulariesFromSetAsync(userId, wordCount);
+            if (!vocabularies.Any())
+            {
+                _logger.LogInformation("No unreviewed vocabularies for user {UserId}", userId);
+                throw new InvalidOperationException("No unreviewed vocabularies available");
+            }
+
+            return await CreateSessionAsync(userId, null, SessionType.Review, vocabularies);
+        }
+
+        private async Task<LearningSessionDto> CreateSessionAsync(int userId, int? setId, SessionType type, IEnumerable<Vocabulary> vocabularies)
+        {
             var session = new LearningSession
             {
                 UserId = userId,
                 VocabularySetId = setId,
+                Type = type,
                 StartTime = DateTime.UtcNow,
                 IsCompleted = false,
                 SessionVocabularies = vocabularies.Select(v => new SessionVocabulary
@@ -62,7 +87,6 @@ namespace WordSoulApi.Services.Implementations
                 }).ToList()
             };
 
-            // Lưu session vào database
             var savedSession = await _sessionRepo.CreateLearningSessionAsync(session);
 
             return new LearningSessionDto
@@ -73,8 +97,15 @@ namespace WordSoulApi.Services.Implementations
             };
         }
 
-        public async Task<CompleteSessionResponseDto> CompleteSessionAsync(int userId, int sessionId)
+
+        public async Task<object> CompleteSessionAsync(int userId, int sessionId, SessionType sessionType)
         {
+            // Kiểm tra đầu vào
+            if (userId <= 0)
+                throw new ArgumentException("UserId must be greater than zero.", nameof(userId));
+            if (sessionId <= 0)
+                throw new ArgumentException("SessionId must be greater than zero.", nameof(sessionId));
+
             // Kiểm tra quyền sở hữu session
             var session = await _sessionRepo.GetLearningSessionByIdAsync(sessionId);
             if (session == null || session.UserId != userId)
@@ -86,7 +117,7 @@ namespace WordSoulApi.Services.Implementations
 
             // Kiểm tra tất cả câu hỏi đã đúng
             var vocabIds = await _vocabRepo.GetVocabularyIdsBySessionIdAsync(sessionId);
-            
+
             foreach (var vocabId in vocabIds)
             {
                 // Kiểm tra xem tất cả câu hỏi liên quan đến từ vựng đã được trả lời đúng chưa
@@ -100,29 +131,75 @@ namespace WordSoulApi.Services.Implementations
             session.EndTime = DateTime.UtcNow;
             await _sessionRepo.UpdateLearningSessionAsync(session);
 
-            // Cập nhật số session đã hoàn thành trong UserVocabularySet
-            await _userVocabularySetRepository.UpdateCompletedLearningSessionAsync(userId, session.VocabularySetId, 1);
+            // Xác định XP và AP dựa trên loại phiên học
+            int xpEarned = sessionType == SessionType.Learning ? 10 : 5; // Có thể lấy từ cấu hình
+            int apEarned = sessionType == SessionType.Review ? 3 : 0;   // AP chỉ cho ôn tập
 
-            int xpEarned = 10; // giá trị có thể cấu hình
-            // Cộng XP cho người dùng
+            // Xử lý logic đặc thù cho học từ mới
+            bool isPetRewardGranted = false;
+            int petId = 0;
+            string? petName = null;
+            string? petDescription = null;
+            string? petImageUrl = null;
+            string? petRarity = null;
+            string? petType = null;
+
+            if (sessionType == SessionType.Learning)
+            {
+                if (!session.VocabularySetId.HasValue)
+                    throw new InvalidOperationException("VocabularySetId is required for learning session");
+
+                // Cập nhật số session đã hoàn thành trong UserVocabularySet
+                await _userVocabularySetRepository.UpdateCompletedLearningSessionAsync(userId, session.VocabularySetId.Value, 1);
+
+                // Cấp phát pet nếu hoàn thành 5 session
+                var rewards = await _userOwnedPetService.TryGrantPetByMilestoneAsync(userId, session.VocabularySetId.Value);
+                isPetRewardGranted = rewards.alreadyOwned;
+                if (rewards.alreadyOwned)
+                {
+                    petId = rewards.grantedPet.Id;
+                    petName = rewards.grantedPet.Name;
+                    petDescription = rewards.grantedPet.Description;
+                    petImageUrl = rewards.grantedPet.ImageUrl;
+                    petRarity = rewards.grantedPet.Rarity.ToString();
+                    petType = rewards.grantedPet.Type.ToString();
+                    xpEarned += rewards.bonusXp;
+                }
+            }
+
+            // Cộng XP và AP cho người dùng
             var user = await _userRepository.GetUserByIdAsync(userId);
             if (user == null)
                 throw new InvalidOperationException("User not found");
             user.XP += xpEarned;
+            user.AP += apEarned; // Cập nhật AP (0 nếu là học từ mới)
             await _userRepository.UpdateUserAsync(user);
 
-            // Cấp phát pet nếu hoàn thành 5 session
-            var rewards = await _userOwnedPetService.TryGrantPetByMilestoneAsync(userId, sessionId);
-
-            xpEarned += rewards.bonusXp;
-
-            return new CompleteSessionResponseDto
+            // Trả về DTO tương ứng
+            if (sessionType == SessionType.Learning)
             {
-                XpEarned = xpEarned,
-                IsPetRewardGranted = rewards.alreadyOwned,
-                PetId = rewards.grantedPet,
-                Message = rewards.alreadyOwned ? "Session completed! You earned XP and a new Pet!" : "Session completed! You earned XP!"
-            };
+                return new CompleteLearningSessionResponseDto
+                {
+                    XpEarned = xpEarned,
+                    IsPetRewardGranted = isPetRewardGranted,
+                    PetId = petId,
+                    PetName = petName,
+                    Description = petDescription,
+                    ImageUrl = petImageUrl,
+                    PetRarity = petRarity,
+                    PetType = petType,
+                    Message = isPetRewardGranted ? "Learning session completed! You earned XP and a new Pet!" : "Learning session completed! You earned XP!"
+                };
+            }
+            else
+            {
+                return new CompleteReviewingSessionResponseDto
+                {
+                    XpEarned = xpEarned,
+                    ApEarned = apEarned,
+                    Message = "Reviewing session completed! You earned XP and AP!"
+                };
+            }
         }
 
         // Lấy danh sách câu hỏi quiz cho một phiên học cụ thể

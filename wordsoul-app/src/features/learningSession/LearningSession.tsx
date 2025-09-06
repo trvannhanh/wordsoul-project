@@ -1,16 +1,20 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   answerQuiz,
-  completeSession,
+  completeLearningSession,
+  completeReviewSession,
   fetchQuizOfSession,
   updateProgress,
 } from "../../services/learningSession";
-import { QuestionType, type QuizQuestion } from "../../types/Dto";
+import { QuestionType, type CompleteLearningSessionResponseDto, type CompleteReviewSessionResponseDto, type QuizQuestion } from "../../types/Dto";
+
 
 export default function LearningSession() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const mode = searchParams.get("mode") as "learning" | "review";
   const sessionId = Number(id);
 
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
@@ -21,8 +25,10 @@ export default function LearningSession() {
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [sessionData, setSessionData] = useState<CompleteLearningSessionResponseDto | CompleteReviewSessionResponseDto | null>(null);
+  const [isCardFlipped, setIsCardFlipped] = useState(false);
 
-  // Load questions
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -74,8 +80,8 @@ export default function LearningSession() {
     currentIndex < questions.length
       ? questions[currentIndex]
       : retryQueue.length > 0
-      ? retryQueue[0]
-      : null;
+        ? retryQueue[0]
+        : null;
 
   useEffect(() => {
     if (!currentQuestion && questions.length > 0) {
@@ -87,16 +93,29 @@ export default function LearningSession() {
   }, [currentQuestion]);
 
   async function handleCompleteSession() {
-    const data = await completeSession(sessionId);
-    console.log(data);
-    alert("Bạn đã hoàn thành session!");
+    try {
+      let data;
+      if (mode === "learning") {
+        data = await completeLearningSession(sessionId);
+      } else {
+        data = await completeReviewSession(sessionId);
+      }
+      setSessionData(data);
+      setShowCompleteModal(true);
+    } catch (error) {
+      console.error("Error completing session:", error);
+    }
   }
 
-  if (!currentQuestion) return <div>Đang tải câu hỏi...</div>;
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
+  const handleFlipCard = () => {
+    setIsCardFlipped(true);
+  };
 
-  // Render theo loại câu hỏi
+  const handleCloseModal = () => {
+    setShowCompleteModal(false);
+    setIsCardFlipped(false);
+  };
+
   const renderQuestion = (q: QuizQuestion) => {
     switch (q.questionType) {
       case QuestionType.Flashcard:
@@ -161,7 +180,6 @@ export default function LearningSession() {
     }
   };
 
-  // Render top screen content based on question type
   const renderTopScreen = (q: QuizQuestion) => {
     switch (q.questionType) {
       case QuestionType.Flashcard:
@@ -228,6 +246,7 @@ export default function LearningSession() {
     }
   };
 
+  // Hiển thị giao diện chính ngay cả khi không có câu hỏi
   return (
     <div className="h-screen w-screen flex">
       {/* Máy chơi game DS Bên trái */}
@@ -236,18 +255,26 @@ export default function LearningSession() {
           {/* Màn hình trên */}
           <div className="bg-gray-800 h-10/12 w-8/12 border-4 border-black flex items-center justify-center rounded-xl">
             <AnimatePresence mode="wait">
-              <motion.div
-                key={`top-${currentQuestion.vocabularyId}-${currentQuestion.questionType}`}
-                initial={{ opacity: 0, rotateX: -90 }}
-                animate={{ opacity: 1, rotateX: 0 }}
-                exit={{ opacity: 0, rotateX: 90 }}
-                transition={{ duration: 0.5 }}
-                className="w-full h-full flex justify-center items-center"
-              >
-                {renderTopScreen(currentQuestion)}
-              </motion.div>
+              {loading ? (
+                <div>Đang tải...</div>
+              ) : error ? (
+                <div>{error}</div>
+              ) : currentQuestion ? (
+                <motion.div
+                  key={`top-${currentQuestion.vocabularyId}-${currentQuestion.questionType}`}
+                  initial={{ opacity: 0, rotateX: -90 }}
+                  animate={{ opacity: 1, rotateX: 0 }}
+                  exit={{ opacity: 0, rotateX: 90 }}
+                  transition={{ duration: 0.5 }}
+                  className="w-full h-full flex justify-center items-center"
+                >
+                  {renderTopScreen(currentQuestion)}
+                </motion.div>
+              ) : (
+                <div>Hoàn thành session!</div>
+              )}
             </AnimatePresence>
-          </div>  
+          </div>
         </div>
         <div className="bg-cyan-950 h-1/16 w-full rounded-2xl flex justify-center border-4 border-black">
           <div className="bg-cyan-950 h-full w-9/12 rounded-s border-x-4 border-black flex items-center justify-center">
@@ -273,16 +300,24 @@ export default function LearningSession() {
           {/* Màn hình dưới */}
           <div className="bg-gray-800 h-10/12 w-8/12 border-4 border-black flex items-center justify-center rounded-xl">
             <AnimatePresence mode="wait">
-              <motion.div
-                key={`bottom-${currentQuestion.vocabularyId}-${currentQuestion.questionType}`}
-                initial={{ opacity: 0, rotateX: 90 }}
-                animate={{ opacity: 1, rotateX: 0 }}
-                exit={{ opacity: 0, rotateX: -90 }}
-                transition={{ duration: 0.5 }}
-                className="w-full h-full"
-              >
-                {renderQuestion(currentQuestion)}
-              </motion.div>
+              {loading ? (
+                <div>Đang tải...</div>
+              ) : error ? (
+                <div>{error}</div>
+              ) : currentQuestion ? (
+                <motion.div
+                  key={`bottom-${currentQuestion.vocabularyId}-${currentQuestion.questionType}`}
+                  initial={{ opacity: 0, rotateX: 90 }}
+                  animate={{ opacity: 1, rotateX: 0 }}
+                  exit={{ opacity: 0, rotateX: -90 }}
+                  transition={{ duration: 0.5 }}
+                  className="w-full h-full"
+                >
+                  {renderQuestion(currentQuestion)}
+                </motion.div>
+              ) : (
+                <div>Hoàn thành session!</div>
+              )}
             </AnimatePresence>
           </div>
           {/* Nút bấm */}
@@ -302,6 +337,117 @@ export default function LearningSession() {
           </div>
         </div>
       </div>
+
+      {/* Modal hiển thị khi hoàn thành session */}
+      <AnimatePresence>
+        {showCompleteModal && sessionData && (
+          <motion.div
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <motion.div
+              className="bg-gray-800 p-6 rounded-xl border-4 border-black flex flex-col items-center w-96"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {/* Thông báo chung */}
+              <h2 className="text-2xl text-white font-pixel mb-4">
+                {sessionData?.message ?? "Hoàn thành session!"}
+              </h2>
+              <p className="text-lg text-white font-pixel mb-4">
+                Bạn nhận được {sessionData?.xpEarned ?? 0} XP!
+              </p>
+
+              {/* Nếu là review thì hiển thị thêm AP */}
+              {mode === "review" && "apEarned" in sessionData && (
+                <p className="text-lg text-white font-pixel mb-4">
+                  Bạn nhận được {sessionData.apEarned ?? 0} AP!
+                </p>
+              )}
+
+              {/* Nếu là learning thì hiển thị Pet reward */}
+              {mode === "learning" &&
+                "isPetRewardGranted" in sessionData &&
+                sessionData.petId &&
+                !sessionData.isPetRewardGranted && (
+                  <>
+                    <motion.div
+                      className="w-64 h-96 bg-gray-900 border-4 border-white rounded-xl flex items-center justify-center"
+                      animate={{ rotateY: isCardFlipped ? 180 : 0 }}
+                      transition={{ duration: 0.5 }}
+                      style={{ transformStyle: "preserve-3d" }}
+                    >
+                      {/* Mặt sau của card (úp) */}
+                      {!isCardFlipped && (
+                        <div className="absolute w-full h-full bg-gray-900 flex items-center justify-center text-white font-pixel text-2xl">
+                          ???
+                        </div>
+                      )}
+                      {/* Mặt trước của card (thông tin Pet) */}
+                      {isCardFlipped && (
+                        <div className="absolute w-full h-full bg-white flex flex-col items-center justify-center p-4">
+                          <img
+                            src={sessionData.imageUrl || "https://via.placeholder.com/150"}
+                            alt={sessionData.petName}
+                            className="w-32 h-32 mb-4"
+                          />
+                          <h2 className="text-2xl font-pixel text-black">
+                            {sessionData.petName}
+                          </h2>
+                          <p className="text-sm text-black">
+                            Type: {sessionData.petType || "N/A"}
+                          </p>
+                          <p className="text-sm text-black">
+                            Rarity: {sessionData.petRarity || "N/A"}
+                          </p>
+                          <p className="text-sm text-black">
+                            Description: {sessionData.description || "N/A"}
+                          </p>
+                        </div>
+                      )}
+                    </motion.div>
+
+                    {/* Nút lật card hoặc đóng modal */}
+                    {!isCardFlipped ? (
+                      <button
+                        onClick={handleFlipCard}
+                        className="mt-4 bg-emerald-600 px-4 py-2 rounded-xl text-white font-pixel border-2 border-white"
+                      >
+                        Lật Card
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleCloseModal}
+                        className="mt-4 bg-red-600 px-4 py-2 rounded-xl text-white font-pixel border-2 border-white"
+                      >
+                        Đóng
+                      </button>
+                    )}
+                  </>
+                )}
+
+              {/* Nút đóng nếu không có Pet reward hoặc đang ở review */}
+              {((mode === "learning" &&
+                "isPetRewardGranted" in sessionData &&
+                (!sessionData.petId || sessionData.isPetRewardGranted)) ||
+                mode === "review") && (
+                  <button
+                    onClick={handleCloseModal}
+                    className="mt-4 bg-red-600 px-4 py-2 rounded-xl text-white font-pixel border-2 border-white"
+                  >
+                    Đóng
+                  </button>
+                )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Cột trạng thái Bên phải */}
       <div className="w-3/12 h-full bg-black flex justify-center items-end">
         <div className="h-10/12 w-5/12 bg-green-600"></div>

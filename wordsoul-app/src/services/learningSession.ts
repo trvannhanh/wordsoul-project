@@ -1,4 +1,4 @@
-import type { AnswerResponse, LearningSession, QuizQuestion, AnswerRequest, UpdateProgressResponse, CompleteSessionResponseDto } from "../types/Dto";
+import type { AnswerResponse, LearningSession, QuizQuestion, AnswerRequest, UpdateProgressResponse, CompleteLearningSessionResponseDto, CompleteReviewSessionResponseDto } from "../types/Dto";
 import { authApi, endpoints } from "./api";
 
 
@@ -7,13 +7,18 @@ export const createLearningSession = async (id: number): Promise<LearningSession
   return response.data;
 };
 
-export const fetchQuizOfSession = async (id: number): Promise<QuizQuestion> => {
-  const response = await authApi.get<QuizQuestion>(endpoints.quizQuestions(id));
+export const createReviewSession = async (): Promise<LearningSession> => {
+  const response = await authApi.post<LearningSession>(endpoints.reviewSession);
   return response.data;
 };
 
-export const answerQuiz = async (id: number, AnswerRequest: AnswerRequest): Promise<AnswerResponse> => {
-  const response = await authApi.post<AnswerResponse>(endpoints.answerRecord(id), AnswerRequest);
+export const fetchQuizOfSession = async (id: number): Promise<QuizQuestion[]> => {
+  const response = await authApi.get<QuizQuestion[]>(endpoints.quizQuestions(id));
+  return response.data;
+};
+
+export const answerQuiz = async (sessionId: number, req: AnswerRequest): Promise<AnswerResponse> => {
+  const response = await authApi.post<AnswerResponse>(endpoints.answerRecord(sessionId), req);
   return response.data;
 };
 
@@ -22,7 +27,14 @@ export const updateProgress = async (sessionId: number, vocabId: number): Promis
   return response.data;
 };
 
-export const completeSession = async (sessionId: number): Promise<CompleteSessionResponseDto> => {
-  const response = await authApi.post<CompleteSessionResponseDto>(endpoints.completeSession(sessionId));
+export const completeLearningSession = async (sessionId: number): Promise<CompleteLearningSessionResponseDto> => {
+  const response = await authApi.post<CompleteLearningSessionResponseDto>(endpoints.completeLearningSession(sessionId));
   return response.data;
 };
+
+export const completeReviewSession = async (sessionId: number): Promise<CompleteReviewSessionResponseDto> => {
+  const response = await authApi.post<CompleteReviewSessionResponseDto>(endpoints.completeReviewSession(sessionId));
+  return response.data;
+};
+
+
