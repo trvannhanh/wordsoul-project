@@ -1,86 +1,137 @@
-// import { Link } from "react-router-dom";
-// import HeroSection from "../../components/HeroSection";
+import { useEffect, useState } from 'react';
+import { useDebounce } from 'use-debounce';
+import type { VocabularySet } from '../../types/Dto';
+import { fetchVocabularySets } from '../../services/vocabularySet';
+import Card from '../../components/Card';
 
-// const VocabularySet: React.FC = () => {
-//   return (
-//     <>
-//       <HeroSection
-//         title="Welcome to Elaris"
-//         description="Hành trình giải mã những văn tự cố, giải thoát những sinh vật bí ẩn, xây dựng kiến thức lâu dài."
-//         textButton="Bắt đầu"
-//         image="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1756296491/vocabulary_sets/banner1_cgzmcx.gif"
-//         bottomImage="./src/assets/grass.gif"
-//         hidden={true}
-//       />
+const VocabularySetsPage = () => {
+    const [dailyLearningSets, setDailyLearningSets] = useState<VocabularySet[]>([]);
+    const [advancedTopicsSets, setAdvancedTopicsSets] = useState<VocabularySet[]>([]);
+    const [searchTitle, setSearchTitle] = useState<string>('');
+    const [debouncedSearchTitle] = useDebounce(searchTitle, 500); // Debounce 500ms
+    const [loading, setLoading] = useState<boolean>(true);
+    const [isSearching, setIsSearching] = useState<boolean>(false); // Trạng thái tìm kiếm
+    const [error, setError] = useState<string | null>(null);
 
-//       <div className="bg-black text-white h-auto w-full flex justify-center items-center">
-//         <div className="w-7/12 flex items-start gap-5 py-10">
-//           {/* Bên trái  */}
-//           <div className="w-9/12 border-white border-2 rounded-lg p-3">
-//             {/* Thanh từ vựng */}
-//             <div className="flex justify-between items-start mb-2 border-b-2 border-white pb-3 font-pixel">
-//               {/* Flex column Word, loai tu, phat am,  */}
-//               <div className="flex flex-col gap-1 mb-4">
-//                 {/* Word */}
-//                 <div className="text-3xl ">Human</div>
-//                 {/* Loai tu */}
-//                 <div className="text-s ">Noun</div>
-//                 {/* Phat am */}
-//                 <div className="text-s ">/adsf/</div>
-//               </div>
-//               {/* Nghĩa */}
-//               <div className="text-2xl ">Con người</div>
-//               {/* Ảnh minh họa */}
-//               <div className="w-40 h-30">
-//                 <img
-//                   src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1756296491/vocabulary_sets/banner1_cgzmcx.gif"
-//                   alt="minh hoa"
-//                   className="w-full h-full object-cover rounded-lg"
-//                 />
-//               </div>
-//             </div>
-            
-//           </div>
-//           {/* Bên phải */}
-//           <div className="w-3/12 flex flex-col gap-3">
-//             {/* Profile */}
-//             <div className="flex flex-col gap-3 items-center border-2 border-white rounded-lg p-3">
-//               {/* profile box */}
-//               <div>
-//                 <div className="flex gap-2 mb-3">
-//                   <div className="w-20 h-20">
-//                     <img
-//                       src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1756296491/vocabulary_sets/banner1_cgzmcx.gif"
-//                       alt="minh hoa"
-//                       className="w-full h-full object-cover"
-//                     />
-//                   </div>
-//                   <div>
-//                     <div>Name</div>
-//                     <div>Level</div>
-//                   </div>
-//                 </div>
-//                 <Link to="/signup" className="no-underline">
-//                   <button className="relative flex items-center justify-center w-full px-2 py-1.5 bg-yellow-300 text-black rounded-xs hover:bg-yellow-200 custom-cursor">
-//                     <span className="absolute left-0 w-0.5 h-full bg-yellow-500" />
-//                     <span className="mx-1 text-xs font-bold font-sans">View Profile</span>
-//                     <span className="absolute right-0 w-0.5 h-full bg-yellow-500" />
-//                     <span className="absolute top-6.5 right-0 w-full h-1 bg-yellow-500" />
-//                     <span className="absolute bottom-6.5 right-0 w-full h-0.5 bg-yellow-500" />
-//                   </button>
-//                 </Link>
-//               </div>
+    useEffect(() => {
+        const loadData = async () => {
+            setIsSearching(true);
+            try {
+                // Gọi API cho theme DailyLearning
+                const dailyData = await fetchVocabularySets(debouncedSearchTitle, 'DailyLearning');
+                setDailyLearningSets(dailyData);
 
-//             </div>
-//             {/* Progress */}
-//             <div className="flex flex-col gap-3 items-center border-2 border-white rounded-lg p-3">
-//               <div>Progress</div>
-//               <div>Hello</div>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     </>
-//   )
-// };
-// export default VocabularySet;
+                // Gọi API cho theme AdvancedTopics
+                const advancedData = await fetchVocabularySets(debouncedSearchTitle, 'AdvancedTopics');
+                setAdvancedTopicsSets(advancedData);
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+            } finally {
+                setIsSearching(false);
+                setLoading(false);
+            }
+        };
+
+        loadData();
+    }, [debouncedSearchTitle]);
+
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTitle(e.target.value);
+    };
+
+    // Chỉ hiển thị loading khi lần đầu tải và cả hai danh sách đều rỗng
+    if (loading && !dailyLearningSets.length && !advancedTopicsSets.length) {
+        return <div className="text-center py-8">Loading...</div>;
+    }
+
+    if (error) return <div className="text-center py-8 text-red-500">Error: {error}</div>;
+
+    return (
+        <div className='background-color mt-13 text-white'>
+            <div className="container mx-auto p-4 w-7/12">
+                {/* Input tìm kiếm với spinner */}
+                <div className="mb-8 relative">
+                    <input
+                        type="text"
+                        value={searchTitle}
+                        onChange={handleSearchChange}
+                        placeholder="Tìm kiếm bộ từ vựng theo tiêu đề..."
+                        className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    {isSearching && (
+                        <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                            <svg
+                                className="animate-spin h-5 w-5 text-blue-500"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                            >
+                                <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                ></circle>
+                                <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                ></path>
+                            </svg>
+                        </div>
+                    )}
+                </div>
+
+                {/* Danh sách DailyLearning */}
+                <section className="mb-12">
+                    <h2 className="text-2xl font-bold mb-4">Daily Learning</h2>
+                    {dailyLearningSets.length === 0 ? (
+                        <p className="text-gray-500">Không tìm thấy bộ từ vựng.</p>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            {dailyLearningSets.map((item) => (
+                                <Card
+                                    key={item.id}
+                                    title={item.title}
+                                    description={item.description || 'Không có mô tả'} // Xử lý description nullable
+                                    theme={item.theme}
+                                    difficultyLevel={item.difficultyLevel}
+                                    image={item.imageUrl || ''} // Xử lý imageUrl tùy chọn
+                                    vocabularySetid={item.id}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </section>
+
+                {/* Danh sách AdvancedTopics */}
+                <section>
+                    <h2 className="text-2xl font-bold mb-4">Advanced Topics</h2>
+                    {advancedTopicsSets.length === 0 ? (
+                        <p className="text-gray-500">Không tìm thấy bộ từ vựng.</p>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            {advancedTopicsSets.map((item) => (
+                                <Card
+                                    key={item.id}
+                                    title={item.title}
+                                    description={item.description || 'Không có mô tả'} // Xử lý description nullable
+                                    theme={item.theme}
+                                    difficultyLevel={item.difficultyLevel}
+                                    image={item.imageUrl || ''} // Xử lý imageUrl tùy chọn
+                                    vocabularySetid={item.id}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </section>
+            </div>
+        </div>
+
+
+    );
+};
+
+export default VocabularySetsPage;

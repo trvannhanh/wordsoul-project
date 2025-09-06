@@ -8,6 +8,9 @@ import { AuthProvider } from './store/AuthContext';
 import Register from './features/auth/Register';
 import VocabularySet from './features/vocabularySet/VocabularySet';
 import Footer from './layouts/Footer';
+import Pets from './features/pets/Pets';
+import Community from './features/community/Community';
+import UserDashboard from './pages/UserDashboard';
 
 const App: React.FC = () => {
   return (
@@ -21,6 +24,9 @@ const App: React.FC = () => {
           <Route path="/learningSession/:id" element={<LearningSession />} />
           <Route path="/vocabularySet/:id" element={<VocabularySetDetail />} />
           <Route path="/vocabularySet" element={<VocabularySet />} />
+          <Route path='/pets' element={<Pets />} />
+          <Route path='/community' element={<Community />} />
+          <Route path='/home' element={<UserDashboard />} />
         </Routes>
         <Footer />
       </BrowserRouter>

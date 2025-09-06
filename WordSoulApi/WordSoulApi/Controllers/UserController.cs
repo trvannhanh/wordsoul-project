@@ -1,14 +1,17 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using WordSoulApi.Extensions;
 using WordSoulApi.Models.DTOs.User;
 using WordSoulApi.Services.Interfaces;
 
 namespace WordSoulApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/users")]
     [ApiController]
+    [EnableCors("AllowLocalhost")]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -19,7 +22,7 @@ namespace WordSoulApi.Controllers
             _userVocabularySetService = userVocabularySetService;
         }
 
-        //GET: api/User : Lấy tất cả người dùng
+        //GET: api/users : Lấy tất cả người dùng
         [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAllUsers()
@@ -28,7 +31,7 @@ namespace WordSoulApi.Controllers
             return Ok(users);
         }
 
-        // GET: api/User/{id} : Lấy người dùng theo ID
+        // GET: api/users/{id} : Lấy người dùng theo ID
         [Authorize(Roles = "Admin,User")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUserById(int id)
@@ -38,7 +41,20 @@ namespace WordSoulApi.Controllers
             return Ok(user);
         }
 
-        // PUT: api/User/{id} : Cập nhật người dùng theo ID
+        // GET: api/users/me : Lấy thông tin người dùng hiện tại
+        [Authorize(Roles = "Admin,User")]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetUserById()
+        {
+            var userId = User.GetUserId();
+            if (userId == 0) return Unauthorized();
+
+            var user = await _userService.GetUserByIdAsync(userId);
+            if (user == null) return NotFound();
+            return Ok(user);
+        }
+
+        // PUT: api/users/{id} : Cập nhật người dùng theo ID
         [Authorize(Roles = "Admin,User")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(int id, UserDto userDto)
@@ -49,7 +65,7 @@ namespace WordSoulApi.Controllers
             return Ok(updatedUser);
         }
 
-        // DELETE: api/User/{id} : Xóa người dùng theo ID
+        // DELETE: api/users/{id} : Xóa người dùng theo ID
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
@@ -60,7 +76,16 @@ namespace WordSoulApi.Controllers
 
         }
 
-        
+        [HttpGet("user-dashboard")]
+        public async Task<IActionResult> GetDashboard()
+        {
+            var userId = User.GetUserId();
+            if (userId == 0) return Unauthorized();
+
+            var dashboard = await _userService.GetUserDashboardAsync(userId);
+            return Ok(dashboard);
+        }
+
 
         // api lấy thông tin người dùng hiện tại
 

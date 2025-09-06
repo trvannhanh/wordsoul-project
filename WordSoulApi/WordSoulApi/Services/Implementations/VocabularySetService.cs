@@ -22,21 +22,6 @@ namespace WordSoulApi.Services.Implementations
             _logger = logger;
         }
 
-        // Lấy tất cả các bộ từ vựng với phân trang
-        public async Task<IEnumerable<VocabularySetDto>> GetAllVocabularySetsAsync(int pageNumber = 1, int pageSize = 10)
-        {
-            _logger.LogInformation("Retrieving all vocabulary sets with pageNumber: {PageNumber}, pageSize: {PageSize}", pageNumber, pageSize);
-            var vocabularySets = await _vocabularySetRepository.GetAllVocabularySetsAsync(pageNumber, pageSize);
-            var vocabularySetDtos = new List<VocabularySetDto>();
-
-            foreach (var vocabularySet in vocabularySets)
-            {
-                vocabularySetDtos.Add(MapToDto(vocabularySet));
-            }
-
-            return vocabularySetDtos;
-        }
-
         // Lấy bộ từ vựng theo ID
         public async Task<VocabularySetDetailDto?> GetVocabularySetByIdAsync(int id)
         {
@@ -237,10 +222,10 @@ namespace WordSoulApi.Services.Implementations
         }
 
         // Tìm kiếm bộ từ vựng với các tiêu chí khác nhau và phân trang
-        public async Task<IEnumerable<VocabularySetDto>> SearchVocabularySetAsync(string? title, VocabularySetTheme? theme, VocabularyDifficultyLevel? difficulty,
+        public async Task<IEnumerable<VocabularySetDto>> GetAllVocabularySetsAsync(string? title, VocabularySetTheme? theme, VocabularyDifficultyLevel? difficulty,
                                                                         DateTime? createdAfter, int pageNumber, int pageSize)
         {
-            var sets = await _vocabularySetRepository.SearchVocabularySetAsync(title, theme, difficulty, createdAfter, pageNumber, pageSize);
+            var sets = await _vocabularySetRepository.GetAllVocabularySetsAsync(title, theme, difficulty, createdAfter, pageNumber, pageSize);
             var vocabularySetDtos = new List<VocabularySetDto>();
             foreach (var vocabularySet in sets)
             {

@@ -42,5 +42,23 @@ namespace WordSoulApi.Repositories.Implementations
             return await _context.SaveChangesAsync() > 0;
         }
 
+        public async Task<User?> GetUserWithRelationsAsync(int userId)
+        {
+            return await _context.Users
+                .Include(u => u.UserOwnedPets).ThenInclude(up => up.Pet)
+                .Include(u => u.UserVocabularyProgresses)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+        }
+
+        public async Task<List<DateTime>> GetLearningSessionDatesAsync(int userId)
+        {
+            return await _context.LearningSessions
+                .Where(s => s.UserId == userId)
+                .Select(s => s.EndTime.Date)
+                .Distinct()
+                .OrderByDescending(d => d)
+                .ToListAsync();
+        }
+
     }
 }

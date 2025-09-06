@@ -63,15 +63,23 @@ export interface LearningSession {
 }
 
 export interface QuizQuestion {
-  id: number;
-  vocabId: number;
-  type: string; // multiple-choice, listening, ...
-  prompt: string;
+  vocabularyId: number;
+  questionType: QuestionType;
+  word: string;
+  meaning?: string;
+  partOfSpeech?: string;
+  cefrLevel?: string;
+  pronunciation?: string;
+  imageUrl?: string;
+  description?: string;
   options?: string[];
+  pronunciationUrl?: string;
 }
 
-export interface AnswerRequest{
-  questionId: number;
+
+export interface AnswerRequest {
+  vocabularyId: number;
+  questionType: QuestionType;
   answer: string;
 }
 
@@ -85,9 +93,62 @@ export interface UpdateProgressResponse{
   proficiencyLevel: number;
 }
 
-export interface CompleteSessionResponseDto{
+export interface CompleteLearningSessionResponseDto {
   xpEarned: number;
   isPetRewardGranted: boolean;
-  petId? : number;
+  petId?: number;
+  petName?: string;
+  description?: string;
+  imageUrl?: string;
+  petRarity?: string;
+  petType?: string;
   message: string;
 }
+
+export interface CompleteReviewSessionResponseDto{
+  xpEarned: number;
+  apEarned: number;
+  message: string;
+}
+
+export const QuestionType = {
+  Flashcard: 0,
+  FillInBlank: 1,
+  MultipleChoice: 2,
+  Listening: 3,
+} as const;
+
+export interface Pet {
+  isOwned: boolean;
+  id: number;
+  name: string;
+  description: string;
+  imageUrl: string;
+  rarity: string;
+  type: string;
+}
+
+export interface LevelStatDto {
+  level: number;
+  count: number;
+}
+
+export interface UserDashboardDto {
+  reviewWordCount: number;
+  nextReviewTime: string | null;
+
+  username: string;
+  level: number;
+  totalXP: number;
+  totalAP: number;
+  streakDays: number;
+  petCount: number;
+  avatarUrl?: string;
+
+  vocabularyStats: LevelStatDto[];
+}
+
+export type QuestionType = typeof QuestionType[keyof typeof QuestionType];
+
+
+

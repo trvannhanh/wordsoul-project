@@ -28,14 +28,6 @@ namespace WordSoulApi.Controllers
             _uploadAssetsService = uploadAssetsService;
         }
 
-        // GET: api/vocabulary-sets : Lấy tất cả bộ từ vựng với phân trang
-        [HttpGet]
-        public async Task<ActionResult<VocabularySetDto>> GetAllVocabularySets(int pageNumber = 1, int pageSize = 10)
-        {
-            var vocabularySets = await _vocabularySetService.GetAllVocabularySetsAsync(pageNumber, pageSize);
-            return Ok(vocabularySets);
-        }
-
         // GET: api/vocabulary-sets/{id} : Lấy bộ từ vựng theo ID
         [HttpGet("{id}")]
         public async Task<ActionResult<VocabularySetDetailDto>> GetVocabularySetById(int id)
@@ -158,12 +150,12 @@ namespace WordSoulApi.Controllers
             return NoContent();
         }
 
-        // GET: api/vocabulary-sets/search : Tìm kiếm bộ từ vựng với các tiêu chí khác nhau và phân trang
-        [HttpGet("search")]
-        public async Task<IActionResult> SearchVocabularySets(string? title, VocabularySetTheme? theme, VocabularyDifficultyLevel? difficulty,
+        // GET: api/vocabulary-sets : Tìm kiếm bộ từ vựng với các tiêu chí khác nhau và phân trang
+        [HttpGet]
+        public async Task<IActionResult> GetAllVocabularySets(string? title, VocabularySetTheme? theme, VocabularyDifficultyLevel? difficulty,
                                                                 DateTime? createdAfter, int pageNumber = 1, int pageSize = 10)
         {
-            var results = await _vocabularySetService.SearchVocabularySetAsync(
+            var results = await _vocabularySetService.GetAllVocabularySetsAsync(
                 title, theme, difficulty, createdAfter, pageNumber, pageSize);
 
             return Ok(results);
