@@ -7,6 +7,7 @@
         public string Email { get; set; }
         public string PasswordHash { get; set; }
         public int XP { get; set; } = 0; // Experience Points
+        public int AP { get; set; } = 0; // Experience Points
         public UserRole Role { get; set; } = UserRole.User; // Default role is User
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsActive { get; set; } = true;

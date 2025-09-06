@@ -1,4 +1,5 @@
-﻿using WordSoulApi.Models.DTOs.User;
+﻿using WordSoulApi.Models.DTOs.Home;
+using WordSoulApi.Models.DTOs.User;
 using WordSoulApi.Models.Entities;
 using WordSoulApi.Repositories.Interfaces;
 using WordSoulApi.Services.Interfaces;
@@ -72,6 +73,74 @@ namespace WordSoulApi.Services.Implementations
             var user = await _userRepository.GetUserByIdAsync(id);
             if (user == null) return false;
             return await _userRepository.DeleteUserAsync(id);
+        }
+
+
+        public async Task<UserDashboardDto> GetUserDashboardAsync(int userId)
+        {
+            var user = await _userRepository.GetUserWithRelationsAsync(userId);
+            if (user == null) throw new Exception("User not found");
+
+            var now = DateTime.UtcNow;
+
+            // Từ cần ôn tập
+            var reviewWords = user.UserVocabularyProgresses
+                .Where(p => p.NextReviewTime <= now)
+                .ToList();
+
+            // Thời gian ôn tập tiếp theo
+            var nextReview = user.UserVocabularyProgresses
+                .Where(p => p.NextReviewTime > now)
+                .OrderBy(p => p.NextReviewTime)
+                .Select(p => p.NextReviewTime)
+                .FirstOrDefault();
+
+            // Thống kê theo proficiency level
+            var stats = user.UserVocabularyProgresses
+                .GroupBy(p => p.ProficiencyLevel)
+                .Select(g => new LevelStatDto
+                {
+                    Level = g.Key,
+                    Count = g.Count()
+                }).ToList();
+
+            // Streak (tính chuỗi ngày liên tục có học)
+            var sessionDates = await _userRepository.GetLearningSessionDatesAsync(userId);
+            int streakDays = CalculateStreak(sessionDates);
+
+            return new UserDashboardDto
+            {
+                ReviewWordCount = reviewWords.Count,
+                NextReviewTime = nextReview,
+                Username = user.Username,
+                TotalXP = user.XP,
+                TotalAP = user.AP,
+                Level = user.XP / 100, // Ví dụ: 100 XP = 1 level
+                StreakDays = streakDays,
+                PetCount = user.UserOwnedPets.Count,
+                AvatarUrl = user.UserOwnedPets.FirstOrDefault(p => p.IsActive)?.Pet.ImageUrl,
+                VocabularyStats = stats
+            };
+        }
+
+        private int CalculateStreak(List<DateTime> dates)
+        {
+            if (!dates.Any()) return 0;
+
+            int streak = 1;
+            var today = DateTime.UtcNow.Date;
+
+            if (dates[0] != today && dates[0] != today.AddDays(-1))
+                return 0;
+
+            for (int i = 0; i < dates.Count - 1; i++)
+            {
+                if ((dates[i] - dates[i + 1]).TotalDays == 1)
+                    streak++;
+                else
+                    break;
+            }
+            return streak;
         }
 
 

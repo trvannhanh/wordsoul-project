@@ -84,7 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(me.data);
 
       // redirect về home
-      window.location.href = "/";
+      window.location.href = "/home";
     } catch (err) {
       console.error("Login thất bại:", err);
       throw err;

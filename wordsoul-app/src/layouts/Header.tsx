@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "react-router-dom"
 import { useAuth } from "../store/AuthContext";
 
 const Header: React.FC = () => {
@@ -31,7 +31,7 @@ const Header: React.FC = () => {
                             <div className="relative">
                                 <Link to="/vocabularySet">
                                     <button className="flex items-center gap-1 px-4 py-2 text-white hover:text-blue-400 hover:bg-slate-800 rounded-md custom-cursor">
-                                        Học
+                                        Bộ từ vựng
                                         <span>
                                             <svg
                                                 width="20"
@@ -52,7 +52,7 @@ const Header: React.FC = () => {
                                 </Link>
                             </div>
                             <div className="relative">
-                                <button className="flex items-center gap-1 px-4 py-2 text-white hover:text-blue-400 hover:bg-slate-800 rounded-md custom-cursor">
+                                <button className="flex items-center gap-1 px-4 py-2 text-white hover:text-blue-400 hover:bg-slate-800 rounded-md custom-cursor " >
                                     Ôn tập
                                     <span>
                                         <svg
@@ -73,14 +73,14 @@ const Header: React.FC = () => {
                                 </button>
                             </div>
                             <div>
-                                <Link to="/vocabularySet">
+                                <Link to="/pets">
                                     <button className="px-4 py-2 text-white hover:text-blue-400 hover:bg-slate-800 rounded-md custom-cursor " >
                                         Linh Thú
                                     </button>
                                 </Link>
                             </div>
                             <div className="relative">
-                                <Link to="/learningSession">
+                                <Link to="/community">
                                     <button className="flex items-center gap-1 px-4 py-2 text-white hover:text-blue-400 hover:bg-slate-800 rounded-md custom-cursor">
                                         Cộng đồng
                                         <span>

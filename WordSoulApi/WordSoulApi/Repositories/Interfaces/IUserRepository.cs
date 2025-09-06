@@ -8,8 +8,12 @@ namespace WordSoulApi.Repositories.Interfaces
         Task<bool> DeleteUserAsync(int id);
         // Lấy tất cả người dùng
         Task<IEnumerable<User>> GetAllUsersAsync();
+        Task<List<DateTime>> GetLearningSessionDatesAsync(int userId);
+
         // Lấy người dùng theo ID
         Task<User?> GetUserByIdAsync(int id);
+        Task<User?> GetUserWithRelationsAsync(int userId);
+
         // Cập nhật thông tin người dùng
         Task<User> UpdateUserAsync(User user);
     }
