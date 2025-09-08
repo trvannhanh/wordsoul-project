@@ -17,28 +17,43 @@ namespace WordSoulApi.Data
         public DbSet<UserVocabularyProgress> UserVocabularyProgresses { get; set; }
         public DbSet<UserOwnedPet> UserOwnedPets { get; set; }
         public DbSet<SetRewardPet> SetRewardPets { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
             // Additional model configurations can go here
 
-            // Đảm bảo unique constraint trên (UserId, LearningSessionId, QuizQuestionId, QuestionType)
+            // Đảm bảo unique constraint trên ( LearningSessionId, QuizQuestionId, QuestionType)
             modelBuilder.Entity<AnswerRecord>()
-                .HasIndex(ar => new { ar.UserId, ar.LearningSessionId, ar.VocabularyId, ar.QuestionType })
+                .HasIndex(ar => new { ar.LearningSessionId, ar.VocabularyId, ar.QuestionType })
                 .IsUnique();
 
-            //Vocabulary 1 - N QuizQuestion relationship
+            //Vocabulary 1 - N AnserRecord relationship
             modelBuilder.Entity<Vocabulary>()
                 .HasMany(v => v.AnswerRecords)
                 .WithOne(q => q.Vocabulary)
                 .HasForeignKey(q => q.VocabularyId)
                 .OnDelete(DeleteBehavior.Cascade); // Cascade delete if vocabulary is deleted
 
+            //LearningSession 1 - N AnswerRecord relationship
+            modelBuilder.Entity<LearningSession>()
+                .HasMany(ls => ls.AnswerRecords)
+                .WithOne(a => a.LearningSession)
+                .HasForeignKey(a => a.LearningSessionId)
+                .OnDelete(DeleteBehavior.Restrict); // Restrict delete to prevent accidental loss of answer records
+
             // User 1 - N LearningSession relationship
             modelBuilder.Entity<User>() 
                 .HasMany(u => u.LearningSessions)
                 .WithOne(ls => ls.User) 
+                .HasForeignKey(ls => ls.UserId)
+                .OnDelete(DeleteBehavior.Cascade); // Cascade delete if user is deleted
+
+            // User 1 - N Notification relationship
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.Notifications)
+                .WithOne(ls => ls.User)
                 .HasForeignKey(ls => ls.UserId)
                 .OnDelete(DeleteBehavior.Cascade); // Cascade delete if user is deleted
 
@@ -144,26 +159,6 @@ namespace WordSoulApi.Data
                 .WithMany(v => v.SessionVocabularies)
                 .HasForeignKey(sv => sv.VocabularyId)
                 .OnDelete(DeleteBehavior.Restrict); // Restrict delete if vocabulary is deleted, to prevent accidental loss of session vocabularies
-
-            // User N - N QuizQuestion relationship (AnswerRecord)
-            modelBuilder.Entity<AnswerRecord>()
-                .HasOne(ar => ar.User)       
-                .WithMany(u => u.AnswerRecords)
-                .HasForeignKey(ar => ar.UserId)
-                .OnDelete(DeleteBehavior.Cascade); // Cascade delete if user is deleted
-
-            //modelBuilder.Entity<AnswerRecord>()
-            //    .HasOne(ar => ar.QuizQuestion)
-            //    .WithMany(q => q.AnswerRecords)
-            //    .HasForeignKey(ar => ar.QuizQuestionId)
-            //    .OnDelete(DeleteBehavior.Cascade); // Cascade delete if quiz question is deleted
-
-            //LearningSession 1 - N AnswerRecord relationship
-            modelBuilder.Entity<LearningSession>()
-                .HasMany(ls => ls.AnswerRecords)
-                .WithOne(a => a.LearningSession)
-                .HasForeignKey(a => a.LearningSessionId)
-                .OnDelete(DeleteBehavior.Restrict); // Restrict delete to prevent accidental loss of answer records
 
         }
     }
