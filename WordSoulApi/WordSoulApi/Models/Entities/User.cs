@@ -18,10 +18,10 @@
         public List<LearningSession> LearningSessions { get; set; } = new List<LearningSession>(); 
         public List<UserVocabularySet> UserVocabularySets { get; set; } = new List<UserVocabularySet>(); 
         public List<UserVocabularyProgress> UserVocabularyProgresses { get; set; } = new List<UserVocabularyProgress>();
-        public List<AnswerRecord> AnswerRecords { get; set; } = new List<AnswerRecord>(); 
-        public List<UserOwnedPet> UserOwnedPets { get; set; } = new List<UserOwnedPet>(); 
-        
-        
+        public List<UserOwnedPet> UserOwnedPets { get; set; } = new List<UserOwnedPet>();
+        public List<Notification> Notifications { get; set; } = new List<Notification>();
+
+
     }
 
     public enum UserRole

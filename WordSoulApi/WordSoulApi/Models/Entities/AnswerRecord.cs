@@ -3,8 +3,8 @@
     public class AnswerRecord
     {
         public int Id { get; set; }
-        public int UserId { get; set; }
-        public User User { get; set; }
+        //public int UserId { get; set; }
+        //public User User { get; set; }
         public int VocabularyId { get; set; }   // tham chiếu trực tiếp Vocabulary
         public Vocabulary Vocabulary { get; set; }
         public int LearningSessionId { get; set; }

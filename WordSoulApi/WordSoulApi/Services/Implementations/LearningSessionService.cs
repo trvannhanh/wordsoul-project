@@ -121,7 +121,7 @@ namespace WordSoulApi.Services.Implementations
             foreach (var vocabId in vocabIds)
             {
                 // Kiểm tra xem tất cả câu hỏi liên quan đến từ vựng đã được trả lời đúng chưa
-                var allCorrect = await _answerRecordRepository.CheckAllQuestionsCorrectAsync(userId, sessionId, vocabId);
+                var allCorrect = await _answerRecordRepository.CheckAllQuestionsCorrectAsync(sessionId, vocabId);
                 if (!allCorrect)
                     throw new InvalidOperationException($"Not all questions for vocabulary {vocabId} are answered correctly");
             }
@@ -289,7 +289,7 @@ namespace WordSoulApi.Services.Implementations
             if (vocab == null) throw new KeyNotFoundException("Vocabulary not found");
 
             // Số lần attempt trước đó
-            var attemptCount = await _answerRecordRepository.GetAttemptCountAsync(userId, sessionId, request.VocabularyId, request.QuestionType);
+            var attemptCount = await _answerRecordRepository.GetAttemptCountAsync(sessionId, request.VocabularyId, request.QuestionType);
 
             // Kiểm tra đúng/sai
             bool isCorrect = request.QuestionType switch
@@ -306,13 +306,12 @@ namespace WordSoulApi.Services.Implementations
                 _ => false
             };
 
-            var existingAnswerRecord = await _answerRecordRepository.GetAnswerRecordFromSession(sessionId, vocab.Id, userId,  request.QuestionType);
+            var existingAnswerRecord = await _answerRecordRepository.GetAnswerRecordFromSession(sessionId, vocab.Id,request.QuestionType);
             if(existingAnswerRecord == null)
             {
                 // Tạo bản ghi
                 var record = new AnswerRecord
                 {
-                    UserId = userId,
                     LearningSessionId = sessionId,
                     VocabularyId = vocab.Id,
                     QuestionType = request.QuestionType,

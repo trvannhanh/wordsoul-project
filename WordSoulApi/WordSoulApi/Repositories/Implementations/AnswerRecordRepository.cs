@@ -20,11 +20,10 @@ namespace WordSoulApi.Repositories.Implementations
         }
 
         // Kiểm tra xem đã tồn tại AnswerRecord cho user + session + vocab + questionType chưa
-        public async Task<bool> ExistsAsync(int userId, int sessionId, int vocabId, QuestionType questionType)
+        public async Task<bool> ExistsAsync(int sessionId, int vocabId, QuestionType questionType)
         {
             return await _context.AnswerRecords
-                .AnyAsync(ar => ar.UserId == userId &&
-                                ar.LearningSessionId == sessionId &&
+                .AnyAsync(ar => ar.LearningSessionId == sessionId &&
                                 ar.VocabularyId == vocabId &&
                                 ar.QuestionType == questionType);
         }
@@ -37,11 +36,10 @@ namespace WordSoulApi.Repositories.Implementations
                 .FirstOrDefaultAsync(ar => ar.Id == id);
         }
 
-        public async Task<AnswerRecord?> GetAnswerRecordFromSession(int sessionId, int vocabId,int userId, QuestionType questionType)
+        public async Task<AnswerRecord?> GetAnswerRecordFromSession(int sessionId, int vocabId,QuestionType questionType)
         {
             return await _context.AnswerRecords.FirstOrDefaultAsync(ar =>
                 ar.LearningSessionId == sessionId &&
-                ar.UserId == userId &&
                 ar.VocabularyId == vocabId &&
                 ar.QuestionType == questionType);
         }
@@ -73,11 +71,10 @@ namespace WordSoulApi.Repositories.Implementations
         }
 
         // Đếm số lần attempt cho 1 từ + loại câu hỏi
-        public async Task<int> GetAttemptCountAsync(int userId, int sessionId, int vocabId, QuestionType questionType)
+        public async Task<int> GetAttemptCountAsync(int sessionId, int vocabId, QuestionType questionType)
         {
             var record = await _context.AnswerRecords
-                .Where(a => a.UserId == userId &&
-                            a.LearningSessionId == sessionId &&
+                .Where(a => a.LearningSessionId == sessionId &&
                             a.VocabularyId == vocabId &&
                             a.QuestionType == questionType)
                 .Select(a => a.AttemptCount)
@@ -87,14 +84,13 @@ namespace WordSoulApi.Repositories.Implementations
         }
 
         // Kiểm tra user đã trả lời đúng tất cả các loại câu hỏi của 1 từ chưa
-        public async Task<bool> CheckAllQuestionsCorrectAsync(int userId, int sessionId, int vocabId)
+        public async Task<bool> CheckAllQuestionsCorrectAsync(int sessionId, int vocabId)
         {
             var totalTypes = Enum.GetValues<QuestionType>().Length;
 
             var correctTypes = await _context.AnswerRecords
                 .AsNoTracking()
-                .Where(a => a.UserId == userId &&
-                            a.LearningSessionId == sessionId &&
+                .Where(a => a.LearningSessionId == sessionId &&
                             a.VocabularyId == vocabId &&
                             a.IsCorrect)
                 .Select(a => a.QuestionType)
