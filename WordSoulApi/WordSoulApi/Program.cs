@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using System.Text;
 using WordSoulApi.Data;
+using WordSoulApi.Hubs;
 using WordSoulApi.Repositories.Implementations;
 using WordSoulApi.Repositories.Interfaces;
 using WordSoulApi.Services.Implementations;
@@ -54,6 +55,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+//Thêm dịch vụ SignalR
+builder.Services.AddSignalR();
+
 // Register repository and service
 // Vocabulary
 builder.Services.AddScoped<IVocabularyRepository, VocabularyRepository>();
@@ -86,8 +90,15 @@ builder.Services.AddScoped<IUserOwnedPetService, UserOwnedPetService>();
 // User Vocabulary Set
 builder.Services.AddScoped<IUserVocabularySetRepository, UserVocabularySetRepository>();
 builder.Services.AddScoped<IUserVocabularySetService, UserVocabularySetService>();
+// Notification
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 // Upload Assests
 builder.Services.AddScoped<IUploadAssetsService, UploadAssetsService>();
+
+//Background Service
+builder.Services.AddHostedService<NotificationBackgroundService>();
+
 
 
 // Configure Cloudinary
@@ -105,6 +116,9 @@ builder.Services.AddSingleton<Cloudinary>(sp =>
 
 var app = builder.Build();
 
+
+//Hub SignalR
+app.MapHub<NotificationHub>("/notificationHub");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
