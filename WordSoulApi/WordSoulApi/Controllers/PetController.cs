@@ -24,7 +24,7 @@ namespace WordSoulApi.Controllers
             _uploadAssetsService = uploadAssetsService;
         }
 
-        // GET: api/pets : Lấy tất cả pet
+        // GET: api/pets : Lấy tất cả pet theo người dùng
         [Authorize(Roles = "Admin,User")]
         [HttpGet]
         public async Task<IActionResult> GetAllPets(string? name, PetRarity? rarity, PetType? type,
@@ -70,11 +70,10 @@ namespace WordSoulApi.Controllers
                 Console.WriteLine($"ImageFile: {petDto.ImageFile?.FileName}, Length: {petDto.ImageFile?.Length}");
                 if (petDto.ImageFile != null && petDto.ImageFile.Length > 0)
                 {
-                    Console.WriteLine("111111");
                     (imageUrl, publicId) = await _uploadAssetsService.UploadImageAsync(petDto.ImageFile, "pets");
                 }
 
-                // Gọi service để tạo VocabularySet
+                // Gọi service để tạo Pet
                 var createdPet = await _petService.CreatePetAsync(petDto, imageUrl);
 
                 return CreatedAtAction(nameof(GetPetById), new { id = createdPet.Id }, createdPet);
@@ -93,29 +92,96 @@ namespace WordSoulApi.Controllers
             }
         }
 
-        // PUT: api/pets/{id} : Cập nhật pet theo ID
-        //[Authorize(Roles = "Admin")]
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> UpdatePet(int id, AdminPetDto petDto)
-        //{
-        //    if (petDto == null) return BadRequest("Pet data is required.");
-        //    var updatedPet = await _petService.UpdatePetAsync(id, petDto);
-        //    if (updatedPet == null) return NotFound();
-        //    return Ok(updatedPet);
-        //}
+        //PUT: api/pets/{id} : Cập nhật pet theo ID
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdatePet(int id, [FromForm] UpdatePetDto petDto)
+        {
+            if (petDto == null) return BadRequest("Pet data is required.");
 
-        //// DELETE: api/pets/{id} : Xóa pet theo ID
-        //[Authorize(Roles = "Admin")]
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> DeletePet(int id)
-        //{
-        //    var result = await _petService.DeletePetAsync(id);
-        //    if (!result) return NotFound();
-        //    return NoContent();
-        //}
+            try
+            {
+                string? imageUrl = null;
+                string? publicId = null;
 
+                Console.WriteLine($"ImageFile: {petDto.ImageFile?.FileName}, Length: {petDto.ImageFile?.Length}");
+                if (petDto.ImageFile != null && petDto.ImageFile.Length > 0)
+                {
+                    (imageUrl, publicId) = await _uploadAssetsService.UploadImageAsync(petDto.ImageFile, "pets");
+                }
 
-        // api lọc pet theo loại, tên, cấp độ, trạng thái
+                // Gọi service để cập nhật Pet
+                var updatedPet = await _petService.UpdatePetAsync(id, petDto, imageUrl);
+                if (updatedPet == null) return NotFound();
+                return Ok(updatedPet);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while creating the pet.", Error = ex.Message });
+            }
+        }
+
+        // DELETE: api/pets/{id} : Xóa pet theo ID
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeletePet(int id)
+        {
+            var result = await _petService.DeletePetAsync(id);
+            if (!result) return NotFound();
+            return NoContent();
+        }
+
+        // POST: api/pets/bulk : Tạo nhiều pet
+        [Authorize(Roles = "Admin")]
+        [HttpPost("bulk")]
+        public async Task<IActionResult> CreatePetsBulk([FromBody] BulkCreatePetDto bulkDto)
+        {
+            if (bulkDto == null || !bulkDto.Pets.Any()) return BadRequest("Danh sách pet rỗng.");
+            var createdPets = await _petService.CreatePetsBulkAsync(bulkDto);
+            return Ok(createdPets);
+        }
+
+        // PUT: api/pets/bulk : Cập nhật nhiều pet
+        [Authorize(Roles = "Admin")]
+        [HttpPut("bulk")]
+        public async Task<IActionResult> UpdatePetsBulk([FromBody] List<UpdatePetDto> pets)
+        {
+            if (pets == null || !pets.Any()) return BadRequest("Danh sách pet rỗng.");
+            var updatedPets = await _petService.UpdatePetsBulkAsync(pets);
+            return Ok(updatedPets);
+        }
+
+        // DELETE: api/pets/bulk : Xóa nhiều pet
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("bulk")]
+        public async Task<IActionResult> DeletePetsBulk([FromBody] List<int> petIds)
+        {
+            if (petIds == null || !petIds.Any()) return BadRequest("Danh sách ID rỗng.");
+            var result = await _petService.DeletePetsBulkAsync(petIds);
+            return result ? NoContent() : BadRequest("Xóa thất bại.");
+        }
+
+        
+
+        // POST: api/pets/{petId}/evolve : Evolve pet cho user
+        [Authorize(Roles = "Admin")]
+        [HttpPost("{petId}/evolve")]
+        public async Task<IActionResult> EvolvePet(int petId, [FromBody] EvolvePetDto evolveDto)
+        {
+            evolveDto.PetId = petId;
+            var result = await _petService.EvolvePetForUserAsync(evolveDto);
+            if (result == null) return NotFound("Pet hoặc user không tồn tại.");
+            return Ok(result);
+        }
+
 
 
     }

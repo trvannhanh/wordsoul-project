@@ -4,9 +4,14 @@ namespace WordSoulApi.Repositories.Interfaces
 {
     public interface IUserOwnedPetRepository
     {
-        // Thêm pet vào danh sách sở hữu của người dùng
-        Task AddPetToUserAsync(UserOwnedPet userOwnedPet);
+        Task<bool> CheckExistsUserOwnedPetAsync(int userId, int petId);
+
         // kiểm tra người dùng có sở hữu pet này chưa
         Task<bool> CheckPetOwnedByUserAsync(int userId, int petId);
+        Task CreateUserOwnedPetAsync(UserOwnedPet userOwnedPet);
+        Task DeleteUserOwnedPetAsync(UserOwnedPet userOwnedPet);
+        Task<List<UserOwnedPet>> GetAllUserOwnedPetByUserIdAsync(int userId);
+        Task<UserOwnedPet?> GetUserOwnedPetByUserAndPetIdAsync(int userId, int petId);
+        Task UpdateUserOwnedPetAsync(UserOwnedPet userOwnedPet);
     }
 }

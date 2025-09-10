@@ -13,13 +13,15 @@ namespace WordSoulApi.Services.Implementations
         private readonly IUserOwnedPetRepository _userOwnedPetRepository;
         private readonly IUserVocabularySetRepository _userVocabularySetRepository;
         private readonly IUserRepository _userRepository;
-        public UserOwnedPetService(ILearningSessionRepository learningSessionRepository, ISetRewardPetRepository setRewardPetRepository, IUserOwnedPetRepository userOwnedPetRepository, IUserRepository userRepository, IUserVocabularySetRepository userVocabularySetRepository)
+        private readonly IActivityLogService _activityLogService;
+        public UserOwnedPetService(ILearningSessionRepository learningSessionRepository, ISetRewardPetRepository setRewardPetRepository, IUserOwnedPetRepository userOwnedPetRepository, IUserRepository userRepository, IUserVocabularySetRepository userVocabularySetRepository, IActivityLogService activityLogService)
         {
             _learningSessionRepository = learningSessionRepository;
             _setRewardPetRepository = setRewardPetRepository;
             _userOwnedPetRepository = userOwnedPetRepository;
             _userRepository = userRepository;
             _userVocabularySetRepository = userVocabularySetRepository;
+            _activityLogService = activityLogService;
         }
 
         // Thử cấp pet khi người dùng hoàn thành milestone
@@ -78,7 +80,8 @@ namespace WordSoulApi.Services.Implementations
                     PetId = chosenPet.Id,
                     AcquiredAt = DateTime.UtcNow
                 };
-                await _userOwnedPetRepository.AddPetToUserAsync(newUserPet);
+                await _userOwnedPetRepository.CreateUserOwnedPetAsync(newUserPet);
+                await _activityLogService.CreateActivityAsync(userId, "AssignPet", "User granted pet");
                 return (chosenPet, alreadyOwned, 0);
             }
         }
