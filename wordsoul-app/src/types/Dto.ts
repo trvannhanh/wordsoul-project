@@ -148,6 +148,29 @@ export interface UserDashboardDto {
   vocabularyStats: LevelStatDto[];
 }
 
+export interface NotificationDto {
+  id: number;
+  userId?: number;
+  title: string;
+  type: string;
+  message: string;
+  isRead: boolean;
+  createdAt: Date;
+}
+
+export interface ActivityLogDto {
+  id: number;
+  userId: number;
+  username: string;
+  action: string;
+  details: string;
+  timestamp: Date;
+}
+
+export interface AssignRoleDto {
+  roleName: string;
+}
+
 export type QuestionType = typeof QuestionType[keyof typeof QuestionType];
 
 

@@ -1,6 +1,6 @@
 import { AxiosError } from "axios";
-import type { VocabularySet, VocabularySetDetail } from "../types/Dto";
-import api, { endpoints } from "./api";
+import type { Vocabulary, VocabularySet, VocabularySetDetail } from "../types/Dto";
+import api, { authApi, endpoints } from "./api";
 
 export const fetchVocabularySets = async (
   title?: string,
@@ -31,6 +31,44 @@ export const fetchVocabularySets = async (
 };
 
 export const fetchVocabularySetDetail = async (id: number): Promise<VocabularySetDetail> => {
-  const response = await api.get<VocabularySetDetail>(endpoints.vocabularySet(id));
+  const response = await api.get<VocabularySetDetail>(endpoints.vocabularySetDetail(id));
   return response.data;
+};
+
+export const createVocabularySet = async (formData: FormData): Promise<VocabularySet> => {
+  const response = await authApi.post<VocabularySet>(endpoints.vocabularySets, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
+
+export const updateVocabularySet = async (id: number, data: VocabularySet): Promise<void> => {
+  await authApi.put(endpoints.vocabularySet(id), data);
+};
+
+export const deleteVocabularySet = async (id: number): Promise<void> => {
+  await authApi.delete(endpoints.vocabularySet(id));
+};
+
+export const getAllVocabularies = async (): Promise<Vocabulary[]> => {
+  const response = await authApi.get<Vocabulary[]>(endpoints.vocabularies);
+  return response.data;
+};
+
+export const createVocabulary = async (formData: FormData): Promise<Vocabulary> => {
+  const response = await authApi.post<Vocabulary>(endpoints.vocabularies, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
+
+export const addVocabularyToSet = async (setId: number, formData: FormData): Promise<Vocabulary> => {
+  const response = await authApi.post<Vocabulary>(endpoints.setVocabulary(setId), formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
+
+export const removeVocabularyFromSet = async (setId: number, vocabId: number): Promise<void> => {
+  await authApi.delete(endpoints.deleteSetVocabulary(setId, vocabId));
 };

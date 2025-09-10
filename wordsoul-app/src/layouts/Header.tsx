@@ -1,15 +1,102 @@
 import { Link } from "react-router-dom"
 import { useAuth } from "../store/AuthContext";
+import type { NotificationDto } from "../types/Dto";
+import { useEffect, useMemo, useState } from "react";
+import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import { deleteNotification, fetchNotifications, markReadAllNotifications, markReadNotifications } from "../services/notification";
 
 const Header: React.FC = () => {
     const { user, logout } = useAuth();
-    
+    const [notifications, setNotifications] = useState<NotificationDto[]>([]);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [connection, setConnection] = useState<any>(null);
+
+    // Initialize SignalR connection
+    useEffect(() => {
+        const newConnection = new HubConnectionBuilder()
+            .withUrl("https://localhost:7272/notificationHub", {
+                accessTokenFactory: () => localStorage.getItem("accessToken") || "", // Use your token storage
+            })
+            .configureLogging(LogLevel.Information)
+            .withAutomaticReconnect()
+            .build();
+
+        setConnection(newConnection);
+    }, []);
+
+    const unreadCount = useMemo(() => notifications.filter((n) => !n.isRead).length, [notifications]);
+
+    // Start connection and handle real-time notifications
+    useEffect(() => {
+        if (connection) {
+            connection
+                .start()
+                .then(() => {
+                    console.log("SignalR Connected!");
+                    if (user?.id) {
+                        connection.on("ReceiveNotification", (notification: NotificationDto) => {
+                            setNotifications((prev) => [notification, ...prev]); // Add new notification
+                        });
+                    }
+                })
+                .catch((e: Error) => console.log("Connection failed: ", e));
+
+            return () => {
+                connection.stop(); // Cleanup on unmount
+            };
+        }
+    }, [connection, user?.id]);
+
+    // Fetch initial notifications when user is logged in
+    useEffect(() => {
+        if (user?.id) {
+            fetchNotifications()
+                .then((data) => setNotifications(data))
+                .catch((error) => console.error("Failed to fetch notifications:", error));
+        }
+    }, [user?.id]);
+
+    // Toggle dropdown
+    const toggleDropdown = () => {
+        setIsDropdownOpen(!isDropdownOpen);
+    };
+
+    // Mark a notification as read
+    const handleMarkRead = (id: number) => {
+        markReadNotifications(id)
+            .then(() => {
+                setNotifications((prev) =>
+                    prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+                );
+            })
+            .catch((error) => console.error("Failed to mark as read:", error));
+    };
+
+    // Delete a notification
+    const handleDelete = (id: number) => {
+        deleteNotification(id)
+            .then(() => {
+                setNotifications((prev) => prev.filter((n) => n.id !== id));
+            })
+            .catch((error) => console.error("Failed to delete notification:", error));
+    };
+
+    // Mark all as read
+    const handleMarkAllRead = () => {
+        markReadAllNotifications()
+            .then(() => {
+                setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+            })
+            .catch((error) => console.error("Failed to mark all as read:", error));
+    };
+
     return (
         <>
-            <div className="flex items-center justify-between background-color px-10 py-2  shadow-sm fixed top-0 left-0 z-1000 w-screen">
-                <div className="container mx-auto flex items-center justify-between w-7/12 " >
+            <div className="flex items-center justify-between background-color px-10 py-2 shadow-sm fixed top-0 left-0 z-1000 w-screen">
+                <div className="container mx-auto flex items-center justify-between w-7/12" >
                     {/* Logo Section */}
-                    <h2 className="flex items-center cursor-pointer w-1/5">
+                    <h2 className="flex items-center cursor-pointer ">
                         <div>
                             <img
                                 src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1756452551/coin-logo_ysauhp.png"
@@ -25,7 +112,7 @@ const Header: React.FC = () => {
                     </h2>
 
                     {/* Navigation Links and User Actions */}
-                    <div className="flex items-center justify-between gap-4 w-4/5">
+                    <div className="flex items-center justify-center gap-4 ">
                         {/* Navigation Links */}
                         <div className="flex items-center gap-2 text-xs">
                             <div className="relative">
@@ -110,9 +197,81 @@ const Header: React.FC = () => {
                                 </Link>
                             </div>
                         </div>
-
+                    </div>
+                    <div className="flex items-center justify-center gap-4">
                         {/* User Actions */}
                         <div className="flex items-center gap-4">
+                            {/* Notification Bell with Dropdown */}
+                            <div className="relative icon-container nes-pointer ">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    onClick={toggleDropdown}
+                                    className="custom-cursor"
+                                >
+                                    <path
+                                        fillRule="evenodd"
+                                        clipRule="evenodd"
+                                        d="M14 4V2H9.99999V4H5.00018V6H19.0002V4H14ZM18.9999 16H4.99994V12H2.99994V16V18L7.99975 18V22H9.99975V18H13.9998V20H10V22H13.9998V22H15.9998V18L20.9999 18V16L21 12H19V6H17V14H18.9999V16ZM5.00018 6V14H7.00018V6H5.00018Z"
+                                        fill={notifications.some((n) => !n.isRead) ? "#FFD700" : "#94A3B8"} // Yellow if unread
+                                    />
+                                </svg>
+                                {unreadCount > 0 && (
+                                    <span className="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-red-500 rounded-full -mt-1 -mr-1">
+                                        {unreadCount}
+                                    </span>
+                                )}
+                                {isDropdownOpen && (
+                                    <div className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg z-50">
+                                        <div className="p-2">
+                                            <div className="flex justify-between items-center mb-2">
+                                                <h3 className="text-sm font-semibold">Thông báo</h3>
+                                                <button
+                                                    onClick={handleMarkAllRead}
+                                                    className="text-xs text-blue-500 hover:text-blue-700 custom-cursor"
+                                                >
+                                                    Đánh dấu tất cả đã đọc
+                                                </button>
+                                            </div>
+                                            {notifications.length > 0 ? (
+                                                notifications.map((notif) => (
+                                                    <div
+                                                        key={notif.id}
+                                                        className={`p-2 border-b ${!notif.isRead ? "bg-gray-100" : ""}`}
+                                                    >
+                                                        <div className="text-sm">{notif.title}</div>
+                                                        <div className="text-xs text-gray-600">{notif.message}</div>
+                                                        <div className="text-xs text-gray-400">
+                                                            {new Date(notif.createdAt).toLocaleTimeString()}
+                                                        </div>
+                                                        <div className="flex gap-2 mt-1">
+                                                            {!notif.isRead && (
+                                                                <button
+                                                                    onClick={() => handleMarkRead(notif.id)}
+                                                                    className="text-xs text-blue-500 hover:text-blue-700 custom-cursor"
+                                                                >
+                                                                    Đánh dấu đã đọc
+                                                                </button>
+                                                            )}
+                                                            <button
+                                                                onClick={() => handleDelete(notif.id)}
+                                                                className="text-xs text-red-500 hover:text-red-700 custom-cursor"
+                                                            >
+                                                                Xóa
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="text-xs text-gray-500 text-center">Không có thông báo</div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                             <div className="custom-cursor">
                                 <svg
                                     width="24"
@@ -147,15 +306,15 @@ const Header: React.FC = () => {
                                     <span className="absolute top-6.5 right-0 w-full h-1 bg-yellow-500" />
                                     <span className="absolute bottom-6.5 right-0 w-full h-0.5 bg-yellow-500" />
                                 </button>
-                                ) : (
+                            ) : (
                                 <Link to="/login" className="no-underline">
-                                <button className="relative flex items-center px-2 py-1.5 bg-yellow-300 text-black rounded-xs hover:bg-yellow-200 custom-cursor">
-                                    <span className="absolute left-0 w-0.5 h-full bg-yellow-500" />
-                                    <span className="mx-1 text-xs font-pixel">Đăng nhập</span>
-                                    <span className="absolute right-0 w-0.5 h-full bg-yellow-500" />
-                                    <span className="absolute top-6.5 right-0 w-full h-1 bg-yellow-500" />
-                                    <span className="absolute bottom-6.5 right-0 w-full h-0.5 bg-yellow-500" />
-                                </button>
+                                    <button className="relative flex items-center px-2 py-1.5 bg-yellow-300 text-black rounded-xs hover:bg-yellow-200 custom-cursor">
+                                        <span className="absolute left-0 w-0.5 h-full bg-yellow-500" />
+                                        <span className="mx-1 text-xs font-pixel">Đăng nhập</span>
+                                        <span className="absolute right-0 w-0.5 h-full bg-yellow-500" />
+                                        <span className="absolute top-6.5 right-0 w-full h-1 bg-yellow-500" />
+                                        <span className="absolute bottom-6.5 right-0 w-full h-0.5 bg-yellow-500" />
+                                    </button>
                                 </Link>
                             )}
                         </div>

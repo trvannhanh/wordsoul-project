@@ -39,19 +39,19 @@ const VocabularySetDetail: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
-    const handleCreateSession = async () => {
+    const handleCreateLearningSession = async () => {
         setError(null);
         setIsLoading(true);
         try {
-          const session = await createLearningSession(Number(id)); 
-          navigate(`/learningSession/${session.id}`);  // chuyển hướng đến trang học phiên học
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const session = await createLearningSession(Number(id));
+            navigate(`/learningSession/${session.id}?mode=learning`);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
-          setError(err?.response?.data?.message || "Lỗi tạo phiên học");
+            setError(err?.response?.data?.message || "Lỗi tạo phiên học");
         } finally {
-          setIsLoading(false);
+            setIsLoading(false);
         }
-      };
+    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -73,9 +73,9 @@ const VocabularySetDetail: React.FC = () => {
     if (error) return <div>{error}</div>;
     if (!vocabularySet) return <div>No data available</div>;
 
-    return ( 
+    return (
         <>
-            
+
             <HeroSection
                 title={vocabularySet.title}
                 description={vocabularySet.description || 'No description available'}
@@ -97,7 +97,7 @@ const VocabularySetDetail: React.FC = () => {
                 </span>
             </div> */}
             <div >
-                <button className="relative flex items-center justify-center w-full px-2 py-1.5 bg-yellow-300 text-black rounded-xs hover:bg-yellow-200 custom-cursor " onClick={handleCreateSession}  disabled={isLoading}>
+                <button className="relative flex items-center justify-center w-full px-2 py-1.5 bg-yellow-300 text-black rounded-xs hover:bg-yellow-200 custom-cursor " onClick={handleCreateLearningSession} disabled={isLoading}>
                     <span className="absolute left-0 w-0.5 h-full bg-yellow-500" />
                     <span className="mx-1 text-xs font-bold font-sans">Học</span>
                     <span className="absolute right-0 w-0.5 h-full bg-yellow-500" />
