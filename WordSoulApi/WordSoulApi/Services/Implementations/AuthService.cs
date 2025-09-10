@@ -16,11 +16,13 @@ namespace WordSoulApi.Services.Implementations
         // Tiêm các phụ thuộc cần thiết
         private readonly IAuthRepository _authRepository;
         private readonly IConfiguration _configuration;
+        private readonly IActivityLogService _activityLogService;
 
-        public AuthService(IAuthRepository authRepository, IConfiguration configuration)
+        public AuthService(IAuthRepository authRepository, IConfiguration configuration, IActivityLogService activityLogService)
         {
             _authRepository = authRepository;
             _configuration = configuration;
+            _activityLogService = activityLogService;
         }
 
         // Đăng nhập người dùng và trả về TokenResponseDto nếu thành công, ngược lại trả về null
@@ -32,6 +34,8 @@ namespace WordSoulApi.Services.Implementations
             {
                 return null!;
             }
+
+            await _activityLogService.CreateActivityAsync(user.Id, "Login", "User logged in");
 
             return await CreateTokenResponse(user);
 

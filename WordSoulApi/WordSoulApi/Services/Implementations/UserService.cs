@@ -9,9 +9,11 @@ namespace WordSoulApi.Services.Implementations
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        public UserService(IUserRepository userRepository)
+        private readonly IActivityLogService _activityLogService;
+        public UserService(IUserRepository userRepository, IActivityLogService activityLogService)
         {
             _userRepository = userRepository;
+            _activityLogService = activityLogService;
         }
 
         // Lấy tất cả người dùng
@@ -141,6 +143,21 @@ namespace WordSoulApi.Services.Implementations
                     break;
             }
             return streak;
+        }
+
+        public async Task<bool> AssignRoleToUserAsync(int userId, string roleName)
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null) return false;
+
+            if (Enum.TryParse<UserRole>(roleName, true, out var role))
+            {
+                user.Role = role;
+                await _userRepository.UpdateUserAsync(user);
+                await _activityLogService.CreateActivityAsync(userId, "RoleAssigned", $"Assigned role: {roleName}");
+                return true;
+            }
+            return false;
         }
 
 

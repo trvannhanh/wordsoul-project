@@ -19,5 +19,8 @@ namespace WordSoulApi.Repositories.Interfaces
         Task<IEnumerable<VocabularySet>> GetAllVocabularySetsAsync(string? title, VocabularySetTheme? theme, VocabularyDifficultyLevel? difficulty, DateTime? createdAfter, int pageNumber, int pageSize);
         // Cập nhật bộ từ vựng
         Task<VocabularySet?> UpdateVocabularySetAsync(VocabularySet vocabularySet);
+        Task<SetVocabulary> CreateSetVocabularyAsync(SetVocabulary setVocabulary);
+        Task<bool> DeleteSetVocabularyAsync(SetVocabulary setVocabulary);
+        Task<SetVocabulary> GetSetVocabularyAsync(int vocabId, int setId);
     }
 }

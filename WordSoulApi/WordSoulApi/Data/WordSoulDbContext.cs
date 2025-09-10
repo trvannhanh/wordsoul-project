@@ -18,11 +18,18 @@ namespace WordSoulApi.Data
         public DbSet<UserOwnedPet> UserOwnedPets { get; set; }
         public DbSet<SetRewardPet> SetRewardPets { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<ActivityLog> ActivityLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
             // Additional model configurations can go here
+
+            modelBuilder.Entity<ActivityLog>()
+            .HasOne(al => al.User)
+            .WithMany()
+            .HasForeignKey(al => al.UserId)
+            .OnDelete(DeleteBehavior.Restrict);  // Không xóa user nếu có log
 
             // Đảm bảo unique constraint trên ( LearningSessionId, QuizQuestionId, QuestionType)
             modelBuilder.Entity<AnswerRecord>()

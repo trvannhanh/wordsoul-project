@@ -1,10 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
-using WordSoulApi.Models.Entities;
+﻿using WordSoulApi.Models.Entities;
 
 namespace WordSoulApi.Models.DTOs.Pet
 {
-    public class CreatePetDto
+    public class UpdatePetDto
     {
+        public int Id { get; set; }
         public required string Name { get; set; }
         public required string Description { get; set; }
         public IFormFile? ImageFile { get; set; }
@@ -13,12 +13,7 @@ namespace WordSoulApi.Models.DTOs.Pet
         public int? BaseFormId { get; set; }
         public int? NextEvolutionId { get; set; }
         public int? RequiredLevel { get; set; }
-
-    }
-
-    public class BulkCreatePetDto
-    {
-        [Required]
-        public List<CreatePetDto> Pets { get; set; } = new List<CreatePetDto>();  // Danh sách pet cần tạo
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public bool IsActive { get; set; } = true;
     }
 }

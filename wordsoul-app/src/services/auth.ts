@@ -14,6 +14,6 @@ export const register = async (registerDto: RegisterDto): Promise<UserDto> => {
 };
 
 export const refreshToken = async (refreshTokenDto: RefreshTokenRequestDto): Promise<TokenResponseDto> => {
-  const response = await api.post<TokenResponseDto>(endpoints['refresh-token'], refreshTokenDto);
+  const response = await api.post<TokenResponseDto>(endpoints['refreshToken'], refreshTokenDto);
   return response.data;
 };

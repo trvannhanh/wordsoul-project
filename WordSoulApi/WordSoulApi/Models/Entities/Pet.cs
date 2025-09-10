@@ -9,7 +9,7 @@ namespace WordSoulApi.Models.Entities
         public string? ImageUrl { get; set; }
         public PetRarity Rarity { get; set; }
         public PetType Type { get; set; } 
-        public int? BaseFormID { get; set; }
+        public int? BaseFormId { get; set; }
         public int? NextEvolutionId { get; set; }
         public int? RequiredLevel { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

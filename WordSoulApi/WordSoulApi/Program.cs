@@ -93,6 +93,10 @@ builder.Services.AddScoped<IUserVocabularySetService, UserVocabularySetService>(
 // Notification
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+// ActivityLog
+builder.Services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
+builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
+
 // Upload Assests
 builder.Services.AddScoped<IUploadAssetsService, UploadAssetsService>();
 

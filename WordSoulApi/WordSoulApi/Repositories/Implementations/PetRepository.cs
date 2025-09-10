@@ -13,6 +13,7 @@ namespace WordSoulApi.Repositories.Implementations
             _context = context;
         }
 
+        // Lấy danh sách Pet cho người dùng
         public async Task<IEnumerable<(Pet Pet, bool IsOwned)>> GetAllPetsAsync(
             int userId,
             string? name,
@@ -102,6 +103,16 @@ namespace WordSoulApi.Repositories.Implementations
             if (pet == null) return false;
             _context.Pets.Remove(pet);
             return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<List<Pet>> GetAllAsync()
+        {
+            return await _context.Pets.ToListAsync();
+        }
+
+        public async Task<bool> ExistsAsync(int id)
+        {
+            return await _context.Pets.AnyAsync(p => p.Id == id);
         }
 
     }

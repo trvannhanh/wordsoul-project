@@ -10,12 +10,29 @@ export const endpoints = {
   refreshToken: '/auth/refresh-token',
 
   // User
-  currentUser: '/users/me',
-  userDashboard: '/users/user-dashboard',
+  currentUser: '/users/me', //thông tin cá nhân User 
+  userDashboard: '/users/user-dashboard', //thông tin tổng hợp của User
+
+  users: '/users', //tất cả user
+  user:(userId: number) => `/users/${userId}`, //user chỉ định
+  userRole:(userId: number) => `/users/${userId}/role`, //Role user chỉ định
+  userActivities:(userId: number) => `/users/${userId}/activities`, //Activity user chỉ định
+  AllUserActivities: "/users/activities", //Activity User
+
+  userOwnedPet: (userId: number , petId: number) => `/users/${userId}/pets/${petId}`,
 
   // VocabularySet
   vocabularySets: '/vocabulary-sets',
-  vocabularySet: (id: number) => `/vocabulary-sets/${id}/details`,
+  vocabularySet: (vocabularySetId: number) => `/vocabulary-sets/${vocabularySetId}`, 
+  vocabularySetDetail: (vocabularySetId: number) => `/vocabulary-sets/${vocabularySetId}/details`,
+  
+  //Vocabulary
+  vocabularies:'/vocabularies',
+  vocabulary: (vocabularyId: number) => `/vocabularies/${vocabularyId}`,
+
+  setVocabulary: (vocabularySetId: number) => `/vocabularies/${vocabularySetId}/vocabularies`,
+  deleteSetVocabulary: (vocabularySetId: number, vocabularyId: number) => `/vocabularies/${vocabularySetId}/vocabularies/${vocabularyId}`,
+
 
   //LearningSession
   learningSession: (vocabSetId: number) => `/learning-sessions/${vocabSetId}`,
@@ -27,7 +44,17 @@ export const endpoints = {
   completeReviewSession: (sessionId : number) => `/learning-sessions/${sessionId}/review-completion`,
 
   //Pets
-  pets: '/pets'
+  pets: '/pets',
+
+  pet: (petId: number) => `/pets/${petId}`,
+  petBulk: "/pets/bulk",
+  evolvePet: (petId: number) => `/pets/${petId}/evolve`,
+
+  //Notification
+  notification: '/notifications',
+  markReadAllNotification: '/notifications/read-all',
+  markReadNotification: (notificationId: number) => `/notifications/${notificationId}/read`,
+  deleteNotification: (notificationId: number) => `/notifications/${notificationId}`,
 };
 
 // ---- Helpers ----

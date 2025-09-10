@@ -17,7 +17,7 @@ const Login: React.FC = () => {
     setIsLoading(true);
     try {
       await login(username, password);
-      navigate("/"); // chuyển hướng home
+      navigate("/home"); // chuyển hướng home
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(

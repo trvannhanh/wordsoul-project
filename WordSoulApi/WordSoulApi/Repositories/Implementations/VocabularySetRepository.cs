@@ -134,6 +134,29 @@ namespace WordSoulApi.Repositories.Implementations
                 .ToListAsync();
         }
 
+        // Tạo liên kết từ vựng vào bộ từ vựng
+        public async Task<SetVocabulary> CreateSetVocabularyAsync(SetVocabulary setVocabulary)
+        {
+            _context.SetVocabularies.Add(setVocabulary);
+            await _context.SaveChangesAsync();
+            return setVocabulary;
+        }
+
+        // Lấy liên kết từ vựng và bộ từ vựng
+        public async Task<SetVocabulary?> GetSetVocabularyAsync(int vocabId, int setId)
+        {
+            return await _context.SetVocabularies
+                .FirstOrDefaultAsync(sv => sv.VocabularySetId == setId && sv.VocabularyId == vocabId);
+        }
+
+        //Xóa liên kết từ vựng và bộ từ vựng
+        public async Task<bool> DeleteSetVocabularyAsync(SetVocabulary setVocabulary)
+        {
+            var existingSetVocabulary = await _context.SetVocabularies.FindAsync(setVocabulary.VocabularySetId, setVocabulary.VocabularyId);
+            if (existingSetVocabulary == null) return false;
+            _context.SetVocabularies.Remove(existingSetVocabulary);
+            return await _context.SaveChangesAsync() > 0;
+        }
 
     }
 }
