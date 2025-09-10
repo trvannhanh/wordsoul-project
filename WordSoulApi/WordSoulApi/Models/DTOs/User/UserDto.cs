@@ -1,4 +1,5 @@
-﻿using WordSoulApi.Models.Entities;
+﻿using System.ComponentModel.DataAnnotations;
+using WordSoulApi.Models.Entities;
 
 namespace WordSoulApi.Models.DTOs.User
 {
@@ -10,5 +11,11 @@ namespace WordSoulApi.Models.DTOs.User
         public UserRole Role { get; set; }
         public DateTime CreatedAt { get; set; }
         public bool IsActive { get; set; }
+    }
+
+    public class AssignRoleDto
+    {
+        [Required]
+        public string RoleName { get; set; } = string.Empty;  // "Admin", "User", v.v.
     }
 }

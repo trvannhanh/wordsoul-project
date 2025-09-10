@@ -5,6 +5,8 @@ namespace WordSoulApi.Services.Interfaces
 {
     public interface IUserService
     {
+        Task<bool> AssignRoleToUserAsync(int userId, string roleName);
+
         // Xóa người dùng theo ID
         Task<bool> DeleteUserAsync(int id);
         // Lấy tất cả người dùng

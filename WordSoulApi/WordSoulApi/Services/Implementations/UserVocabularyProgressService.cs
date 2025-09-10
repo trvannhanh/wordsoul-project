@@ -29,7 +29,7 @@ namespace WordSoulApi.Services.Implementations
                 throw new UnauthorizedAccessException("User does not have access to this session");
 
             // Kiểm tra xem tất cả câu hỏi liên quan đến từ vựng đã được trả lời đúng chưa
-            bool allCorrect = await _answerRecordRepository.CheckAllQuestionsCorrectAsync(userId, sessionId, vocabId);
+            bool allCorrect = await _answerRecordRepository.CheckAllQuestionsCorrectAsync(sessionId, vocabId);
             if (!allCorrect)
                 throw new InvalidOperationException("Not all questions for this vocabulary have been answered correctly");
 
