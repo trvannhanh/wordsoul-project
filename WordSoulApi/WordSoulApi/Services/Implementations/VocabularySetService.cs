@@ -233,16 +233,6 @@ namespace WordSoulApi.Services.Implementations
             }
 
             return vocabularySetDtos;
-
-
-            //return sets.Select(vs => new VocabularySetDto
-            //{
-            //    Id = vs.Id,
-            //    Title = vs.Title,
-            //    Theme = vs.Theme.ToString(),
-            //    DifficultyLevel = vs.DifficultyLevel.ToString(),
-            //    CreatedAt = vs.CreatedAt
-            //});
         }
 
     }

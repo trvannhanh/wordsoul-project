@@ -4,12 +4,14 @@ namespace WordSoulApi.Repositories.Interfaces
 {
     public interface IVocabularyRepository
     {
+        Task<bool> CheckVocabularyExistFromSessionAsync(string word, int sessionId);
+
         // Tạo từ vựng mới
         Task<Vocabulary> CreateVocabularyAsync(Vocabulary vocabulary);
         // Xóa từ vựng theo ID
         Task<bool> DeleteVocabularyAsync(int id);
         // Lấy tất cả các từ vựng
-        Task<IEnumerable<Vocabulary>> GetAllVocabulariesAsync();
+        Task<IEnumerable<Vocabulary>> GetAllVocabulariesAsync(string? word, string? meaning, PartOfSpeech? partOfSpeech, CEFRLevel? cEFRLevel, int pageNumber, int pageSize);
         // Lấy các từ vựng chưa học từ một bộ cụ thể cho người dùng
         Task<IEnumerable<Vocabulary>> GetUnlearnedVocabulariesFromSetAsync(int userId, int setId, int take = 5);
         Task<IEnumerable<Vocabulary>> GetUnreviewdVocabulariesFromSetAsync(int userId, int take = 5);
@@ -17,10 +19,14 @@ namespace WordSoulApi.Repositories.Interfaces
 
         // Lấy các từ vựng theo danh sách từ
         Task<IEnumerable<Vocabulary>> GetVocabulariesByWordsAsync(List<string> words);
+        Task<(IEnumerable<Vocabulary> Vocabularies, int TotalCount)> GetVocabulariesFromSetAsync(int vocabularySetId, int pageNumber, int pageSize);
+
         // Lấy từ vựng theo ID
         Task<Vocabulary?> GetVocabularyByIdAsync(int id);
         // Lấy danh sách ID từ vựng trong một phiên học cụ thể
         Task<IEnumerable<int>> GetVocabularyIdsBySessionIdAsync(int sessionId);
+        Task<int> GetVocabularyOrderMaxAsync(int sessionId);
+
         // Cập nhật từ vựng
         Task<Vocabulary> UpdateVocabularyAsync(Vocabulary vocabulary);
     }

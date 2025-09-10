@@ -1,7 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CloudinaryDotNet.Actions;
+using Microsoft.EntityFrameworkCore;
 using WordSoulApi.Data;
+using WordSoulApi.Models.DTOs.Vocabulary;
 using WordSoulApi.Models.Entities;
 using WordSoulApi.Repositories.Interfaces;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace WordSoulApi.Repositories.Implementations
 {
@@ -14,9 +17,47 @@ namespace WordSoulApi.Repositories.Implementations
         }
 
         // Lấy tất cả các từ vựng
-        public async Task<IEnumerable<Vocabulary>> GetAllVocabulariesAsync()
+        public async Task<IEnumerable<Vocabulary>> GetAllVocabulariesAsync(string? word, string? meaning, PartOfSpeech? partOfSpeech, CEFRLevel? cEFRLevel, int pageNumber, int pageSize)
         {
-            return await _context.Vocabularies.ToListAsync();
+
+            var query = _context.Vocabularies
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(word))
+                query = query.Where(v => v.Word.Contains(word));
+
+            if (!string.IsNullOrWhiteSpace(meaning))
+                query = query.Where(v => v.Meaning.Contains(meaning));
+
+            if (partOfSpeech.HasValue)
+                query = query.Where(vs => vs.PartOfSpeech == partOfSpeech.Value);
+
+            if (cEFRLevel.HasValue)
+                query = query.Where(vs => vs.CEFRLevel == cEFRLevel.Value);
+
+            return await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        //Lấy danh sách từ vựng của bộ từ vựng
+        public async Task<(IEnumerable<Vocabulary> Vocabularies, int TotalCount)> GetVocabulariesFromSetAsync(int vocabularySetId, int pageNumber, int pageSize)
+        {
+            var query = _context.SetVocabularies
+                .Include(sv => sv.Vocabulary)
+                .Where(sv => sv.VocabularySetId == vocabularySetId)
+                .OrderBy(sv => sv.Order);
+
+            var totalCount = await query.CountAsync();
+
+            var vocabularies = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(sv => sv.Vocabulary)
+                .ToListAsync();
+
+            return (vocabularies, totalCount);
         }
 
         // Lấy từ vựng theo ID
@@ -104,6 +145,13 @@ namespace WordSoulApi.Repositories.Implementations
                 .ToListAsync();
         }
 
+        //Kiểm tra từ vựng đã tồn tại trong bộ chưa
+        public async Task<bool> CheckVocabularyExistFromSessionAsync(string word, int sessionId)
+        {
+            return await _context.SetVocabularies
+            .AnyAsync(sv => sv.VocabularySetId == sessionId && sv.Vocabulary.Word == word);
+        }
+
         //Lấy danh sách từ vựng của phiên học
         public async Task<IEnumerable<Vocabulary>> GetVocabulariesBySessionIdAsync (int sessionId)
         {
@@ -113,6 +161,20 @@ namespace WordSoulApi.Repositories.Implementations
                 .Select(sv => sv.Vocabulary)
                 .ToListAsync();
         }
+
+
+        //Lấy giá trị Order lớn nhất trong bảng SetVocabularies 
+        public async Task<int> GetVocabularyOrderMaxAsync(int setId)
+        {
+            var max = await _context.SetVocabularies
+                .Where(sv => sv.VocabularySetId == setId)
+                .Select(sv => sv.Order)
+                .DefaultIfEmpty(0)  // Tránh lỗi nếu không có record
+                .MaxAsync();
+            return max;
+        }
+
+
 
     }
 }
