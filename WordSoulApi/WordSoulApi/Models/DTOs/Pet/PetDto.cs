@@ -24,18 +24,28 @@ namespace WordSoulApi.Models.DTOs.Pet
         public bool? isOwned { get; set; }
     }
 
+    public class UserPetDetailDto : PetDto
+    {
+        public int? Level { get; set; }
+        public int? Experience { get; set; }
+        public bool? IsFavorite { get; set; } = false;
+        public bool? IsActive { get; set; } = true;
+        public DateTime? AcquiredAt { get; set; }
+    }
+
     public class AdminPetDto : PetDto
     {
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsActive { get; set; } = true;
     }
 
-    public class EvolvePetDto
+    public class UpgradePetDto
     {
-        [Required]
-        public int UserId { get; set; }
-        [Required]
         public int PetId { get; set; }
-        public int ExperienceToAdd { get; set; } = 0;  // Thêm exp để trigger evolve
+        public int Experience { get; set; }
+        public int Level { get; set; }
+        public bool IsLevelUp { get; set; } 
+        public bool IsEvolved { get; set; }
+        
     }
 }

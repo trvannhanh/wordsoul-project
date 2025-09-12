@@ -60,5 +60,14 @@ namespace WordSoulApi.Repositories.Implementations
                 .ToListAsync();
         }
 
+        public async Task UpdateUserXPAndAPAsync(int userId, int xp, int ap)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+                throw new InvalidOperationException("User not found");
+            user.XP += xp;
+            user.AP += ap;
+            await _context.SaveChangesAsync();
+        }
     }
 }

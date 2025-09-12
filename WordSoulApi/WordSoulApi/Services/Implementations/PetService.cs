@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel;
 using WordSoulApi.Models.DTOs.Pet;
 using WordSoulApi.Models.Entities;
 using WordSoulApi.Repositories.Implementations;
@@ -50,6 +51,29 @@ namespace WordSoulApi.Services.Implementations
                 Type = p.Pet.Type.ToString(),
                 isOwned = p.IsOwned
             });
+        }
+
+        public async Task<UserPetDetailDto?> GetPetDetailAsync(int userId, int petId)
+        {
+
+            var pet = await _petRepository.GetPetByIdAsync(petId);
+            if (pet == null) return null;
+
+            var userOwnedPet = await _userOwnedPetRepository.GetUserOwnedPetByUserAndPetIdAsync(userId, petId);
+
+            return new UserPetDetailDto
+            {
+                Id = pet.Id,
+                Name = pet.Name,
+                Description = pet.Description ?? "No description available",
+                ImageUrl = pet.ImageUrl ?? "",
+                Rarity = pet.Rarity.ToString(),
+                Type = pet.Type.ToString(),
+                Level = userOwnedPet != null ? userOwnedPet.Level : null, // null nếu không sở hữu
+                Experience = userOwnedPet != null ? userOwnedPet.Experience : null, // null nếu không sở hữu
+                IsFavorite = userOwnedPet != null ? userOwnedPet.IsFavorite : null, // null nếu không sở hữu
+                AcquiredAt = userOwnedPet?.AcquiredAt // null nếu không sở hữu
+            };
         }
 
 
@@ -305,40 +329,63 @@ namespace WordSoulApi.Services.Implementations
             return true;
         }
 
-        // Evolve pet for user (kiểm tra exp >= required level của next form)
-        public async Task<UserOwnedPetDto?> EvolvePetForUserAsync(EvolvePetDto evolveDto)
+
+        public async Task<UpgradePetDto?> UpgradePetForUserAsync(int userId, int petId, int experience = 10)
         {
-            var userOwnedPet = await _userOwnedPetRepository.GetUserOwnedPetByUserAndPetIdAsync(evolveDto.UserId, evolveDto.PetId);
+            var userOwnedPet = await _userOwnedPetRepository.GetUserOwnedPetByUserAndPetIdAsync(userId, petId);
             if (userOwnedPet == null) return null;
 
-            userOwnedPet.Experience += evolveDto.ExperienceToAdd;
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null)
+                throw new InvalidOperationException("Người dùng không tồn tại");
 
-            var currentPet = userOwnedPet.Pet;
-            if (userOwnedPet.Experience >= currentPet.RequiredLevel && currentPet.NextEvolutionId.HasValue)
+            if (user.AP < experience)
+                throw new InvalidOperationException("Không đủ AP để nâng cấp thú cưng");
+
+            // Thêm kinh nghiệm
+            userOwnedPet.Experience += experience;
+
+            var isLevelUp = false;
+            var isEvolve = false;
+
+            // Xử lý nhiều lần tăng cấp nếu kinh nghiệm vượt quá 100
+            while (userOwnedPet.Experience >= 100)
             {
-                // Evolve: Chuyển sang form mới
-                var evolvedPet = await _petRepository.GetPetByIdAsync(currentPet.NextEvolutionId.Value);
-                if (evolvedPet != null)
+                userOwnedPet.Level++;
+                userOwnedPet.Experience -= 100;
+                isLevelUp = true;
+
+                var currentPet = await _petRepository.GetPetByIdAsync(userOwnedPet.PetId); // Làm mới dữ liệu thú cưng
+                if (currentPet == null) break; // Kiểm tra an toàn
+
+                // Kiểm tra tiến hóa
+                if (currentPet.RequiredLevel != null && userOwnedPet.Level >= currentPet.RequiredLevel && currentPet.NextEvolutionId.HasValue)
                 {
-                    userOwnedPet.PetId = evolvedPet.Id;  // Cập nhật PetId sang form mới
-                    userOwnedPet.Level++;  // Tăng level
+                    var evolvedPet = await _petRepository.GetPetByIdAsync(currentPet.NextEvolutionId.Value);
+                    if (evolvedPet != null)
+                    {
+                        userOwnedPet.PetId = evolvedPet.Id; // Cập nhật sang thú cưng tiến hóa
+                        isEvolve = true;
+                        await _activityLogService.CreateActivityAsync(userId, "PetEvolved", $"Thú cưng {petId} đã tiến hóa thành {evolvedPet.Id}");
+                        break; // Dừng tăng cấp sau khi tiến hóa
+                    }
                 }
             }
 
+            // Giới hạn kinh nghiệm để tránh giá trị âm
+            if (userOwnedPet.Experience < 0) userOwnedPet.Experience = 0;
+
+            await _userRepository.UpdateUserXPAndAPAsync(userId, 0, -experience);
             await _userOwnedPetRepository.UpdateUserOwnedPetAsync(userOwnedPet);
 
-            await _activityLogService.CreateActivityAsync(evolveDto.UserId, "PetEvolved", $"Pet {evolveDto.PetId} evolved");
-            return new UserOwnedPetDto 
+            return new UpgradePetDto
             {
                 PetId = userOwnedPet.PetId,
                 Level = userOwnedPet.Level,
                 Experience = userOwnedPet.Experience,
-                UserId = userOwnedPet.UserId,
-                IsFavorite = userOwnedPet.IsFavorite,
-                IsActive = userOwnedPet.IsActive,
-                AcquiredAt = userOwnedPet.AcquiredAt,
+                IsLevelUp = isLevelUp,
+                IsEvolved = isEvolve
             };
         }
-
     }
 }

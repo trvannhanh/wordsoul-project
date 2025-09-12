@@ -36,6 +36,7 @@ namespace WordSoulApi.Data
                 .HasIndex(ar => new { ar.LearningSessionId, ar.VocabularyId, ar.QuestionType })
                 .IsUnique();
 
+
             //Vocabulary 1 - N AnserRecord relationship
             modelBuilder.Entity<Vocabulary>()
                 .HasMany(v => v.AnswerRecords)
@@ -49,6 +50,7 @@ namespace WordSoulApi.Data
                 .WithOne(a => a.LearningSession)
                 .HasForeignKey(a => a.LearningSessionId)
                 .OnDelete(DeleteBehavior.Restrict); // Restrict delete to prevent accidental loss of answer records
+
 
             // User 1 - N LearningSession relationship
             modelBuilder.Entity<User>() 
@@ -87,21 +89,25 @@ namespace WordSoulApi.Data
                 .HasForeignKey(uvs => uvs.VocabularySetId)
                 .OnDelete(DeleteBehavior.Cascade); // Cascade delete if vocabulary set is deleted
 
-            // User N - N Pet relationship (UserOwnedPet)
+            // Cấu hình UserOwnedPet
             modelBuilder.Entity<UserOwnedPet>()
-            .HasKey(up => new { up.UserId, up.PetId }); // Khóa chính composite
+                .HasKey(uop => uop.Id); // Đặt Id là khóa chính
+
+            modelBuilder.Entity<UserOwnedPet>()
+                .Property(uop => uop.Id)
+                .ValueGeneratedOnAdd(); // Tự động tăng
 
             modelBuilder.Entity<UserOwnedPet>()
                 .HasOne(uop => uop.User)
                 .WithMany(u => u.UserOwnedPets)
                 .HasForeignKey(uop => uop.UserId)
-                .OnDelete(DeleteBehavior.Cascade); // Cascade delete if user is deleted
+                .OnDelete(DeleteBehavior.Cascade); // Xóa User thì xóa UserOwnedPet
 
             modelBuilder.Entity<UserOwnedPet>()
                 .HasOne(uop => uop.Pet)
                 .WithMany(p => p.UserOwnedPets)
                 .HasForeignKey(uop => uop.PetId)
-                .OnDelete(DeleteBehavior.Restrict); // Restrict delete if pet is deleted, to prevent accidental loss of owned pets
+                .OnDelete(DeleteBehavior.Restrict); // Không xóa Pet nếu UserOwnedPet bị xóa
 
             // Pet N - N VocabularySet relationship (SetRewardPet)
             modelBuilder.Entity<SetRewardPet>()

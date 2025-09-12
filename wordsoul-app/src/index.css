@@ -13,6 +13,21 @@
   font-style: normal;
 }
 
+.pixel-background {
+  background: url("https://res.cloudinary.com/dqpkxxzaf/image/upload/v1756297343/vocabulary_sets/banner5_jhzrxv.gif") repeat;
+}
+
+.pet-background {
+  background: url("https://res.cloudinary.com/dqpkxxzaf/image/upload/v1757599674/8666420_qtm2jj.jpg") ;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.pixel-art {
+  image-rendering: pixelated;
+}
+
 @theme {
   --font-pixel: "PixelFont", sans-serif;
 }

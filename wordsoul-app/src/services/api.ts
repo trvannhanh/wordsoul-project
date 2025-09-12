@@ -47,8 +47,9 @@ export const endpoints = {
   pets: '/pets',
 
   pet: (petId: number) => `/pets/${petId}`,
+  petDetail: (petId: number) => `/pets/${petId}/details`,
   petBulk: "/pets/bulk",
-  evolvePet: (petId: number) => `/pets/${petId}/evolve`,
+  upgradePet: (petId: number) => `/pets/${petId}/upgrade`,
 
   //Notification
   notification: '/notifications',

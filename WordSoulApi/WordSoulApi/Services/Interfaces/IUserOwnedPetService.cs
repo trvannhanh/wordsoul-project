@@ -4,7 +4,6 @@ namespace WordSoulApi.Services.Interfaces
 {
     public interface IUserOwnedPetService
     {
-        // Gán pet cho người dùng
-        Task<(Pet? grantedPet, bool alreadyOwned, int bonusXp)> TryGrantPetByMilestoneAsync(int userId, int vocabularySetId);
+        Task<(bool alreadyOwned, int bonusXp)> GrantPetAsync(int userId, int petId);
     }
 }

@@ -60,6 +60,7 @@ export interface LearningSession {
   id: number;
   vocabularies: number[];
   isCompleted: boolean;
+  petId: number;
 }
 
 export interface QuizQuestion {
@@ -126,6 +127,23 @@ export interface Pet {
   imageUrl: string;
   rarity: string;
   type: string;
+}
+
+export interface PetDetail {
+  id: number;
+  name: string;
+  description: string;
+  imageUrl: string;
+  rarity: string;
+  type: string;
+  level: number | null;
+  experience: number | null;
+  isFavorite: boolean | null;
+  isActive: boolean;
+  acquiredAt: string | null;
+  baseFormId: number | null;
+  nextEvolutionId: number | null;
+  requiredLevel: number | null;
 }
 
 export interface LevelStatDto {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Pet, UserDto } from '../../types/Dto';
-import { assignPetToUser, createPet, createPetsBulk, deletePet, evolvePet, getAllPets, removePetFromUser, updatePet } from '../../services/pet';
+import { assignPetToUser, createPet, createPetsBulk, deletePet, getAllPets, updatePet } from '../../services/pet';
 import { getAllUsers } from '../../services/userService';
 
 
@@ -126,23 +126,23 @@ const PetList = () => {
     }
   };
 
-  const handleRemovePet = async (userId: number) => {
-    if (selectedPet) {
-      await removePetFromUser(userId, selectedPet.id);
-      alert('Pet removed successfully');
-    }
-  };
+  // const handleRemovePet = async (userId: number) => {
+  //   if (selectedPet) {
+  //     await removePetFromUser(userId, selectedPet.id);
+  //     alert('Pet removed successfully');
+  //   }
+  // };
 
-  const handleEvolvePet = async () => {
-    if (selectedPet) {
-      try {
-        await evolvePet(selectedPet.id, { userId: evolveForm.userId, experienceToAdd: evolveForm.experienceToAdd });
-        alert('Pet evolved successfully');
-      } catch (error) {
-        console.error('Error evolving pet:', error);
-      }
-    }
-  };
+  // const handleEvolvePet = async () => {
+  //   if (selectedPet) {
+  //     try {
+  //       await evolvePet(selectedPet.id, { userId: evolveForm.userId, experienceToAdd: evolveForm.experienceToAdd });
+  //       alert('Pet evolved successfully');
+  //     } catch (error) {
+  //       console.error('Error evolving pet:', error);
+  //     }
+  //   }
+  // };
 
   if (loading) return <div>Loading...</div>;
 
@@ -202,7 +202,7 @@ const PetList = () => {
               ))}
             </select>
             <input placeholder="Experience to Add" onChange={(e) => setEvolveForm({ ...evolveForm, experienceToAdd: Number(e.target.value) })} className="border p-2 mr-2" />
-            <button onClick={handleEvolvePet} className="bg-yellow-500 text-white p-2 rounded ml-2">Evolve Pet</button>
+            {/* <button onClick={handleEvolvePet} className="bg-yellow-500 text-white p-2 rounded ml-2">Evolve Pet</button> */}
           </div>
           <button onClick={handleUpdatePet} className="bg-blue-500 text-white p-2 rounded">Update Pet</button>
           <button

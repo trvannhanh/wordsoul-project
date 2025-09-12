@@ -11,6 +11,7 @@ namespace WordSoulApi.Repositories.Interfaces
         Task CreateUserOwnedPetAsync(UserOwnedPet userOwnedPet);
         Task DeleteUserOwnedPetAsync(UserOwnedPet userOwnedPet);
         Task<List<UserOwnedPet>> GetAllUserOwnedPetByUserIdAsync(int userId);
+        Task<Pet?> GetRandomPetBySetIdAsync(int vocabularySetId);
         Task<UserOwnedPet?> GetUserOwnedPetByUserAndPetIdAsync(int userId, int petId);
         Task UpdateUserOwnedPetAsync(UserOwnedPet userOwnedPet);
     }

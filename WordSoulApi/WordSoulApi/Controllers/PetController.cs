@@ -45,7 +45,24 @@ namespace WordSoulApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPetById(int id)
         {
+
             var pet = await _petService.GetPetByIdAsync(id);
+            if (pet == null) return NotFound();
+            return Ok(pet);
+
+        }
+
+        // GET: api/pets/{id}/detail : Lấy chi tiết pet cho người dùng
+        [Authorize(Roles = "User")]
+        [HttpGet("{petId}/details")]
+        public async Task<IActionResult> GetPetDetail(int petId)
+        {
+            // Lấy userId từ token
+            var userId = User.GetUserId();
+            // Nếu userId không hợp lệ, trả về lỗi Unauthorized
+            if (userId == 0) return Unauthorized();
+
+            var pet = await _petService.GetPetDetailAsync(userId, petId);
             if (pet == null) return NotFound();
             return Ok(pet);
 
@@ -169,20 +186,28 @@ namespace WordSoulApi.Controllers
             return result ? NoContent() : BadRequest("Xóa thất bại.");
         }
 
-        
+
 
         // POST: api/pets/{petId}/evolve : Evolve pet cho user
-        [Authorize(Roles = "Admin")]
-        [HttpPost("{petId}/evolve")]
-        public async Task<IActionResult> EvolvePet(int petId, [FromBody] EvolvePetDto evolveDto)
+        [Authorize(Roles = "User")]
+        [HttpPost("{petId}/upgrade")]
+        public async Task<IActionResult> UpgradePet(int petId)
         {
-            evolveDto.PetId = petId;
-            var result = await _petService.EvolvePetForUserAsync(evolveDto);
-            if (result == null) return NotFound("Pet hoặc user không tồn tại.");
-            return Ok(result);
+            var userId = User.GetUserId();
+            if (userId == 0) return Unauthorized();
+
+            try
+            {
+                var result = await _petService.UpgradePetForUserAsync(userId, petId);
+                if (result == null) return BadRequest("Upgrade failed. Check if the pet is owned or max level reached.");
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while upgrading the pet.", Error = ex.Message });
+            }
+
         }
-
-
 
     }
 }

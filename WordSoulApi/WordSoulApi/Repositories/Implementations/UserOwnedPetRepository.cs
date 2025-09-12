@@ -3,14 +3,17 @@ using WordSoulApi.Data;
 using WordSoulApi.Models.Entities;
 using WordSoulApi.Repositories.Interfaces;
 
+
 namespace WordSoulApi.Repositories.Implementations
 {
     public class UserOwnedPetRepository : IUserOwnedPetRepository
     {
         private readonly WordSoulDbContext _context;
-        public UserOwnedPetRepository(WordSoulDbContext context)
+        private readonly ILogger<UserOwnedPetRepository> _logger;
+        public UserOwnedPetRepository(WordSoulDbContext context, ILogger<UserOwnedPetRepository> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // kiểm tra người dùng có sở hữu pet này chưa
@@ -63,5 +66,56 @@ namespace WordSoulApi.Repositories.Implementations
                 .Include(uop => uop.Pet)
                 .ToListAsync();
         }
+
+        public async Task<Pet?> GetRandomPetBySetIdAsync(int vocabularySetId)
+        {
+            var setPets = await _context.SetRewardPets
+                .Include(sp => sp.Pet)
+                .Where(sp => sp.VocabularySetId == vocabularySetId)
+                .ToListAsync();
+
+            if (!setPets.Any()) return null;
+
+            var random = new Random(Guid.NewGuid().GetHashCode());
+            var eligiblePets = new List<Pet>();
+            foreach (var sp in setPets)
+            {
+                double roll = random.NextDouble(); // 0.0 -> 1.0
+                if (roll <= sp.DropRate) // Kiểm tra nếu pet được chọn dựa trên DropRate
+                {
+                    eligiblePets.Add(sp.Pet);
+                }
+            }
+
+            var chosenPet = eligiblePets[random.Next(eligiblePets.Count)];
+
+            return chosenPet;
+        }
+
+        //public async Task<Pet?> GetRandomPetBySetIdAsync(int vocabularySetId)
+        //{
+        //    var setPets = await _context.SetRewardPets
+        //        .Include(sp => sp.Pet) // Đảm bảo tải Pet liên quan
+        //        .Where(sp => sp.VocabularySetId == vocabularySetId)
+        //        .ToListAsync();
+
+        //    if (!setPets.Any())
+        //    {
+        //        _logger.LogWarning("No SetRewardPets found for VocabularySetId {SetId}", vocabularySetId);
+        //        return null;
+        //    }
+
+        //    var random = new Random(Guid.NewGuid().GetHashCode());
+        //    var eligiblePets = setPets.Select(sp => sp.Pet).ToList();
+
+        //    if (!eligiblePets.Any())
+        //    {
+        //        _logger.LogWarning("No eligible Pets found for VocabularySetId {SetId}", vocabularySetId);
+        //        return null;
+        //    }
+
+        //    var chosenPet = eligiblePets[random.Next(eligiblePets.Count)];
+        //    return chosenPet;
+        //}
     }
 }

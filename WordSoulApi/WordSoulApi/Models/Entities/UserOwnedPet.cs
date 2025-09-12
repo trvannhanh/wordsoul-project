@@ -2,6 +2,7 @@
 {
     public class UserOwnedPet
     {
+        public int Id { get; set; }
         public int UserId { get; set; } // Foreign key to User
         public User User { get; set; } // Navigation property to User
         public int PetId { get; set; } // Foreign key to Pet

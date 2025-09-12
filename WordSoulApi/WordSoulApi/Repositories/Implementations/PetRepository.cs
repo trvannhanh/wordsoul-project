@@ -74,6 +74,7 @@ namespace WordSoulApi.Repositories.Implementations
             return result.Select(x => (x.Pet, x.IsOwned));
         }
 
+
         // Lấy pet theo ID
         public async Task<Pet?> GetPetByIdAsync(int id)
         {
@@ -115,5 +116,7 @@ namespace WordSoulApi.Repositories.Implementations
             return await _context.Pets.AnyAsync(p => p.Id == id);
         }
 
+
     }
 }
+    
