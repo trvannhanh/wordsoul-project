@@ -16,5 +16,6 @@ namespace WordSoulApi.Repositories.Interfaces
 
         // Cập nhật thông tin người dùng
         Task<User> UpdateUserAsync(User user);
+        Task UpdateUserXPAndAPAsync(int userId, int xp, int ap);
     }
 }

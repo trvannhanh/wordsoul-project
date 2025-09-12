@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using WordSoulApi.Models.DTOs.AnswerRecord;
 using WordSoulApi.Models.DTOs.LearningSession;
 using WordSoulApi.Models.DTOs.QuizQuestion;
 using WordSoulApi.Models.Entities;
+using WordSoulApi.Repositories.Implementations;
 using WordSoulApi.Repositories.Interfaces;
 using WordSoulApi.Services.Interfaces;
 namespace WordSoulApi.Services.Implementations
@@ -15,10 +17,13 @@ namespace WordSoulApi.Services.Implementations
         private readonly IUserRepository _userRepository;
         private readonly IUserOwnedPetService _userOwnedPetService;
         private readonly IAnswerRecordRepository _answerRecordRepository;
+        private readonly IUserOwnedPetRepository _userOwnedPetRepository;
+        private readonly IPetRepository _petRepository;
         private readonly ILogger<LearningSessionService> _logger;
+        private readonly IActivityLogService _activityLogService;
 
 
-        public LearningSessionService(ILearningSessionRepository sessionRepo, IVocabularyRepository vocabRepo, IUserVocabularySetRepository userVocabularySetRepository, ILogger<LearningSessionService> logger, IUserRepository userRepository, IUserOwnedPetService userOwnedPetService, IAnswerRecordRepository answerRecordRepository)
+        public LearningSessionService(ILearningSessionRepository sessionRepo, IVocabularyRepository vocabRepo, IUserVocabularySetRepository userVocabularySetRepository, ILogger<LearningSessionService> logger, IUserRepository userRepository, IUserOwnedPetService userOwnedPetService, IAnswerRecordRepository answerRecordRepository, IActivityLogService activityLogService, IUserOwnedPetRepository userOwnedPetRepository, IPetRepository petRepository)
         {
             _sessionRepo = sessionRepo;
             _vocabRepo = vocabRepo;
@@ -27,6 +32,9 @@ namespace WordSoulApi.Services.Implementations
             _userRepository = userRepository;
             _userOwnedPetService = userOwnedPetService;
             _answerRecordRepository = answerRecordRepository;
+            _activityLogService = activityLogService;
+            _userOwnedPetRepository = userOwnedPetRepository;
+            _petRepository = petRepository;
         }
 
         public async Task<LearningSessionDto> CreateLearningSessionAsync(int userId, int setId, int wordCount = 5)
@@ -52,7 +60,9 @@ namespace WordSoulApi.Services.Implementations
                 throw new InvalidOperationException("No unlearned vocabularies available in this set");
             }
 
-            return await CreateSessionAsync(userId, setId, SessionType.Learning, vocabularies);
+            var randomPet = await _userOwnedPetRepository.GetRandomPetBySetIdAsync(setId); 
+
+            return await CreateSessionAsync(userId, setId, SessionType.Learning, vocabularies, randomPet?.Id);
         }
 
         public async Task<LearningSessionDto> CreateReviewingSessionAsync(int userId, int wordCount = 5)
@@ -69,10 +79,10 @@ namespace WordSoulApi.Services.Implementations
                 throw new InvalidOperationException("No unreviewed vocabularies available");
             }
 
-            return await CreateSessionAsync(userId, null, SessionType.Review, vocabularies);
+            return await CreateSessionAsync(userId, null, SessionType.Review, vocabularies, null);
         }
 
-        private async Task<LearningSessionDto> CreateSessionAsync(int userId, int? setId, SessionType type, IEnumerable<Vocabulary> vocabularies)
+        private async Task<LearningSessionDto> CreateSessionAsync(int userId, int? setId, SessionType type, IEnumerable<Vocabulary> vocabularies, int? petId)
         {
             var session = new LearningSession
             {
@@ -84,7 +94,8 @@ namespace WordSoulApi.Services.Implementations
                 SessionVocabularies = vocabularies.Select(v => new SessionVocabulary
                 {
                     VocabularyId = v.Id
-                }).ToList()
+                }).ToList(),
+                PetId = petId
             };
 
             var savedSession = await _sessionRepo.CreateLearningSessionAsync(session);
@@ -93,10 +104,10 @@ namespace WordSoulApi.Services.Implementations
             {
                 Id = savedSession.Id,
                 IsCompleted = savedSession.IsCompleted,
-                VocabularyIds = savedSession.SessionVocabularies.Select(v => v.VocabularyId).ToList()
+                VocabularyIds = savedSession.SessionVocabularies.Select(v => v.VocabularyId).ToList(),
+                PetId = savedSession.PetId // Trả về RandomPetId
             };
         }
-
 
         public async Task<object> CompleteSessionAsync(int userId, int sessionId, SessionType sessionType)
         {
@@ -117,10 +128,8 @@ namespace WordSoulApi.Services.Implementations
 
             // Kiểm tra tất cả câu hỏi đã đúng
             var vocabIds = await _vocabRepo.GetVocabularyIdsBySessionIdAsync(sessionId);
-
             foreach (var vocabId in vocabIds)
             {
-                // Kiểm tra xem tất cả câu hỏi liên quan đến từ vựng đã được trả lời đúng chưa
                 var allCorrect = await _answerRecordRepository.CheckAllQuestionsCorrectAsync(sessionId, vocabId);
                 if (!allCorrect)
                     throw new InvalidOperationException($"Not all questions for vocabulary {vocabId} are answered correctly");
@@ -131,9 +140,11 @@ namespace WordSoulApi.Services.Implementations
             session.EndTime = DateTime.UtcNow;
             await _sessionRepo.UpdateLearningSessionAsync(session);
 
+            await _activityLogService.CreateActivityAsync(userId, "SessionCompletion", "User completed session");
+
             // Xác định XP và AP dựa trên loại phiên học
-            int xpEarned = sessionType == SessionType.Learning ? 10 : 5; // Có thể lấy từ cấu hình
-            int apEarned = sessionType == SessionType.Review ? 3 : 0;   // AP chỉ cho ôn tập
+            int xpEarned = sessionType == SessionType.Learning ? 10 : 5;
+            int apEarned = sessionType == SessionType.Review ? 3 : 0;
 
             // Xử lý logic đặc thù cho học từ mới
             bool isPetRewardGranted = false;
@@ -144,26 +155,26 @@ namespace WordSoulApi.Services.Implementations
             string? petRarity = null;
             string? petType = null;
 
-            if (sessionType == SessionType.Learning)
+            if (sessionType == SessionType.Learning && session.PetId.HasValue)
             {
                 if (!session.VocabularySetId.HasValue)
                     throw new InvalidOperationException("VocabularySetId is required for learning session");
 
-                // Cập nhật số session đã hoàn thành trong UserVocabularySet
-                await _userVocabularySetRepository.UpdateCompletedLearningSessionAsync(userId, session.VocabularySetId.Value, 1);
+                // Grant Pet ngay lập tức với catch rate 100% (nếu chưa sở hữu)
+                var (alreadyOwned, bonusXp) = await _userOwnedPetService.GrantPetAsync(userId, session.PetId.Value);
+                isPetRewardGranted = !alreadyOwned; // Chỉ true nếu grant mới
+                if (alreadyOwned) xpEarned += bonusXp; // Thêm bonus XP nếu đã sở hữu
 
-                // Cấp phát pet nếu hoàn thành 5 session
-                var rewards = await _userOwnedPetService.TryGrantPetByMilestoneAsync(userId, session.VocabularySetId.Value);
-                isPetRewardGranted = rewards.alreadyOwned;
-                if (rewards.alreadyOwned)
+                // Lấy thông tin Pet để trả về (giả sử có DbContext)
+                var pet = await _petRepository.GetPetByIdAsync(session.PetId.Value);
+                if (pet != null)
                 {
-                    petId = rewards.grantedPet.Id;
-                    petName = rewards.grantedPet.Name;
-                    petDescription = rewards.grantedPet.Description;
-                    petImageUrl = rewards.grantedPet.ImageUrl;
-                    petRarity = rewards.grantedPet.Rarity.ToString();
-                    petType = rewards.grantedPet.Type.ToString();
-                    xpEarned += rewards.bonusXp;
+                    petId = pet.Id;
+                    petName = pet.Name;
+                    petDescription = pet.Description;
+                    petImageUrl = pet.ImageUrl;
+                    petRarity = pet.Rarity.ToString();
+                    petType = pet.Type.ToString();
                 }
             }
 
@@ -171,9 +182,8 @@ namespace WordSoulApi.Services.Implementations
             var user = await _userRepository.GetUserByIdAsync(userId);
             if (user == null)
                 throw new InvalidOperationException("User not found");
-            user.XP += xpEarned;
-            user.AP += apEarned; // Cập nhật AP (0 nếu là học từ mới)
-            await _userRepository.UpdateUserAsync(user);
+
+            await _userRepository.UpdateUserXPAndAPAsync(userId, xpEarned, apEarned);
 
             // Trả về DTO tương ứng
             if (sessionType == SessionType.Learning)
@@ -188,7 +198,7 @@ namespace WordSoulApi.Services.Implementations
                     ImageUrl = petImageUrl,
                     PetRarity = petRarity,
                     PetType = petType,
-                    Message = isPetRewardGranted ? "Learning session completed! You earned XP and a new Pet!" : "Learning session completed! You earned XP!"
+                    Message = isPetRewardGranted ? "Learning session completed! You caught a Pet!" : "Learning session completed! You earned XP!"
                 };
             }
             else

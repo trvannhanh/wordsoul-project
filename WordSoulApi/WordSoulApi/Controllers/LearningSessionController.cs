@@ -169,7 +169,7 @@ namespace WordSoulApi.Controllers
             }
         }
 
-        
+        //POST: api/learning-sessions/{sessionId}/learning-completion : Hoàn thành phiên học (cập nhật trạng thái LearningSession, cấp phần thưởng)
         [Authorize(Roles = "User")]
         [HttpPost("{sessionId}/learning-completion")]
         public async Task<IActionResult> CompleteLearningSession(int sessionId)
