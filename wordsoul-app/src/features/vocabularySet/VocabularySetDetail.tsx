@@ -44,7 +44,9 @@ const VocabularySetDetail: React.FC = () => {
         setIsLoading(true);
         try {
             const session = await createLearningSession(Number(id));
-            navigate(`/learningSession/${session.id}?mode=learning`);
+            navigate(`/learningSession/${session.id}?mode=learning`, {
+            state: { petId: session.petId }, // Truyền PetId qua state
+        });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             setError(err?.response?.data?.message || "Lỗi tạo phiên học");

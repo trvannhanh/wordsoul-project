@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Card from '../components/Card';
 import HeroSection from '../components/HeroSection';
 import { fetchVocabularySets } from '../services/vocabularySet';
+import Skeleton from '../components/Skeleton';
 
 
 interface VocabularySet {
@@ -34,8 +35,42 @@ const Home: React.FC = () => {
       });
   }, []);
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
+  if (loading) {
+    return (
+      <>
+        <HeroSection
+          title="Chào mừng bạn đến với Eralis"
+          description="Hành trình giải mã những văn tự cố, giải thoát những sinh vật bí ẩn, xây dựng kiến thức lâu dài."
+          textButton="Bắt đầu"
+          image="./src/assets/thumb.gif"
+          bottomImage="./src/assets/grass.gif"
+          height="29rem"
+          hidden={false}
+        />
+        <div className="background-color text-white h-screen px-10 py-3">
+          <Skeleton type="cards" />  // Thay vì <div>Loading...</div>
+        </div>
+      </>
+    );
+  }
+  if (error) {
+    return (
+      <>
+        <HeroSection
+          title="Chào mừng bạn đến với Eralis"
+          description="Hành trình giải mã những văn tự cố, giải thoát những sinh vật bí ẩn, xây dựng kiến thức lâu dài."
+          textButton="Bắt đầu"
+          image="./src/assets/thumb.gif"
+          bottomImage="./src/assets/grass.gif"
+          height="29rem"
+          hidden={false}
+        />
+        <div className="background-color text-white h-screen px-10 py-3 text-center py-8 text-red-500">
+          {error}  // Hoặc thêm nút retry: <button onClick={() => window.location.reload()}>Retry</button>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
