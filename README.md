@@ -24,34 +24,43 @@
 
 ## Tính năng chính
 
-- 📚 Học Từ Vựng: luyện tập từ mới theo từng chủ đề.
-- 🔄 Ôn tập: hệ thống nhắc lại để ghi nhớ lâu dài.
-- 🎁 Nhận thưởng: nhận XP, quà tặng khi hoàn thành nhiệm vụ.
-- 📂 Quản lý bộ từ vựng: tự tạo, chỉnh sửa và theo dõi.
-- 📊 Báo cáo thống kê: theo dõi tiến trình học tập.
-- 🐾 Bộ sưu tập: thu thập thú cưng, tạo động lực học.
+- 📚 Học từ vựng: Luyện tập từ vựng theo chủ đề, hỗ trợ lọc theo từ, nghĩa, loại từ (PartOfSpeech), hoặc cấp độ CEFR.
+- 🔄 Ôn tập thông minh: Hệ thống theo dõi tiến độ học và nhắc nhở ôn tập từ vựng dựa trên thời gian cần ôn (spaced repetition).
+- 🎁 Gamification: Nhận điểm XP, thu thập thú cưng, và nhận thưởng khi hoàn thành nhiệm vụ học tập.
+- 📂 Quản lý bộ từ vựng: Người dùng có thể tạo, chỉnh sửa, thêm/xóa từ vựng vào các bộ từ vựng, với phân quyền rõ ràng (Admin/User).
+- 📊 Thống kê tiến trình: Theo dõi tiến độ học tập qua báo cáo và phân trang dữ liệu.
+- 🐾 Bộ sưu tập thú cưng: Thu thập và quản lý thú cưng, tạo động lực học tập.
+- 🔔 Thông báo thời gian thực: Sử dụng SignalR để gửi thông báo về tiến độ học hoặc các sự kiện trong ứng dụng.
+- 🔒 Xác thực và phân quyền: Sử dụng JWT để xác thực người dùng và phân quyền (Admin/User).
 
 ---
 
 ## 🛠 Công nghệ sử dụng
 
-- **Backend**: ASP.NET Core Web API, Entity Framework Core, SQL Server, JWT Authentication  
-- **Frontend**: React, Vite, TypeScript, TailwindCSS  
-- **Khác**: Cloudinary (lưu trữ hình ảnh), REST API
+- **Backend**: ASP.NET Core Web API (.NET 9), Entity Framework Core (ORM cho SQL Server), SQL Server (Cơ sở dữ liệu quan hệ), JWT Authentication (Xác thực người dùng), SignalR (Thông báo thời gian thực), Cloudinary (Lưu trữ và quản lý hình ảnh/pronunciation)
+- **Frontend**: ReactJS (Vite, TypeScript), TailwindCSS (Giao diện)
+- **Khác**: REST API (Giao tiếp client-server), CORS (Hỗ trợ truy cập từ localhost), Dependency Injection (Quản lý phụ thuộc trong ASP.NET Core)
 
 ---
 
 ## 🔑 Kiến trúc & Nguyên tắc
-
-- Sử dụng **Dependency Injection (DI)** để tách biệt các thành phần, giảm sự phụ thuộc lẫn nhau và tăng khả năng mở rộng, kiểm thử.  
-- Tuân theo các nguyên tắc **SOLID** nhằm đảm bảo mã nguồn rõ ràng, dễ bảo trì:  
-  - **S**: Single Responsibility Principle – Mỗi lớp chỉ đảm nhận một trách nhiệm duy nhất.  
-  - **O**: Open/Closed Principle – Dễ mở rộng tính năng, hạn chế chỉnh sửa trực tiếp mã gốc.  
-  - **L**: Liskov Substitution Principle – Có thể thay thế đối tượng bằng lớp con mà không phá vỡ tính đúng đắn.  
-  - **I**: Interface Segregation Principle – Chia nhỏ interface, tránh tạo interface quá lớn.  
-  - **D**: Dependency Inversion Principle – Lớp cấp cao không phụ thuộc trực tiếp vào lớp cấp thấp, mà thông qua abstraction (interface).  
-- Thiết kế theo mô hình **Modular Monolith** với các tầng rõ ràng: Controller, Service, Repository.  
-
+Dự án được thiết kế theo kiến trúc Modular Monolith, với các module chức năng riêng biệt (từ vựng, người dùng, thú cưng, phiên học, thông báo, v.v.), nhưng chạy trong một tiến trình duy nhất. Các Design Pattern và nguyên tắc được áp dụng:
+- Design Patterns:
+  - Repository Pattern: Tách biệt logic truy cập dữ liệu (VocabularyRepository, UserRepository) khỏi logic nghiệp vụ.
+  - Service Pattern: Xử lý logic nghiệp vụ trong các service (VocabularyService, UserService).
+  - Dependency Injection (DI): Quản lý phụ thuộc qua ASP.NET Core DI, sử dụng Scoped và Singleton lifetime.
+  - DTO Pattern: Sử dụng các DTO (VocabularyDto, AdminVocabularyDto) để truyền dữ liệu an toàn và hiệu quả.
+  - Unit of Work: Ngầm định qua Entity Framework Core với WordSoulDbContext.
+- Nguyên tắc SOLID:
+  - S (Single Responsibility): Mỗi lớp chỉ đảm nhận một nhiệm vụ (controller xử lý API, service xử lý logic, repository truy cập dữ liệu).
+  - O (Open/Closed): Dễ dàng mở rộng thông qua interface (IVocabularyService, IVocabularyRepository) mà không cần sửa mã hiện có.
+  - L (Liskov Substitution): Các lớp triển khai interface có thể thay thế lẫn nhau mà không làm hỏng hệ thống.
+  - I (Interface Segregation): Interface được chia nhỏ, cụ thể cho từng chức năng.
+  - D (Dependency Inversion): Các lớp phụ thuộc vào abstraction (interface) thay vì triển khai cụ thể.
+- Modular Monolith:
+  - Mã nguồn được tổ chức theo các chức năng (từ vựng, người dùng, thú cưng, v.v.) với các service/repository riêng biệt.
+  - Mỗi module giao tiếp qua interface, đảm bảo tính độc lập và dễ bảo trì.
+  - Dự án vẫn là một ứng dụng đơn khối, phù hợp cho quy mô nhỏ/vừa, dễ triển khai hơn microservices.
 ---
 
 ## ⚙️ Yêu cầu cài đặt
@@ -86,13 +95,10 @@ $ npm install
 $ npm run dev
 ```
 ## Credits
-Dự án này sử dụng:
-
-- ASP.NET Core • EF Core • SQL Server
-- React • Vite • TailwindCSS • TypeScript
-- Cloudinary API
-
-
+Dự án được xây dựng với các công nghệ và thư viện:
+  - Backend: ASP.NET Core, Entity Framework Core, SQL Server, SignalR, Cloudinary
+  - Frontend: React, Vite, TypeScript, TailwindCSS
+  - Công cụ: Git, Visual Studio, VS Code
 
 ---
 
