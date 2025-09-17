@@ -1,23 +1,36 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { type QuizQuestion, QuestionType } from "../../types/Dto";
+import { useState } from "react";
 
 interface AnswerScreenProps {
   question: QuizQuestion | null;
   loading: boolean;
   error: string | null;
-  showFeedback: boolean;
-  answerFeedback: "correct" | "wrong" | null;
-  handleAnswer: (question: QuizQuestion, answer: string) => void;
+  handleAnswer: (question: QuizQuestion, answer: string) => Promise<boolean>;
 }
 
 const AnswerScreen: React.FC<AnswerScreenProps> = ({
   question,
   loading,
   error,
-  showFeedback,
-  answerFeedback,
   handleAnswer,
 }) => {
+  const [answerFeedback, setAnswerFeedback] = useState<"correct" | "wrong" | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [userAnswer, setUserAnswer] = useState("");
+
+  const handleSubmitAnswer = async (answer: string) => {
+    if (question) {
+      const isCorrect = await handleAnswer(question, answer);
+      setUserAnswer("");
+      setShowFeedback(true);
+      setAnswerFeedback(isCorrect ? "correct" : "wrong");
+      setTimeout(() => {
+        setShowFeedback(false);
+      }, 1000);
+    }
+  };
+
   if (loading) return <div className="text-white font-pixel">Đang tải...</div>;
   if (error) return <div className="text-red-500 font-pixel">{error}</div>;
   if (!question) return <div className="text-white font-pixel">Hoàn thành session!</div>;
@@ -67,7 +80,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
             case QuestionType.Flashcard:
               return (
                 <button
-                  onClick={() => handleAnswer(question, "viewed")}
+                  onClick={() => handleSubmitAnswer("viewed")}
                   className="bg-emerald-600 w-3/4 h-1/4 border-2 border-white rounded-lg font-pixel text-white hover:bg-emerald-700"
                   disabled={showFeedback}
                 >
@@ -78,11 +91,12 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
               return (
                 <input
                   type="text"
+                  value={userAnswer}
                   className="bg-white p-2 rounded w-3/4 text-black font-pixel"
+                  onChange={(e) => setUserAnswer(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !showFeedback) {
-                      handleAnswer(question, (e.target as HTMLInputElement).value);
-                      (e.target as HTMLInputElement).value = "";
+                      handleSubmitAnswer(userAnswer);
                     }
                   }}
                   disabled={showFeedback}
@@ -94,7 +108,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
                   {question.options?.map((opt) => (
                     <button
                       key={opt}
-                      onClick={() => handleAnswer(question, opt)}
+                      onClick={() => handleSubmitAnswer(opt)}
                       className="bg-emerald-600 p-2 rounded-lg font-pixel text-white hover:bg-emerald-700"
                       disabled={showFeedback}
                     >
@@ -109,11 +123,12 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
                   <audio controls src={question.pronunciationUrl ?? ""} className="mb-2" />
                   <input
                     type="text"
+                    value={userAnswer}
                     className="bg-white p-2 rounded w-3/4 text-black font-pixel"
+                    onChange={(e) => setUserAnswer(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !showFeedback) {
-                        handleAnswer(question, (e.target as HTMLInputElement).value);
-                        (e.target as HTMLInputElement).value = "";
+                        handleSubmitAnswer(userAnswer);
                       }
                     }}
                     disabled={showFeedback}

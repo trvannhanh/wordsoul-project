@@ -99,5 +99,27 @@ namespace WordSoulApi.Repositories.Implementations
 
             return correctTypes == totalTypes;
         }
+
+        // Lấy danh sách các câu hỏi sai trong phiên học
+        public async Task<IEnumerable<AnswerRecord>> GetWrongAnswersAsync(int sessionId)
+        {
+            return await _context.AnswerRecords
+                .AsNoTracking()
+                .Where(a => a.LearningSessionId == sessionId && !a.IsCorrect)
+                .ToListAsync();
+        }
+
+        // Lấy danh sách các loại câu hỏi đã trả lời đúng cho một từ vựng trong phiên học
+        public async Task<List<QuestionType>> GetCorrectAnswerTypesAsync(int sessionId, int vocabId)
+        {
+            return await _context.AnswerRecords
+                .AsNoTracking()
+                .Where(a => a.LearningSessionId == sessionId &&
+                            a.VocabularyId == vocabId &&
+                            a.IsCorrect)
+                .Select(a => a.QuestionType)
+                .Distinct()
+                .ToListAsync();
+        }
     }
 }

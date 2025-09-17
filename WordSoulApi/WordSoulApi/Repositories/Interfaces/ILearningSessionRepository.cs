@@ -8,6 +8,7 @@ namespace WordSoulApi.Repositories.Interfaces
 
         // Tạo một LearningSession mới
         Task<LearningSession> CreateLearningSessionAsync(LearningSession learningSession);
+        Task<LearningSession?> GetExistingLearningSessionUnCompletedForUserAsync(int userId, int vocabularySetId);
         Task<LearningSession?> GetLearningSessionByIdAsync(int sessionId);
         Task<LearningSession> UpdateLearningSessionAsync(LearningSession learningSession);
     }

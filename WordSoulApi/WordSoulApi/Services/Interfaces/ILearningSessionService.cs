@@ -12,7 +12,7 @@ namespace WordSoulApi.Services.Interfaces
         // Tạo một phiên học mới cho người dùng
         Task<LearningSessionDto> CreateLearningSessionAsync(int userId, int setId, int wordCount = 5);
         Task<LearningSessionDto> CreateReviewingSessionAsync(int userId, int wordCount = 5);
-        Task<IEnumerable<QuizQuestionDto>> GetSessionQuestionsAsync(int sessionId);
+        Task<IEnumerable<QuizQuestionDto>> GetSessionQuestionsAsync(int sessionId, bool includeRetries);
         Task<SubmitAnswerResponseDto> SubmitAnswerAsync(int userId, int sessionId, SubmitAnswerRequestDto request);
     }
 }

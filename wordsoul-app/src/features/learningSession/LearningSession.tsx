@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
@@ -8,12 +10,11 @@ import {
   updateProgress,
 } from "../../services/learningSession";
 import { fetchPetById } from "../../services/pet";
-import { type CompleteLearningSessionResponseDto, type CompleteReviewSessionResponseDto, type Pet, type QuizQuestion } from "../../types/Dto";
+import { type CompleteLearningSessionResponseDto, type CompleteReviewSessionResponseDto, type Pet, type QuizQuestion, QuestionType } from "../../types/Dto";
 import BackgroundMusic from "../../components/LearningSession/BackgroundMusic";
 import GameScreen from "../../components/LearningSession/GameScreen";
 import AnswerScreen from "../../components/LearningSession/AnswerScreen";
 import PetScreen from "../../components/LearningSession/PetScreen";
-
 
 const LearningSession: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -25,42 +26,49 @@ const LearningSession: React.FC = () => {
   const petId = state?.petId;
 
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [pet, setPet] = useState<Pet>();
+  const [queue, setQueue] = useState<(QuizQuestion & { isRetry: boolean })[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [retryQueue, setRetryQueue] = useState<QuizQuestion[]>([]);
-  const [remainingByVocab, setRemainingByVocab] = useState<Map<number, number>>(new Map());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showRewardAnimation, setShowRewardAnimation] = useState(false);
   const [captureComplete, setCaptureComplete] = useState(false);
   const [encounteredPet, setEncounteredPet] = useState<{ id: number; name: string; imageUrl: string } | null>(null);
   const [sessionData, setSessionData] = useState<CompleteLearningSessionResponseDto | CompleteReviewSessionResponseDto | null>(null);
-  const [answerFeedback, setAnswerFeedback] = useState<"correct" | "wrong" | null>(null);
-  const [showFeedback, setShowFeedback] = useState(false);
   const [isBackgroundMusicPlaying, setIsBackgroundMusicPlaying] = useState(true);
   const [backgroundMusicVolume] = useState(0.5);
+
+  // Danh sách các loại câu hỏi
+  const typeOrder: QuestionType[] = [QuestionType.Flashcard, QuestionType.FillInBlank, QuestionType.MultipleChoice, QuestionType.Listening];
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const data = await fetchQuizOfSession(sessionId);
+        // Lấy câu hỏi sai trước, nếu không có thì lấy câu hỏi mới
+        let data = await fetchQuizOfSession(sessionId, { includeRetries: true });
+        if (data.length === 0) {
+          data = await fetchQuizOfSession(sessionId, { includeRetries: false });
+        }
+        console.log("Fetched quiz data:", data);
         setQuestions(data);
 
-        const pet = await fetchPetById(petId);
-        setPet(pet);
+        const grouped = new Map<QuestionType, Map<number, QuizQuestion>>();
+        data.forEach(q => {
+          if (!grouped.has(q.questionType)) grouped.set(q.questionType, new Map());
+          grouped.get(q.questionType)!.set(q.vocabularyId, q);
+        });
 
-        const map = new Map<number, number>();
-        data.forEach((q) => map.set(q.vocabularyId, (map.get(q.vocabularyId) || 0) + 1));
-        setRemainingByVocab(map);
+        setQueue(data.map(q => ({ ...q, isRetry: q.isRetry || false })));
 
         if (mode === "learning" && data.length > 0) {
+          const pet = await fetchPetById(petId);
+          setPet(pet);
           setEncounteredPet({ id: pet.id, name: pet.name, imageUrl: pet.imageUrl || "https://via.placeholder.com/100" });
         }
         setLoading(false);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (err) {
+        console.error("Error fetching quiz:", err);
         setError("Failed to load quiz questions");
         setLoading(false);
       }
@@ -68,52 +76,82 @@ const LearningSession: React.FC = () => {
     fetchData();
   }, [sessionId, mode, petId]);
 
-  async function handleAnswer(question: QuizQuestion, answer: string) {
+  const handleAnswer = async (question: QuizQuestion, answer: string) => {
     try {
-      const res = await answerQuiz(sessionId, {
-        vocabularyId: question.vocabularyId,
-        questionType: question.questionType,
+      const currentItem = queue[currentIndex];
+      if (!currentItem) {
+        console.error("No current item in queue at index:", currentIndex);
+        setError("No current question available");
+        return false;
+      }
+
+      console.log("Sending answer to API:", {
+        sessionId,
+        vocabularyId: currentItem.vocabularyId,
+        questionType: currentItem.questionType,
         answer,
       });
 
-      setAnswerFeedback(res.isCorrect ? "correct" : "wrong");
-      setShowFeedback(true);
+      const res = await answerQuiz(sessionId, {
+        vocabularyId: currentItem.vocabularyId,
+        questionType: currentItem.questionType,
+        answer,
+      });
 
-      if (res.isCorrect) {
-        const newMap = new Map(remainingByVocab);
-        newMap.set(question.vocabularyId, (newMap.get(question.vocabularyId) || 1) - 1);
-        setRemainingByVocab(newMap);
-
-        if ((newMap.get(question.vocabularyId) || 0) === 0) {
-          await updateProgress(sessionId, question.vocabularyId);
-        }
-      } else {
-        setRetryQueue((prev) => [...prev, question]);
-      }
+      console.log("API response:", res);
 
       setTimeout(() => {
-        setShowFeedback(false);
-        setAnswerFeedback(null);
         setCurrentIndex((prev) => prev + 1);
-      }, 1000);
+      }, 1500);
+
+      return res.isCorrect;
     } catch (error) {
       console.error("Error in handleAnswer:", error);
       setError("Failed to process answer");
+      return false;
     }
-  }
-
-  const currentQuestion = currentIndex < questions.length
-    ? questions[currentIndex]
-    : retryQueue.length > 0
-      ? retryQueue[0]
-      : null;
+  };
 
   useEffect(() => {
-    if (!currentQuestion && questions.length > 0) {
-      const unfinished = Array.from(remainingByVocab.values()).some((v) => v > 0);
-      if (!unfinished) handleCompleteSession();
+    if (currentIndex >= queue.length && queue.length > 0) {
+      console.log("Queue completed. Current state:", {
+        currentIndex,
+        queueLength: queue.length,
+      });
+
+      // Lấy câu hỏi sai hoặc câu hỏi mới từ backend
+      const fetchNextQuestions = async () => {
+        setLoading(true);
+        try {
+          let nextQuestions = await fetchQuizOfSession(sessionId, { includeRetries: true });
+          if (nextQuestions.length === 0) {
+            nextQuestions = await fetchQuizOfSession(sessionId, { includeRetries: false });
+          }
+
+          if (nextQuestions.length === 0) {
+            handleCompleteSession();
+          } else {
+            console.log("Next questions:", nextQuestions);
+            setQueue(nextQuestions.map(q => ({ ...q, isRetry: q.isRetry || false })));
+            setCurrentIndex(0);
+
+            const grouped = new Map<QuestionType, Map<number, QuizQuestion>>();
+            nextQuestions.forEach(q => {
+              if (!grouped.has(q.questionType)) grouped.set(q.questionType, new Map());
+              grouped.get(q.questionType)!.set(q.vocabularyId, q);
+            });
+          }
+          setLoading(false);
+        } catch (err) {
+          console.error("Error fetching next questions:", err);
+          setError("Failed to load next questions");
+          setLoading(false);
+        }
+      };
+
+      fetchNextQuestions();
     }
-  }, [currentQuestion, questions]);
+  }, [currentIndex, queue.length, sessionId]);
 
   async function handleCompleteSession() {
     try {
@@ -141,6 +179,9 @@ const LearningSession: React.FC = () => {
     navigate(-1);
   };
 
+  const currentItem = queue[currentIndex];
+  const currentQuestion: QuizQuestion | null = currentItem ? { ...currentItem } : null;
+
   return (
     <div className="h-screen w-screen bg-gray-900 flex items-center justify-between p-4 pixel-background relative">
       <BackgroundMusic
@@ -164,8 +205,6 @@ const LearningSession: React.FC = () => {
               question={currentQuestion}
               loading={loading}
               error={error}
-              showFeedback={showFeedback}
-              answerFeedback={answerFeedback}
               handleAnswer={handleAnswer}
             />
           </div>
@@ -174,7 +213,7 @@ const LearningSession: React.FC = () => {
       <PetScreen
         showRewardAnimation={showRewardAnimation}
         captureComplete={captureComplete}
-        setCaptureComplete={setCaptureComplete} // Truyền setCaptureComplete
+        setCaptureComplete={setCaptureComplete}
         encounteredPet={encounteredPet}
         sessionData={sessionData}
         mode={mode}

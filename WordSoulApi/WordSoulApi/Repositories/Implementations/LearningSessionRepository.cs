@@ -47,6 +47,13 @@ namespace WordSoulApi.Repositories.Implementations
                 .AnyAsync(ls => ls.Id == sessionId && ls.UserId == userId);
         }
 
+        // Lấy LearningSession chưa hoàn thành tồn tại của User với bộ từ vựng cụ thể
+        public async Task<LearningSession?> GetExistingLearningSessionUnCompletedForUserAsync(int userId, int vocabularySetId)
+        {
+            return await _context.LearningSessions
+                .AsNoTracking()
+                .FirstOrDefaultAsync(ls => ls.UserId == userId && ls.VocabularySetId == vocabularySetId && !ls.IsCompleted);
+        }
 
 
     }

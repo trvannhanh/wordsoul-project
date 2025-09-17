@@ -82,17 +82,17 @@ namespace WordSoulApi.Controllers
         // GET: api/learning-sessions/{sessionId}/questions : Lấy danh sách câu hỏi cho phiên học cụ thể
         [Authorize(Roles = "User")]
         [HttpGet("{sessionId}/questions")]
-        public async Task<ActionResult<IEnumerable<QuizQuestionDto>>> GetSessionQuestions(int sessionId)
+        public async Task<ActionResult<IEnumerable<QuizQuestionDto>>> GetSessionQuestions(int sessionId, [FromQuery] bool includeRetries = false)
         {
             try
             {
-                var questions = await _learningSessionService.GetSessionQuestionsAsync(sessionId);
-                if (!questions.Any()) return NotFound(new { message = "No questions found for this session." });
+                var questions = await _learningSessionService.GetSessionQuestionsAsync(sessionId, includeRetries);
+                // Luôn trả về Ok, ngay cả khi mảng rỗng (không dùng NotFound nếu không có dữ liệu)
                 return Ok(questions);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving questions for session {SessionId}", sessionId);
+                _logger.LogError(ex, "Error retrieving questions for session {SessionId}, includeRetries: {IncludeRetries}", sessionId, includeRetries);
                 return StatusCode(500, "Internal server error");
             }
         }
@@ -131,40 +131,6 @@ namespace WordSoulApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Internal server error for user {UserId}, session {SessionId}, vocabulary {VocabularyId}", userId, sessionId, request.VocabularyId);
-                return StatusCode(500, "Internal server error");
-            }
-        }
-
-        // POST: api/learning-sessions/{sessionId}/progress/{vocabId} : Cập nhật tiến trình học tập của người dùng cho từ vựng cụ thể trong phiên học
-        [Authorize(Roles = "User")]
-        [HttpPost("{sessionId}/progress/{vocabId}")]
-        public async Task<ActionResult<UpdateProgressResponseDto>> UpdateProgress(int sessionId, int vocabId)
-        {
-            if (sessionId <= 0 || vocabId <= 0)
-                return BadRequest("Invalid sessionId or vocabId");
-
-            var userId = User.GetUserId();
-            if (userId == 0)
-                return Unauthorized();
-
-            try
-            {
-                var result = await _progressService.UpdateProgressAsync(userId, sessionId, vocabId);
-                return Ok(result);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                _logger.LogWarning(ex, "Unauthorized access for user {UserId}, session {SessionId}", userId, sessionId);
-                return Forbid(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning(ex, "Progress update failed for user {UserId}, session {SessionId}, vocab {VocabId}", userId, sessionId, vocabId);
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Internal server error for user {UserId}, session {SessionId}, vocab {VocabId}", userId, sessionId, vocabId);
                 return StatusCode(500, "Internal server error");
             }
         }

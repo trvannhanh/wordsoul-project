@@ -80,7 +80,7 @@ const PetScreen: React.FC<PetScreenProps> = ({
                                         <img
                                             src={sessionData.imageUrl || "https://via.placeholder.com/100"}
                                             alt={sessionData.petName}
-                                            className="w-24 h-24 mx-auto pixel-art"
+                                            className="object-contain max-w-70 mx-auto pixel-art"
                                         />
                                         <h3 className="text-white font-pixel mt-2">Caught {sessionData.petName}!</h3>
                                         <p className="text-white font-pixel">Type: {sessionData.petType}</p>
@@ -103,7 +103,7 @@ const PetScreen: React.FC<PetScreenProps> = ({
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ duration: 0.8, type: "spring" }}
                     >
-                        <img src={encounteredPet.imageUrl} alt={encounteredPet.name} className="w-32 h-32 pixel-art" />
+                        <img src={encounteredPet.imageUrl} alt={encounteredPet.name} className="object-contain max-w-70 pixel-art" />
                         <p className="text-white text-sm font-pixel mt-2 bg-black bg-opacity-70 p-2 rounded">Wild {encounteredPet.name} appeared!</p>
                     </motion.div>
                 ) : (

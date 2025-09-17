@@ -19,6 +19,7 @@ namespace WordSoulApi.Models.DTOs.QuizQuestion
 
         // Cho Listening
         public string? PronunciationUrl { get; set; }
+        public bool IsRetry { get; set; }
     }
 
 }
