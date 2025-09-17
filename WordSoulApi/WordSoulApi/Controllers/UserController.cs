@@ -82,15 +82,15 @@ namespace WordSoulApi.Controllers
 
         }
 
-        //GET: api/users/user-dashboard: Lấy thông tin tổng hợp của người dùng
-        [HttpGet("user-dashboard")]
-        public async Task<IActionResult> GetDashboard()
+        //GET: api/users/progress: Lấy thông tin tổng hợp của người dùng
+        [HttpGet("progress")]
+        public async Task<IActionResult> GetUserProgress()
         {
             var userId = User.GetUserId();
             if (userId == 0) return Unauthorized();
 
-            var dashboard = await _userService.GetUserDashboardAsync(userId);
-            return Ok(dashboard);
+            var progress = await _userService.GetUserProgressAsync(userId);
+            return Ok(progress);
         }
 
         // PUT: api/users/{userId}/role : Gán role cho user
@@ -142,6 +142,34 @@ namespace WordSoulApi.Controllers
             var result = await _petService.RemovePetFromUserAsync(userId, petId);
             return result ? NoContent() : NotFound("Gán pet không tồn tại.");
         }
+
+        [Authorize(Roles = "Admin,User")]
+        [HttpGet("vocabulary-sets/{vocabularySetId}")]
+        public async Task<IActionResult> GetUserVocabularySetProgress(int vocabularySetId)
+        {
+            try
+            {
+                var userId = User.GetUserId();
+                if (userId == 0) return Unauthorized();
+                var progress = await _userVocabularySetService.GetUserVocabularySetAsync(userId, vocabularySetId);
+                if (progress == null) return NotFound("No progress found for the specified vocabulary set.");
+                return Ok(progress);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while getting the user vocabulary set.", Error = ex.Message });
+            }
+
+        }
+
 
     }
 }

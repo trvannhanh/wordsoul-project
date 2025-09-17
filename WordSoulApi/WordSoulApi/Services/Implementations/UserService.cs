@@ -1,4 +1,4 @@
-﻿using WordSoulApi.Models.DTOs.Home;
+﻿
 using WordSoulApi.Models.DTOs.User;
 using WordSoulApi.Models.Entities;
 using WordSoulApi.Repositories.Interfaces;
@@ -25,25 +25,37 @@ namespace WordSoulApi.Services.Implementations
                 Id = u.Id,
                 Username = u.Username,
                 Email = u.Email,
-                Role = u.Role,
+                Role = u.Role.ToString(),
                 CreatedAt = u.CreatedAt,
                 IsActive = u.IsActive
             });
         }
 
         // Lấy người dùng theo ID
-        public async Task<UserDto?> GetUserByIdAsync(int id)
+        public async Task<UserDetailDto?> GetUserByIdAsync(int userId)
         {
-            var user = await _userRepository.GetUserByIdAsync(id);
-            if (user == null) return null;
-            return new UserDto
+            var user = await _userRepository.GetUserWithRelationsAsync(userId);
+            if (user == null) throw new Exception("User not found");
+
+            var now = DateTime.UtcNow;
+
+            // Streak (tính chuỗi ngày liên tục có học)
+            var sessionDates = await _userRepository.GetLearningSessionDatesAsync(userId);
+            int streakDays = CalculateStreak(sessionDates);
+            return new UserDetailDto
             {
                 Id = user.Id,
                 Username = user.Username,
                 Email = user.Email,
-                Role = user.Role,
+                Role = user.Role.ToString(),
                 CreatedAt = user.CreatedAt,
-                IsActive = user.IsActive
+                IsActive = user.IsActive,
+                TotalXP = user.XP,
+                TotalAP = user.AP,
+                Level = user.XP / 100, // Ví dụ: 100 XP = 1 level
+                StreakDays = streakDays,
+                PetCount = user.UserOwnedPets.Count,
+                AvatarUrl = user.UserOwnedPets.FirstOrDefault(p => p.IsActive)?.Pet.ImageUrl,
             };
         }
 
@@ -54,7 +66,7 @@ namespace WordSoulApi.Services.Implementations
             if (user == null) throw new KeyNotFoundException("User not found");
             user.Username = userDto.Username;
             user.Email = userDto.Email;
-            user.Role = userDto.Role;
+            //user.Role = userDto.Role.ToString();
             user.CreatedAt = userDto.CreatedAt;
             user.IsActive = userDto.IsActive;
             await _userRepository.UpdateUserAsync(user);
@@ -63,7 +75,7 @@ namespace WordSoulApi.Services.Implementations
                 Id = user.Id,
                 Username = user.Username,
                 Email = user.Email,
-                Role = user.Role,
+                Role = user.Role.ToString(),
                 CreatedAt = user.CreatedAt,
                 IsActive = user.IsActive
             };
@@ -78,7 +90,7 @@ namespace WordSoulApi.Services.Implementations
         }
 
 
-        public async Task<UserDashboardDto> GetUserDashboardAsync(int userId)
+        public async Task<UserProgressDto> GetUserProgressAsync(int userId)
         {
             var user = await _userRepository.GetUserWithRelationsAsync(userId);
             if (user == null) throw new Exception("User not found");
@@ -106,21 +118,10 @@ namespace WordSoulApi.Services.Implementations
                     Count = g.Count()
                 }).ToList();
 
-            // Streak (tính chuỗi ngày liên tục có học)
-            var sessionDates = await _userRepository.GetLearningSessionDatesAsync(userId);
-            int streakDays = CalculateStreak(sessionDates);
-
-            return new UserDashboardDto
+            return new UserProgressDto
             {
                 ReviewWordCount = reviewWords.Count,
                 NextReviewTime = nextReview,
-                Username = user.Username,
-                TotalXP = user.XP,
-                TotalAP = user.AP,
-                Level = user.XP / 100, // Ví dụ: 100 XP = 1 level
-                StreakDays = streakDays,
-                PetCount = user.UserOwnedPets.Count,
-                AvatarUrl = user.UserOwnedPets.FirstOrDefault(p => p.IsActive)?.Pet.ImageUrl,
                 VocabularyStats = stats
             };
         }

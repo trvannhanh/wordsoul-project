@@ -32,7 +32,7 @@ namespace WordSoulApi.Controllers
                 Id = user.Id,
                 Username = user.Username,
                 Email = user.Email,
-                Role = user.Role,
+                Role = user.Role.ToString(),
                 CreatedAt = user.CreatedAt,
                 IsActive = user.IsActive
             });

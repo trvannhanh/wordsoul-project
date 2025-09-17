@@ -1,4 +1,4 @@
-﻿using WordSoulApi.Models.DTOs.Home;
+﻿
 using WordSoulApi.Models.DTOs.User;
 
 namespace WordSoulApi.Services.Interfaces
@@ -12,8 +12,8 @@ namespace WordSoulApi.Services.Interfaces
         // Lấy tất cả người dùng
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
         // Lấy người dùng theo ID
-        Task<UserDto?> GetUserByIdAsync(int id);
-        Task<UserDashboardDto> GetUserDashboardAsync(int userId);
+        Task<UserDetailDto?> GetUserByIdAsync(int userId);
+        Task<UserProgressDto> GetUserProgressAsync(int userId);
 
         // Cập nhật người dùng
         Task<UserDto> UpdateUserAsync(int id, UserDto userDto);

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Xml.XPath;
 using WordSoulApi.Data;
 using WordSoulApi.Models.Entities;
 using WordSoulApi.Repositories.Interfaces;
@@ -60,14 +61,17 @@ namespace WordSoulApi.Repositories.Implementations
                 .ToListAsync();
         }
 
-        public async Task UpdateUserXPAndAPAsync(int userId, int xp, int ap)
+        public async Task<(int XP, int AP)> UpdateUserXPAndAPAsync(int userId, int xp, int ap)
         {
             var user = await _context.Users.FindAsync(userId);
             if (user == null)
                 throw new InvalidOperationException("User not found");
             user.XP += xp;
             user.AP += ap;
+
+            _context.Users.Update(user);
             await _context.SaveChangesAsync();
+            return (user.XP, user.AP);
         }
     }
 }

@@ -15,6 +15,7 @@
         public DateTime? RefreshTokenExpiryTime { get; set; }
 
 
+        public List<VocabularySet> CreatedVocabularySets { get; set; } = new List<VocabularySet>();
         public List<LearningSession> LearningSessions { get; set; } = new List<LearningSession>(); 
         public List<UserVocabularySet> UserVocabularySets { get; set; } = new List<UserVocabularySet>(); 
         public List<UserVocabularyProgress> UserVocabularyProgresses { get; set; } = new List<UserVocabularyProgress>();

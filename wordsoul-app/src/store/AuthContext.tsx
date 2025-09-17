@@ -1,17 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import api, { authApi, endpoints } from "../services/api";
-
-
-// Kiểu dữ liệu cho User
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  // thêm các field khác từ backend
-}
+import type { UserDto } from "../types/Dto";
 
 interface AuthContextType {
-  user: User | null;
+  user: UserDto | null;
+  setUser: (user: UserDto | null) => void; // Add setUser to interface
   loading: boolean;
   login: (username: string, password: string) => Promise<void>;
   register: (username: string, email: string, password: string) => Promise<void>;
@@ -40,7 +33,7 @@ const clearToken = () => {
 
 // ---- Provider ----
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserDto | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Gọi API lấy thông tin user nếu có token
@@ -69,7 +62,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const res = await api.post(endpoints.login, { username, password });
       const { accessToken, refreshToken } = res.data;
 
-      // lưu token
+      // Lưu token
       setToken(ACCESS_TOKEN_KEY, accessToken);
       setToken(REFRESH_TOKEN_KEY, refreshToken);
 
@@ -77,13 +70,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log("endpoints.currentUser", endpoints.currentUser);
       console.log("endpoints", endpoints);
 
-      // lấy thông tin user
+      // Lấy thông tin user
       const me = await authApi.get(endpoints.currentUser, {
         headers: { Authorization: `Bearer ${accessToken}` }
       });
       setUser(me.data);
 
-      // redirect về home
+      // Redirect về home
       window.location.href = "/home";
     } catch (err) {
       console.error("Login thất bại:", err);
@@ -95,7 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (username: string, email: string, password: string) => {
     try {
       await api.post(endpoints.register, { username, email, password });
-      // Có thể login luôn sau khi đăng ký
+      // Login sau khi đăng ký
       await login(username, password);
     } catch (err) {
       console.error("Register thất bại:", err);
@@ -111,7 +104,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, setUser, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
