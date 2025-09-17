@@ -180,6 +180,14 @@ namespace WordSoulApi.Data
                 .HasForeignKey(sv => sv.VocabularyId)
                 .OnDelete(DeleteBehavior.Restrict); // Restrict delete if vocabulary is deleted, to prevent accidental loss of session vocabularies
 
+
+            // Indexes for ActivityLog to optimize common queries
+            modelBuilder.Entity<ActivityLog>()
+                .HasIndex(al => al.UserId);
+            modelBuilder.Entity<ActivityLog>()
+                .HasIndex(al => al.Timestamp);
+            modelBuilder.Entity<ActivityLog>()
+                .HasIndex(al => al.Action);
         }
     }
 
