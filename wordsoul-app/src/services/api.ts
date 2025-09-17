@@ -11,13 +11,14 @@ export const endpoints = {
 
   // User
   currentUser: '/users/me', //thông tin cá nhân User 
-  userDashboard: '/users/user-dashboard', //thông tin tổng hợp của User
+  userProgress: '/users/progress', //thông tin tiến độ của User
 
   users: '/users', //tất cả user
   user:(userId: number) => `/users/${userId}`, //user chỉ định
   userRole:(userId: number) => `/users/${userId}/role`, //Role user chỉ định
   userActivities:(userId: number) => `/users/${userId}/activities`, //Activity user chỉ định
   AllUserActivities: "/users/activities", //Activity User
+  userVocabularySets: (vocabularySetId: number) => `/users/vocabulary-sets/${vocabularySetId}`, //Danh sách bộ từ vựng của user
 
   userOwnedPet: (userId: number , petId: number) => `/users/${userId}/pets/${petId}`,
 
@@ -29,6 +30,8 @@ export const endpoints = {
   //Vocabulary
   vocabularies:'/vocabularies',
   vocabulary: (vocabularyId: number) => `/vocabularies/${vocabularyId}`,
+  searchVocabularies:'/vocabularies/search',
+
 
   setVocabulary: (vocabularySetId: number) => `/vocabularies/${vocabularySetId}/vocabularies`,
   deleteSetVocabulary: (vocabularySetId: number, vocabularyId: number) => `/vocabularies/${vocabularySetId}/vocabularies/${vocabularyId}`,

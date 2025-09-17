@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WordSoulApi.Models.DTOs.VocabularySet;
 using WordSoulApi.Models.Entities;
+using WordSoulApi.Repositories.Implementations;
 using WordSoulApi.Repositories.Interfaces;
 using WordSoulApi.Services.Interfaces;
 
@@ -10,16 +11,25 @@ namespace WordSoulApi.Services.Implementations
     {
         private readonly IVocabularySetRepository _vocabularySetRepository;
         private readonly IVocabularyRepository _vocabularyRepository;
+        public readonly IUserVocabularySetRepository _userVocabularySetRepository;
+        public readonly IUserRepository _userRepository;
+        public readonly IPetRepository _petRepository;
         private readonly ILogger<VocabularySetService> _logger;
 
         public VocabularySetService(
             IVocabularySetRepository vocabularySetRepository,
             IVocabularyRepository vocabularyRepository,
-            ILogger<VocabularySetService> logger)
+            ILogger<VocabularySetService> logger,
+            IUserVocabularySetRepository userVocabularySetRepository,
+            IUserRepository userRepository,
+            IPetRepository petRepository)
         {
             _vocabularySetRepository = vocabularySetRepository;
             _vocabularyRepository = vocabularyRepository;
             _logger = logger;
+            _userVocabularySetRepository = userVocabularySetRepository;
+            _userRepository = userRepository;
+            _petRepository = petRepository;
         }
 
         // Lấy bộ từ vựng theo ID
@@ -51,10 +61,19 @@ namespace WordSoulApi.Services.Implementations
         }
 
         // Tạo bộ từ vựng mới
-        public async Task<VocabularySetDto> CreateVocabularySetAsync(CreateVocabularySetDto createDto, string? imageUrl)
+        public async Task<VocabularySetDto> CreateVocabularySetAsync(CreateVocabularySetDto createDto, string? imageUrl, int userId)
         {
-            _logger.LogInformation("Creating vocabulary set with title: {Title}", createDto.Title);
-                
+            _logger.LogInformation("Creating vocabulary set with title: {Title} by user ID: {UserId}", createDto.Title, userId);
+
+            // Kiểm tra user tồn tại
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                _logger.LogError("User with ID: {UserId} not found", userId);
+                throw new KeyNotFoundException($"User with ID {userId} not found.");
+            }
+
+            // Kiểm tra title hợp lệ
             if (string.IsNullOrWhiteSpace(createDto.Title))
             {
                 _logger.LogError("Title is required for creating a vocabulary set");
@@ -72,6 +91,7 @@ namespace WordSoulApi.Services.Implementations
                 }
             }
 
+            // Tạo VocabularySet mới
             var vocabularySet = new VocabularySet
             {
                 Title = createDto.Title,
@@ -80,14 +100,56 @@ namespace WordSoulApi.Services.Implementations
                 Description = createDto.Description,
                 DifficultyLevel = createDto.DifficultyLevel,
                 IsActive = createDto.IsActive,
+                IsPublic = createDto.IsPublic,
+                CreatedById = userId,
                 SetVocabularies = createDto.VocabularyIds.Select((vocabId, index) => new SetVocabulary
                 {
                     VocabularyId = vocabId,
                     Order = index + 1
-                }).ToList()
+                }).ToList(),
+                SetRewardPets = new List<SetRewardPet>()
             };
 
+            // Tự động gán Pet theo Rarity
+            var petDistribution = new Dictionary<PetRarity, (int Count, double DropRate)>
+            {
+                { PetRarity.Common, (10, 0.4) },
+                { PetRarity.Uncommon, (5, 0.25) },
+                { PetRarity.Rare, (3, 0.15) },
+                { PetRarity.Epic, (2, 0.05) },
+                { PetRarity.Legendary, (1, 0.01) }
+            };
+
+            foreach (var (rarity, (count, dropRate)) in petDistribution)
+            {
+                var pets = await _petRepository.GetRandomPetsByRarityAsync(rarity, count);
+                if (pets.Count < count)
+                {
+                    _logger.LogWarning("Not enough pets with rarity {Rarity}. Requested: {Count}, Found: {Found}", rarity, count, pets.Count);
+                    // Tiếp tục với số lượng có sẵn hoặc throw exception tùy yêu cầu
+                    // throw new InvalidOperationException($"Not enough pets with rarity {rarity}. Required: {count}, Found: {pets.Count}");
+                }
+
+                vocabularySet.SetRewardPets.AddRange(pets.Select(pet => new SetRewardPet
+                {
+                    PetId = pet.Id,
+                    DropRate = dropRate
+                }));
+            }
+
+            // Lưu VocabularySet (bao gồm SetVocabularies và SetRewardPets)
             var createdVocabularySet = await _vocabularySetRepository.CreateVocabularySetAsync(vocabularySet);
+
+            // Tự động gán quyền sở hữu cho người tạo qua UserVocabularySet
+            var userVocabularySet = new UserVocabularySet
+            {
+                UserId = userId,
+                VocabularySetId = createdVocabularySet.Id,
+                CreatedAt = DateTime.UtcNow,
+                IsActive = true
+            };
+            await _userVocabularySetRepository.AddVocabularySetToUserAsync(userVocabularySet);
+
             _logger.LogInformation("Vocabulary set created with ID: {Id}", createdVocabularySet.Id);
 
             return MapToDto(createdVocabularySet);
@@ -169,11 +231,15 @@ namespace WordSoulApi.Services.Implementations
                 Id = vocabularySet.Id,
                 Title = vocabularySet.Title,
                 Theme = vocabularySet.Theme.ToString(),
-                ImageUrl = vocabularySet.ImageUrl,
                 Description = vocabularySet.Description,
+                ImageUrl = vocabularySet.ImageUrl,
                 DifficultyLevel = vocabularySet.DifficultyLevel.ToString(),
-                IsActive = vocabularySet.IsActive,
                 CreatedAt = vocabularySet.CreatedAt,
+                IsActive = vocabularySet.IsActive,
+                CreatedById = vocabularySet.CreatedById,
+                CreatedByUsername = vocabularySet.CreatedBy?.Username, // Lấy username nếu có
+                IsPublic = vocabularySet.IsPublic,
+                VocabularyIds = vocabularySet.SetVocabularies.Select(sv => sv.VocabularyId).ToList()
             };
         }
 
@@ -222,17 +288,46 @@ namespace WordSoulApi.Services.Implementations
         }
 
         // Tìm kiếm bộ từ vựng với các tiêu chí khác nhau và phân trang
-        public async Task<IEnumerable<VocabularySetDto>> GetAllVocabularySetsAsync(string? title, VocabularySetTheme? theme, VocabularyDifficultyLevel? difficulty,
-                                                                        DateTime? createdAfter, int pageNumber, int pageSize)
+        public async Task<IEnumerable<VocabularySetDto>> GetAllVocabularySetsAsync(
+            string? title,
+            VocabularySetTheme? theme,
+            VocabularyDifficultyLevel? difficulty,
+            DateTime? createdAfter,
+            bool? isOwned,
+            int? userId, // Mới: Nullable để hỗ trợ chưa đăng nhập
+            int pageNumber,
+            int pageSize)
         {
-            var sets = await _vocabularySetRepository.GetAllVocabularySetsAsync(title, theme, difficulty, createdAfter, pageNumber, pageSize);
+            var sets = await _vocabularySetRepository.GetAllVocabularySetsAsync(
+                title, theme, difficulty, createdAfter, isOwned, userId, pageNumber, pageSize);
+
             var vocabularySetDtos = new List<VocabularySetDto>();
             foreach (var vocabularySet in sets)
             {
-                vocabularySetDtos.Add(MapToDto(vocabularySet));
+                vocabularySetDtos.Add(MapToDto(vocabularySet, userId));
             }
 
             return vocabularySetDtos;
+        }
+
+        private VocabularySetDto MapToDto(VocabularySet vocabularySet, int? userId)
+        {
+            return new VocabularySetDto
+            {
+                Id = vocabularySet.Id,
+                Title = vocabularySet.Title,
+                Theme = vocabularySet.Theme.ToString(),
+                Description = vocabularySet.Description,
+                ImageUrl = vocabularySet.ImageUrl,
+                DifficultyLevel = vocabularySet.DifficultyLevel.ToString(),
+                CreatedAt = vocabularySet.CreatedAt,
+                IsActive = vocabularySet.IsActive,
+                CreatedById = vocabularySet.CreatedById,
+                CreatedByUsername = vocabularySet.CreatedBy?.Username,
+                IsPublic = vocabularySet.IsPublic,
+                IsOwned = userId.HasValue && vocabularySet.UserVocabularySets.Any(uvs => uvs.UserId == userId.Value && uvs.IsActive), // Mới: false nếu chưa đăng nhập
+                VocabularyIds = vocabularySet.SetVocabularies.Select(sv => sv.VocabularyId).ToList()
+            };
         }
 
     }

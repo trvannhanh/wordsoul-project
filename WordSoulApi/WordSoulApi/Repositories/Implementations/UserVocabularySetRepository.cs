@@ -14,7 +14,7 @@ namespace WordSoulApi.Repositories.Implementations
         }
 
         // Kiểm tra người dùng có sở hữu bộ từ vựng này chưa
-        public async Task<bool> CheckUserVocabualryExist(int userId, int vocabId)
+        public async Task<bool> CheckUserVocabularyExist(int userId, int vocabId)
         {
             // Sử dụng AsNoTracking để tối ưu hiệu suất khi chỉ đọc dữ liệu
             var exists = await _context.UserVocabularySets
@@ -28,19 +28,6 @@ namespace WordSoulApi.Repositories.Implementations
         {
             _context.UserVocabularySets.Add(userVocabularySet);
             await _context.SaveChangesAsync();
-        }
-
-        // Đếm số session đã hoàn thành cho một người dùng trong một bộ từ vựng
-        public async Task<int> GetCompletedLearningSessionAsync(int userId, int vocabularySetId)
-        {
-            // 1. Lấy số session đã hoàn thành từ bảng UserVocabularySets
-            var userVocabSet = await _context.UserVocabularySets
-                .AsNoTracking()
-                .Where(uvs => uvs.UserId == userId && uvs.VocabularySetId == vocabularySetId)
-                .Select(uvs => uvs.totalCompletedSession)
-                .FirstOrDefaultAsync();
-
-            return userVocabSet;
         }
 
         // Cập nhật số session đã hoàn thành cho một người dùng trong một bộ từ vựng
@@ -58,6 +45,30 @@ namespace WordSoulApi.Repositories.Implementations
             {
                 throw new InvalidOperationException("User does not own this vocabulary set.");
             }
+        }
+
+        public async Task UpdateUserVocabularySetAsync(UserVocabularySet userVocabularySet)
+        {
+
+            _context.UserVocabularySets.Update(userVocabularySet);
+            await _context.SaveChangesAsync();
+            
+        }
+
+        public async Task<List<UserVocabularySet>> GetAllUserVocabularySetsAsync(int userId)
+        {
+            return await _context.UserVocabularySets
+                .AsNoTracking()
+                .Where(uvs => uvs.UserId == userId)
+                .Include(uvs => uvs.VocabularySet)
+                .ToListAsync();
+        }
+
+        public async Task<UserVocabularySet?> GetUserVocabularySetAsync(int userId, int vocabularySetId)
+        {
+            return await _context.UserVocabularySets
+                .AsNoTracking()
+                .FirstOrDefaultAsync(uvs => uvs.UserId == userId && uvs.VocabularySetId == vocabularySetId);
         }
     }
 }

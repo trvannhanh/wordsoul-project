@@ -16,6 +16,12 @@ export interface UserDto {
   role: string;
   createdAt: string;
   isActive: boolean;
+  level: number;
+  totalXP: number;
+  totalAP: number;
+  streakDays: number;
+  avatarUrl?: string;
+  petCount?: number;
 }
 
 export interface RefreshTokenRequestDto {
@@ -32,11 +38,16 @@ export interface VocabularySet {
   id: number;
   title: string;
   description: string | null;
-  theme: string;
-  difficultyLevel: string;
+  theme: string; // Enum: 'DailyLearning' | 'AdvancedTopics' | ...
+  difficultyLevel: string; // Enum: 'Beginner' | 'Intermediate' | 'Advanced' | ...
   imageUrl?: string;
-  isActive?: boolean;
-  createdAt?: string;
+  isActive: boolean;
+  createdAt: string; // ISO date string (e.g., '2025-09-13T12:00:00Z')
+  isPublic: boolean; // Mới: Trạng thái công khai
+  isOwned: boolean; // Mới: Người dùng sở hữu
+  createdById?: number; // Mới: ID người tạo
+  createdByUsername?: string; // Mới: Username người tạo
+  vocabularyIds?: number[]; // Mới: Danh sách ID từ vựng
 }
 
 export interface Vocabulary {
@@ -46,6 +57,7 @@ export interface Vocabulary {
   imageUrl: string | null;
   pronunciation: string | null;
   partOfSpeech: string;
+  example: string | null;
 }
 
 export interface VocabularySetDetail extends VocabularySet {
@@ -75,6 +87,7 @@ export interface QuizQuestion {
   description?: string;
   options?: string[];
   pronunciationUrl?: string;
+  isRetry?: boolean; // Thêm thuộc tính isRetry
 }
 
 
@@ -119,6 +132,18 @@ export const QuestionType = {
   Listening: 3,
 } as const;
 
+export const VocabularySetTheme = {
+  DailyLearning: 0,
+  AdvancedTopics: 1,
+} as const;
+
+export const VocabularyDifficultyLevel = {
+  Beginner: 0,
+  Intermediate: 1,
+  Advanced: 2
+} as const;
+
+
 export interface Pet {
   isOwned: boolean;
   id: number;
@@ -146,23 +171,25 @@ export interface PetDetail {
   requiredLevel: number | null;
 }
 
+export interface UpgradePetResponse {
+  petId: number;
+  experience: number;
+  level: number;
+  isLevelUp: boolean;
+  isEvolved: boolean;
+  ap: number;
+}
+
+
+
 export interface LevelStatDto {
   level: number;
   count: number;
 }
 
-export interface UserDashboardDto {
+export interface UserProgressDto {
   reviewWordCount: number;
   nextReviewTime: string | null;
-
-  username: string;
-  level: number;
-  totalXP: number;
-  totalAP: number;
-  streakDays: number;
-  petCount: number;
-  avatarUrl?: string;
-
   vocabularyStats: LevelStatDto[];
 }
 
@@ -189,7 +216,26 @@ export interface AssignRoleDto {
   roleName: string;
 }
 
+export interface UserVocabularySetDto {
+  vocabularySetId: number;
+  totalCompletedSessions: number;
+  isCompleted: boolean;
+  createdAt: string;
+  isActive: boolean;
+}
+
+export interface SearchVocabularyDto {
+  words: string[];
+}
+
+
 export type QuestionType = typeof QuestionType[keyof typeof QuestionType];
+
+
+export type VocabularySetTheme = typeof VocabularySetTheme[keyof typeof VocabularySetTheme];
+
+export type VocabularyDifficultyLevel = typeof VocabularyDifficultyLevel[keyof typeof VocabularyDifficultyLevel];
+
 
 
 

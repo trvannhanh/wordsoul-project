@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using WordSoulApi.Extensions;
 using WordSoulApi.Models.DTOs.VocabularySet;
 using WordSoulApi.Models.Entities;
@@ -69,7 +70,7 @@ namespace WordSoulApi.Controllers
 
         // POST: api/vocabulary-sets : Tạo bộ từ vựng mới
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,User")] // Cập nhật để cho phép cả User
         public async Task<IActionResult> CreateVocabularySet([FromForm] CreateVocabularySetDto createDto)
         {
             if (createDto == null)
@@ -79,18 +80,20 @@ namespace WordSoulApi.Controllers
 
             try
             {
+                var userId = User.GetUserId();  
+                if (userId == 0) return Unauthorized();
+
                 string? imageUrl = null;
                 string? publicId = null;
 
                 // Upload ảnh nếu có
                 if (createDto.ImageFile != null && createDto.ImageFile.Length > 0)
                 {
-                    // public ID dùng để xóa ảnh (rollback) sau này nếu cần
                     (imageUrl, publicId) = await _uploadAssetsService.UploadImageAsync(createDto.ImageFile, "vocabulary_sets");
                 }
 
-                // Gọi service để tạo VocabularySet
-                var createdVocabularySet = await _vocabularySetService.CreateVocabularySetAsync(createDto, imageUrl);
+                // Gọi service để tạo VocabularySet, truyền thêm userId
+                var createdVocabularySet = await _vocabularySetService.CreateVocabularySetAsync(createDto, imageUrl, userId);
 
                 return CreatedAtAction(nameof(GetVocabularySetById), new { id = createdVocabularySet.Id }, createdVocabularySet);
             }
@@ -152,13 +155,35 @@ namespace WordSoulApi.Controllers
 
         // GET: api/vocabulary-sets : Tìm kiếm bộ từ vựng với các tiêu chí khác nhau và phân trang
         [HttpGet]
-        public async Task<IActionResult> GetAllVocabularySets(string? title, VocabularySetTheme? theme, VocabularyDifficultyLevel? difficulty,
-                                                                DateTime? createdAfter, int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> GetAllVocabularySets(
+            string? title,
+            VocabularySetTheme? theme,
+            VocabularyDifficultyLevel? difficulty,
+            DateTime? createdAfter,
+            bool? isOwned, // Bộ lọc sở hữu (chỉ áp dụng khi đăng nhập)
+            int pageNumber = 1,
+            int pageSize = 10)
         {
-            var results = await _vocabularySetService.GetAllVocabularySetsAsync(
-                title, theme, difficulty, createdAfter, pageNumber, pageSize);
+            try
+            {
+                int? userId = User.GetUserId(); // Lấy userId từ JWT, trả về 0 nếu chưa đăng nhập
 
-            return Ok(results);
+                // Nếu isOwned được yêu cầu nhưng chưa đăng nhập, trả lỗi
+                if (isOwned.HasValue && userId == 0)
+                {
+                    return BadRequest("Cannot filter by ownership without logging in.");
+                }
+
+                var results = await _vocabularySetService.GetAllVocabularySetsAsync(
+                    title, theme, difficulty, createdAfter, isOwned, userId, pageNumber, pageSize);
+
+                return Ok(results);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving vocabulary sets");
+                return StatusCode(500, new { Message = "An error occurred while retrieving vocabulary sets.", Error = ex.Message });
+            }
         }
 
         // POST: api/vocabulary-sets/{vocabId} : Thêm bộ từ vựng vào người dùng hiện tại

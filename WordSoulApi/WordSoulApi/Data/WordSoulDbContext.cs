@@ -73,6 +73,13 @@ namespace WordSoulApi.Data
                 .HasForeignKey(ls => ls.VocabularySetId)  
                 .OnDelete(DeleteBehavior.NoAction); // No cascade delete, as we want to keep sessions even if the set is deleted
 
+            // Cấu hình mối quan hệ CreatedBy (1-N: User -> VocabularySet)
+            modelBuilder.Entity<VocabularySet>()
+                .HasOne(vs => vs.CreatedBy)
+                .WithMany(u => u.CreatedVocabularySets)  // Nếu bạn thêm collection ở User
+                .HasForeignKey(vs => vs.CreatedById)
+                .OnDelete(DeleteBehavior.Restrict);  // Tránh xóa cascade nếu user bị xóa
+
             // User N - N VocabularySet relationship (UserVocabularySet)
             modelBuilder.Entity<UserVocabularySet>()
             .HasKey(uvs => new { uvs.UserId, uvs.VocabularySetId }); // Khóa chính composite

@@ -16,11 +16,11 @@ namespace WordSoulApi.Repositories.Interfaces
         Task<VocabularySet?> GetVocabularySetFullDetailsAsync(int id, int page, int pageSize);
 
         // Lấy tất cả bộ từ vựng với các tiêu chí khác nhau và phân trang
-        Task<IEnumerable<VocabularySet>> GetAllVocabularySetsAsync(string? title, VocabularySetTheme? theme, VocabularyDifficultyLevel? difficulty, DateTime? createdAfter, int pageNumber, int pageSize);
         // Cập nhật bộ từ vựng
         Task<VocabularySet?> UpdateVocabularySetAsync(VocabularySet vocabularySet);
         Task<SetVocabulary> CreateSetVocabularyAsync(SetVocabulary setVocabulary);
         Task<bool> DeleteSetVocabularyAsync(SetVocabulary setVocabulary);
         Task<SetVocabulary> GetSetVocabularyAsync(int vocabId, int setId);
+        Task<IEnumerable<VocabularySet>> GetAllVocabularySetsAsync(string? title, VocabularySetTheme? theme, VocabularyDifficultyLevel? difficulty, DateTime? createdAfter, bool? isOwned, int? userId, int pageNumber, int pageSize);
     }
 }

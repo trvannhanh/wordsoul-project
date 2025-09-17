@@ -185,6 +185,7 @@ namespace WordSoulApi.Services.Implementations
                 Description = v.Description,
                 ExampleSentence = v.ExampleSentence,
                 ImageUrl = v.ImageUrl,
+                Pronunciation = v.Pronunciation,
                 PronunciationUrl = v.PronunciationUrl
             }).ToList();
 

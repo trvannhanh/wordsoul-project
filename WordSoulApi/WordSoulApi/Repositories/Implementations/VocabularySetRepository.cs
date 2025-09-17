@@ -108,14 +108,34 @@ namespace WordSoulApi.Repositories.Implementations
 
 
         // Tìm kiếm bộ từ vựng với các tiêu chí và phân trang
-        public async Task<IEnumerable<VocabularySet>> GetAllVocabularySetsAsync(string? title, VocabularySetTheme? theme, VocabularyDifficultyLevel? difficulty,
-                                                                    DateTime? createdAfter, int pageNumber, int pageSize)
+        public async Task<IEnumerable<VocabularySet>> GetAllVocabularySetsAsync(
+        string? title,
+        VocabularySetTheme? theme,
+        VocabularyDifficultyLevel? difficulty,
+        DateTime? createdAfter,
+        bool? isOwned,
+        int? userId,
+        int pageNumber,
+        int pageSize)
         {
             var query = _context.VocabularySets
                 .Include(vs => vs.SetVocabularies)
                     .ThenInclude(sv => sv.Vocabulary)
+                .Include(vs => vs.CreatedBy)
+                .Include(vs => vs.UserVocabularySets)
                 .AsQueryable();
 
+            // Chỉ lấy các set công khai hoặc thuộc sở hữu của user
+            if (userId.HasValue)
+            {
+                query = query.Where(vs => vs.IsPublic || vs.UserVocabularySets.Any(uvs => uvs.UserId == userId.Value && uvs.IsActive));
+            }
+            else
+            {
+                query = query.Where(vs => vs.IsPublic); // Chưa đăng nhập: chỉ lấy IsPublic = true
+            }
+
+            // Các bộ lọc hiện có
             if (!string.IsNullOrWhiteSpace(title))
                 query = query.Where(vs => vs.Title.Contains(title));
 
@@ -127,6 +147,19 @@ namespace WordSoulApi.Repositories.Implementations
 
             if (createdAfter.HasValue)
                 query = query.Where(vs => vs.CreatedAt >= createdAfter.Value);
+
+            // Bộ lọc isOwned (chỉ áp dụng khi đã đăng nhập)
+            if (userId.HasValue && isOwned.HasValue)
+            {
+                if (isOwned.Value)
+                {
+                    query = query.Where(vs => vs.UserVocabularySets.Any(uvs => uvs.UserId == userId.Value && uvs.IsActive));
+                }
+                else
+                {
+                    query = query.Where(vs => !vs.UserVocabularySets.Any(uvs => uvs.UserId == userId.Value && uvs.IsActive));
+                }
+            }
 
             return await query
                 .Skip((pageNumber - 1) * pageSize)

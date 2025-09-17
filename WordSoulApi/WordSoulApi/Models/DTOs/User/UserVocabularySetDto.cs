@@ -2,7 +2,10 @@
 {
     public class UserVocabularySetDto
     {
-        public int UserId { get; set; } // Foreign key to User
-        public int VocabularySetId { get; set; } // Foreign key to VocabularySet
+        public int VocabularySetId { get; set; }
+        public int TotalCompletedSession { get; set; }
+        public bool IsCompleted { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public bool IsActive { get; set; }
     }
 }
