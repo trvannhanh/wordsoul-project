@@ -28,7 +28,7 @@ namespace WordSoulApi.Controllers
         [Authorize(Roles = "Admin,User")]
         [HttpGet]
         public async Task<IActionResult> GetAllPets(string? name, PetRarity? rarity, PetType? type,
-                                                                bool? isOwned, int pageNumber = 1, int pageSize = 10)
+                                                                bool? isOwned, int pageNumber = 1, int pageSize = 20)
         {
 
             // Lấy userId từ token

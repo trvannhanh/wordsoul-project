@@ -116,6 +116,16 @@ namespace WordSoulApi.Repositories.Implementations
             return await _context.Pets.AnyAsync(p => p.Id == id);
         }
 
+        public async Task<List<Pet>> GetRandomPetsByRarityAsync(PetRarity rarity, int count)
+        {
+            var pets = await _context.Pets
+                .Where(p => p.Rarity == rarity && p.IsActive)
+                .OrderBy(p => Guid.NewGuid()) // Ngẫu nhiên hóa
+                .Take(count)
+                .ToListAsync();
+
+            return pets;
+        }
 
     }
 }

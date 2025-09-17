@@ -46,6 +46,7 @@ namespace WordSoulApi.Models.DTOs.Pet
         public int Level { get; set; }
         public bool IsLevelUp { get; set; } 
         public bool IsEvolved { get; set; }
-        
+        public int AP { get; set; }
+
     }
 }

@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchPetDetailById, upgradePet } from '../../services/pet';
-import type { PetDetail, UpgradePetResponse } from '../../types/Dto';
+import type { PetDetail, UpgradePetResponse, UserDto } from '../../types/Dto';
 import { motion } from 'framer-motion';
 import Particles from 'react-particles';
 import { loadFull } from 'tsparticles';
+import ProfileCard from '../../components/UserProfile/ProfileCard';
+import { useAuth } from '../../store/AuthContext';
 
 const PetDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -17,6 +19,7 @@ const PetDetailPage: React.FC = () => {
   const [levelUpAnimation, setLevelUpAnimation] = useState<boolean>(false);
   const [evolveAnimation, setEvolveAnimation] = useState<boolean>(false);
   const [currentImage, setCurrentImage] = useState<string | undefined>(undefined);
+  const { user, setUser } = useAuth();
 
   // Khởi tạo particles
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -74,6 +77,8 @@ const PetDetailPage: React.FC = () => {
         levelUpSound.play();
         setTimeout(() => setLevelUpAnimation(false), 1000);
       }
+
+      setUser({ ...user, totalAP: response.ap } as UserDto);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Lỗi khi nâng cấp thú cưng:', err);
@@ -141,7 +146,7 @@ const PetDetailPage: React.FC = () => {
                   <img
                     src={currentImage}
                     alt={pet.name}
-                    className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-300 rounded-lg"
+                    className="w-full max-h-100 object-contain transform hover:scale-105 transition-transform duration-300 rounded-lg"
                   />
                 </motion.div>
                 {evolveAnimation && (
@@ -244,6 +249,9 @@ const PetDetailPage: React.FC = () => {
                 </div>
               )}
             </div>
+          </div>
+          <div className="w-full">
+            <ProfileCard />
           </div>
           {isOwned ? (
             <motion.button

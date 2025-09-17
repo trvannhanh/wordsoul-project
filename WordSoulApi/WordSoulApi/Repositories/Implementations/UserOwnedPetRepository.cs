@@ -92,30 +92,5 @@ namespace WordSoulApi.Repositories.Implementations
             return chosenPet;
         }
 
-        //public async Task<Pet?> GetRandomPetBySetIdAsync(int vocabularySetId)
-        //{
-        //    var setPets = await _context.SetRewardPets
-        //        .Include(sp => sp.Pet) // Đảm bảo tải Pet liên quan
-        //        .Where(sp => sp.VocabularySetId == vocabularySetId)
-        //        .ToListAsync();
-
-        //    if (!setPets.Any())
-        //    {
-        //        _logger.LogWarning("No SetRewardPets found for VocabularySetId {SetId}", vocabularySetId);
-        //        return null;
-        //    }
-
-        //    var random = new Random(Guid.NewGuid().GetHashCode());
-        //    var eligiblePets = setPets.Select(sp => sp.Pet).ToList();
-
-        //    if (!eligiblePets.Any())
-        //    {
-        //        _logger.LogWarning("No eligible Pets found for VocabularySetId {SetId}", vocabularySetId);
-        //        return null;
-        //    }
-
-        //    var chosenPet = eligiblePets[random.Next(eligiblePets.Count)];
-        //    return chosenPet;
-        //}
     }
 }

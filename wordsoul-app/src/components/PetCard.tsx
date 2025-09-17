@@ -21,8 +21,8 @@ const PetCard: React.FC<PetCardProps> = ({ pet }) => {
   }
 
   return (
-    <div className="bg-white p-4 rounded-md shadow-md text-black h-64" onClick={handleClick}>
-      <img src={pet.imageUrl} alt={pet.name} className="w-full h-32 object-cover rounded-md mb-2" />
+    <div className="pet-background pixel-border p-4 rounded-md shadow-md text-black h-64" onClick={handleClick}>
+      <img src={pet.imageUrl} alt={pet.name} className="w-full h-32 object-contain rounded-md mb-2" />
       <h3 className="text-lg font-bold">{pet.name.trim()}</h3>
       <p className="text-sm">Rarity: {pet.rarity}</p>
       <p className="text-sm">Type: {pet.type}</p>

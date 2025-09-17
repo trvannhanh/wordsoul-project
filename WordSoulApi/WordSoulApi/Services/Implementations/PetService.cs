@@ -375,7 +375,7 @@ namespace WordSoulApi.Services.Implementations
             // Giới hạn kinh nghiệm để tránh giá trị âm
             if (userOwnedPet.Experience < 0) userOwnedPet.Experience = 0;
 
-            await _userRepository.UpdateUserXPAndAPAsync(userId, 0, -experience);
+            var updatedUser = await _userRepository.UpdateUserXPAndAPAsync(userId, 0, -experience);
             await _userOwnedPetRepository.UpdateUserOwnedPetAsync(userOwnedPet);
 
             return new UpgradePetDto
@@ -384,7 +384,8 @@ namespace WordSoulApi.Services.Implementations
                 Level = userOwnedPet.Level,
                 Experience = userOwnedPet.Experience,
                 IsLevelUp = isLevelUp,
-                IsEvolved = isEvolve
+                IsEvolved = isEvolve,
+                AP = updatedUser.AP
             };
         }
     }

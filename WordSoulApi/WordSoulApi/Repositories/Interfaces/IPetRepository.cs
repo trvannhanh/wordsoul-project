@@ -16,6 +16,8 @@ namespace WordSoulApi.Repositories.Interfaces
 
         // Lấy pet theo ID
         Task<Pet?> GetPetByIdAsync(int id);
+        Task<List<Pet>> GetRandomPetsByRarityAsync(PetRarity rarity, int count);
+
         // Cập nhật pet
         Task<Pet> UpdatePetAsync(Pet pet);
     }
