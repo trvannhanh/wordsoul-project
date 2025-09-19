@@ -1,11 +1,16 @@
-﻿namespace WordSoulApi.Models.Entities
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace WordSoulApi.Models.Entities
 {
     public class VocabularySet
     {
         public int Id { get; set; }
+        [MaxLength(100)]
         public required string Title { get; set; } // e.g., "Daily Vocabulary", "Advanced English"
         public VocabularySetTheme Theme { get; set; }
+        [MaxLength(300)]
         public string? Description { get; set; }
+        [MaxLength(200)]
         public string? ImageUrl { get; set; }
         public VocabularyDifficultyLevel DifficultyLevel { get; set; } 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow; 

@@ -18,6 +18,7 @@ namespace WordSoulApi.Controllers
             _authService = authService;
         }
 
+
         // POST: api/auth/register : Đăng ký người dùng mới
         [HttpPost("register")]
         public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
@@ -27,15 +28,7 @@ namespace WordSoulApi.Controllers
             {
                 return BadRequest("User registration failed.");
             }
-            return Ok(new UserDto
-            {
-                Id = user.Id,
-                Username = user.Username,
-                Email = user.Email,
-                Role = user.Role.ToString(),
-                CreatedAt = user.CreatedAt,
-                IsActive = user.IsActive
-            });
+            return Ok(user);
         }
 
         // POST: api/auth/login : Đăng nhập và nhận token
@@ -60,9 +53,6 @@ namespace WordSoulApi.Controllers
 
             return Ok(result);
         }
-
-
-
 
     }
 }

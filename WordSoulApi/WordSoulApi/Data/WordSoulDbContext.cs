@@ -188,6 +188,26 @@ namespace WordSoulApi.Data
                 .HasIndex(al => al.Timestamp);
             modelBuilder.Entity<ActivityLog>()
                 .HasIndex(al => al.Action);
+
+            // Indexes for Vocabulary to optimize search and filtering
+            modelBuilder.Entity<Vocabulary>()
+                .HasIndex(v => v.Word);
+            modelBuilder.Entity<Vocabulary>()
+                .HasIndex(v => new { v.PartOfSpeech, v.CEFRLevel });
+
+            // Indexes for VocabularySet to optimize search and filtering
+            modelBuilder.Entity<VocabularySet>()
+                .HasIndex(vs => vs.Title);
+            modelBuilder.Entity<VocabularySet>()
+                .HasIndex(vs => new { vs.Theme, vs.DifficultyLevel, vs.CreatedAt });
+            modelBuilder.Entity<VocabularySet>()
+                .HasIndex(vs => vs.IsPublic);
+
+            // Indexes for SetVocabulary to optimize 
+            modelBuilder.Entity<SetVocabulary>()
+                .HasIndex(sv => sv.VocabularySetId);
+            modelBuilder.Entity<SetVocabulary>()
+                .HasIndex(sv => sv.Order);
         }
     }
 

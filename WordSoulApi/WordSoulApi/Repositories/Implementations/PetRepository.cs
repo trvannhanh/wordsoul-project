@@ -13,6 +13,18 @@ namespace WordSoulApi.Repositories.Implementations
             _context = context;
         }
 
+        //------------------------------- CREATE -----------------------------------
+        // Tạo pet mới
+        public async Task<Pet> CreatePetAsync(Pet pet)
+        {
+            _context.Pets.Add(pet);
+            await _context.SaveChangesAsync();
+            return pet;
+        }
+
+
+
+        //------------------------------- READ -----------------------------------
         // Lấy danh sách Pet cho người dùng
         public async Task<IEnumerable<(Pet Pet, bool IsOwned)>> GetAllPetsAsync(
             int userId,
@@ -81,41 +93,7 @@ namespace WordSoulApi.Repositories.Implementations
             return await _context.Pets.FindAsync(id);
         }
 
-        // Tạo pet mới
-        public async Task<Pet> CreatePetAsync(Pet pet)
-        {
-            _context.Pets.Add(pet);
-            await _context.SaveChangesAsync();
-            return pet;
-        }
-
-        // Cập nhật pet
-        public async Task<Pet> UpdatePetAsync(Pet pet)
-        {
-            _context.Pets.Update(pet);
-            await _context.SaveChangesAsync();
-            return pet;
-        }
-
-        // Xóa pet theo ID
-        public async Task<bool> DeletePetAsync(int id)
-        {
-            var pet = await _context.Pets.FindAsync(id);
-            if (pet == null) return false;
-            _context.Pets.Remove(pet);
-            return await _context.SaveChangesAsync() > 0;
-        }
-
-        public async Task<List<Pet>> GetAllAsync()
-        {
-            return await _context.Pets.ToListAsync();
-        }
-
-        public async Task<bool> ExistsAsync(int id)
-        {
-            return await _context.Pets.AnyAsync(p => p.Id == id);
-        }
-
+        // Lấy ngẫu nhiên một số pet theo rarity
         public async Task<List<Pet>> GetRandomPetsByRarityAsync(PetRarity rarity, int count)
         {
             var pets = await _context.Pets
@@ -126,6 +104,28 @@ namespace WordSoulApi.Repositories.Implementations
 
             return pets;
         }
+
+        //------------------------------- UPDATE -----------------------------------
+        // Cập nhật pet
+        public async Task<Pet> UpdatePetAsync(Pet pet)
+        {
+            _context.Pets.Update(pet);
+            await _context.SaveChangesAsync();
+            return pet;
+        }
+
+        //------------------------------- DELETE -----------------------------------
+
+        // Xóa pet theo ID
+        public async Task<bool> DeletePetAsync(int id)
+        {
+            var pet = await _context.Pets.FindAsync(id);
+            if (pet == null) return false;
+            _context.Pets.Remove(pet);
+            return await _context.SaveChangesAsync() > 0;
+        }
+
+        
 
     }
 }

@@ -8,7 +8,7 @@
         public DateTime EndTime { get; set; } = DateTime.UtcNow.AddHours(1); 
         public bool IsCompleted { get; set; } = false;
         public int UserId { get; set; }
-        public User User { get; set; } // Navigation property to User
+        public User? User { get; set; } // Navigation property to User
         public int? VocabularySetId { get; set; }
         public VocabularySet? VocabularySet { get; set; } // Navigation property to VocabularySet
         public int? PetId { get; set; } // Optional reference to a Pet

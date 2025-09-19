@@ -4,30 +4,21 @@ namespace WordSoulApi.Repositories.Interfaces
 {
     public interface IVocabularyRepository
     {
-        Task<bool> CheckVocabularyExistFromSessionAsync(string word, int sessionId);
-
-        // Tạo từ vựng mới
+        //-------------------------------- CREATE -----------------------------------
+        // Tạo mới Vocabulary
         Task<Vocabulary> CreateVocabularyAsync(Vocabulary vocabulary);
-        // Xóa từ vựng theo ID
-        Task<bool> DeleteVocabularyAsync(int id);
-        // Lấy tất cả các từ vựng
+        //-------------------------------- READ -----------------------------------
+        // Lấy tất cả Vocabulary với phân trang và lọc
         Task<IEnumerable<Vocabulary>> GetAllVocabulariesAsync(string? word, string? meaning, PartOfSpeech? partOfSpeech, CEFRLevel? cEFRLevel, int pageNumber, int pageSize);
-        // Lấy các từ vựng chưa học từ một bộ cụ thể cho người dùng
-        Task<IEnumerable<Vocabulary>> GetUnlearnedVocabulariesFromSetAsync(int userId, int setId, int take = 5);
-        Task<IEnumerable<Vocabulary>> GetUnreviewdVocabulariesFromSetAsync(int userId, int take = 5);
-        Task<IEnumerable<Vocabulary>> GetVocabulariesBySessionIdAsync(int sessionId);
-
-        // Lấy các từ vựng theo danh sách từ
+        // Lấy từ vựng theo danh sách từ
         Task<IEnumerable<Vocabulary>> GetVocabulariesByWordsAsync(List<string> words);
-        Task<(IEnumerable<Vocabulary> Vocabularies, int TotalCount)> GetVocabulariesFromSetAsync(int vocabularySetId, int pageNumber, int pageSize);
-
-        // Lấy từ vựng theo ID
+        // Lấy từ vựng theo id
         Task<Vocabulary?> GetVocabularyByIdAsync(int id);
-        // Lấy danh sách ID từ vựng trong một phiên học cụ thể
-        Task<IEnumerable<int>> GetVocabularyIdsBySessionIdAsync(int sessionId);
-        Task<int> GetVocabularyOrderMaxAsync(int sessionId);
-
+        //-------------------------------- UPDATE -----------------------------------
         // Cập nhật từ vựng
         Task<Vocabulary> UpdateVocabularyAsync(Vocabulary vocabulary);
+        //-------------------------------- DELETE -----------------------------------
+        // Xóa từ vựng
+        Task<bool> DeleteVocabularyAsync(int id);
     }
 }

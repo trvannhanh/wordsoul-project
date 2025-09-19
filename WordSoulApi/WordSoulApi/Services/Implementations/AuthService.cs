@@ -35,7 +35,7 @@ namespace WordSoulApi.Services.Implementations
                 return null!;
             }
 
-            await _activityLogService.CreateActivityAsync(user.Id, "Login", "User logged in");
+            await _activityLogService.CreateActivityLogAsync(user.Id, "Login", "User logged in");
 
             return await CreateTokenResponse(user);
 
@@ -52,7 +52,7 @@ namespace WordSoulApi.Services.Implementations
         }
 
         // Đăng ký người dùng mới và trả về User nếu thành công, ngược lại trả về null
-        public async Task<User> RegisterAsync(RegisterDto registerDto)
+        public async Task<UserDto> RegisterAsync(RegisterDto registerDto)
         {
             if (await _authRepository.UserExistsAsync(registerDto.Username))
             {
@@ -66,10 +66,20 @@ namespace WordSoulApi.Services.Implementations
             {
                 Username = registerDto.Username,
                 Email = registerDto.Email,
-                PasswordHash = new PasswordHasher<User>().HashPassword(new User(), registerDto.Password)
+                PasswordHash = new PasswordHasher<User>().HashPassword(null!, registerDto.Password)
             };
+
             var registeredUser = await _authRepository.RegisterUserAsync(user);
-            return registeredUser;
+
+            return new UserDto
+            {
+                Id = registeredUser.Id,
+                Username = registeredUser.Username,
+                Email = registeredUser.Email,
+                Role = registeredUser.Role.ToString(),
+                CreatedAt = registeredUser.CreatedAt,
+                IsActive = registeredUser.IsActive
+            };
         }
 
         // Làm mới token sử dụng RefreshToken và trả về TokenResponseDto nếu thành công, ngược lại trả về null

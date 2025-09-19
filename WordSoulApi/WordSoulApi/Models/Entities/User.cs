@@ -1,16 +1,22 @@
-﻿namespace WordSoulApi.Models.Entities
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace WordSoulApi.Models.Entities
 {
     public class User
     {
         public int Id { get; set; }
-        public string Username { get; set; }
-        public string Email { get; set; }
-        public string PasswordHash { get; set; }
+        [MaxLength(100)]
+        public string? Username { get; set; }
+        [MaxLength(100)]
+        public required string Email { get; set; }
+        [MaxLength(200)]
+        public required string PasswordHash { get; set; }
         public int XP { get; set; } = 0; // Experience Points
-        public int AP { get; set; } = 0; // Experience Points
+        public int AP { get; set; } = 0; // Achivement Points
         public UserRole Role { get; set; } = UserRole.User; // Default role is User
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsActive { get; set; } = true;
+        [MaxLength(200)]
         public string? RefreshToken { get; set; } 
         public DateTime? RefreshTokenExpiryTime { get; set; }
 

@@ -19,6 +19,25 @@ namespace WordSoulApi.Services.Implementations
             _hubContext = hubContext;
         }
 
+        //------------------------------- CREATE -----------------------------------
+
+        // Tạo mới thông báo và gửi qua SignalR
+        public async Task CreateNotificationAsync(int userId, string title, string message, NotificationType type)
+        {
+            var notification = new Notification
+            {
+                UserId = userId,
+                Title = title,
+                Message = message,
+                Type = type
+            };
+
+            await _notificationRepository.CreateNotificationAsync(notification);
+            await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", notification);
+        }
+
+        //-------------------------------------READ-------------------------------------------
+        // Lấy tất cả thông báo của người dùng
         public async Task<IEnumerable<NotificationDto>> GetUserNotificationsAsync(int userId)
         {
             var notifications = await _notificationRepository.GetUserNotificationsAsync(userId);
@@ -36,25 +55,21 @@ namespace WordSoulApi.Services.Implementations
 
         }
 
-        public async Task CreateNotificationAsync(int userId, string title, string message, NotificationType type)
-        {
-            var notification = new Notification
-            {
-                UserId = userId,
-                Title = title,
-                Message = message,
-                Type = type
-            };
+        //-------------------------------------UPDATE-----------------------------------------
 
-            await _notificationRepository.CreateNotificationAsync(notification);
-            await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", notification);
-        }
-
+        // Đánh dấu thông báo đã đọc
         public async Task MarkAsReadNotificationAsync(int id)
         {
             await _notificationRepository.MarkAsReadNotificationAsync(id);
         }
+        // Đánh dấu tất cả thông báo của người dùng đã đọc
+        public async Task MarkAllAsReadAsync(int userId)
+        {
+            await _notificationRepository.MarkAllAsReadAsync(userId);
+        }
 
+        //-------------------------------------DELETE-----------------------------------------
+        // Xóa thông báo
         public async Task DeleteNotificationAsync(int id, int currentUserId)
         {
             var notification = await _notificationRepository.GetNotificationByIdAsync(id);
@@ -63,11 +78,6 @@ namespace WordSoulApi.Services.Implementations
                 throw new UnauthorizedAccessException("You cannot delete this notification.");
             }
             await _notificationRepository.DeleteNotificationAsync(id);
-        }
-
-        public async Task MarkAllAsReadAsync(int userId)
-        {
-            await _notificationRepository.MarkAllAsReadAsync(userId);
         }
     }
 }

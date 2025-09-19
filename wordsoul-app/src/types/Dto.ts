@@ -60,6 +60,33 @@ export interface Vocabulary {
   example: string | null;
 }
 
+export interface AdminVocabularyDto{
+  id: number,
+  word: string;
+  meaning: string;
+  pronunciation: string,
+  partOfSpeech: string,
+  cEFRLevel: string,
+  description: string,
+  exampleSentence: string,
+  imageUrl: string,
+  pronunciationUrl: string
+}
+
+
+
+export interface CreateVocabularyDto{
+  word: string,
+  meaning: string,
+  pronunciation: string,
+  partOfSpeech: string;
+  cERFLevel: string;
+  description: string,
+  exampleSentence: string,
+  imageUrl: string,
+  pronunciationUrl: string
+}
+
 export interface VocabularySetDetail extends VocabularySet {
   vocabularies: Vocabulary[];
   totalVocabularies: number;
@@ -72,7 +99,7 @@ export interface LearningSession {
   id: number;
   vocabularies: number[];
   isCompleted: boolean;
-  petId: number;
+  petId?: number;
 }
 
 export interface QuizQuestion {
@@ -98,14 +125,14 @@ export interface AnswerRequest {
 }
 
 export interface AnswerResponse {
-  questionId: number;
   isCorrect: boolean;
+  correctAnswer: string;
+  attemptNumber: number;
+  newLevel: number; // 0-3: Flashcard → Listening
+  isVocabularyCompleted: boolean;
+  // remainingVocabs: number; // Số từ còn lại cần học
 }
 
-export interface UpdateProgressResponse{
-  vocabId: number;
-  proficiencyLevel: number;
-}
 
 export interface CompleteLearningSessionResponseDto {
   xpEarned: number;
@@ -226,6 +253,13 @@ export interface UserVocabularySetDto {
 
 export interface SearchVocabularyDto {
   words: string[];
+}
+
+export interface LeaderBoardDto {
+  userId: number;
+  userName: string;
+  totalXP: number;
+  totalAP: number;
 }
 
 

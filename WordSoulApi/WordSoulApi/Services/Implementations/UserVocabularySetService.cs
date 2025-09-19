@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WordSoulApi.Models.DTOs.User;
 using WordSoulApi.Models.Entities;
-using WordSoulApi.Repositories.Implementations;
 using WordSoulApi.Repositories.Interfaces;
 using WordSoulApi.Services.Interfaces;
 
@@ -84,8 +83,8 @@ namespace WordSoulApi.Services.Implementations
             }
             return new UserVocabularySetDto { 
                 VocabularySetId = userVocabSet.VocabularySetId,
-                TotalCompletedSession = userVocabSet.totalCompletedSession,
-                IsCompleted = userVocabSet.isCompleted,
+                TotalCompletedSession = userVocabSet.TotalCompletedSession,
+                IsCompleted = userVocabSet.IsCompleted,
                 IsActive = userVocabSet.IsActive,
                 CreatedAt = userVocabSet.CreatedAt
 

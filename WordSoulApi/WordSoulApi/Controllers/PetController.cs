@@ -17,13 +17,92 @@ namespace WordSoulApi.Controllers
     public class PetController : ControllerBase
     {
         private readonly IPetService _petService;
+        private readonly IUserOwnedPetService _userOwnedPetService;
         private readonly IUploadAssetsService _uploadAssetsService;
-        public PetController(IPetService petService , IUploadAssetsService uploadAssetsService)
+        public PetController(IPetService petService , IUploadAssetsService uploadAssetsService, IUserOwnedPetService userOwnedPetService)
         {
             _petService = petService;
             _uploadAssetsService = uploadAssetsService;
+            _userOwnedPetService = userOwnedPetService;
         }
 
+
+        //------------------------------ POST -----------------------------------
+
+        // POST: api/pets : Tạo pet mới
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        public async Task<IActionResult> CreatePet([FromForm] CreatePetDto petDto)
+        {
+
+            if (petDto == null)
+            {
+                return BadRequest("Pet data is required.");
+            }
+
+            try
+            {
+                string? imageUrl = null;
+                string? publicId = null;
+
+                Console.WriteLine($"ImageFile: {petDto.ImageFile?.FileName}, Length: {petDto.ImageFile?.Length}");
+                if (petDto.ImageFile != null && petDto.ImageFile.Length > 0)
+                {
+                    (imageUrl, publicId) = await _uploadAssetsService.UploadImageAsync(petDto.ImageFile, "pets");
+                }
+
+                // Gọi service để tạo Pet
+                var createdPet = await _petService.CreatePetAsync(petDto, imageUrl);
+
+                return CreatedAtAction(nameof(GetPetById), new { id = createdPet.Id }, createdPet);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while creating the pet.", Error = ex.Message });
+            }
+        }
+
+        // POST: api/pets/bulk : Tạo nhiều pet
+        [Authorize(Roles = "Admin")]
+        [HttpPost("bulk")]
+        public async Task<IActionResult> CreatePetsBulk([FromBody] BulkCreatePetDto bulkDto)
+        {
+            if (bulkDto == null || !bulkDto.Pets.Any()) return BadRequest("Danh sách pet rỗng.");
+            var createdPets = await _petService.CreatePetsBulkAsync(bulkDto);
+            return Ok(createdPets);
+        }
+
+
+        // POST: api/pets/{petId}/evolve : Evolve pet cho user
+        [Authorize(Roles = "User")]
+        [HttpPost("{petId}/upgrade")]
+        public async Task<IActionResult> UpgradePet(int petId)
+        {
+            var userId = User.GetUserId();
+            if (userId == 0) return Unauthorized();
+
+            try
+            {
+                var result = await _userOwnedPetService.UpgradePetForUserAsync(userId, petId);
+                if (result == null) return BadRequest("Upgrade failed. Check if the pet is owned or max level reached.");
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while upgrading the pet.", Error = ex.Message });
+            }
+
+        }
+
+        //------------------------------ GET -----------------------------------
         // GET: api/pets : Lấy tất cả pet theo người dùng
         [Authorize(Roles = "Admin,User")]
         [HttpGet]
@@ -68,46 +147,8 @@ namespace WordSoulApi.Controllers
 
         }
 
-        // POST: api/pets : Tạo pet mới
-        [Authorize(Roles = "Admin")]
-        [HttpPost]
-        public async Task<IActionResult> CreatePet([FromForm] CreatePetDto petDto)
-        {
 
-            if (petDto == null)
-            {
-                return BadRequest("Pet data is required.");
-            }
-
-            try
-            {
-                string? imageUrl = null;
-                string? publicId = null;
-
-                Console.WriteLine($"ImageFile: {petDto.ImageFile?.FileName}, Length: {petDto.ImageFile?.Length}");
-                if (petDto.ImageFile != null && petDto.ImageFile.Length > 0)
-                {
-                    (imageUrl, publicId) = await _uploadAssetsService.UploadImageAsync(petDto.ImageFile, "pets");
-                }
-
-                // Gọi service để tạo Pet
-                var createdPet = await _petService.CreatePetAsync(petDto, imageUrl);
-
-                return CreatedAtAction(nameof(GetPetById), new { id = createdPet.Id }, createdPet);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { Message = "An error occurred while creating the pet.", Error = ex.Message });
-            }
-        }
+        //------------------------------ PUT -----------------------------------
 
         //PUT: api/pets/{id} : Cập nhật pet theo ID
         [Authorize(Roles = "Admin")]
@@ -146,26 +187,6 @@ namespace WordSoulApi.Controllers
             }
         }
 
-        // DELETE: api/pets/{id} : Xóa pet theo ID
-        [Authorize(Roles = "Admin")]
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePet(int id)
-        {
-            var result = await _petService.DeletePetAsync(id);
-            if (!result) return NotFound();
-            return NoContent();
-        }
-
-        // POST: api/pets/bulk : Tạo nhiều pet
-        [Authorize(Roles = "Admin")]
-        [HttpPost("bulk")]
-        public async Task<IActionResult> CreatePetsBulk([FromBody] BulkCreatePetDto bulkDto)
-        {
-            if (bulkDto == null || !bulkDto.Pets.Any()) return BadRequest("Danh sách pet rỗng.");
-            var createdPets = await _petService.CreatePetsBulkAsync(bulkDto);
-            return Ok(createdPets);
-        }
-
         // PUT: api/pets/bulk : Cập nhật nhiều pet
         [Authorize(Roles = "Admin")]
         [HttpPut("bulk")]
@@ -176,6 +197,18 @@ namespace WordSoulApi.Controllers
             return Ok(updatedPets);
         }
 
+        //------------------------------ DELETE -----------------------------------
+
+        // DELETE: api/pets/{id} : Xóa pet theo ID
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeletePet(int id)
+        {
+            var result = await _petService.DeletePetAsync(id);
+            if (!result) return NotFound();
+            return NoContent();
+        }
+
         // DELETE: api/pets/bulk : Xóa nhiều pet
         [Authorize(Roles = "Admin")]
         [HttpDelete("bulk")]
@@ -184,29 +217,6 @@ namespace WordSoulApi.Controllers
             if (petIds == null || !petIds.Any()) return BadRequest("Danh sách ID rỗng.");
             var result = await _petService.DeletePetsBulkAsync(petIds);
             return result ? NoContent() : BadRequest("Xóa thất bại.");
-        }
-
-
-
-        // POST: api/pets/{petId}/evolve : Evolve pet cho user
-        [Authorize(Roles = "User")]
-        [HttpPost("{petId}/upgrade")]
-        public async Task<IActionResult> UpgradePet(int petId)
-        {
-            var userId = User.GetUserId();
-            if (userId == 0) return Unauthorized();
-
-            try
-            {
-                var result = await _petService.UpgradePetForUserAsync(userId, petId);
-                if (result == null) return BadRequest("Upgrade failed. Check if the pet is owned or max level reached.");
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { Message = "An error occurred while upgrading the pet.", Error = ex.Message });
-            }
-
         }
 
     }

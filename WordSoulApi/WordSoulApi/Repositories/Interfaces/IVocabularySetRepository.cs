@@ -4,23 +4,23 @@ namespace WordSoulApi.Repositories.Interfaces
 {
     public interface IVocabularySetRepository
     {
-        Task<int> CountVocabulariesInSetAsync(int vocabularySetId);
-
-        // Tạo mới bộ từ vựng
+        //-------------------------------- CREATE -----------------------------------
+        // Tạo mới VocabularySet
         Task<VocabularySet> CreateVocabularySetAsync(VocabularySet vocabularySet);
-        // Xóa bộ từ vựng theo ID
-        Task<bool> DeleteVocabularySetAsync(int id);
 
-        // Lấy bộ từ vựng theo ID
+        //------------------------------- READ -----------------------------------
+        // Lấy tất cả VocabularySet với tùy chọn lọc và phân trang
+        Task<IEnumerable<VocabularySet>> GetAllVocabularySetsAsync(string? title, VocabularySetTheme? theme, 
+                                                                    VocabularyDifficultyLevel? difficulty, 
+                                                                    DateTime? createdAfter, bool? isOwned, 
+                                                                    int? userId, int pageNumber, int pageSize);
+        // Lấy VocabularySet theo ID
         Task<VocabularySet?> GetVocabularySetByIdAsync(int id);
-        Task<VocabularySet?> GetVocabularySetFullDetailsAsync(int id, int page, int pageSize);
-
-        // Lấy tất cả bộ từ vựng với các tiêu chí khác nhau và phân trang
-        // Cập nhật bộ từ vựng
+        //------------------------------- UPDATE -----------------------------------
+        // Cập nhật VocabularySet hiện có
         Task<VocabularySet?> UpdateVocabularySetAsync(VocabularySet vocabularySet);
-        Task<SetVocabulary> CreateSetVocabularyAsync(SetVocabulary setVocabulary);
-        Task<bool> DeleteSetVocabularyAsync(SetVocabulary setVocabulary);
-        Task<SetVocabulary> GetSetVocabularyAsync(int vocabId, int setId);
-        Task<IEnumerable<VocabularySet>> GetAllVocabularySetsAsync(string? title, VocabularySetTheme? theme, VocabularyDifficultyLevel? difficulty, DateTime? createdAfter, bool? isOwned, int? userId, int pageNumber, int pageSize);
+        //------------------------------- DELETE -----------------------------------
+        // Xóa VocabularySet theo ID
+        Task<bool> DeleteVocabularySetAsync(int id);
     }
 }

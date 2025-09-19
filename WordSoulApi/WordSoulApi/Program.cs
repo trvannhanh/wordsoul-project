@@ -16,8 +16,10 @@ using WordSoulApi.Services.Interfaces;
 var builder = WebApplication.CreateBuilder(args);
 
 
-builder.Configuration.AddJsonFile("Appsettings/appsettings.json", optional: false, reloadOnChange: true);
-builder.Configuration.AddJsonFile($"Appsettings/appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
+builder.Configuration
+    .AddJsonFile("Appsettings/appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"Appsettings/appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -116,7 +118,11 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 // ActivityLog
 builder.Services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
 builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
-
+// SetVocabulary 
+builder.Services.AddScoped<ISetVocabularyRepository, SetVocabularyRepository>();
+builder.Services.AddScoped<ISetVocabularyService, SetVocabularyService>();
+// SessionVocabulary
+builder.Services.AddScoped<ISessionVocabularyRepository, SessionVocabularyRepository>();
 // Upload Assests
 builder.Services.AddScoped<IUploadAssetsService, UploadAssetsService>();
 

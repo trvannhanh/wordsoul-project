@@ -1,5 +1,5 @@
-import type { ActivityLogDto, UserProgressDto, UserDto, UserVocabularySetDto } from "../types/Dto";
-import { authApi, endpoints } from "./api";
+import type { ActivityLogDto, UserProgressDto, UserDto, UserVocabularySetDto, LeaderBoardDto } from "../types/Dto";
+import api, { authApi, endpoints } from "./api";
 
 export const getUserProgress= async (): Promise<UserProgressDto> => {
   const res = await authApi.get<UserProgressDto>(endpoints.userProgress);
@@ -50,4 +50,11 @@ export const getUserVocabularySets = async (vocabularySetId: number): Promise<Us
 export const registerVocabularySet = async (vocabularySetId: number): Promise<UserVocabularySetDto | null> => {
     const response = await authApi.post<UserVocabularySetDto>(endpoints.vocabularySet(vocabularySetId));
     return response.data;
+};
+
+export const getLeaderBoard = async (topXP?: boolean, topAP?:boolean, pageNumber = 1, pageSize = 10): Promise<LeaderBoardDto[]> => {
+  const response = await api.get<LeaderBoardDto[]>(endpoints.leaderBoard, {
+    params: { topXP, topAP, pageNumber, pageSize },
+  });
+  return response.data;
 };

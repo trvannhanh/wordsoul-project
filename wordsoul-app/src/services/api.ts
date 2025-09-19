@@ -12,6 +12,7 @@ export const endpoints = {
   // User
   currentUser: '/users/me', //thông tin cá nhân User 
   userProgress: '/users/progress', //thông tin tiến độ của User
+  leaderBoard: '/users/leaderboard', //Bảng xếp hạng
 
   users: '/users', //tất cả user
   user:(userId: number) => `/users/${userId}`, //user chỉ định

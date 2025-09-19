@@ -37,7 +37,7 @@ const BackgroundMusic: React.FC<BackgroundMusicProps> = ({
       <audio
         ref={audioRef}
         loop
-        src="https://res.cloudinary.com/dqpkxxzaf/video/upload/v1757509871/battle-theme-2-looping-tune-225562_x6ci21.mp3"
+        src="https://res.cloudinary.com/dqpkxxzaf/video/upload/v1758098297/wild-pokemon-battle_oj4ltv.mp3"
       />
     </>
   );

@@ -4,13 +4,11 @@ namespace WordSoulApi.Repositories.Interfaces
 {
     public interface IPetRepository
     {
+        //-------------------------------- CREATE -----------------------------------
         // Tạo pet mới
         Task<Pet> CreatePetAsync(Pet pet);
-        // Xóa pet theo ID
-        Task<bool> DeletePetAsync(int id);
-        Task<bool> ExistsAsync(int id);
-        Task<List<Pet>> GetAllAsync();
 
+        //-------------------------------- READ -----------------------------------
         // Lấy tất cả pet
         Task<IEnumerable<(Pet Pet, bool IsOwned)>> GetAllPetsAsync(int userId, string? name, PetRarity? rarity, PetType? type, bool? isOwned, int pageNumber, int pageSize);
 
@@ -18,7 +16,12 @@ namespace WordSoulApi.Repositories.Interfaces
         Task<Pet?> GetPetByIdAsync(int id);
         Task<List<Pet>> GetRandomPetsByRarityAsync(PetRarity rarity, int count);
 
+        //-------------------------------- UPDATE -----------------------------------
         // Cập nhật pet
         Task<Pet> UpdatePetAsync(Pet pet);
+
+        //------------------------------- DELETE -----------------------------------
+        // Xóa pet theo ID
+        Task<bool> DeletePetAsync(int id);     
     }
 }

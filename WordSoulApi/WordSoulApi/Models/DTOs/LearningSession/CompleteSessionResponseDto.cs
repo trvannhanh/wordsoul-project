@@ -4,7 +4,7 @@
     public class CompleteSessionResponseDto
     {
         public int XpEarned { get; set; }
-        public string Message { get; set; }
+        public string? Message { get; set; }
     }
 
     public class CompleteLearningSessionResponseDto : CompleteSessionResponseDto

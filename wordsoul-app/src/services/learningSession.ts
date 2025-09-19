@@ -3,7 +3,6 @@ import type {
   LearningSession,
   QuizQuestion,
   AnswerRequest,
-  UpdateProgressResponse,
   CompleteLearningSessionResponseDto,
   CompleteReviewSessionResponseDto,
 } from "../types/Dto";
@@ -20,12 +19,9 @@ export const createReviewSession = async (): Promise<LearningSession> => {
 };
 
 export const fetchQuizOfSession = async (
-  id: number,
-  params: { includeRetries: boolean } = { includeRetries: false }
+  id: number
 ): Promise<QuizQuestion[]> => {
-  const response = await authApi.get<QuizQuestion[]>(
-    `${endpoints.quizQuestions(id)}?includeRetries=${params.includeRetries}`
-  );
+  const response = await authApi.get<QuizQuestion[]>(endpoints.quizQuestions(id));
   return response.data;
 };
 
@@ -40,15 +36,7 @@ export const answerQuiz = async (
   return response.data;
 };
 
-export const updateProgress = async (
-  sessionId: number,
-  vocabId: number
-): Promise<UpdateProgressResponse> => {
-  const response = await authApi.post<UpdateProgressResponse>(
-    endpoints.learningProgress(sessionId, vocabId)
-  );
-  return response.data;
-};
+
 
 export const completeLearningSession = async (
   sessionId: number

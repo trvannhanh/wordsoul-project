@@ -1,4 +1,4 @@
-import { type QuizQuestion } from "../../types/Dto";
+import { QuestionType, type QuizQuestion } from "../../types/Dto";
 
 interface GameScreenProps {
   question: QuizQuestion | null;
@@ -14,10 +14,16 @@ const GameScreen: React.FC<GameScreenProps> = ({ question, loading, error }) => 
   return (
     <div className="relative w-full h-full flex items-center justify-center">
       <div className="text-white font-pixel text-center">
-        <h2 className="text-2xl">{question.word || question.meaning}</h2>
+
+        
+        
+          <h2 className="text-5xl">{question.word}</h2>
+       
+        <h2 className="text-4xl">{question.meaning}</h2>
+
         <p className="text-sm">{question.pronunciation || "N/A"}</p>
         <p className="text-sm">{question.partOfSpeech || "N/A"}</p>
-        {question.imageUrl && <img src={question.imageUrl} alt={question.word} className="w-24 h-24 mx-auto mt-2" />}
+        {question.imageUrl && <img src={question.imageUrl} alt={question.word} className="w-42 h-42 object-contain mx-auto mt-2" />}
       </div>
     </div>
   );

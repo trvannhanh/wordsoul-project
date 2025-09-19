@@ -5,11 +5,11 @@ namespace WordSoulApi.Models.DTOs.VocabularySet
     public class VocabularySetFullDetailDto
     {
         public int Id { get; set; }
-        public string Title { get; set; }
-        public string Theme { get; set; }
+        public string? Title { get; set; }
+        public string? Theme { get; set; }
         public string? ImageUrl { get; set; }
         public string? Description { get; set; }
-        public string DifficultyLevel { get; set; }
+        public string? DifficultyLevel { get; set; }
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
         public List<VocabularyDetailDto> Vocabularies { get; set; } = new List<VocabularyDetailDto>();
@@ -23,10 +23,10 @@ namespace WordSoulApi.Models.DTOs.VocabularySet
     public class VocabularyDetailDto
     {
         public int Id { get; set; }
-        public string Word { get; set; }
-        public string Meaning { get; set; }
+        public string? Word { get; set; }
+        public string? Meaning { get; set; }
         public string? ImageUrl { get; set; }
         public string? Pronunciation { get; set; }
-        public string PartOfSpeech { get; set; }
+        public string? PartOfSpeech { get; set; }
     }
 }

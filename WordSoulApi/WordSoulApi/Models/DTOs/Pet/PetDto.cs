@@ -9,8 +9,8 @@ namespace WordSoulApi.Models.DTOs.Pet
         public required string Name { get; set; }
         public required string Description { get; set; }
         public required string ImageUrl { get; set; }
-        public string Rarity { get; set; }
-        public string Type { get; set; }
+        public string? Rarity { get; set; }
+        public string? Type { get; set; }
         public int? BaseFormId { get; set; }
         public int? NextEvolutionId { get; set; }
         public int? RequiredLevel { get; set; }
@@ -21,7 +21,7 @@ namespace WordSoulApi.Models.DTOs.Pet
 
     public class UserPetDto : PetDto
     {
-        public bool? isOwned { get; set; }
+        public bool? IsOwned { get; set; }
     }
 
     public class UserPetDetailDto : PetDto

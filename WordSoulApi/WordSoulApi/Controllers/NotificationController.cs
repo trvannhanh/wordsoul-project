@@ -20,6 +20,8 @@ namespace WordSoulApi.Controllers
             _notificationService = notificationService;
         }
 
+        //------------------------------ GET -----------------------------------
+
         //GET: api/notifications: Lấy danh sách thông báo của người dùng 
         [HttpGet]
         public async Task<ActionResult<List<NotificationDto>>> GetUserNotifications()
@@ -29,6 +31,7 @@ namespace WordSoulApi.Controllers
             return Ok(notifications);
         }
 
+        //------------------------------ PUT -----------------------------------
         //PUT: api/notifications/{notifiationId}/read: Đánh dấu thông báo đã đọc cho thông báo chỉ định
         [HttpPut("{id}/read")]
         public async Task<IActionResult> MarkAsRead(int id)
@@ -46,6 +49,7 @@ namespace WordSoulApi.Controllers
             return NoContent();
         }
 
+        //------------------------------ DELETE -----------------------------------
         //DELETE: api/notifications/{notificationId}: Xóa thông báo chỉ định của người dùng
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteNotification(int id)

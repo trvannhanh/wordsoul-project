@@ -7,6 +7,7 @@ namespace WordSoulApi.Services.Interfaces
     {
         // Thêm bộ từ vựng vào người dùng
         Task AddVocabularySetToUserAsync(int userId, int vocabId);
+        // Lấy tất cả bộ từ vựng của người dùng
         Task<UserVocabularySetDto> GetUserVocabularySetAsync(int userId, int vocabSetId);
     }
 }

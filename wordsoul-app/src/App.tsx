@@ -19,6 +19,7 @@ import PetList from './components/AdminDashboard/PetList';
 import PetDetailPage from './features/pets/PetDetailPage';
 import NoFooterLayout from './layouts/NoFooterLayout';
 import CreateVocabularySet from './features/vocabularySet/CreateVocabularySet';
+import ProfilePage from './features/userProfile/ProfilePage';
 
 
 const App: React.FC = () => {
@@ -34,8 +35,9 @@ const App: React.FC = () => {
             <Route path="/vocabularySet/:id" element={<VocabularySetDetail />} />
             <Route path="/vocabularySet" element={<VocabularySet />} />
             <Route path="/vocabulary-sets/create" element={<CreateVocabularySet />} />
-            <Route path='/community' element={<Community />} />
+            
             <Route path='/home' element={<UserDashboard />} />
+            <Route path='/profile' element={<ProfilePage />} />
           </Route>
 
           <Route path="/learningSession/:id" element={<LearningSession />} />
@@ -43,6 +45,7 @@ const App: React.FC = () => {
           <Route element={<NoFooterLayout />}>
             <Route path='/pets' element={<Pets />} />
             <Route path='/pets/:id' element={<PetDetailPage />} />
+            <Route path='/community' element={<Community />} />
           </Route>
           
           

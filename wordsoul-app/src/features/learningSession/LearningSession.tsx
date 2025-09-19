@@ -1,20 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { useEffect, useState } from "react";
-import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
-import {
-  answerQuiz,
-  completeLearningSession,
-  completeReviewSession,
-  fetchQuizOfSession,
-  updateProgress,
-} from "../../services/learningSession";
-import { fetchPetById } from "../../services/pet";
-import { type CompleteLearningSessionResponseDto, type CompleteReviewSessionResponseDto, type Pet, type QuizQuestion, QuestionType } from "../../types/Dto";
-import BackgroundMusic from "../../components/LearningSession/BackgroundMusic";
+import { useState } from "react";
+import { useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion"; // Thêm framer-motion
 import GameScreen from "../../components/LearningSession/GameScreen";
 import AnswerScreen from "../../components/LearningSession/AnswerScreen";
+import BackgroundMusic from "../../components/LearningSession/BackgroundMusic";
 import PetScreen from "../../components/LearningSession/PetScreen";
+import { useQuizSession } from "../../hooks/LearningSession/useQuizSession";
+import { type QuizQuestion } from "../../types/Dto";
 
 const LearningSession: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -25,180 +17,57 @@ const LearningSession: React.FC = () => {
   const navigate = useNavigate();
   const petId = state?.petId;
 
-  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
-  const [pet, setPet] = useState<Pet>();
-  const [queue, setQueue] = useState<(QuizQuestion & { isRetry: boolean })[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showRewardAnimation, setShowRewardAnimation] = useState(false);
-  const [captureComplete, setCaptureComplete] = useState(false);
-  const [encounteredPet, setEncounteredPet] = useState<{ id: number; name: string; imageUrl: string } | null>(null);
-  const [sessionData, setSessionData] = useState<CompleteLearningSessionResponseDto | CompleteReviewSessionResponseDto | null>(null);
-  const [isBackgroundMusicPlaying, setIsBackgroundMusicPlaying] = useState(true);
-  const [backgroundMusicVolume] = useState(0.5);
+  const {
+    currentQuestion,
+    loading,
+    error,
+    handleAnswer,
+    sessionData,
+    encounteredPet,
+    showRewardAnimation,
+    captureComplete,
+    setCaptureComplete,
+    loadNextQuestion,
+  } = useQuizSession(sessionId, mode, petId);
 
-  // Danh sách các loại câu hỏi
-  const typeOrder: QuestionType[] = [QuestionType.Flashcard, QuestionType.FillInBlank, QuestionType.MultipleChoice, QuestionType.Listening];
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [showPopup, setShowPopup] = useState(false); // Trạng thái pop-up
+  const [answeredQuestion, setAnsweredQuestion] = useState<QuizQuestion | null>(null); // Câu hỏi vừa trả lời
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        // Lấy câu hỏi sai trước, nếu không có thì lấy câu hỏi mới
-        let data = await fetchQuizOfSession(sessionId, { includeRetries: true });
-        if (data.length === 0) {
-          data = await fetchQuizOfSession(sessionId, { includeRetries: false });
-        }
-        console.log("Fetched quiz data:", data);
-        setQuestions(data);
-
-        const grouped = new Map<QuestionType, Map<number, QuizQuestion>>();
-        data.forEach(q => {
-          if (!grouped.has(q.questionType)) grouped.set(q.questionType, new Map());
-          grouped.get(q.questionType)!.set(q.vocabularyId, q);
-        });
-
-        setQueue(data.map(q => ({ ...q, isRetry: q.isRetry || false })));
-
-        if (mode === "learning" && data.length > 0) {
-          const pet = await fetchPetById(petId);
-          setPet(pet);
-          setEncounteredPet({ id: pet.id, name: pet.name, imageUrl: pet.imageUrl || "https://via.placeholder.com/100" });
-        }
-        setLoading(false);
-      } catch (err) {
-        console.error("Error fetching quiz:", err);
-        setError("Failed to load quiz questions");
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [sessionId, mode, petId]);
-
-  const handleAnswer = async (question: QuizQuestion, answer: string) => {
-    try {
-      const currentItem = queue[currentIndex];
-      if (!currentItem) {
-        console.error("No current item in queue at index:", currentIndex);
-        setError("No current question available");
-        return false;
-      }
-
-      console.log("Sending answer to API:", {
-        sessionId,
-        vocabularyId: currentItem.vocabularyId,
-        questionType: currentItem.questionType,
-        answer,
-      });
-
-      const res = await answerQuiz(sessionId, {
-        vocabularyId: currentItem.vocabularyId,
-        questionType: currentItem.questionType,
-        answer,
-      });
-
-      console.log("API response:", res);
-
-      setTimeout(() => {
-        setCurrentIndex((prev) => prev + 1);
-      }, 1500);
-
-      return res.isCorrect;
-    } catch (error) {
-      console.error("Error in handleAnswer:", error);
-      setError("Failed to process answer");
-      return false;
-    }
+  const toggleMusic = () => {
+    setIsPlaying((prev) => !prev);
   };
 
-  useEffect(() => {
-    if (currentIndex >= queue.length && queue.length > 0) {
-      console.log("Queue completed. Current state:", {
-        currentIndex,
-        queueLength: queue.length,
-      });
-
-      // Lấy câu hỏi sai hoặc câu hỏi mới từ backend
-      const fetchNextQuestions = async () => {
-        setLoading(true);
-        try {
-          let nextQuestions = await fetchQuizOfSession(sessionId, { includeRetries: true });
-          if (nextQuestions.length === 0) {
-            nextQuestions = await fetchQuizOfSession(sessionId, { includeRetries: false });
-          }
-
-          if (nextQuestions.length === 0) {
-            handleCompleteSession();
-          } else {
-            console.log("Next questions:", nextQuestions);
-            setQueue(nextQuestions.map(q => ({ ...q, isRetry: q.isRetry || false })));
-            setCurrentIndex(0);
-
-            const grouped = new Map<QuestionType, Map<number, QuizQuestion>>();
-            nextQuestions.forEach(q => {
-              if (!grouped.has(q.questionType)) grouped.set(q.questionType, new Map());
-              grouped.get(q.questionType)!.set(q.vocabularyId, q);
-            });
-          }
-          setLoading(false);
-        } catch (err) {
-          console.error("Error fetching next questions:", err);
-          setError("Failed to load next questions");
-          setLoading(false);
-        }
-      };
-
-      fetchNextQuestions();
-    }
-  }, [currentIndex, queue.length, sessionId]);
-
-  async function handleCompleteSession() {
-    try {
-      let data: CompleteLearningSessionResponseDto | CompleteReviewSessionResponseDto;
-      if (mode === "learning") {
-        data = await completeLearningSession(sessionId);
-      } else {
-        data = await completeReviewSession(sessionId);
-      }
-      setSessionData(data);
-      setShowRewardAnimation(true);
-    } catch (error) {
-      console.error("Error completing session:", error);
-      setError("Failed to complete session");
-    }
-  }
-
-  const toggleBackgroundMusic = () => {
-    setIsBackgroundMusicPlaying((prev) => !prev);
+  // Callback để hiển thị pop-up từ AnswerScreen
+  const handleShowPopup = (question: QuizQuestion) => {
+    setAnsweredQuestion(question);
+    setShowPopup(true);
+    setTimeout(() => {
+      setShowPopup(false);
+      setAnsweredQuestion(null);
+    }, 3000); // Đóng pop-up sau 3 giây
   };
-
-  const handleCloseReward = () => {
-    setShowRewardAnimation(false);
-    setCaptureComplete(false);
-    navigate(-1);
-  };
-
-  const currentItem = queue[currentIndex];
-  const currentQuestion: QuizQuestion | null = currentItem ? { ...currentItem } : null;
 
   return (
     <div className="h-screen w-screen bg-gray-900 flex items-center justify-between p-4 pixel-background relative">
-      <BackgroundMusic
-        isPlaying={isBackgroundMusicPlaying}
-        volume={backgroundMusicVolume}
+      <BackgroundMusic 
+        isPlaying={isPlaying} 
+        volume={0.5} 
         showRewardAnimation={showRewardAnimation}
-        toggleMusic={toggleBackgroundMusic}
+        toggleMusic={toggleMusic}
       />
+      
       <div className="w-1/2 h-3/4 bg-gray-800 border-4 border-black rounded-lg flex flex-col overflow-hidden">
         <div className="flex-1 bg-gray-700 border-b-4 border-black p-4">
           <div className="h-full bg-black border-2 border-white rounded-sm flex items-center justify-center">
-            <GameScreen question={currentQuestion} loading={loading} error={error} />
+            <GameScreen
+              question={currentQuestion}
+              loading={loading}
+              error={error}
+            />
           </div>
         </div>
-        <div className="h-4 bg-cyan-900 border-y-2 border-black flex items-center justify-center">
-          <div className="w-1/4 h-3/4 bg-black rounded-full border-2 border-white"></div>
-        </div>
+
         <div className="flex-1 bg-gray-700 p-4">
           <div className="h-full bg-black border-2 border-white rounded-sm flex items-center justify-center">
             <AnswerScreen
@@ -206,19 +75,56 @@ const LearningSession: React.FC = () => {
               loading={loading}
               error={error}
               handleAnswer={handleAnswer}
+              loadNextQuestion={loadNextQuestion}
+              showPopup={handleShowPopup} // Truyền callback để hiển thị pop-up
             />
           </div>
         </div>
       </div>
-      <PetScreen
+
+      <PetScreen 
         showRewardAnimation={showRewardAnimation}
         captureComplete={captureComplete}
         setCaptureComplete={setCaptureComplete}
         encounteredPet={encounteredPet}
         sessionData={sessionData}
         mode={mode}
-        handleCloseReward={handleCloseReward}
+        petId={petId}
+        handleCloseReward={() => navigate(-1)}
       />
+
+      {/* Pop-up hiển thị thông tin từ vựng */}
+      <AnimatePresence>
+        {showPopup && answeredQuestion && (
+          <motion.div
+            className="absolute inset-0 flex items-center justify-center bg-opacity-75 z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <motion.div
+              className="bg-gray-800 p-8 rounded-lg border-4 border-white text-white font-pixel text-center w-3/4 max-w-lg"
+              initial={{ scale: 0, y: 50 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0, y: 50 }}
+              transition={{ duration: 0.3 }}
+            >
+              <h2 className="text-4xl mb-4">{answeredQuestion.word}</h2>
+              <p className="text-2xl mb-2">Nghĩa: {answeredQuestion.meaning}</p>
+              <p className="text-lg mb-2">Phát âm: {answeredQuestion.pronunciation || "N/A"}</p>
+              <p className="text-lg mb-2">Loại từ: {answeredQuestion.partOfSpeech || "N/A"}</p>
+              {answeredQuestion.imageUrl && (
+                <img
+                  src={answeredQuestion.imageUrl}
+                  alt={answeredQuestion.word}
+                  className="w-48 h-48 object-contain mx-auto mt-4"
+                />
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
