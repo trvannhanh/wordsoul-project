@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System;
 using WordSoulApi.Models.DTOs.AnswerRecord;
 using WordSoulApi.Models.DTOs.LearningSession;
 using WordSoulApi.Models.DTOs.QuizQuestion;
@@ -10,15 +12,21 @@ namespace WordSoulApi.Services.Implementations
     public class LearningSessionService : ILearningSessionService
     {
         private readonly ILearningSessionRepository _sessionRepo;
+        private readonly ISessionVocabularyRepository _sessionVocabularyRepository;
+        private readonly ISetVocabularyRepository _setVocabularyRepository;
         private readonly IVocabularyRepository _vocabRepo;
         private readonly IUserVocabularySetRepository _userVocabularySetRepository;
         private readonly IUserRepository _userRepository;
         private readonly IUserOwnedPetService _userOwnedPetService;
         private readonly IAnswerRecordRepository _answerRecordRepository;
+        private readonly IUserOwnedPetRepository _userOwnedPetRepository;
+        private readonly IPetRepository _petRepository;
         private readonly ILogger<LearningSessionService> _logger;
+        private readonly IActivityLogService _activityLogService;
+        private readonly IUserVocabularyProgressRepository _userVocabularyProgressRepository;
 
 
-        public LearningSessionService(ILearningSessionRepository sessionRepo, IVocabularyRepository vocabRepo, IUserVocabularySetRepository userVocabularySetRepository, ILogger<LearningSessionService> logger, IUserRepository userRepository, IUserOwnedPetService userOwnedPetService, IAnswerRecordRepository answerRecordRepository)
+        public LearningSessionService(ILearningSessionRepository sessionRepo, IVocabularyRepository vocabRepo, IUserVocabularySetRepository userVocabularySetRepository, ILogger<LearningSessionService> logger, IUserRepository userRepository, IUserOwnedPetService userOwnedPetService, IAnswerRecordRepository answerRecordRepository, IActivityLogService activityLogService, IUserOwnedPetRepository userOwnedPetRepository, IPetRepository petRepository, IUserVocabularyProgressRepository userVocabularyProgressRepository, ISetVocabularyRepository setVocabularyRepository, ISessionVocabularyRepository sessionVocabularyRepository)
         {
             _sessionRepo = sessionRepo;
             _vocabRepo = vocabRepo;
@@ -27,34 +35,60 @@ namespace WordSoulApi.Services.Implementations
             _userRepository = userRepository;
             _userOwnedPetService = userOwnedPetService;
             _answerRecordRepository = answerRecordRepository;
+            _activityLogService = activityLogService;
+            _userOwnedPetRepository = userOwnedPetRepository;
+            _petRepository = petRepository;
+            _userVocabularyProgressRepository = userVocabularyProgressRepository;
+            _setVocabularyRepository = setVocabularyRepository;
+            _sessionVocabularyRepository = sessionVocabularyRepository;
         }
 
+        //------------------------------------CREATE-----------------------------------------
+
+        // Tạo một phiên học mới cho người dùng dựa trên bộ từ vựng đã chọn
         public async Task<LearningSessionDto> CreateLearningSessionAsync(int userId, int setId, int wordCount = 5)
         {
             if (userId <= 0)
                 throw new ArgumentException("UserId must be greater than zero.", nameof(userId));
             if (setId <= 0)
                 throw new ArgumentException("VocabularySetId must be greater than zero.", nameof(setId));
+
+            var existingSession = await _sessionRepo.GetExistingLearningSessionUnCompletedForUserAsync(userId, setId);
+            if (existingSession != null)
+            {
+                _logger.LogInformation("User {UserId} already has an existing uncompleted learning session for set {SetId}", userId, setId);
+                return new LearningSessionDto
+                {
+                    Id = existingSession.Id,
+                    IsCompleted = existingSession.IsCompleted,
+                    VocabularyIds = existingSession.SessionVocabularies.Select(v => v.VocabularyId).ToList(),
+                    PetId = existingSession.PetId 
+                };
+            }
+
             if (wordCount <= 0)
                 throw new ArgumentException("WordCount must be greater than zero.", nameof(wordCount));
 
-            var exists = await _userVocabularySetRepository.CheckUserVocabualryExist(userId, setId);
+            var exists = await _userVocabularySetRepository.CheckUserVocabularyExist(userId, setId);
             if (!exists)
             {
                 _logger.LogWarning("User {UserId} doesn't own VocabularySet {SetId}", userId, setId);
                 throw new InvalidOperationException("VocabularySet doesn't exist for this user");
             }
 
-            var vocabularies = await _vocabRepo.GetUnlearnedVocabulariesFromSetAsync(userId, setId, wordCount);
+            var vocabularies = await _setVocabularyRepository.GetUnlearnedVocabulariesFromSetAsync(userId, setId, wordCount);
             if (!vocabularies.Any())
             {
                 _logger.LogInformation("No unlearned vocabularies for user {UserId} in set {SetId}", userId, setId);
                 throw new InvalidOperationException("No unlearned vocabularies available in this set");
             }
 
-            return await CreateSessionAsync(userId, setId, SessionType.Learning, vocabularies);
+            var randomPet = await _userOwnedPetRepository.GetRandomPetBySetIdAsync(setId); 
+
+            return await CreateSessionAsync(userId, setId, SessionType.Learning, vocabularies, randomPet?.Id);
         }
 
+        // Tạo một phiên học ôn tập mới cho người dùng
         public async Task<LearningSessionDto> CreateReviewingSessionAsync(int userId, int wordCount = 5)
         {
             if (userId <= 0)
@@ -62,17 +96,18 @@ namespace WordSoulApi.Services.Implementations
             if (wordCount <= 0)
                 throw new ArgumentException("WordCount must be greater than zero.", nameof(wordCount));
 
-            var vocabularies = await _vocabRepo.GetUnreviewdVocabulariesFromSetAsync(userId, wordCount);
+            var vocabularies = await _setVocabularyRepository.GetUnreviewdVocabulariesFromSetAsync(userId, wordCount);
             if (!vocabularies.Any())
             {
                 _logger.LogInformation("No unreviewed vocabularies for user {UserId}", userId);
                 throw new InvalidOperationException("No unreviewed vocabularies available");
             }
 
-            return await CreateSessionAsync(userId, null, SessionType.Review, vocabularies);
+            return await CreateSessionAsync(userId, null, SessionType.Review, vocabularies, null);
         }
 
-        private async Task<LearningSessionDto> CreateSessionAsync(int userId, int? setId, SessionType type, IEnumerable<Vocabulary> vocabularies)
+        // Hàm helper để tạo phiên học
+        private async Task<LearningSessionDto> CreateSessionAsync(int userId, int? setId, SessionType type, IEnumerable<Vocabulary> vocabularies, int? petId)
         {
             var session = new LearningSession
             {
@@ -81,10 +116,14 @@ namespace WordSoulApi.Services.Implementations
                 Type = type,
                 StartTime = DateTime.UtcNow,
                 IsCompleted = false,
-                SessionVocabularies = vocabularies.Select(v => new SessionVocabulary
+                SessionVocabularies = vocabularies.Select((v, index) => new SessionVocabulary
                 {
-                    VocabularyId = v.Id
-                }).ToList()
+                    VocabularyId = v.Id,
+                    Order = index + 1, // Giữ nguyên order
+                    CurrentLevel = 0,  // Bắt đầu từ Flashcard
+                    IsCompleted = false
+                }).ToList(),
+                PetId = petId
             };
 
             var savedSession = await _sessionRepo.CreateLearningSessionAsync(session);
@@ -93,11 +132,79 @@ namespace WordSoulApi.Services.Implementations
             {
                 Id = savedSession.Id,
                 IsCompleted = savedSession.IsCompleted,
-                VocabularyIds = savedSession.SessionVocabularies.Select(v => v.VocabularyId).ToList()
+                VocabularyIds = savedSession.SessionVocabularies.Select(v => v.VocabularyId).ToList(),
+                PetId = savedSession.PetId 
             };
         }
 
+        //------------------------------------READ-------------------------------------------
 
+        // Lấy danh sách câu hỏi quiz cho một phiên học cụ thể
+        public async Task<IEnumerable<QuizQuestionDto>> GetSessionQuestionsAsync(int sessionId)
+        {
+            // Lấy session để kiểm tra completed
+            var session = await _sessionRepo.GetLearningSessionByIdAsync(sessionId);
+            if (session?.IsCompleted == true) return Enumerable.Empty<QuizQuestionDto>();
+
+
+            // Lấy tất cả SessionVocabulary chưa hoàn thành
+            var sessionVocabs = await _sessionVocabularyRepository.GetSessionVocabulariesBySessionIdAsync(sessionId);
+            var incompleteVocabs = sessionVocabs.Where(sv => !sv.IsCompleted).ToList();
+
+            if (!incompleteVocabs.Any())
+            {
+                _logger.LogInformation("All vocabularies completed for session {SessionId}", sessionId);
+                return Enumerable.Empty<QuizQuestionDto>(); // Sẵn sàng complete session
+            }
+
+            var allWords = sessionVocabs.Select(sv => sv.Vocabulary!.Word).ToList();
+
+
+            var questions = new List<QuizQuestionDto>();
+            var levelToType = new Dictionary<int, QuestionType>
+            {
+                {0, QuestionType.Flashcard},
+                {1, QuestionType.FillInBlank},
+                {2, QuestionType.MultipleChoice},
+                {3, QuestionType.Listening}
+            };
+
+            foreach (var sv in incompleteVocabs)
+            {
+                var vocab = sv.Vocabulary; // Assume eager load hoặc query riêng
+                if (vocab == null) continue;
+
+                var questionType = levelToType[sv.CurrentLevel];
+
+                questions.Add(CreateQuizQuestionDto(vocab, questionType, allWords, sv.CurrentLevel > 0)); // isRetry nếu level > 0
+            }
+
+            // Sort theo order hoặc random để đa dạng
+            return questions.OrderBy(q => sessionVocabs.First(sv => sv.VocabularyId == q.VocabularyId).Order);
+        }
+
+        private QuizQuestionDto CreateQuizQuestionDto(Vocabulary vocab, QuestionType type, List<string> allWords, bool isRetry)
+        {
+            return new QuizQuestionDto
+            {
+                VocabularyId = vocab.Id,
+                Word = vocab.Word,
+                Meaning = vocab.Meaning,
+                Pronunciation = vocab.Pronunciation,
+                PronunciationUrl = vocab.PronunciationUrl,
+                ImageUrl = vocab.ImageUrl,
+                Description = vocab.Description,
+                PartOfSpeech = vocab.PartOfSpeech.ToString(),
+                CEFRLevel = vocab.CEFRLevel.ToString(),
+                QuestionType = type,
+                Options = type == QuestionType.MultipleChoice
+                    ? allWords.Where(w => w != vocab.Word).OrderBy(x => Guid.NewGuid()).Take(3).Append(vocab.Word).OrderBy(x => Guid.NewGuid()).ToList()
+                    : null,
+                IsRetry = isRetry
+            };
+        }
+
+        //------------------------------------UPDATE-----------------------------------------
         public async Task<object> CompleteSessionAsync(int userId, int sessionId, SessionType sessionType)
         {
             // Kiểm tra đầu vào
@@ -115,25 +222,20 @@ namespace WordSoulApi.Services.Implementations
             if (session.IsCompleted)
                 throw new InvalidOperationException("Session is already completed");
 
-            // Kiểm tra tất cả câu hỏi đã đúng
-            var vocabIds = await _vocabRepo.GetVocabularyIdsBySessionIdAsync(sessionId);
-
-            foreach (var vocabId in vocabIds)
-            {
-                // Kiểm tra xem tất cả câu hỏi liên quan đến từ vựng đã được trả lời đúng chưa
-                var allCorrect = await _answerRecordRepository.CheckAllQuestionsCorrectAsync(sessionId, vocabId);
-                if (!allCorrect)
-                    throw new InvalidOperationException($"Not all questions for vocabulary {vocabId} are answered correctly");
-            }
+            var sessionVocabs = await _sessionVocabularyRepository.GetSessionVocabulariesBySessionIdAsync(sessionId);
+            if (sessionVocabs.Any(sv => !sv.IsCompleted))
+                throw new InvalidOperationException("Not all vocabularies are completed in this session");
 
             // Cập nhật trạng thái session
             session.IsCompleted = true;
             session.EndTime = DateTime.UtcNow;
             await _sessionRepo.UpdateLearningSessionAsync(session);
 
+            await _activityLogService.CreateActivityLogAsync(userId, "SessionCompletion", "User completed session");
+
             // Xác định XP và AP dựa trên loại phiên học
-            int xpEarned = sessionType == SessionType.Learning ? 10 : 5; // Có thể lấy từ cấu hình
-            int apEarned = sessionType == SessionType.Review ? 3 : 0;   // AP chỉ cho ôn tập
+            int xpEarned = sessionType == SessionType.Learning ? 10 : 5;
+            int apEarned = sessionType == SessionType.Review ? 3 : 0;
 
             // Xử lý logic đặc thù cho học từ mới
             bool isPetRewardGranted = false;
@@ -144,26 +246,45 @@ namespace WordSoulApi.Services.Implementations
             string? petRarity = null;
             string? petType = null;
 
-            if (sessionType == SessionType.Learning)
+            if (sessionType == SessionType.Learning && session.VocabularySetId.HasValue)
+            {
+                var userVocabularySet = await _userVocabularySetRepository.GetUserVocabularySetAsync(userId, session.VocabularySetId.Value);
+
+                if (userVocabularySet != null)
+                {
+                    userVocabularySet.TotalCompletedSession += 1;
+
+                    var vocabularies = await _setVocabularyRepository.GetUnlearnedVocabulariesFromSetAsync(userId, session.VocabularySetId.Value, 1);
+                    if (!vocabularies.Any())
+                    {
+                        userVocabularySet.IsCompleted = true;
+                    }
+
+                    await _userVocabularySetRepository.UpdateUserVocabularySetAsync(userVocabularySet);
+                }
+            }
+
+
+            if (sessionType == SessionType.Learning && session.PetId.HasValue)
             {
                 if (!session.VocabularySetId.HasValue)
                     throw new InvalidOperationException("VocabularySetId is required for learning session");
 
-                // Cập nhật số session đã hoàn thành trong UserVocabularySet
-                await _userVocabularySetRepository.UpdateCompletedLearningSessionAsync(userId, session.VocabularySetId.Value, 1);
+                // Grant Pet ngay lập tức với catch rate 100% (nếu chưa sở hữu)
+                var (alreadyOwned, bonusXp) = await _userOwnedPetService.GrantPetAsync(userId, session.PetId.Value);
+                isPetRewardGranted = !alreadyOwned; // Chỉ true nếu grant mới
+                if (alreadyOwned) xpEarned += bonusXp; // Thêm bonus XP nếu đã sở hữu
 
-                // Cấp phát pet nếu hoàn thành 5 session
-                var rewards = await _userOwnedPetService.TryGrantPetByMilestoneAsync(userId, session.VocabularySetId.Value);
-                isPetRewardGranted = rewards.alreadyOwned;
-                if (rewards.alreadyOwned)
+                // Lấy thông tin Pet để trả về (giả sử có DbContext)
+                var pet = await _petRepository.GetPetByIdAsync(session.PetId.Value);
+                if (pet != null)
                 {
-                    petId = rewards.grantedPet.Id;
-                    petName = rewards.grantedPet.Name;
-                    petDescription = rewards.grantedPet.Description;
-                    petImageUrl = rewards.grantedPet.ImageUrl;
-                    petRarity = rewards.grantedPet.Rarity.ToString();
-                    petType = rewards.grantedPet.Type.ToString();
-                    xpEarned += rewards.bonusXp;
+                    petId = pet.Id;
+                    petName = pet.Name;
+                    petDescription = pet.Description;
+                    petImageUrl = pet.ImageUrl;
+                    petRarity = pet.Rarity.ToString();
+                    petType = pet.Type.ToString();
                 }
             }
 
@@ -171,9 +292,8 @@ namespace WordSoulApi.Services.Implementations
             var user = await _userRepository.GetUserByIdAsync(userId);
             if (user == null)
                 throw new InvalidOperationException("User not found");
-            user.XP += xpEarned;
-            user.AP += apEarned; // Cập nhật AP (0 nếu là học từ mới)
-            await _userRepository.UpdateUserAsync(user);
+
+            await _userRepository.UpdateUserXPAndAPAsync(userId, xpEarned, apEarned);
 
             // Trả về DTO tương ứng
             if (sessionType == SessionType.Learning)
@@ -188,7 +308,7 @@ namespace WordSoulApi.Services.Implementations
                     ImageUrl = petImageUrl,
                     PetRarity = petRarity,
                     PetType = petType,
-                    Message = isPetRewardGranted ? "Learning session completed! You earned XP and a new Pet!" : "Learning session completed! You earned XP!"
+                    Message = isPetRewardGranted ? "Learning session completed! You caught a Pet!" : "Learning session completed! You earned XP!"
                 };
             }
             else
@@ -202,77 +322,7 @@ namespace WordSoulApi.Services.Implementations
             }
         }
 
-        // Lấy danh sách câu hỏi quiz cho một phiên học cụ thể
-        public async Task<IEnumerable<QuizQuestionDto>> GetSessionQuestionsAsync(int sessionId)
-        {
-            // Lấy danh sách từ vựng của phiên học
-            var vocabularies = await _vocabRepo.GetVocabulariesBySessionIdAsync(sessionId);
-
-            // Nếu không có từ nào
-            if (!vocabularies.Any())
-                return new List<QuizQuestionDto>();
-
-            // Láy các từ cần học 
-            var allWords = vocabularies.Select(v => v.Word).ToList();
-            // Tạo câu hỏi mới
-            var questions = new List<QuizQuestionDto>();
-
-            // với mỗi từ
-            foreach (var vocab in vocabularies)
-            {
-                // Flashcard
-                questions.Add(new QuizQuestionDto
-                {
-                    VocabularyId = vocab.Id,
-                    Word = vocab.Word,
-                    Meaning = vocab.Meaning,
-                    Pronunciation = vocab.Pronunciation,
-                    ImageUrl = vocab.ImageUrl,
-                    Description = vocab.Description,
-                    PartOfSpeech = vocab.PartOfSpeech.ToString(),
-                    CEFRLevel = vocab.CEFRLevel.ToString(),
-                    QuestionType = QuestionType.Flashcard
-                });
-
-                // FillInBlank
-                questions.Add(new QuizQuestionDto
-                {
-                    VocabularyId = vocab.Id,
-                    Word = vocab.Word,
-                    Meaning = vocab.Meaning,
-                    QuestionType = QuestionType.FillInBlank
-                });
-
-                // MultipleChoice
-                var wrongOptions = allWords.Where(w => w != vocab.Word)
-                                           .OrderBy(x => Guid.NewGuid())
-                                           .Take(3)
-                                           .ToList();
-
-                var options = wrongOptions.Append(vocab.Word).OrderBy(x => Guid.NewGuid()).ToList();
-
-                questions.Add(new QuizQuestionDto
-                {
-                    VocabularyId = vocab.Id,
-                    Word = vocab.Word,
-                    Meaning = vocab.Meaning,
-                    QuestionType = QuestionType.MultipleChoice,
-                    Options = options
-                });
-
-                // Listening
-                questions.Add(new QuizQuestionDto
-                {
-                    VocabularyId = vocab.Id,
-                    Word = vocab.Word,
-                    PronunciationUrl = vocab.PronunciationUrl,
-                    QuestionType = QuestionType.Listening
-                });
-            }
-
-            return questions;
-        }
-
+        
         // Xử lý khi người dùng gửi câu trả lời cho một câu hỏi quiz trong một phiên học cụ thể
         public async Task<SubmitAnswerResponseDto> SubmitAnswerAsync(int userId, int sessionId, SubmitAnswerRequestDto request)
         {
@@ -284,9 +334,26 @@ namespace WordSoulApi.Services.Implementations
             if (!userSessionExist)
                 throw new UnauthorizedAccessException("User does not have access to this session");
 
-            // Lấy từ vựng
-            var vocab = await _vocabRepo.GetVocabularyByIdAsync(request.VocabularyId);
-            if (vocab == null) throw new KeyNotFoundException("Vocabulary not found");
+            var sessionVocab = await _sessionVocabularyRepository.GetSessionVocabularyAsync(sessionId, request.VocabularyId);
+            if (sessionVocab == null)
+                throw new KeyNotFoundException("Vocabulary not found in session");
+
+            var vocab = sessionVocab.Vocabulary!;
+            if (vocab == null)
+                throw new KeyNotFoundException("Vocabulary not found");
+
+            var levelToType = new Dictionary<int, QuestionType>
+            {
+                {0, QuestionType.Flashcard},
+                {1, QuestionType.FillInBlank},
+                {2, QuestionType.MultipleChoice},
+                {3, QuestionType.Listening}
+            };
+            var currentType = levelToType[sessionVocab.CurrentLevel];
+
+            // Kiểm tra QuestionType match CurrentLevel
+            if (request.QuestionType != currentType)
+                throw new ArgumentException("Question type does not match current level");
 
             // Số lần attempt trước đó
             var attemptCount = await _answerRecordRepository.GetAttemptCountAsync(sessionId, request.VocabularyId, request.QuestionType);
@@ -306,8 +373,8 @@ namespace WordSoulApi.Services.Implementations
                 _ => false
             };
 
-            var existingAnswerRecord = await _answerRecordRepository.GetAnswerRecordFromSession(sessionId, vocab.Id,request.QuestionType);
-            if(existingAnswerRecord == null)
+            var existingAnswerRecord = await _answerRecordRepository.GetAnswerRecordFromSession(sessionId, vocab.Id, request.QuestionType);
+            if (existingAnswerRecord == null)
             {
                 // Tạo bản ghi
                 var record = new AnswerRecord
@@ -329,16 +396,71 @@ namespace WordSoulApi.Services.Implementations
                 existingAnswerRecord.AttemptCount = attemptCount + 1;
                 existingAnswerRecord.IsCorrect = isCorrect;
                 existingAnswerRecord.CreatedAt = DateTime.UtcNow;
-
                 await _answerRecordRepository.UpdateAnswerRecordAsync(existingAnswerRecord);
             }
+
+            // Cập nhật level
+            if (isCorrect)
+            {
+                sessionVocab.CurrentLevel = Math.Min(4, sessionVocab.CurrentLevel + 1);
+                sessionVocab.IsCompleted = sessionVocab.CurrentLevel == 4;
+                if (sessionVocab.IsCompleted)
+                {
+                    await UpdateUserVocabularyProgressAsync(userId, vocab, isCorrect);
+                }
+                
+            }
+            else
+            {
+                sessionVocab.CurrentLevel = Math.Max(0, sessionVocab.CurrentLevel - 1);
+                sessionVocab.IsCompleted = false;
+            }
+
+            await _sessionVocabularyRepository.UpdateSessionVocabularyAsync(sessionVocab);
 
             return new SubmitAnswerResponseDto
             {
                 IsCorrect = isCorrect,
                 CorrectAnswer = vocab.Word,
-                AttemptNumber = attemptCount + 1
+                AttemptNumber = attemptCount + 1,
+                NewLevel = sessionVocab.CurrentLevel,
+                IsVocabularyCompleted = sessionVocab.IsCompleted
             };
+        }
+
+        private async Task UpdateUserVocabularyProgressAsync(int userId, Vocabulary vocab, bool isCorrect)
+        {
+            var progress = await _userVocabularyProgressRepository.GetUserVocabularyProgressAsync(userId, vocab.Id);
+            if (progress == null)
+            {
+                progress = new UserVocabularyProgress
+                {
+                    UserId = userId,
+                    VocabularyId = vocab.Id,
+                    CorrectAttempt = 0,
+                    TotalAttempt = 0,
+                    ProficiencyLevel = 0
+                };
+                await _userVocabularyProgressRepository.CreateUserVocabularyProgressAsync(progress);
+            }
+
+            progress.CorrectAttempt += isCorrect ? 1 : 0;
+            progress.TotalAttempt++;
+            progress.ProficiencyLevel = Math.Min(5, 1 + (int)Math.Floor(Math.Log(Math.Max(1, progress.CorrectAttempt), 1.5)));
+            progress.LastUpdated = DateTime.UtcNow;
+
+            // Spaced repetition
+            int daysToAdd = progress.ProficiencyLevel switch
+            {
+                1 => 1,
+                2 => 2,
+                3 => 4,
+                4 => 16,
+                _ => 256
+            };
+            progress.NextReviewTime = DateTime.UtcNow.AddDays(daysToAdd);
+
+            await _userVocabularyProgressRepository.UpdateUserVocabularyProgressAsync(progress);
         }
 
     }

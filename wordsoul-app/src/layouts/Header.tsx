@@ -189,89 +189,84 @@ const Header: React.FC = () => {
                                     </button>
                                 </Link>
                             </div>
-                            <div>
-                                <Link to="/dashboard">
-                                    <button className="px-4 py-2 text-white hover:text-blue-400 hover:bg-slate-800 rounded-md custom-cursor">
-                                        Quản trị
-                                    </button>
-                                </Link>
-                            </div>
                         </div>
                     </div>
                     <div className="flex items-center justify-center gap-4">
                         {/* User Actions */}
                         <div className="flex items-center gap-4">
                             {/* Notification Bell with Dropdown */}
-                            <div className="relative icon-container nes-pointer ">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    onClick={toggleDropdown}
-                                    className="custom-cursor"
-                                >
-                                    <path
-                                        fillRule="evenodd"
-                                        clipRule="evenodd"
-                                        d="M14 4V2H9.99999V4H5.00018V6H19.0002V4H14ZM18.9999 16H4.99994V12H2.99994V16V18L7.99975 18V22H9.99975V18H13.9998V20H10V22H13.9998V22H15.9998V18L20.9999 18V16L21 12H19V6H17V14H18.9999V16ZM5.00018 6V14H7.00018V6H5.00018Z"
-                                        fill={notifications.some((n) => !n.isRead) ? "#FFD700" : "#94A3B8"} // Yellow if unread
-                                    />
-                                </svg>
-                                {unreadCount > 0 && (
-                                    <span className="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-red-500 rounded-full -mt-1 -mr-1">
-                                        {unreadCount}
-                                    </span>
-                                )}
-                                {isDropdownOpen && (
-                                    <div className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg z-50">
-                                        <div className="p-2">
-                                            <div className="flex justify-between items-center mb-2">
-                                                <h3 className="text-sm font-semibold">Thông báo</h3>
-                                                <button
-                                                    onClick={handleMarkAllRead}
-                                                    className="text-xs text-blue-500 hover:text-blue-700 custom-cursor"
-                                                >
-                                                    Đánh dấu tất cả đã đọc
-                                                </button>
-                                            </div>
-                                            {notifications.length > 0 ? (
-                                                notifications.map((notif) => (
-                                                    <div
-                                                        key={notif.id}
-                                                        className={`p-2 border-b ${!notif.isRead ? "bg-gray-100" : ""}`}
+                            {user ? (
+                                <div className="relative icon-container nes-pointer ">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="24"
+                                        height="24"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        onClick={toggleDropdown}
+                                        className="custom-cursor"
+                                    >
+                                        <path
+                                            fillRule="evenodd"
+                                            clipRule="evenodd"
+                                            d="M14 4V2H9.99999V4H5.00018V6H19.0002V4H14ZM18.9999 16H4.99994V12H2.99994V16V18L7.99975 18V22H9.99975V18H13.9998V20H10V22H13.9998V22H15.9998V18L20.9999 18V16L21 12H19V6H17V14H18.9999V16ZM5.00018 6V14H7.00018V6H5.00018Z"
+                                            fill={notifications.some((n) => !n.isRead) ? "#FFD700" : "#94A3B8"} // Yellow if unread
+                                        />
+                                    </svg>
+                                    {unreadCount > 0 && (
+                                        <span className="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-red-500 rounded-full -mt-1 -mr-1">
+                                            {unreadCount}
+                                        </span>
+                                    )}
+                                    {isDropdownOpen && (
+                                        <div className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg z-50">
+                                            <div className="p-2">
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <h3 className="text-sm font-semibold">Thông báo</h3>
+                                                    <button
+                                                        onClick={handleMarkAllRead}
+                                                        className="text-xs text-blue-500 hover:text-blue-700 custom-cursor"
                                                     >
-                                                        <div className="text-sm">{notif.title}</div>
-                                                        <div className="text-xs text-gray-600">{notif.message}</div>
-                                                        <div className="text-xs text-gray-400">
-                                                            {new Date(notif.createdAt).toLocaleTimeString()}
-                                                        </div>
-                                                        <div className="flex gap-2 mt-1">
-                                                            {!notif.isRead && (
+                                                        Đánh dấu tất cả đã đọc
+                                                    </button>
+                                                </div>
+                                                {notifications.length > 0 ? (
+                                                    notifications.map((notif) => (
+                                                        <div
+                                                            key={notif.id}
+                                                            className={`p-2 border-b ${!notif.isRead ? "bg-gray-100" : ""}`}
+                                                        >
+                                                            <div className="text-sm">{notif.title}</div>
+                                                            <div className="text-xs text-gray-600">{notif.message}</div>
+                                                            <div className="text-xs text-gray-400">
+                                                                {new Date(notif.createdAt).toLocaleTimeString()}
+                                                            </div>
+                                                            <div className="flex gap-2 mt-1">
+                                                                {!notif.isRead && (
+                                                                    <button
+                                                                        onClick={() => handleMarkRead(notif.id)}
+                                                                        className="text-xs text-blue-500 hover:text-blue-700 custom-cursor"
+                                                                    >
+                                                                        Đánh dấu đã đọc
+                                                                    </button>
+                                                                )}
                                                                 <button
-                                                                    onClick={() => handleMarkRead(notif.id)}
-                                                                    className="text-xs text-blue-500 hover:text-blue-700 custom-cursor"
+                                                                    onClick={() => handleDelete(notif.id)}
+                                                                    className="text-xs text-red-500 hover:text-red-700 custom-cursor"
                                                                 >
-                                                                    Đánh dấu đã đọc
+                                                                    Xóa
                                                                 </button>
-                                                            )}
-                                                            <button
-                                                                onClick={() => handleDelete(notif.id)}
-                                                                className="text-xs text-red-500 hover:text-red-700 custom-cursor"
-                                                            >
-                                                                Xóa
-                                                            </button>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <div className="text-xs text-gray-500 text-center">Không có thông báo</div>
-                                            )}
+                                                    ))
+                                                ) : (
+                                                    <div className="text-xs text-gray-500 text-center">Không có thông báo</div>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
-                            </div>
+                                    )}
+                                </div>
+                            ) : null}
                             <div className="custom-cursor">
                                 <svg
                                     width="24"

@@ -13,6 +13,7 @@ namespace WordSoulApi.Models.DTOs.VocabularySet
         public string? Description { get; set; }
         public VocabularyDifficultyLevel DifficultyLevel { get; set; }
         public bool IsActive { get; set; } = true;
+        public bool IsPublic { get; set; } = true; // Mới: Cho phép người dùng chọn public/private
         public List<int> VocabularyIds { get; set; } = new List<int>();
     }
 }

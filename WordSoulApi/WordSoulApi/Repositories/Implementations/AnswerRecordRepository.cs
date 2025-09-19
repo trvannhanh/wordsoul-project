@@ -11,38 +11,11 @@ namespace WordSoulApi.Repositories.Implementations
         public AnswerRecordRepository(WordSoulDbContext context)
         {
             _context = context;
+
         }
 
-        // Lấy tất cả AnswerRecord
-        public async Task<IEnumerable<AnswerRecord>> GetAllAnswerRecordsAsync()
-        {
-            return await _context.AnswerRecords.AsNoTracking().ToListAsync();
-        }
+        //------------------------------- CREATE -----------------------------------
 
-        // Kiểm tra xem đã tồn tại AnswerRecord cho user + session + vocab + questionType chưa
-        public async Task<bool> ExistsAsync(int sessionId, int vocabId, QuestionType questionType)
-        {
-            return await _context.AnswerRecords
-                .AnyAsync(ar => ar.LearningSessionId == sessionId &&
-                                ar.VocabularyId == vocabId &&
-                                ar.QuestionType == questionType);
-        }
-
-        // Lấy AnswerRecord theo Id
-        public async Task<AnswerRecord?> GetAnswerRecordByIdAsync(int id)
-        {
-            return await _context.AnswerRecords
-                .AsNoTracking()
-                .FirstOrDefaultAsync(ar => ar.Id == id);
-        }
-
-        public async Task<AnswerRecord?> GetAnswerRecordFromSession(int sessionId, int vocabId,QuestionType questionType)
-        {
-            return await _context.AnswerRecords.FirstOrDefaultAsync(ar =>
-                ar.LearningSessionId == sessionId &&
-                ar.VocabularyId == vocabId &&
-                ar.QuestionType == questionType);
-        }
 
         // Tạo mới AnswerRecord
         public async Task<AnswerRecord> CreateAnswerRecordAsync(AnswerRecord answerRecord)
@@ -52,22 +25,23 @@ namespace WordSoulApi.Repositories.Implementations
             return answerRecord;
         }
 
-        // Cập nhật AnswerRecord
-        public async Task<AnswerRecord> UpdateAnswerRecordAsync(AnswerRecord answerRecord)
+        //------------------------------- READ -----------------------------------
+
+        // Lấy AnswerRecord theo Id
+        public async Task<AnswerRecord?> GetAnswerRecordByIdAsync(int id)
         {
-            _context.AnswerRecords.Update(answerRecord);
-            await _context.SaveChangesAsync();
-            return answerRecord;
+            return await _context.AnswerRecords
+                .AsNoTracking()
+                .FirstOrDefaultAsync(ar => ar.Id == id);
         }
 
-        // Xoá AnswerRecord
-        public async Task<bool> DeleteAnswerRecordAsync(int id)
+        // Lấy AnswerRecord cho một session, vocab và loại câu hỏi cụ thể
+        public async Task<AnswerRecord?> GetAnswerRecordFromSession(int sessionId, int vocabId, QuestionType questionType)
         {
-            var record = await GetAnswerRecordByIdAsync(id);
-            if (record == null) return false;
-
-            _context.AnswerRecords.Remove(record);
-            return await _context.SaveChangesAsync() > 0;
+            return await _context.AnswerRecords.FirstOrDefaultAsync(ar =>
+                ar.LearningSessionId == sessionId &&
+                ar.VocabularyId == vocabId &&
+                ar.QuestionType == questionType);
         }
 
         // Đếm số lần attempt cho 1 từ + loại câu hỏi
@@ -83,21 +57,25 @@ namespace WordSoulApi.Repositories.Implementations
             return record;
         }
 
-        // Kiểm tra user đã trả lời đúng tất cả các loại câu hỏi của 1 từ chưa
-        public async Task<bool> CheckAllQuestionsCorrectAsync(int sessionId, int vocabId)
+
+        //------------------------------- UPDATE -----------------------------------
+        // Cập nhật AnswerRecord
+        public async Task<AnswerRecord> UpdateAnswerRecordAsync(AnswerRecord answerRecord)
         {
-            var totalTypes = Enum.GetValues<QuestionType>().Length;
-
-            var correctTypes = await _context.AnswerRecords
-                .AsNoTracking()
-                .Where(a => a.LearningSessionId == sessionId &&
-                            a.VocabularyId == vocabId &&
-                            a.IsCorrect)
-                .Select(a => a.QuestionType)
-                .Distinct()
-                .CountAsync();
-
-            return correctTypes == totalTypes;
+            _context.AnswerRecords.Update(answerRecord);
+            await _context.SaveChangesAsync();
+            return answerRecord;
         }
+
+        //------------------------------- DELETE -----------------------------------
+
+
+
+        //------------------------------- OTHER -----------------------------------
+
+    
+
+       
+
     }
 }

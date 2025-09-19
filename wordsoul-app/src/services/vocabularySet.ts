@@ -7,6 +7,7 @@ export const fetchVocabularySets = async (
   theme?: string,
   difficulty?: string,
   createdAfter?: string,
+  isOwned?: boolean, // Mới: Thêm tham số isOwned
   pageNumber: number = 1,
   pageSize: number = 10
 ): Promise<VocabularySet[]> => {
@@ -17,6 +18,7 @@ export const fetchVocabularySets = async (
         theme: theme || undefined,
         difficulty: difficulty || undefined,
         createdAfter: createdAfter || undefined,
+        isOwned: isOwned !== undefined ? isOwned : undefined, // Chỉ gửi nếu isOwned được xác định
         pageNumber,
         pageSize,
       },
@@ -30,9 +32,51 @@ export const fetchVocabularySets = async (
   }
 };
 
-export const fetchVocabularySetDetail = async (id: number): Promise<VocabularySetDetail> => {
-  const response = await api.get<VocabularySetDetail>(endpoints.vocabularySetDetail(id));
-  return response.data;
+export const fetchUserVocabularySets = async (
+  title?: string,
+  theme?: string,
+  difficulty?: string,
+  createdAfter?: string,
+  isOwned?: boolean, // Mới: Thêm tham số isOwned
+  pageNumber: number = 1,
+  pageSize: number = 10
+): Promise<VocabularySet[]> => {
+  try {
+    const response = await authApi.get<VocabularySet[]>(endpoints.vocabularySets, {
+      params: {
+        title: title || undefined,
+        theme: theme || undefined,
+        difficulty: difficulty || undefined,
+        createdAfter: createdAfter || undefined,
+        isOwned: isOwned !== undefined ? isOwned : undefined, // Chỉ gửi nếu isOwned được xác định
+        pageNumber,
+        pageSize,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    const errorMessage = error instanceof AxiosError 
+      ? `Failed to fetch vocabulary sets: ${error.response?.data?.message || error.message}`
+      : 'An unexpected error occurred while fetching vocabulary sets';
+    throw new Error(errorMessage);
+  }
+};
+
+export const fetchVocabularySetDetail = async (id: number, page = 1, pageSize = 10): Promise<VocabularySetDetail> => {
+ try {
+    const response = await api.get<VocabularySetDetail>(endpoints.vocabularySetDetail(id), {
+      params: {
+        page,
+        pageSize,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    const errorMessage = error instanceof AxiosError 
+      ? `Failed to fetch vocabulary sets: ${error.response?.data?.message || error.message}`
+      : 'An unexpected error occurred while fetching vocabulary sets';
+    throw new Error(errorMessage);
+  }
 };
 
 export const createVocabularySet = async (formData: FormData): Promise<VocabularySet> => {

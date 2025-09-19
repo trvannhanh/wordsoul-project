@@ -13,6 +13,18 @@ namespace WordSoulApi.Repositories.Implementations
             _context = context;
         }
 
+        //------------------------------- CREATE -----------------------------------
+        // Tạo pet mới
+        public async Task<Pet> CreatePetAsync(Pet pet)
+        {
+            _context.Pets.Add(pet);
+            await _context.SaveChangesAsync();
+            return pet;
+        }
+
+
+
+        //------------------------------- READ -----------------------------------
         // Lấy danh sách Pet cho người dùng
         public async Task<IEnumerable<(Pet Pet, bool IsOwned)>> GetAllPetsAsync(
             int userId,
@@ -74,20 +86,26 @@ namespace WordSoulApi.Repositories.Implementations
             return result.Select(x => (x.Pet, x.IsOwned));
         }
 
+
         // Lấy pet theo ID
         public async Task<Pet?> GetPetByIdAsync(int id)
         {
             return await _context.Pets.FindAsync(id);
         }
 
-        // Tạo pet mới
-        public async Task<Pet> CreatePetAsync(Pet pet)
+        // Lấy ngẫu nhiên một số pet theo rarity
+        public async Task<List<Pet>> GetRandomPetsByRarityAsync(PetRarity rarity, int count)
         {
-            _context.Pets.Add(pet);
-            await _context.SaveChangesAsync();
-            return pet;
+            var pets = await _context.Pets
+                .Where(p => p.Rarity == rarity && p.IsActive)
+                .OrderBy(p => Guid.NewGuid()) // Ngẫu nhiên hóa
+                .Take(count)
+                .ToListAsync();
+
+            return pets;
         }
 
+        //------------------------------- UPDATE -----------------------------------
         // Cập nhật pet
         public async Task<Pet> UpdatePetAsync(Pet pet)
         {
@@ -95,6 +113,8 @@ namespace WordSoulApi.Repositories.Implementations
             await _context.SaveChangesAsync();
             return pet;
         }
+
+        //------------------------------- DELETE -----------------------------------
 
         // Xóa pet theo ID
         public async Task<bool> DeletePetAsync(int id)
@@ -105,15 +125,8 @@ namespace WordSoulApi.Repositories.Implementations
             return await _context.SaveChangesAsync() > 0;
         }
 
-        public async Task<List<Pet>> GetAllAsync()
-        {
-            return await _context.Pets.ToListAsync();
-        }
-
-        public async Task<bool> ExistsAsync(int id)
-        {
-            return await _context.Pets.AnyAsync(p => p.Id == id);
-        }
+        
 
     }
 }
+    

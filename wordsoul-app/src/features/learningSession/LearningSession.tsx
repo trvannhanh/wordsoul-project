@@ -1,457 +1,132 @@
-import { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  answerQuiz,
-  completeLearningSession,
-  completeReviewSession,
-  fetchQuizOfSession,
-  updateProgress,
-} from "../../services/learningSession";
-import { QuestionType, type CompleteLearningSessionResponseDto, type CompleteReviewSessionResponseDto, type QuizQuestion } from "../../types/Dto";
+import { useState } from "react";
+import { useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion"; // Thêm framer-motion
+import GameScreen from "../../components/LearningSession/GameScreen";
+import AnswerScreen from "../../components/LearningSession/AnswerScreen";
+import BackgroundMusic from "../../components/LearningSession/BackgroundMusic";
+import PetScreen from "../../components/LearningSession/PetScreen";
+import { useQuizSession } from "../../hooks/LearningSession/useQuizSession";
+import { type QuizQuestion } from "../../types/Dto";
 
-
-export default function LearningSession() {
+const LearningSession: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const mode = searchParams.get("mode") as "learning" | "review";
   const sessionId = Number(id);
+  const { state } = useLocation();
+  const navigate = useNavigate();
+  const petId = state?.petId;
 
-  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [retryQueue, setRetryQueue] = useState<QuizQuestion[]>([]);
-  const [remainingByVocab, setRemainingByVocab] = useState<Map<number, number>>(
-    new Map()
-  );
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showCompleteModal, setShowCompleteModal] = useState(false);
-  const [sessionData, setSessionData] = useState<CompleteLearningSessionResponseDto | CompleteReviewSessionResponseDto | null>(null);
-  const [isCardFlipped, setIsCardFlipped] = useState(false);
+  const {
+    currentQuestion,
+    loading,
+    error,
+    handleAnswer,
+    sessionData,
+    encounteredPet,
+    showRewardAnimation,
+    captureComplete,
+    setCaptureComplete,
+    loadNextQuestion,
+  } = useQuizSession(sessionId, mode, petId);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchQuizOfSession(sessionId);
-        setQuestions(data);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [showPopup, setShowPopup] = useState(false); // Trạng thái pop-up
+  const [answeredQuestion, setAnsweredQuestion] = useState<QuizQuestion | null>(null); // Câu hỏi vừa trả lời
 
-        const map = new Map<number, number>();
-        data.forEach((q) =>
-          map.set(q.vocabularyId, (map.get(q.vocabularyId) || 0) + 1)
-        );
-        setRemainingByVocab(map);
-
-        setLoading(false);
-      } catch {
-        setError("Failed to load quiz questions");
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [sessionId]);
-
-  async function handleAnswer(question: QuizQuestion, answer: string) {
-    const res = await answerQuiz(sessionId, {
-      vocabularyId: question.vocabularyId,
-      questionType: question.questionType,
-      answer,
-    });
-
-    if (res.isCorrect) {
-      const newMap = new Map(remainingByVocab);
-      newMap.set(
-        question.vocabularyId,
-        (newMap.get(question.vocabularyId) || 1) - 1
-      );
-      setRemainingByVocab(newMap);
-
-      if ((newMap.get(question.vocabularyId) || 0) === 0) {
-        await updateProgress(sessionId, question.vocabularyId);
-      }
-    } else {
-      setRetryQueue((prev) => [...prev, question]);
-    }
-
-    setCurrentIndex((prev) => prev + 1);
-  }
-
-  const currentQuestion =
-    currentIndex < questions.length
-      ? questions[currentIndex]
-      : retryQueue.length > 0
-        ? retryQueue[0]
-        : null;
-
-  useEffect(() => {
-    if (!currentQuestion && questions.length > 0) {
-      const unfinished = Array.from(remainingByVocab.values()).some(
-        (v) => v > 0
-      );
-      if (!unfinished) handleCompleteSession();
-    }
-  }, [currentQuestion]);
-
-  async function handleCompleteSession() {
-    try {
-      let data;
-      if (mode === "learning") {
-        data = await completeLearningSession(sessionId);
-      } else {
-        data = await completeReviewSession(sessionId);
-      }
-      setSessionData(data);
-      setShowCompleteModal(true);
-    } catch (error) {
-      console.error("Error completing session:", error);
-    }
-  }
-
-  const handleFlipCard = () => {
-    setIsCardFlipped(true);
+  const toggleMusic = () => {
+    setIsPlaying((prev) => !prev);
   };
 
-  const handleCloseModal = () => {
-    setShowCompleteModal(false);
-    setIsCardFlipped(false);
+  // Callback để hiển thị pop-up từ AnswerScreen
+  const handleShowPopup = (question: QuizQuestion) => {
+    setAnsweredQuestion(question);
+    setShowPopup(true);
+    setTimeout(() => {
+      setShowPopup(false);
+      setAnsweredQuestion(null);
+    }, 3000); // Đóng pop-up sau 3 giây
   };
 
-  const renderQuestion = (q: QuizQuestion) => {
-    switch (q.questionType) {
-      case QuestionType.Flashcard:
-        return (
-          <div className="bg-black h-15/16 w-15/16 border-4 border-black flex items-center justify-center">
-            <button
-              onClick={() => handleAnswer(q, "viewed")}
-              className="bg-emerald-600 w-4/12 h-5/12 border-2 border-white rounded-2xl font-pixel custom-cursor"
-            >
-              Đã Xem
-            </button>
-          </div>
-        );
-      case QuestionType.FillInBlank:
-        return (
-          <div className="bg-black h-15/16 w-15/16 border-4 border-black flex items-center justify-center">
-            <input
-              type="text"
-              className="border p-2 rounded bg-white w-1/2"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleAnswer(q, (e.target as HTMLInputElement).value);
-                  (e.target as HTMLInputElement).value = "";
-                }
-              }}
-            />
-          </div>
-        );
-      case QuestionType.MultipleChoice:
-        return (
-          <div className="bg-black h-15/16 w-15/16 border-4 border-black flex items-center justify-center">
-            <div className="grid grid-cols-2 items-center h-full gap-y-2 gap-x-30">
-              {q.options?.map((opt) => (
-                <button
-                  key={opt}
-                  onClick={() => handleAnswer(q, opt)}
-                  className="bg-emerald-600 w-40 h-20 border-2 border-white rounded-2xl font-pixel custom-cursor"
-                >
-                  {opt}
-                </button>
-              ))}
-            </div>
-          </div>
-        );
-      case QuestionType.Listening:
-        return (
-          <div className="bg-black h-15/16 w-15/16 border-4 border-black flex items-center justify-center">
-            <input
-              type="text"
-              className="border p-2 rounded bg-white w-1/2"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleAnswer(q, (e.target as HTMLInputElement).value);
-                  (e.target as HTMLInputElement).value = "";
-                }
-              }}
-            />
-          </div>
-        );
-      default:
-        return <div>Unknown question type</div>;
-    }
-  };
-
-  const renderTopScreen = (q: QuizQuestion) => {
-    switch (q.questionType) {
-      case QuestionType.Flashcard:
-        return (
-          <div className="bg-black h-15/16 w-15/16 border-4 border-black flex items-center justify-center text-white font-pixel">
-            <div className="flex items-start justify-evenly gap-2">
-              <div className="flex-col w-1/3">
-                <h2 className="text-4xl">{q.word}</h2>
-                <p className="text-s">{q.pronunciation || "N/A"}</p>
-                <p className="text-s">{q.partOfSpeech || "N/A"}</p>
-                <p className="text-s">{q.cefrLevel || "N/A"}</p>
-              </div>
-              <div className="flex-col w-1/3">
-                <p className="text-4xl">{q.meaning}</p>
-                <p className="text-s">{q.description || "N/A"}</p>
-              </div>
-              <div className="w-1/3">
-                {q.imageUrl && (
-                  <img src={q.imageUrl} alt={q.word} className="w-32 h-32" />
-                )}
-              </div>
-            </div>
-          </div>
-        );
-      case QuestionType.FillInBlank:
-        return (
-          <div className="bg-black h-15/16 w-15/16 border-4 border-black flex items-center justify-center text-white font-pixel">
-            <div className="flex items-start gap-2">
-              <div className="flex-col w-1/3">
-                <h2 className="text-4xl">{q.meaning}</h2>
-                <p className="text-s">{q.pronunciation || "N/A"}</p>
-              </div>
-            </div>
-          </div>
-        );
-      case QuestionType.MultipleChoice:
-        return (
-          <div className="bg-black h-15/16 w-15/16 border-4 border-black flex items-center justify-center text-white font-pixel">
-            <div className="flex items-start justify-evenly gap-2">
-              <div className="flex-col w-1/2">
-                <h2 className="text-4xl">{q.meaning}</h2>
-                <p className="text-s">{q.pronunciation || "N/A"}</p>
-                <p className="text-s">{q.partOfSpeech || "N/A"}</p>
-                <p className="text-s">{q.cefrLevel || "N/A"}</p>
-              </div>
-              <div className="w-1/2">
-                {q.imageUrl && (
-                  <img src={q.imageUrl} alt={q.meaning} className="w-32 h-32" />
-                )}
-              </div>
-            </div>
-          </div>
-        );
-      case QuestionType.Listening:
-        return (
-          <div className="bg-black h-15/16 w-15/16 border-4 border-black flex items-center justify-center text-white font-pixel">
-            <div className="flex items-start justify-evenly gap-2">
-              <audio controls src={q.pronunciationUrl ?? ""}></audio>
-            </div>
-          </div>
-        );
-      default:
-        return <div>Unknown question type</div>;
-    }
-  };
-
-  // Hiển thị giao diện chính ngay cả khi không có câu hỏi
   return (
-    <div className="h-screen w-screen flex">
-      {/* Máy chơi game DS Bên trái */}
-      <div className="w-9/12 h-15/16 mt-12 flex-col justify-center items-center rounded-4xl border-2 border-white">
-        <div className="h-6/12 w-full flex align-middle justify-center items-center border-2 rounded-2xl bg-gray-900">
-          {/* Màn hình trên */}
-          <div className="bg-gray-800 h-10/12 w-8/12 border-4 border-black flex items-center justify-center rounded-xl">
-            <AnimatePresence mode="wait">
-              {loading ? (
-                <div>Đang tải...</div>
-              ) : error ? (
-                <div>{error}</div>
-              ) : currentQuestion ? (
-                <motion.div
-                  key={`top-${currentQuestion.vocabularyId}-${currentQuestion.questionType}`}
-                  initial={{ opacity: 0, rotateX: -90 }}
-                  animate={{ opacity: 1, rotateX: 0 }}
-                  exit={{ opacity: 0, rotateX: 90 }}
-                  transition={{ duration: 0.5 }}
-                  className="w-full h-full flex justify-center items-center"
-                >
-                  {renderTopScreen(currentQuestion)}
-                </motion.div>
-              ) : (
-                <div>Hoàn thành session!</div>
-              )}
-            </AnimatePresence>
+    <div className="h-screen w-screen bg-gray-900 flex items-center justify-between p-4 pixel-background relative">
+      <BackgroundMusic 
+        isPlaying={isPlaying} 
+        volume={0.5} 
+        showRewardAnimation={showRewardAnimation}
+        toggleMusic={toggleMusic}
+      />
+      
+      <div className="w-1/2 h-3/4 bg-gray-800 border-4 border-black rounded-lg flex flex-col overflow-hidden">
+        <div className="flex-1 bg-gray-700 border-b-4 border-black p-4">
+          <div className="h-full bg-black border-2 border-white rounded-sm flex items-center justify-center">
+            <GameScreen
+              question={currentQuestion}
+              loading={loading}
+              error={error}
+            />
           </div>
         </div>
-        <div className="bg-cyan-950 h-1/16 w-full rounded-2xl flex justify-center border-4 border-black">
-          <div className="bg-cyan-950 h-full w-9/12 rounded-s border-x-4 border-black flex items-center justify-center">
-            <div className="bg-black w-1/16 h-full rounded-4xl border-1 border-white"></div>
-          </div>
-        </div>
-        <div className="h-7/16 w-full flex align-middle items-center justify-evenly bg-gray-900 border-2 rounded-2xl">
-          {/* Nút điều hướng */}
-          <div className="w-2/16 h-5/12 relative">
-            <div className="absolute bg-gray-800 w-4/12 h-4/12 left-4/12 border-4 border-black">
-              <div className="absolute w-1/16 h-8/12 bg-white top-1 left-7/16"></div>
-            </div>
-            <div className="absolute bg-gray-800 w-4/12 h-4/12 top-4/12 border-4 border-black">
-              <div className="absolute w-8/12 h-1/16 bg-white top-7/16 left-1"></div>
-            </div>
-            <div className="absolute bg-gray-800 w-4/12 h-4/12 top-4/12 right-0 border-4 border-black">
-              <div className="absolute w-8/12 h-1/16 bg-white top-7/16 left-1"></div>
-            </div>
-            <div className="absolute bg-gray-800 w-4/12 h-4/12 left-4/12 bottom-0 border-4 border-black">
-              <div className="absolute w-1/16 h-8/12 bg-white top-1 left-7/16"></div>
-            </div>
-          </div>
-          {/* Màn hình dưới */}
-          <div className="bg-gray-800 h-10/12 w-8/12 border-4 border-black flex items-center justify-center rounded-xl">
-            <AnimatePresence mode="wait">
-              {loading ? (
-                <div>Đang tải...</div>
-              ) : error ? (
-                <div>{error}</div>
-              ) : currentQuestion ? (
-                <motion.div
-                  key={`bottom-${currentQuestion.vocabularyId}-${currentQuestion.questionType}`}
-                  initial={{ opacity: 0, rotateX: 90 }}
-                  animate={{ opacity: 1, rotateX: 0 }}
-                  exit={{ opacity: 0, rotateX: -90 }}
-                  transition={{ duration: 0.5 }}
-                  className="w-full h-full"
-                >
-                  {renderQuestion(currentQuestion)}
-                </motion.div>
-              ) : (
-                <div>Hoàn thành session!</div>
-              )}
-            </AnimatePresence>
-          </div>
-          {/* Nút bấm */}
-          <div className="w-2/16 h-5/12 relative">
-            <div className="absolute bg-gray-800 w-4/12 h-4/12 left-4/12 rounded-3xl text-center text-white border-4 border-black">
-              A
-            </div>
-            <div className="absolute bg-gray-800 w-4/12 h-4/12 top-4/12 rounded-3xl text-center text-white border-4 border-black">
-              B
-            </div>
-            <div className="absolute bg-gray-800 w-4/12 h-4/12 top-4/12 right-0 rounded-3xl text-center text-white border-4 border-black">
-              X
-            </div>
-            <div className="absolute bg-gray-800 w-4/12 h-4/12 left-4/12 bottom-0 rounded-3xl text-center text-white border-4 border-black">
-              Y
-            </div>
+
+        <div className="flex-1 bg-gray-700 p-4">
+          <div className="h-full bg-black border-2 border-white rounded-sm flex items-center justify-center">
+            <AnswerScreen
+              question={currentQuestion}
+              loading={loading}
+              error={error}
+              handleAnswer={handleAnswer}
+              loadNextQuestion={loadNextQuestion}
+              showPopup={handleShowPopup} // Truyền callback để hiển thị pop-up
+            />
           </div>
         </div>
       </div>
 
-      {/* Modal hiển thị khi hoàn thành session */}
+      <PetScreen 
+        showRewardAnimation={showRewardAnimation}
+        captureComplete={captureComplete}
+        setCaptureComplete={setCaptureComplete}
+        encounteredPet={encounteredPet}
+        sessionData={sessionData}
+        mode={mode}
+        petId={petId}
+        handleCloseReward={() => navigate(-1)}
+      />
+
+      {/* Pop-up hiển thị thông tin từ vựng */}
       <AnimatePresence>
-        {showCompleteModal && sessionData && (
+        {showPopup && answeredQuestion && (
           <motion.div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            className="absolute inset-0 flex items-center justify-center bg-opacity-75 z-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
             <motion.div
-              className="bg-gray-800 p-6 rounded-xl border-4 border-black flex flex-col items-center w-96"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0 }}
+              className="bg-gray-800 p-8 rounded-lg border-4 border-white text-white font-pixel text-center w-3/4 max-w-lg"
+              initial={{ scale: 0, y: 50 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0, y: 50 }}
               transition={{ duration: 0.3 }}
             >
-              {/* Thông báo chung */}
-              <h2 className="text-2xl text-white font-pixel mb-4">
-                {sessionData?.message ?? "Hoàn thành session!"}
-              </h2>
-              <p className="text-lg text-white font-pixel mb-4">
-                Bạn nhận được {sessionData?.xpEarned ?? 0} XP!
-              </p>
-
-              {/* Nếu là review thì hiển thị thêm AP */}
-              {mode === "review" && "apEarned" in sessionData && (
-                <p className="text-lg text-white font-pixel mb-4">
-                  Bạn nhận được {sessionData.apEarned ?? 0} AP!
-                </p>
+              <h2 className="text-4xl mb-4">{answeredQuestion.word}</h2>
+              <p className="text-2xl mb-2">Nghĩa: {answeredQuestion.meaning}</p>
+              <p className="text-lg mb-2">Phát âm: {answeredQuestion.pronunciation || "N/A"}</p>
+              <p className="text-lg mb-2">Loại từ: {answeredQuestion.partOfSpeech || "N/A"}</p>
+              {answeredQuestion.imageUrl && (
+                <img
+                  src={answeredQuestion.imageUrl}
+                  alt={answeredQuestion.word}
+                  className="w-48 h-48 object-contain mx-auto mt-4"
+                />
               )}
-
-              {/* Nếu là learning thì hiển thị Pet reward */}
-              {mode === "learning" &&
-                "isPetRewardGranted" in sessionData &&
-                sessionData.petId &&
-                !sessionData.isPetRewardGranted && (
-                  <>
-                    <motion.div
-                      className="w-64 h-96 bg-gray-900 border-4 border-white rounded-xl flex items-center justify-center"
-                      animate={{ rotateY: isCardFlipped ? 180 : 0 }}
-                      transition={{ duration: 0.5 }}
-                      style={{ transformStyle: "preserve-3d" }}
-                    >
-                      {/* Mặt sau của card (úp) */}
-                      {!isCardFlipped && (
-                        <div className="absolute w-full h-full bg-gray-900 flex items-center justify-center text-white font-pixel text-2xl">
-                          ???
-                        </div>
-                      )}
-                      {/* Mặt trước của card (thông tin Pet) */}
-                      {isCardFlipped && (
-                        <div className="absolute w-full h-full bg-white flex flex-col items-center justify-center p-4">
-                          <img
-                            src={sessionData.imageUrl || "https://via.placeholder.com/150"}
-                            alt={sessionData.petName}
-                            className="w-32 h-32 mb-4"
-                          />
-                          <h2 className="text-2xl font-pixel text-black">
-                            {sessionData.petName}
-                          </h2>
-                          <p className="text-sm text-black">
-                            Type: {sessionData.petType || "N/A"}
-                          </p>
-                          <p className="text-sm text-black">
-                            Rarity: {sessionData.petRarity || "N/A"}
-                          </p>
-                          <p className="text-sm text-black">
-                            Description: {sessionData.description || "N/A"}
-                          </p>
-                        </div>
-                      )}
-                    </motion.div>
-
-                    {/* Nút lật card hoặc đóng modal */}
-                    {!isCardFlipped ? (
-                      <button
-                        onClick={handleFlipCard}
-                        className="mt-4 bg-emerald-600 px-4 py-2 rounded-xl text-white font-pixel border-2 border-white"
-                      >
-                        Lật Card
-                      </button>
-                    ) : (
-                      <button
-                        onClick={handleCloseModal}
-                        className="mt-4 bg-red-600 px-4 py-2 rounded-xl text-white font-pixel border-2 border-white"
-                      >
-                        Đóng
-                      </button>
-                    )}
-                  </>
-                )}
-
-              {/* Nút đóng nếu không có Pet reward hoặc đang ở review */}
-              {((mode === "learning" &&
-                "isPetRewardGranted" in sessionData &&
-                (!sessionData.petId || sessionData.isPetRewardGranted)) ||
-                mode === "review") && (
-                  <button
-                    onClick={handleCloseModal}
-                    className="mt-4 bg-red-600 px-4 py-2 rounded-xl text-white font-pixel border-2 border-white"
-                  >
-                    Đóng
-                  </button>
-                )}
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Cột trạng thái Bên phải */}
-      <div className="w-3/12 h-full bg-black flex justify-center items-end">
-        <div className="h-10/12 w-5/12 bg-green-600"></div>
-      </div>
     </div>
   );
-}
+};
+
+export default LearningSession;

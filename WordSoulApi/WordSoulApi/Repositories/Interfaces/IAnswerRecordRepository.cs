@@ -4,14 +4,18 @@ namespace WordSoulApi.Repositories.Interfaces
 {
     public interface IAnswerRecordRepository
     {
-        Task<bool> CheckAllQuestionsCorrectAsync(int sessionId, int vocabId);
+        //-------------------------------- CREATE -----------------------------------
+        // Tạo mới AnswerRecord
         Task<AnswerRecord> CreateAnswerRecordAsync(AnswerRecord answerRecord);
-        Task<bool> DeleteAnswerRecordAsync(int id);
-        Task<bool> ExistsAsync(int sessionId, int vocabId, QuestionType questionType);
-        Task<IEnumerable<AnswerRecord>> GetAllAnswerRecordsAsync();
+        //------------------------------- READ -----------------------------------
+        // Lấy tất cả AnswerRecord
         Task<AnswerRecord?> GetAnswerRecordByIdAsync(int id);
+        // Lấy tất cả AnswerRecord cho một phiên học và từ vựng cụ thể
         Task<AnswerRecord?> GetAnswerRecordFromSession(int sessionId, int vocabId, QuestionType questionType);
+        // Lấy tất cả AnswerRecord cho một phiên học và từ vựng cụ thể
         Task<int> GetAttemptCountAsync(int sessionId, int vocabId, QuestionType questionType);
+        //-------------------------------- UPDATE -----------------------------------
+        // Cập nhật AnswerRecord
         Task<AnswerRecord> UpdateAnswerRecordAsync(AnswerRecord answerRecord);
     }
 }

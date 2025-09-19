@@ -1,15 +1,18 @@
 import { Link } from "react-router-dom";
 
 interface CardProps {
-    title: string;
-    description: string | null; // Cho phép null
-    theme: string;
-    difficultyLevel: string;
-    image?: string;
-    vocabularySetid?: number; // Đổi thành number
+  title: string;
+  description: string;
+  theme: string;
+  difficultyLevel: string;
+  image: string;
+  vocabularySetid: number;
+  isPublic: boolean; // Mới
+  isOwned: boolean; // Mới
+  createdByUsername: string; // Mới
 }
 
-const Card: React.FC<CardProps> = ({ title, description, theme, difficultyLevel, image, vocabularySetid }) => {
+const Card: React.FC<CardProps> = ({ title, description, theme, difficultyLevel, image, vocabularySetid, createdByUsername, }) => {
     return (
         <div className="my-1 rounded-xl shadow-md overflow-hidden border-white border-2 hover:scale-105 transition-transform duration-300">
             {/* truyền vào id để link đến trang chi tiết */}
@@ -22,8 +25,8 @@ const Card: React.FC<CardProps> = ({ title, description, theme, difficultyLevel,
                 <div className="p-4">
                     <div className="flex items-center justify-between mb-2">
                         <h2 className="text-xl font-pixel">{title}</h2>
-                        <span className="bg-purple-600 text-white text-xs font-medium px-2 py-1 rounded-full">
-                            NEW
+                        <span className="bg-purple-600 text-white text-xs font-medium min-w-18 text-center px-2 py-1 rounded-full">
+                            {createdByUsername ? `${createdByUsername}` : 'Unknown'}
                         </span>
                     </div>
                     <p className="text-gray-600 mb-3">

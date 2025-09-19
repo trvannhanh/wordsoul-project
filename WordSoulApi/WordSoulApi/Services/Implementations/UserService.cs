@@ -1,4 +1,5 @@
-﻿using WordSoulApi.Models.DTOs.Home;
+﻿
+using CloudinaryDotNet.Actions;
 using WordSoulApi.Models.DTOs.User;
 using WordSoulApi.Models.Entities;
 using WordSoulApi.Repositories.Interfaces;
@@ -16,36 +17,69 @@ namespace WordSoulApi.Services.Implementations
             _activityLogService = activityLogService;
         }
 
+        //---------------------------CREATE-----------------------
+
+        //---------------------------GET--------------------------
+
         // Lấy tất cả người dùng
-        public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
+        public async Task<IEnumerable<UserDto>> GetAllUsersAsync(string? name, string? email, UserRole? role, int pageNumber, int pageSize)
         {
-            var users = await _userRepository.GetAllUsersAsync();
+            var users = await _userRepository.GetAllUsersAsync(name, email, role, null, null, pageNumber, pageSize);
             return users.Select(u => new UserDto
             {
                 Id = u.Id,
                 Username = u.Username,
                 Email = u.Email,
-                Role = u.Role,
+                Role = u.Role.ToString(),
                 CreatedAt = u.CreatedAt,
                 IsActive = u.IsActive
             });
         }
 
         // Lấy người dùng theo ID
-        public async Task<UserDto?> GetUserByIdAsync(int id)
+        public async Task<UserDetailDto?> GetUserByIdAsync(int userId)
         {
-            var user = await _userRepository.GetUserByIdAsync(id);
-            if (user == null) return null;
-            return new UserDto
+            var user = await _userRepository.GetUserWithRelationsAsync(userId);
+            if (user == null) throw new Exception("User not found");
+
+            var now = DateTime.UtcNow;
+
+            // Streak (tính chuỗi ngày liên tục có học)
+            var sessionDates = await _userRepository.GetLearningSessionDatesAsync(userId);
+            int streakDays = CalculateStreak(sessionDates);
+            return new UserDetailDto
             {
                 Id = user.Id,
                 Username = user.Username,
                 Email = user.Email,
-                Role = user.Role,
+                Role = user.Role.ToString(),
                 CreatedAt = user.CreatedAt,
-                IsActive = user.IsActive
+                IsActive = user.IsActive,
+                TotalXP = user.XP,
+                TotalAP = user.AP,
+                Level = user.XP / 100, // Ví dụ: 100 XP = 1 level
+                StreakDays = streakDays,
+                PetCount = user.UserOwnedPets.Count,
+                AvatarUrl = user.UserOwnedPets.FirstOrDefault(p => p.IsActive)?.Pet.ImageUrl,
             };
         }
+
+        
+
+        public async Task<List<LeaderBoardDto>> GetLeaderBoardAsync(bool? topXP, bool? topAP,  int pageNumber, int pageSize)
+        {
+            var users = await _userRepository.GetAllUsersAsync(null, null, UserRole.User, topXP, topAP, pageNumber, pageSize);
+            return users.Select(u => new LeaderBoardDto
+            {
+                UserId = u.Id,
+                UserName = u.Username,
+                totalXP = u.XP,
+                totalAP = u.AP
+            }).ToList();
+        }
+
+
+        //---------------------------UPDATE-----------------------
 
         // Cập nhật thông tin người dùng
         public async Task<UserDto> UpdateUserAsync(int id, UserDto userDto)
@@ -54,7 +88,7 @@ namespace WordSoulApi.Services.Implementations
             if (user == null) throw new KeyNotFoundException("User not found");
             user.Username = userDto.Username;
             user.Email = userDto.Email;
-            user.Role = userDto.Role;
+            //user.Role = userDto.Role.ToString();
             user.CreatedAt = userDto.CreatedAt;
             user.IsActive = userDto.IsActive;
             await _userRepository.UpdateUserAsync(user);
@@ -63,12 +97,30 @@ namespace WordSoulApi.Services.Implementations
                 Id = user.Id,
                 Username = user.Username,
                 Email = user.Email,
-                Role = user.Role,
+                Role = user.Role.ToString(),
                 CreatedAt = user.CreatedAt,
                 IsActive = user.IsActive
             };
         }
 
+
+        public async Task<bool> AssignRoleToUserAsync(int userId, string roleName)
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null) return false;
+
+            if (Enum.TryParse<UserRole>(roleName, true, out var role))
+            {
+                user.Role = role;
+                await _userRepository.UpdateUserAsync(user);
+                await _activityLogService.CreateActivityLogAsync(userId, "RoleAssigned", $"Assigned role: {roleName}");
+                return true;
+            }
+            return false;
+        }
+
+
+        //---------------------------DELETE-----------------------
         // Xóa người dùng theo ID
         public async Task<bool> DeleteUserAsync(int id)
         {
@@ -78,53 +130,8 @@ namespace WordSoulApi.Services.Implementations
         }
 
 
-        public async Task<UserDashboardDto> GetUserDashboardAsync(int userId)
-        {
-            var user = await _userRepository.GetUserWithRelationsAsync(userId);
-            if (user == null) throw new Exception("User not found");
 
-            var now = DateTime.UtcNow;
-
-            // Từ cần ôn tập
-            var reviewWords = user.UserVocabularyProgresses
-                .Where(p => p.NextReviewTime <= now)
-                .ToList();
-
-            // Thời gian ôn tập tiếp theo
-            var nextReview = user.UserVocabularyProgresses
-                .Where(p => p.NextReviewTime > now)
-                .OrderBy(p => p.NextReviewTime)
-                .Select(p => p.NextReviewTime)
-                .FirstOrDefault();
-
-            // Thống kê theo proficiency level
-            var stats = user.UserVocabularyProgresses
-                .GroupBy(p => p.ProficiencyLevel)
-                .Select(g => new LevelStatDto
-                {
-                    Level = g.Key,
-                    Count = g.Count()
-                }).ToList();
-
-            // Streak (tính chuỗi ngày liên tục có học)
-            var sessionDates = await _userRepository.GetLearningSessionDatesAsync(userId);
-            int streakDays = CalculateStreak(sessionDates);
-
-            return new UserDashboardDto
-            {
-                ReviewWordCount = reviewWords.Count,
-                NextReviewTime = nextReview,
-                Username = user.Username,
-                TotalXP = user.XP,
-                TotalAP = user.AP,
-                Level = user.XP / 100, // Ví dụ: 100 XP = 1 level
-                StreakDays = streakDays,
-                PetCount = user.UserOwnedPets.Count,
-                AvatarUrl = user.UserOwnedPets.FirstOrDefault(p => p.IsActive)?.Pet.ImageUrl,
-                VocabularyStats = stats
-            };
-        }
-
+        //---------------------------PRIVATE----------------------
         private int CalculateStreak(List<DateTime> dates)
         {
             if (!dates.Any()) return 0;
@@ -145,20 +152,6 @@ namespace WordSoulApi.Services.Implementations
             return streak;
         }
 
-        public async Task<bool> AssignRoleToUserAsync(int userId, string roleName)
-        {
-            var user = await _userRepository.GetUserByIdAsync(userId);
-            if (user == null) return false;
-
-            if (Enum.TryParse<UserRole>(roleName, true, out var role))
-            {
-                user.Role = role;
-                await _userRepository.UpdateUserAsync(user);
-                await _activityLogService.CreateActivityAsync(userId, "RoleAssigned", $"Assigned role: {roleName}");
-                return true;
-            }
-            return false;
-        }
 
 
     }

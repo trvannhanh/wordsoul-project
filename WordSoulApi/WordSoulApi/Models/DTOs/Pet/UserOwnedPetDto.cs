@@ -2,6 +2,7 @@
 {
     public class UserOwnedPetDto
     {
+
         public int UserId { get; set; } // Foreign key to User
         public int PetId { get; set; } // Foreign key to Pet
         public int Level { get; set; } = 1;

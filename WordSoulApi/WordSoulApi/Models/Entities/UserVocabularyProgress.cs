@@ -3,7 +3,7 @@
     public class UserVocabularyProgress
     {
         public int UserId { get; set; } // Foreign key to User
-        public User User { get; set; } // Navigation property to User
+        public User? User { get; set; } // Navigation property to User
         public int VocabularyId { get; set; } // Foreign key to Vocabulary
         public Vocabulary? Vocabulary { get; set; } // Navigation property to Vocabulary
         public int CorrectAttempt { get; set; } = 0; // Number of correct answers for the vocabulary

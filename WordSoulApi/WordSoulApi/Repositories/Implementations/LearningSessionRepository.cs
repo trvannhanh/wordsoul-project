@@ -13,6 +13,8 @@ namespace WordSoulApi.Repositories.Implementations
             _context = context;
         }
 
+        // -------------------------------------CREATE-----------------------------------------
+
         // Tạo một LearningSession mới
         public async Task<LearningSession> CreateLearningSessionAsync(LearningSession learningSession)
         {
@@ -20,6 +22,27 @@ namespace WordSoulApi.Repositories.Implementations
             await _context.SaveChangesAsync();
             return learningSession;
         }
+
+
+        // -------------------------------------READ-------------------------------------------
+
+        // Lấy LearningSession theo ID
+        public async Task<LearningSession?> GetLearningSessionByIdAsync(int sessionId)
+        {
+            return await _context.LearningSessions
+                .AsNoTracking() // Tối ưu hiệu suất khi chỉ đọc dữ liệu
+                .FirstOrDefaultAsync(ls => ls.Id == sessionId);
+        }
+
+        // Lấy LearningSession chưa hoàn thành tồn tại của User với bộ từ vựng cụ thể
+        public async Task<LearningSession?> GetExistingLearningSessionUnCompletedForUserAsync(int userId, int vocabularySetId)
+        {
+            return await _context.LearningSessions
+                .AsNoTracking()
+                .FirstOrDefaultAsync(ls => ls.UserId == userId && ls.VocabularySetId == vocabularySetId && !ls.IsCompleted);
+        }
+
+        //-------------------------------------UPDATE-----------------------------------------
 
         // Cập nhật một LearningSession hiện có
         public async Task<LearningSession> UpdateLearningSessionAsync(LearningSession learningSession)
@@ -29,14 +52,9 @@ namespace WordSoulApi.Repositories.Implementations
             return learningSession;
         }
 
-        public async Task<LearningSession?> GetLearningSessionByIdAsync(int sessionId)
-        {
-            return await _context.LearningSessions
-                .AsNoTracking() // Tối ưu hiệu suất khi chỉ đọc dữ liệu
-                .FirstOrDefaultAsync(ls => ls.Id == sessionId);
-        }
 
-        
+
+        // -------------------------------------OTHER------------------------------------------
 
         // Kiểm tra LearningSession thuộc về User
         public async Task<bool> CheckUserLearningSessionExist(int userId, int sessionId)
@@ -47,8 +65,7 @@ namespace WordSoulApi.Repositories.Implementations
                 .AnyAsync(ls => ls.Id == sessionId && ls.UserId == userId);
         }
 
-
-
+        
     }
 
 

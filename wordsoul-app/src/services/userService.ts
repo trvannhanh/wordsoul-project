@@ -1,8 +1,8 @@
-import type { ActivityLogDto, UserDashboardDto, UserDto } from "../types/Dto";
-import { authApi, endpoints } from "./api";
+import type { ActivityLogDto, UserProgressDto, UserDto, UserVocabularySetDto, LeaderBoardDto } from "../types/Dto";
+import api, { authApi, endpoints } from "./api";
 
-export const getUserDashboard = async (): Promise<UserDashboardDto> => {
-  const res = await authApi.get<UserDashboardDto>(endpoints.userDashboard);
+export const getUserProgress= async (): Promise<UserProgressDto> => {
+  const res = await authApi.get<UserProgressDto>(endpoints.userProgress);
   return res.data;
 };
 
@@ -38,6 +38,23 @@ export const getUserActivities = async (userId: number, pageNumber = 1, pageSize
 export const getAllActivities = async (action?: string, fromDate?: string, pageNumber = 1, pageSize = 10): Promise<ActivityLogDto[]> => {
   const response = await authApi.get<ActivityLogDto[]>(endpoints.AllUserActivities, {
     params: { action, fromDate, pageNumber, pageSize },
+  });
+  return response.data;
+};
+
+export const getUserVocabularySets = async (vocabularySetId: number): Promise<UserVocabularySetDto> => {
+  const response = await authApi.get<UserVocabularySetDto>(endpoints.userVocabularySets(vocabularySetId));
+  return response.data;
+}
+
+export const registerVocabularySet = async (vocabularySetId: number): Promise<UserVocabularySetDto | null> => {
+    const response = await authApi.post<UserVocabularySetDto>(endpoints.vocabularySet(vocabularySetId));
+    return response.data;
+};
+
+export const getLeaderBoard = async (topXP?: boolean, topAP?:boolean, pageNumber = 1, pageSize = 10): Promise<LeaderBoardDto[]> => {
+  const response = await api.get<LeaderBoardDto[]>(endpoints.leaderBoard, {
+    params: { topXP, topAP, pageNumber, pageSize },
   });
   return response.data;
 };

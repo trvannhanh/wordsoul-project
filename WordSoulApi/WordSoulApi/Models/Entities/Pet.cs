@@ -1,14 +1,20 @@
 ﻿
+using System.ComponentModel.DataAnnotations;
+
 namespace WordSoulApi.Models.Entities
 {
     public class Pet
     {
         public int Id { get; set; }
+        [MaxLength(100)]
         public required string Name { get; set; }
+        [MaxLength(300)]
         public string? Description { get; set; }
+        [MaxLength(200)]
         public string? ImageUrl { get; set; }
         public PetRarity Rarity { get; set; }
         public PetType Type { get; set; } 
+        public int? Order { get; set; }
         public int? BaseFormId { get; set; }
         public int? NextEvolutionId { get; set; }
         public int? RequiredLevel { get; set; }

@@ -14,6 +14,18 @@ namespace WordSoulApi.Repositories.Implementations
             _context = context;
         }
 
+        // -------------------------------------CREATE-----------------------------------------
+
+        // Tạo mới thông báo
+        public async Task CreateNotificationAsync(Notification notification)
+        {
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+        }
+
+        // -------------------------------------READ-------------------------------------------
+
+        // Lấy tất cả thông báo của người dùng, sắp xếp theo thời gian tạo mới nhất
         public async Task<List<Notification>> GetUserNotificationsAsync(int userId)
         {
             return await _context.Notifications
@@ -22,33 +34,21 @@ namespace WordSoulApi.Repositories.Implementations
                 .ToListAsync();
         }
 
+        // Lấy thông báo theo Id
         public async Task<Notification?> GetNotificationByIdAsync(int id)
         {
             return await _context.Notifications.FindAsync(id);
         }
 
-        public async Task CreateNotificationAsync(Notification notification)
-        {
-            _context.Notifications.Add(notification);
-            await _context.SaveChangesAsync();
-        }
+        // -------------------------------------UPDATE-----------------------------------------
 
+        // Đánh dấu thông báo đã đọc
         public async Task MarkAsReadNotificationAsync(int id)
         {
             var notification = await _context.Notifications.FindAsync(id);
             if (notification != null)
             {
                 notification.IsRead = true;
-                await _context.SaveChangesAsync();
-            }
-        }
-
-        public async Task DeleteNotificationAsync(int id)
-        {
-            var notification = await _context.Notifications.FindAsync(id);
-            if (notification != null)
-            {
-                _context.Notifications.Remove(notification);
                 await _context.SaveChangesAsync();
             }
         }
@@ -65,5 +65,18 @@ namespace WordSoulApi.Repositories.Implementations
             }
             await _context.SaveChangesAsync();
         }
+
+        // -------------------------------------DELETE-----------------------------------------
+        public async Task DeleteNotificationAsync(int id)
+        {
+            var notification = await _context.Notifications.FindAsync(id);
+            if (notification != null)
+            {
+                _context.Notifications.Remove(notification);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        
     }
 }

@@ -1,11 +1,12 @@
+import { Outlet } from "react-router-dom"; // Import Outlet
 import Footer from "./Footer";
 import Header from "./Header";
 
-export default function MainLayout({ children }: { children: React.ReactNode }) {
+export default function MainLayout() {
   return (
     <>
       <Header />
-      {children}
+      <Outlet /> {/* Render nested routes here */}
       <Footer />
     </>
   );

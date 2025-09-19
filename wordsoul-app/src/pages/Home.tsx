@@ -2,18 +2,10 @@ import { useState, useEffect } from 'react';
 import Card from '../components/Card';
 import HeroSection from '../components/HeroSection';
 import { fetchVocabularySets } from '../services/vocabularySet';
+import Skeleton from '../components/Skeleton';
+import type { VocabularySet } from '../types/Dto';
 
 
-interface VocabularySet {
-  id: number;
-  title: string;
-  description: string | null;
-  theme: string;
-  difficultyLevel: string;
-  imageUrl?: string;
-  isActive?: boolean;
-  createdAt?: string;
-}
 
 const Home: React.FC = () => {
   const [vocabularySets, setVocabularySets] = useState<VocabularySet[]>([]);
@@ -34,8 +26,42 @@ const Home: React.FC = () => {
       });
   }, []);
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
+  if (loading) {
+    return (
+      <>
+        <HeroSection
+          title="Chào mừng bạn đến với Eralis"
+          description="Hành trình giải mã những văn tự cố, giải thoát những sinh vật bí ẩn, xây dựng kiến thức lâu dài."
+          textButton="Bắt đầu"
+          image="./src/assets/thumb.gif"
+          bottomImage="./src/assets/grass.gif"
+          height="29rem"
+          hidden={false}
+        />
+        <div className="background-color text-white h-screen px-10 py-3">
+          <Skeleton type="cards" />
+        </div>
+      </>
+    );
+  }
+  if (error) {
+    return (
+      <>
+        <HeroSection
+          title="Chào mừng bạn đến với Eralis"
+          description="Hành trình giải mã những văn tự cố, giải thoát những sinh vật bí ẩn, xây dựng kiến thức lâu dài."
+          textButton="Bắt đầu"
+          image="./src/assets/thumb.gif"
+          bottomImage="./src/assets/grass.gif"
+          height="29rem"
+          hidden={false}
+        />
+        <div className="background-color text-white h-screen px-10 py-3 text-center py-8 text-red-500">
+          {error}  // Hoặc thêm nút retry: <button onClick={() => window.location.reload()}>Retry</button>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -66,11 +92,14 @@ const Home: React.FC = () => {
             <Card
               key={vocabularySet.id}
               title={vocabularySet.title}
-              description={vocabularySet.description}
+              description={vocabularySet.description || 'Không có mô tả'}
               theme={vocabularySet.theme}
               difficultyLevel={vocabularySet.difficultyLevel}
-              image={vocabularySet.imageUrl}
+              image={vocabularySet.imageUrl || ''}
               vocabularySetid={vocabularySet.id}
+              isPublic={vocabularySet.isPublic}
+              isOwned={vocabularySet.isOwned}
+              createdByUsername={vocabularySet.createdByUsername || 'Unknown'}
             />
           ))}
         </div>

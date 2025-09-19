@@ -13,15 +13,6 @@ namespace WordSoulApi.Repositories.Implementations
             _context = context;
         }
 
-        // Lấy tiến trình học từ vựng của người dùng theo userId và vocabularyId
-        public async Task<UserVocabularyProgress?> GetUserVocabularyProgressAsync(int userId, int vocabularyId)
-        {
-            // Sử dụng AsNoTracking để tối ưu hiệu suất khi chỉ đọc dữ liệu
-            return await _context.UserVocabularyProgresses
-                 .FirstOrDefaultAsync(p => p.UserId == userId && p.VocabularyId == vocabularyId);
-        }
-
-
         // Tạo mới tiến trình học từ vựng cho người dùng
         public async Task<UserVocabularyProgress> CreateUserVocabularyProgressAsync(UserVocabularyProgress progress)
         {
@@ -31,6 +22,16 @@ namespace WordSoulApi.Repositories.Implementations
         }
 
 
+        // Lấy tiến trình học từ vựng của người dùng theo userId và vocabularyId
+        public async Task<UserVocabularyProgress?> GetUserVocabularyProgressAsync(int userId, int vocabularyId)
+        {
+            // Sử dụng AsNoTracking để tối ưu hiệu suất khi chỉ đọc dữ liệu
+            return await _context.UserVocabularyProgresses
+                 .FirstOrDefaultAsync(p => p.UserId == userId && p.VocabularyId == vocabularyId);
+        }
+
+
+        
         // Cập nhật tiến trình học từ vựng cho người dùng
         public async Task<UserVocabularyProgress> UpdateUserVocabularyProgressAsync(UserVocabularyProgress progress)
         {

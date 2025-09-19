@@ -36,6 +36,7 @@ namespace WordSoulApi.Data
                 .HasIndex(ar => new { ar.LearningSessionId, ar.VocabularyId, ar.QuestionType })
                 .IsUnique();
 
+
             //Vocabulary 1 - N AnserRecord relationship
             modelBuilder.Entity<Vocabulary>()
                 .HasMany(v => v.AnswerRecords)
@@ -49,6 +50,7 @@ namespace WordSoulApi.Data
                 .WithOne(a => a.LearningSession)
                 .HasForeignKey(a => a.LearningSessionId)
                 .OnDelete(DeleteBehavior.Restrict); // Restrict delete to prevent accidental loss of answer records
+
 
             // User 1 - N LearningSession relationship
             modelBuilder.Entity<User>() 
@@ -71,6 +73,13 @@ namespace WordSoulApi.Data
                 .HasForeignKey(ls => ls.VocabularySetId)  
                 .OnDelete(DeleteBehavior.NoAction); // No cascade delete, as we want to keep sessions even if the set is deleted
 
+            // Cấu hình mối quan hệ CreatedBy (1-N: User -> VocabularySet)
+            modelBuilder.Entity<VocabularySet>()
+                .HasOne(vs => vs.CreatedBy)
+                .WithMany(u => u.CreatedVocabularySets)  // Nếu bạn thêm collection ở User
+                .HasForeignKey(vs => vs.CreatedById)
+                .OnDelete(DeleteBehavior.Restrict);  // Tránh xóa cascade nếu user bị xóa
+
             // User N - N VocabularySet relationship (UserVocabularySet)
             modelBuilder.Entity<UserVocabularySet>()
             .HasKey(uvs => new { uvs.UserId, uvs.VocabularySetId }); // Khóa chính composite
@@ -87,21 +96,25 @@ namespace WordSoulApi.Data
                 .HasForeignKey(uvs => uvs.VocabularySetId)
                 .OnDelete(DeleteBehavior.Cascade); // Cascade delete if vocabulary set is deleted
 
-            // User N - N Pet relationship (UserOwnedPet)
+            // Cấu hình UserOwnedPet
             modelBuilder.Entity<UserOwnedPet>()
-            .HasKey(up => new { up.UserId, up.PetId }); // Khóa chính composite
+                .HasKey(uop => uop.Id); // Đặt Id là khóa chính
+
+            modelBuilder.Entity<UserOwnedPet>()
+                .Property(uop => uop.Id)
+                .ValueGeneratedOnAdd(); // Tự động tăng
 
             modelBuilder.Entity<UserOwnedPet>()
                 .HasOne(uop => uop.User)
                 .WithMany(u => u.UserOwnedPets)
                 .HasForeignKey(uop => uop.UserId)
-                .OnDelete(DeleteBehavior.Cascade); // Cascade delete if user is deleted
+                .OnDelete(DeleteBehavior.Cascade); // Xóa User thì xóa UserOwnedPet
 
             modelBuilder.Entity<UserOwnedPet>()
                 .HasOne(uop => uop.Pet)
                 .WithMany(p => p.UserOwnedPets)
                 .HasForeignKey(uop => uop.PetId)
-                .OnDelete(DeleteBehavior.Restrict); // Restrict delete if pet is deleted, to prevent accidental loss of owned pets
+                .OnDelete(DeleteBehavior.Restrict); // Không xóa Pet nếu UserOwnedPet bị xóa
 
             // Pet N - N VocabularySet relationship (SetRewardPet)
             modelBuilder.Entity<SetRewardPet>()
@@ -167,6 +180,34 @@ namespace WordSoulApi.Data
                 .HasForeignKey(sv => sv.VocabularyId)
                 .OnDelete(DeleteBehavior.Restrict); // Restrict delete if vocabulary is deleted, to prevent accidental loss of session vocabularies
 
+
+            // Indexes for ActivityLog to optimize common queries
+            modelBuilder.Entity<ActivityLog>()
+                .HasIndex(al => al.UserId);
+            modelBuilder.Entity<ActivityLog>()
+                .HasIndex(al => al.Timestamp);
+            modelBuilder.Entity<ActivityLog>()
+                .HasIndex(al => al.Action);
+
+            // Indexes for Vocabulary to optimize search and filtering
+            modelBuilder.Entity<Vocabulary>()
+                .HasIndex(v => v.Word);
+            modelBuilder.Entity<Vocabulary>()
+                .HasIndex(v => new { v.PartOfSpeech, v.CEFRLevel });
+
+            // Indexes for VocabularySet to optimize search and filtering
+            modelBuilder.Entity<VocabularySet>()
+                .HasIndex(vs => vs.Title);
+            modelBuilder.Entity<VocabularySet>()
+                .HasIndex(vs => new { vs.Theme, vs.DifficultyLevel, vs.CreatedAt });
+            modelBuilder.Entity<VocabularySet>()
+                .HasIndex(vs => vs.IsPublic);
+
+            // Indexes for SetVocabulary to optimize 
+            modelBuilder.Entity<SetVocabulary>()
+                .HasIndex(sv => sv.VocabularySetId);
+            modelBuilder.Entity<SetVocabulary>()
+                .HasIndex(sv => sv.Order);
         }
     }
 

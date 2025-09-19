@@ -6,8 +6,8 @@ namespace WordSoulApi.Models.DTOs.QuizQuestion
     {
         public int VocabularyId { get; set; }        
         public QuestionType QuestionType { get; set; }
-        public string Word { get; set; }          // đáp án đúng
-        public string Meaning { get; set; }
+        public string? Word { get; set; }          // đáp án đúng
+        public string? Meaning { get; set; }
         public string? Pronunciation { get; set; }
         public string? PartOfSpeech { get; set; }
         public string? CEFRLevel { get; set; }
@@ -19,6 +19,7 @@ namespace WordSoulApi.Models.DTOs.QuizQuestion
 
         // Cho Listening
         public string? PronunciationUrl { get; set; }
+        public bool IsRetry { get; set; }
     }
 
 }

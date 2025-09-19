@@ -18,20 +18,20 @@ namespace WordSoulApi.Controllers
     public class LearningSessionController : ControllerBase
     {
         private readonly ILearningSessionService _learningSessionService;
-        private readonly IUserVocabularyProgressService _progressService;
         private readonly ILogger<LearningSessionController> _logger;
 
         public LearningSessionController(ILearningSessionService learningSessionService, IUserVocabularyProgressService progressService, ILogger<LearningSessionController> logger)
         {
             _learningSessionService = learningSessionService;
-            _progressService = progressService;
             _logger = logger;
         }
+
+        //------------------------------ POST -----------------------------------
 
         // POST: api/learning-sessions/{vocaSetId} : Tạo một phiên học mới cho người dùng hiện tại dựa trên bộ từ vựng đã chọn
         [Authorize(Roles = "User")]
         [HttpPost("{vocaSetId}")]
-        public async Task<IActionResult> CreateLearningSession(int vocaSetId)
+        public async Task<ActionResult<LearningSessionDto>> CreateLearningSession(int vocaSetId)
         {
             var userId = User.GetUserId();
             if (userId == 0) return Unauthorized();
@@ -57,7 +57,7 @@ namespace WordSoulApi.Controllers
         // POST: api/learning-sessions/ : Tạo một phiên học ôn tập mới cho người dùng hiện tại 
         [Authorize(Roles = "User")]
         [HttpPost]
-        public async Task<IActionResult> CreateReviewingSession()
+        public async Task<ActionResult<LearningSessionDto>> CreateReviewingSession()
         {
             var userId = User.GetUserId();
             if (userId == 0) return Unauthorized();
@@ -75,24 +75,6 @@ namespace WordSoulApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating reviewing session for user {UserId}", userId);
-                return StatusCode(500, "Internal server error");
-            }
-        }
-
-        // GET: api/learning-sessions/{sessionId}/questions : Lấy danh sách câu hỏi cho phiên học cụ thể
-        [Authorize(Roles = "User")]
-        [HttpGet("{sessionId}/questions")]
-        public async Task<ActionResult<IEnumerable<QuizQuestionDto>>> GetSessionQuestions(int sessionId)
-        {
-            try
-            {
-                var questions = await _learningSessionService.GetSessionQuestionsAsync(sessionId);
-                if (!questions.Any()) return NotFound(new { message = "No questions found for this session." });
-                return Ok(questions);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving questions for session {SessionId}", sessionId);
                 return StatusCode(500, "Internal server error");
             }
         }
@@ -135,44 +117,10 @@ namespace WordSoulApi.Controllers
             }
         }
 
-        // POST: api/learning-sessions/{sessionId}/progress/{vocabId} : Cập nhật tiến trình học tập của người dùng cho từ vựng cụ thể trong phiên học
-        [Authorize(Roles = "User")]
-        [HttpPost("{sessionId}/progress/{vocabId}")]
-        public async Task<ActionResult<UpdateProgressResponseDto>> UpdateProgress(int sessionId, int vocabId)
-        {
-            if (sessionId <= 0 || vocabId <= 0)
-                return BadRequest("Invalid sessionId or vocabId");
-
-            var userId = User.GetUserId();
-            if (userId == 0)
-                return Unauthorized();
-
-            try
-            {
-                var result = await _progressService.UpdateProgressAsync(userId, sessionId, vocabId);
-                return Ok(result);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                _logger.LogWarning(ex, "Unauthorized access for user {UserId}, session {SessionId}", userId, sessionId);
-                return Forbid(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning(ex, "Progress update failed for user {UserId}, session {SessionId}, vocab {VocabId}", userId, sessionId, vocabId);
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Internal server error for user {UserId}, session {SessionId}, vocab {VocabId}", userId, sessionId, vocabId);
-                return StatusCode(500, "Internal server error");
-            }
-        }
-
-        
+        //POST: api/learning-sessions/{sessionId}/learning-completion : Hoàn thành phiên học (cập nhật trạng thái LearningSession, cấp phần thưởng)
         [Authorize(Roles = "User")]
         [HttpPost("{sessionId}/learning-completion")]
-        public async Task<IActionResult> CompleteLearningSession(int sessionId)
+        public async Task<ActionResult<CompleteLearningSessionResponseDto>> CompleteLearningSession(int sessionId)
         {
             var userId = User.GetUserId();
             if (userId == 0) return Unauthorized();
@@ -180,7 +128,7 @@ namespace WordSoulApi.Controllers
             try
             {
                 var response = await _learningSessionService.CompleteSessionAsync(userId, sessionId, SessionType.Learning);
-                return Ok(response as CompleteLearningSessionResponseDto);
+                return Ok(response);
             }
             catch (UnauthorizedAccessException ex)
             {
@@ -199,9 +147,10 @@ namespace WordSoulApi.Controllers
             }
         }
 
+        // POST: api/learning-sessions/{sessionId}/review-completion : Hoàn thành phiên ôn tập (cập nhật trạng thái LearningSession, cấp phần thưởng)
         [Authorize(Roles = "User")]
         [HttpPost("{sessionId}/review-completion")]
-        public async Task<IActionResult> CompleteReviewingSession(int sessionId)
+        public async Task<ActionResult<CompleteReviewingSessionResponseDto>> CompleteReviewingSession(int sessionId)
         {
             var userId = User.GetUserId();
             if (userId == 0) return Unauthorized();
@@ -209,7 +158,7 @@ namespace WordSoulApi.Controllers
             try
             {
                 var response = await _learningSessionService.CompleteSessionAsync(userId, sessionId, SessionType.Review);
-                return Ok(response as CompleteReviewingSessionResponseDto);
+                return Ok(response);
             }
             catch (UnauthorizedAccessException ex)
             {
@@ -227,5 +176,25 @@ namespace WordSoulApi.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
+
+        //------------------------------ GET -----------------------------------
+
+        // GET: api/learning-sessions/{sessionId}/questions : Lấy danh sách câu hỏi cho phiên học cụ thể
+        [Authorize(Roles = "User")]
+        [HttpGet("{sessionId}/questions")]
+        public async Task<ActionResult<IEnumerable<QuizQuestionDto>>> GetSessionQuestions(int sessionId)
+        {
+            try
+            {
+                var questions = await _learningSessionService.GetSessionQuestionsAsync(sessionId);
+                return Ok(questions);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving questions for session {SessionId}", sessionId);
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
     } 
 }

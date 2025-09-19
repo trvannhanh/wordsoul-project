@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
+using Serilog;
 using System.Text;
 using WordSoulApi.Data;
 using WordSoulApi.Hubs;
@@ -15,14 +16,29 @@ using WordSoulApi.Services.Interfaces;
 var builder = WebApplication.CreateBuilder(args);
 
 
-builder.Configuration.AddJsonFile("Appsettings/appsettings.json", optional: false, reloadOnChange: true);
-builder.Configuration.AddJsonFile($"Appsettings/appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
+builder.Configuration
+    .AddJsonFile("Appsettings/appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"Appsettings/appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
 
 // Add services to the container.
 builder.Services.AddControllers();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+// Cấu hình Serilog
+builder.Host.UseSerilog((context, configuration) =>
+{
+    configuration
+        .MinimumLevel.Information() // Ghi log từ mức Information trở lên
+        .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning) // Giảm log từ Microsoft
+        .WriteTo.Console() // Ghi log ra console
+        .WriteTo.File(
+            path: "logs/log-.txt", // Lưu log vào file, tạo file mới mỗi ngày
+            rollingInterval: RollingInterval.Day,
+            outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}"); // Định dạng log
+});
 
 builder.Services.AddDbContext<WordSoulDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -57,6 +73,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 //Thêm dịch vụ SignalR
 builder.Services.AddSignalR();
+
+// Add in-memory caching service
+builder.Services.AddMemoryCache();
+
+// Add logging service
+builder.Services.AddLogging();
 
 // Register repository and service
 // Vocabulary
@@ -96,7 +118,11 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 // ActivityLog
 builder.Services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
 builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
-
+// SetVocabulary 
+builder.Services.AddScoped<ISetVocabularyRepository, SetVocabularyRepository>();
+builder.Services.AddScoped<ISetVocabularyService, SetVocabularyService>();
+// SessionVocabulary
+builder.Services.AddScoped<ISessionVocabularyRepository, SessionVocabularyRepository>();
 // Upload Assests
 builder.Services.AddScoped<IUploadAssetsService, UploadAssetsService>();
 
@@ -130,6 +156,9 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
     app.MapOpenApi();
 }
+
+// Thêm middleware Serilog để ghi log các yêu cầu HTTP
+app.UseSerilogRequestLogging();
 
 // Sử dụng CORS trước các middleware khác
 app.UseCors("AllowLocalhost");

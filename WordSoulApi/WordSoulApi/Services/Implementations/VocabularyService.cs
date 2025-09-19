@@ -1,70 +1,29 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using WordSoulApi.Models.DTOs;
 using WordSoulApi.Models.DTOs.Vocabulary;
 using WordSoulApi.Models.DTOs.VocabularySet;
 using WordSoulApi.Models.Entities;
-using WordSoulApi.Repositories.Implementations;
 using WordSoulApi.Repositories.Interfaces;
 using WordSoulApi.Services.Interfaces;
 
 namespace WordSoulApi.Services.Implementations
 {
     public class VocabularyService : IVocabularyService
-    {   
+    {
         private readonly IVocabularyRepository _vocabularyRepository;
+        private readonly IMemoryCache _cache;
         private readonly ILogger<VocabularySetService> _logger;
-        private readonly IVocabularySetRepository _vocabularySetRepository;
 
-        public VocabularyService(IVocabularyRepository vocabularyRepository, ILogger<VocabularySetService> logger, IVocabularySetRepository vocabularySetRepository)
+        public VocabularyService(IVocabularyRepository vocabularyRepository, ILogger<VocabularySetService> logger, IMemoryCache cache)
         {
             _vocabularyRepository = vocabularyRepository;
             _logger = logger;
-            _vocabularySetRepository = vocabularySetRepository;
+            _cache = cache;
         }
 
-        // Lấy tất cả các từ vựng
-        public async Task<IEnumerable<VocabularyDto>> GetAllVocabulariesAsync(string? word, string? meaning, PartOfSpeech? partOfSpeech, CEFRLevel? cEFRLevel, int pageNumber, int pageSize)
-        {
-            var vocabularies = await _vocabularyRepository.GetAllVocabulariesAsync(word, meaning, partOfSpeech, cEFRLevel, pageNumber, pageSize);
-            var vocabularyDtos = new List<VocabularyDto>();
-            foreach (var vocabulary in vocabularies)
-            {
-                vocabularyDtos.Add(new VocabularyDto
-                {
-                    Id = vocabulary.Id,
-                    Word = vocabulary.Word,
-                    Meaning = vocabulary.Meaning,
-                    PartOfSpeech = vocabulary.PartOfSpeech.ToString(),
-                    CEFRLevel = vocabulary.CEFRLevel.ToString(),
-                    Description = vocabulary.Description,
-                    ExampleSentence = vocabulary.ExampleSentence,
-                    ImageUrl = vocabulary.ImageUrl,
-                    PronunciationUrl = vocabulary.PronunciationUrl
-                });
-            }
-            return vocabularyDtos;
-        }
-
-        // Lấy từ vựng theo ID
-        public async Task<VocabularyDto?> GetVocabularyByIdAsync(int id)
-        {
-            var vocabulary = await _vocabularyRepository.GetVocabularyByIdAsync(id);
-            if (vocabulary == null) return null;
-            return new VocabularyDto
-            {
-                Id = vocabulary.Id,
-                Word = vocabulary.Word,
-                Meaning = vocabulary.Meaning,
-                PartOfSpeech = vocabulary.PartOfSpeech.ToString(),
-                CEFRLevel = vocabulary.CEFRLevel.ToString(),
-                Description = vocabulary.Description,
-                ExampleSentence = vocabulary.ExampleSentence,
-                ImageUrl = vocabulary.ImageUrl,
-                PronunciationUrl = vocabulary.PronunciationUrl
-            };
-        }
-
+        //------------------------------ CREATE -----------------------------------------
 
         // Tạo từ vựng mới
         public async Task<AdminVocabularyDto> CreateVocabularyAsync(CreateVocabularyDto vocabularyDto, string? imageUrl)
@@ -73,7 +32,7 @@ namespace WordSoulApi.Services.Implementations
 
             if (string.IsNullOrWhiteSpace(vocabularyDto.Word))
             {
-                _logger.LogError("Word is required for creating a vocabulary ");
+                _logger.LogError("Word is required for creating a vocabulary");
                 throw new ArgumentException("Title is required.", nameof(vocabularyDto.Word));
             }
 
@@ -90,30 +49,149 @@ namespace WordSoulApi.Services.Implementations
                 PronunciationUrl = vocabularyDto.PronunciationUrl
             };
 
-            var createdVocabulary = await _vocabularyRepository.CreateVocabularyAsync(vocabulary);
-            _logger.LogInformation("Vocabulary set created with ID: {Id}", createdVocabulary.Id);
-
-            return new AdminVocabularyDto
-
+            try
             {
-                Id = createdVocabulary.Id,
-                Word = createdVocabulary.Word,
-                Meaning = createdVocabulary.Meaning,
-                Pronunciation = createdVocabulary.Pronunciation,
-                PartOfSpeech = createdVocabulary.PartOfSpeech.ToString(),
-                CEFRLevel = createdVocabulary.CEFRLevel.ToString(),
-                Description = createdVocabulary.Description,
-                ExampleSentence = createdVocabulary.ExampleSentence,
-                ImageUrl = createdVocabulary.ImageUrl,
-                PronunciationUrl = createdVocabulary.PronunciationUrl
-            };
+                var createdVocabulary = await _vocabularyRepository.CreateVocabularyAsync(vocabulary);
+                _logger.LogInformation("Vocabulary created with ID: {Id}", createdVocabulary.Id);
+                return new AdminVocabularyDto
+                {
+                    Id = createdVocabulary.Id,
+                    Word = createdVocabulary.Word,
+                    Meaning = createdVocabulary.Meaning,
+                    Pronunciation = createdVocabulary.Pronunciation,
+                    PartOfSpeech = createdVocabulary.PartOfSpeech.ToString(),
+                    CEFRLevel = createdVocabulary.CEFRLevel.ToString(),
+                    Description = createdVocabulary.Description,
+                    ExampleSentence = createdVocabulary.ExampleSentence,
+                    ImageUrl = createdVocabulary.ImageUrl,
+                    PronunciationUrl = createdVocabulary.PronunciationUrl
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create vocabulary with word: {Word}", vocabularyDto.Word);
+                throw;
+            }
         }
 
+
+
+        //------------------------------ READ -------------------------------------------
+
+        public async Task<IEnumerable<VocabularyDto>> GetAllVocabulariesAsync(string? word, string? meaning, PartOfSpeech? partOfSpeech, CEFRLevel? cEFRLevel, int pageNumber, int pageSize)
+        {
+            var cacheKey = $"Vocabularies_{word}_{partOfSpeech}_{cEFRLevel}_{pageNumber}_{pageSize}";
+            if (_cache.TryGetValue(cacheKey, out IEnumerable<VocabularyDto> cachedVocabularies))
+            {
+                _logger.LogDebug("Cache hit for vocabularies with filter: {Key}", cacheKey);
+                return cachedVocabularies;
+            }
+
+            var vocabularies = await _vocabularyRepository.GetAllVocabulariesAsync(word, meaning, partOfSpeech, cEFRLevel, pageNumber, pageSize);
+            var vocabularyDtos = vocabularies.Select(v => new VocabularyDto
+            {
+                Id = v.Id,
+                Word = v.Word,
+                Meaning = v.Meaning,
+                PartOfSpeech = v.PartOfSpeech.ToString(),
+                CEFRLevel = v.CEFRLevel.ToString(),
+                Description = v.Description,
+                ExampleSentence = v.ExampleSentence,
+                ImageUrl = v.ImageUrl,
+                PronunciationUrl = v.PronunciationUrl
+            }).ToList();
+
+            _cache.Set(cacheKey, vocabularyDtos, new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15),
+                Size = 1024 // Giới hạn kích thước (bytes)
+            });
+            _logger.LogDebug("Cache miss, stored vocabularies with filter: {Key}", cacheKey);
+            return vocabularyDtos;
+        }
+
+        // Lấy từ vựng theo ID
+        public async Task<VocabularyDto?> GetVocabularyByIdAsync(int id)
+        {
+            _logger.LogInformation("Fetching vocabulary with ID: {Id}", id);
+            var cacheKey = $"Vocabulary_{id}";
+            if (_cache.TryGetValue(cacheKey, out VocabularyDto cachedVocabulary))
+            {
+                _logger.LogDebug("Cache hit for vocabulary ID: {Id}", id);
+                return cachedVocabulary;
+            }
+
+            var vocabulary = await _vocabularyRepository.GetVocabularyByIdAsync(id);
+            if (vocabulary == null)
+            {
+                _logger.LogWarning("No vocabulary found with ID: {Id}", id);
+                return null;
+            }
+
+            var vocabularyDto = new VocabularyDto
+            {
+                Id = vocabulary.Id,
+                Word = vocabulary.Word,
+                Meaning = vocabulary.Meaning,
+                PartOfSpeech = vocabulary.PartOfSpeech.ToString(),
+                CEFRLevel = vocabulary.CEFRLevel.ToString(),
+                Description = vocabulary.Description,
+                ExampleSentence = vocabulary.ExampleSentence,
+                ImageUrl = vocabulary.ImageUrl,
+                PronunciationUrl = vocabulary.PronunciationUrl
+            };
+            _cache.Set(cacheKey, vocabularyDto, new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30),
+                Size = 1024
+            });
+            _logger.LogDebug("Cache miss, stored vocabulary ID: {Id}", id);
+            return vocabularyDto;
+        }
+
+        // Lấy các từ vựng theo danh sách từ
+        public async Task<IEnumerable<VocabularyDto>> GetVocabulariesByWordsAsync(SearchVocabularyDto searchVocabularyDto)
+        {
+            if (searchVocabularyDto == null || searchVocabularyDto.Words == null || !searchVocabularyDto.Words.Any())
+                return new List<VocabularyDto>();
+
+            var cacheKey = $"VocabulariesByWords_{string.Join("_", searchVocabularyDto.Words.OrderBy(w => w))}";
+            if (_cache.TryGetValue(cacheKey, out IEnumerable<VocabularyDto> cachedVocabularies))
+            {
+                _logger.LogDebug("Cache hit for vocabularies with words: {Key}", cacheKey);
+                return cachedVocabularies;
+            }
+
+            var vocabularies = await _vocabularyRepository.GetVocabulariesByWordsAsync(searchVocabularyDto.Words);
+            var vocabularyDtos = vocabularies.Select(v => new VocabularyDto
+            {
+                Id = v.Id,
+                Word = v.Word,
+                Meaning = v.Meaning,
+                PartOfSpeech = v.PartOfSpeech.ToString(),
+                CEFRLevel = v.CEFRLevel.ToString(),
+                Description = v.Description,
+                ExampleSentence = v.ExampleSentence,
+                ImageUrl = v.ImageUrl,
+                Pronunciation = v.Pronunciation,
+                PronunciationUrl = v.PronunciationUrl
+            }).ToList();
+
+            _cache.Set(cacheKey, vocabularyDtos, new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15),
+                Size = 1024 // Giới hạn kích thước (bytes)
+            });
+            _logger.LogDebug("Cache miss, stored vocabularies with words: {Key}", cacheKey);
+            return vocabularyDtos;
+        }
+
+
+        //------------------------------ UPDATE -----------------------------------------
         // Cập nhật từ vựng
         public async Task<AdminVocabularyDto> UpdateVocabularyAsync(int id, CreateVocabularyDto vocabularyDto, string? imageUrl)
         {
             _logger.LogInformation("Updating vocabulary with ID: {Id}", id);
-
             if (string.IsNullOrWhiteSpace(vocabularyDto.Word))
             {
                 _logger.LogError("Title is required for updating a vocabulary set");
@@ -144,9 +222,9 @@ namespace WordSoulApi.Services.Implementations
                 return null;
             }
 
-            _logger.LogInformation("Vocabulary updated with ID: {Id}", updatedVocabulary.Id);
+            _cache.Remove($"Vocabulary_{id}"); // Xóa cache của từ vựng cụ thể
+            _logger.LogInformation("Cache invalidated for vocabulary ID: {Id}", id);
             return new AdminVocabularyDto
-
             {
                 Id = updatedVocabulary.Id,
                 Word = updatedVocabulary.Word,
@@ -161,134 +239,22 @@ namespace WordSoulApi.Services.Implementations
             };
         }
 
+
+        //------------------------------ DELETE -----------------------------------------
         // Xóa từ vựng theo ID
         public async Task<bool> DeleteVocabularyAsync(int id)
         {
-            return await _vocabularyRepository.DeleteVocabularyAsync(id);
+            var result = await _vocabularyRepository.DeleteVocabularyAsync(id);
+            if (result)
+            {
+                _cache.Remove($"Vocabulary_{id}");
+                _logger.LogInformation("Cache invalidated after deleting vocabulary ID: {Id}", id);
+            }
+            return result;
         }
 
-        // Lấy các từ vựng theo danh sách từ
-        public async Task<IEnumerable<VocabularyDto>> GetVocabulariesByWordsAsync(SearchVocabularyDto searchVocabularyDto)
-        {
-            if (searchVocabularyDto == null || searchVocabularyDto.Words == null || !searchVocabularyDto.Words.Any())
-                return new List<VocabularyDto>();
 
 
-            var vocabularies = await _vocabularyRepository.GetVocabulariesByWordsAsync(searchVocabularyDto.Words);
-            var vocabularyDtos = vocabularies.Select(v => new VocabularyDto
-            {
-                Id = v.Id,
-                Word = v.Word,
-                Meaning = v.Meaning,
-                PartOfSpeech = v.PartOfSpeech.ToString(),
-                CEFRLevel = v.CEFRLevel.ToString(),
-                Description = v.Description,
-                ExampleSentence = v.ExampleSentence,
-                ImageUrl = v.ImageUrl,
-                PronunciationUrl = v.PronunciationUrl
-            }).ToList();
 
-            return vocabularyDtos;
-        }
-
-        // Thêm từ vựng mới vào bộ từ vựng
-        public async Task<AdminVocabularyDto?> AddVocabularyToSetAsync(int setId, CreateVocabularyInSetDto vocabularyDto, string? imageUrl)
-        {
-            // Kiểm tra bộ từ vựng tồn tại 
-            var vocabularySet = await _vocabularySetRepository.GetVocabularySetByIdAsync(setId);
-            if (vocabularySet == null)
-                throw new KeyNotFoundException("Bộ từ vựng không tồn tại.");
-
-            // Kiểm tra từ vựng đã tồn tại trong bộ chưa
-            var existingLink = await _vocabularyRepository.CheckVocabularyExistFromSessionAsync(vocabularyDto.Word, setId);
-            if (existingLink)
-                throw new ArgumentException("Từ vựng đã tồn tại trong bộ này.");
-
-            // Tạo từ vựng mới
-            var vocabulary = new Vocabulary
-            {
-                Word = vocabularyDto.Word,
-                Meaning = vocabularyDto.Meaning,
-                Pronunciation = vocabularyDto.Pronunciation,
-                PartOfSpeech = vocabularyDto.PartOfSpeech,
-                Description = vocabularyDto.Description,
-                CEFRLevel = vocabularyDto.CEFRLevel,
-                ExampleSentence = vocabularyDto.ExampleSentence,
-                ImageUrl = imageUrl,
-                PronunciationUrl = vocabularyDto.PronunciationUrl
-            };
-
-            await _vocabularyRepository.CreateVocabularyAsync(vocabulary);
-
-            // Lấy max Order và gán +1
-            var maxOrderValue = await _vocabularyRepository.GetVocabularyOrderMaxAsync(setId);
-            var newOrder = maxOrderValue + 1;
-
-            // Tạo liên kết many-to-many
-            var setVocabulary = new SetVocabulary
-            {
-                VocabularySetId = setId,
-                VocabularyId = vocabulary.Id,
-                Order = newOrder  
-            };
-
-            await _vocabularySetRepository.CreateSetVocabularyAsync(setVocabulary);
-
-            // Map sang DTO
-            return new AdminVocabularyDto
-            {
-                Id = vocabulary.Id,
-                Word = vocabulary.Word,
-                Meaning = vocabulary.Meaning,
-                Pronunciation = vocabulary.Pronunciation,
-                PartOfSpeech = vocabulary.PartOfSpeech.ToString(),
-                CEFRLevel = vocabulary.CEFRLevel.ToString(),
-                Description = vocabulary.Description,
-                ExampleSentence = vocabulary.ExampleSentence,
-                ImageUrl = vocabulary.ImageUrl,
-                PronunciationUrl = vocabulary.PronunciationUrl
-            };
-        }
-
-        // Xóa liên kết từ vựng khỏi bộ
-        public async Task<bool> RemoveVocabularyFromSetAsync(int setId, int vocabId)
-        {
-            var setVocabulary = await _vocabularySetRepository.GetSetVocabularyAsync(vocabId, setId);
-            if (setVocabulary == null) return false;
-
-            return await _vocabularySetRepository.DeleteSetVocabularyAsync(setVocabulary);
-        }
-
-        // Lấy danh sách từ vựng trong bộ với phân trang
-        public async Task<PagedResult<VocabularyDto>> GetVocabulariesInSetAsync(int setId, int pageNumber = 1, int pageSize = 10)
-        {
-            var vocabularySet = await _vocabularySetRepository.GetVocabularySetByIdAsync(setId);
-            if (vocabularySet == null)
-                throw new KeyNotFoundException("Bộ từ vựng không tồn tại.");
-
-            var (vocabularies, totalCount) = await _vocabularyRepository.GetVocabulariesFromSetAsync(setId, pageNumber, pageSize);
-
-            var vocabularyDtos = vocabularies.Select(v => new VocabularyDto
-            {
-                Id = v.Id,
-                Word = v.Word,
-                Meaning = v.Meaning,
-                PartOfSpeech = v.PartOfSpeech.ToString(),
-                CEFRLevel = v.CEFRLevel.ToString(),
-                Description = v.Description,
-                ExampleSentence = v.ExampleSentence,
-                ImageUrl = v.ImageUrl,
-                PronunciationUrl = v.PronunciationUrl
-            }).ToList();
-
-            return new PagedResult<VocabularyDto>
-            {
-                Items = vocabularyDtos,
-                TotalCount = totalCount,
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                TotalPages = (int)Math.Ceiling((double)totalCount / pageSize)
-            };
-        }
     }
 }

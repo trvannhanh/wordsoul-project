@@ -1,4 +1,4 @@
-import type { Pet } from "../types/Dto";
+import type { Pet, PetDetail, UpgradePetResponse } from "../types/Dto";
 import { authApi, endpoints } from "./api";
 
 export const fetchPets = async (filters: { name?: string; rarity?: string; type?: string; isOwned?: boolean }): Promise<Pet[]> => {
@@ -12,6 +12,16 @@ export const fetchPets = async (filters: { name?: string; rarity?: string; type?
     return [];
   }
 };
+
+export const fetchPetById = async (id: number): Promise<Pet> => {
+  const response = await authApi.get<Pet>(endpoints.pet(id));
+  return response.data;
+}
+
+export const fetchPetDetailById = async (id: number): Promise<PetDetail> => {
+  const response = await authApi.get<PetDetail>(endpoints.petDetail(id));
+  return response.data;
+}
 
 export const getAllPets = async (): Promise<Pet[]> => {
   const response = await authApi.get<Pet[]>(endpoints.pets);
@@ -49,6 +59,7 @@ export const removePetFromUser = async (userId: number, petId: number): Promise<
   await authApi.delete(endpoints.userOwnedPet(userId, petId));
 };
 
-export const evolvePet = async (petId: number, data: object): Promise<void> => {
-  await authApi.post(endpoints.evolvePet(petId), data);
+export const upgradePet = async (petId: number): Promise<UpgradePetResponse> => {
+  const response = await authApi.post<UpgradePetResponse>(endpoints.upgradePet(petId));
+  return response.data;
 };

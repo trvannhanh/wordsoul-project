@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel;
 using WordSoulApi.Models.DTOs.Pet;
 using WordSoulApi.Models.Entities;
 using WordSoulApi.Repositories.Implementations;
@@ -27,52 +28,7 @@ namespace WordSoulApi.Services.Implementations
             _activityLogService = activityLogService;
         }
 
-        // Lây tất cả pet
-        public async Task<IEnumerable<UserPetDto>> GetAllPetsAsync(
-            int userId,
-            string? name,
-            PetRarity? rarity,
-            PetType? type,
-            bool? isOwned,
-            int pageNumber,
-            int pageSize)
-        {
-            var pets = await _petRepository.GetAllPetsAsync(
-                userId, name, rarity, type, isOwned, pageNumber, pageSize);
-
-            return pets.Select(p => new UserPetDto
-            {
-                Id = p.Pet.Id,
-                Name = p.Pet.Name,
-                Description = p.Pet.Description ?? "No description available",
-                ImageUrl = p.Pet.ImageUrl ?? "",
-                Rarity = p.Pet.Rarity.ToString(),
-                Type = p.Pet.Type.ToString(),
-                isOwned = p.IsOwned
-            });
-        }
-
-
-        // Lấy pet theo ID
-        public async Task<PetDto?> GetPetByIdAsync(int id)
-        {
-            var pet = await _petRepository.GetPetByIdAsync(id);
-            if (pet == null) return null;
-            // cần thêm if role admin
-            return new AdminPetDto
-            {
-                Id = pet.Id,
-                Name = pet.Name,
-                Description = pet.Description,
-                ImageUrl = pet.ImageUrl,
-                Rarity = pet.Rarity.ToString(),
-                Type = pet.Type.ToString(),
-                CreatedAt = pet.CreatedAt,
-                IsActive = pet.IsActive
-            };
-        }
-
-
+        //------------------------------ CREATE -----------------------------------
         // Tạo pet mới
         public async Task<PetDto> CreatePetAsync(CreatePetDto petDto, string? imageUrl)
         {
@@ -105,44 +61,6 @@ namespace WordSoulApi.Services.Implementations
                 CreatedAt = createdPet.CreatedAt,
                 IsActive = createdPet.IsActive
             };
-        }
-
-
-        //Cập nhật pet
-        public async Task<AdminPetDto> UpdatePetAsync(int id, UpdatePetDto petDto, string? imageUrl)
-        {
-            var existingPet = await _petRepository.GetPetByIdAsync(id);
-            if (existingPet == null)
-            {
-                throw new KeyNotFoundException($"Pet with ID {id} not found.");
-            }
-
-            existingPet.Name = petDto.Name;
-            existingPet.Description = petDto.Description;
-            existingPet.ImageUrl = imageUrl;
-            existingPet.Rarity = petDto.Rarity;
-            existingPet.Type = petDto.Type;
-            existingPet.IsActive = petDto.IsActive;
-            existingPet.CreatedAt = petDto.CreatedAt;
-
-            var updatedPet = await _petRepository.UpdatePetAsync(existingPet);
-            return new AdminPetDto
-            {
-                Id = updatedPet.Id,
-                Name = updatedPet.Name,
-                Description = updatedPet.Description,
-                ImageUrl = updatedPet.ImageUrl,
-                Rarity = updatedPet.Rarity.ToString(),
-                Type = updatedPet.Type.ToString(),
-                CreatedAt = updatedPet.CreatedAt,
-                IsActive = updatedPet.IsActive
-            };
-        }
-
-        // Xóa pet theo ID
-        public async Task<bool> DeletePetAsync(int id)
-        {
-            return await _petRepository.DeletePetAsync(id);
         }
 
         // Bulk create pets (tạo từng pet và upload image nếu có)
@@ -187,10 +105,120 @@ namespace WordSoulApi.Services.Implementations
                     RequiredLevel = createdPet.RequiredLevel,
                     CreatedAt = createdPet.CreatedAt,
                     IsActive = createdPet.IsActive
-                }); 
+                });
             }
 
             return createdPets;
+        }
+
+        
+
+
+        //------------------------------ GET -----------------------------------
+
+        // Lây tất cả pet
+        public async Task<IEnumerable<UserPetDto>> GetAllPetsAsync(
+            int userId,
+            string? name,
+            PetRarity? rarity,
+            PetType? type,
+            bool? isOwned,
+            int pageNumber,
+            int pageSize)
+        {
+            var pets = await _petRepository.GetAllPetsAsync(
+                userId, name, rarity, type, isOwned, pageNumber, pageSize);
+
+            return pets.Select(p => new UserPetDto
+            {
+                Id = p.Pet.Id,
+                Name = p.Pet.Name,
+                Description = p.Pet.Description ?? "No description available",
+                ImageUrl = p.Pet.ImageUrl ?? "",
+                Rarity = p.Pet.Rarity.ToString(),
+                Type = p.Pet.Type.ToString(),
+                IsOwned = p.IsOwned
+            });
+        }
+
+
+        // Lấy chi tiết pet theo user
+        public async Task<UserPetDetailDto?> GetPetDetailAsync(int userId, int petId)
+        {
+
+            var pet = await _petRepository.GetPetByIdAsync(petId);
+            if (pet == null) return null;
+
+            var userOwnedPet = await _userOwnedPetRepository.GetUserOwnedPetByUserAndPetIdAsync(userId, petId);
+
+            return new UserPetDetailDto
+            {
+                Id = pet.Id,
+                Name = pet.Name,
+                Description = pet.Description ?? "No description available",
+                ImageUrl = pet.ImageUrl ?? "",
+                Rarity = pet.Rarity.ToString(),
+                Type = pet.Type.ToString(),
+                Level = userOwnedPet != null ? userOwnedPet.Level : null, // null nếu không sở hữu
+                Experience = userOwnedPet != null ? userOwnedPet.Experience : null, // null nếu không sở hữu
+                IsFavorite = userOwnedPet != null ? userOwnedPet.IsFavorite : null, // null nếu không sở hữu
+                AcquiredAt = userOwnedPet?.AcquiredAt // null nếu không sở hữu
+            };
+        }
+
+
+        // Lấy pet theo ID
+        public async Task<PetDto?> GetPetByIdAsync(int id)
+        {
+            var pet = await _petRepository.GetPetByIdAsync(id);
+            if (pet == null) return null;
+            // cần thêm if role admin
+            return new AdminPetDto
+            {
+                Id = pet.Id,
+                Name = pet.Name,
+                Description = pet.Description,
+                ImageUrl = pet.ImageUrl,
+                Rarity = pet.Rarity.ToString(),
+                Type = pet.Type.ToString(),
+                CreatedAt = pet.CreatedAt,
+                IsActive = pet.IsActive
+            };
+        }
+
+
+
+
+        //------------------------------ UPDATE -----------------------------------
+        //Cập nhật pet
+        public async Task<AdminPetDto> UpdatePetAsync(int id, UpdatePetDto petDto, string? imageUrl)
+        {
+            var existingPet = await _petRepository.GetPetByIdAsync(id);
+            if (existingPet == null)
+            {
+                throw new KeyNotFoundException($"Pet with ID {id} not found.");
+            }
+
+            existingPet.Name = petDto.Name;
+            existingPet.Description = petDto.Description;
+            existingPet.ImageUrl = imageUrl;
+            existingPet.Rarity = petDto.Rarity;
+            existingPet.Type = petDto.Type;
+            existingPet.IsActive = petDto.IsActive;
+            existingPet.CreatedAt = petDto.CreatedAt;
+
+            var updatedPet = await _petRepository.UpdatePetAsync(existingPet);
+            return new AdminPetDto
+            {
+                Id = updatedPet.Id,
+                Name = updatedPet.Name,
+                Description = updatedPet.Description,
+                ImageUrl = updatedPet.ImageUrl,
+                Rarity = updatedPet.Rarity.ToString(),
+                Type = updatedPet.Type.ToString(),
+                CreatedAt = updatedPet.CreatedAt,
+                IsActive = updatedPet.IsActive
+            };
         }
 
         // Bulk update pets 
@@ -239,6 +267,15 @@ namespace WordSoulApi.Services.Implementations
             return updatedPets;
         }
 
+        //------------------------------ DELETE -----------------------------------
+        // Xóa pet theo ID
+        public async Task<bool> DeletePetAsync(int id)
+        {
+            return await _petRepository.DeletePetAsync(id);
+        }
+
+       
+
         // Bulk delete pets
         public async Task<bool> DeletePetsBulkAsync(List<int> petIds)
         {
@@ -252,93 +289,6 @@ namespace WordSoulApi.Services.Implementations
             }
             return true;
         }
-
-
-        // Assign pet to user
-        public async Task<UserOwnedPetDto?> AssignPetToUserAsync(AssignPetDto assignDto)
-        {
-            var pet = await _petRepository.GetPetByIdAsync(assignDto.PetId);
-            var user = await _userRepository.GetUserByIdAsync(assignDto.UserId);  
-            if (pet == null || user == null) return null;
-
-            // Kiểm tra đã gán chưa
-            var existing = await _userOwnedPetRepository.CheckExistsUserOwnedPetAsync(assignDto.UserId, assignDto.PetId);
-            if (existing) throw new ArgumentException("Pet đã được gán cho user này.");
-
-            var userOwnedPet = new UserOwnedPet
-            {
-                UserId = assignDto.UserId,
-                PetId = assignDto.PetId,
-                Level = assignDto.InitialLevel,
-                Experience = assignDto.InitialExperience,
-                IsFavorite = assignDto.IsFavorite,
-                IsActive = assignDto.IsActive,
-                AcquiredAt = DateTime.UtcNow
-            };
-
-            
-
-            await _userOwnedPetRepository.CreateUserOwnedPetAsync(userOwnedPet);
-
-            await _activityLogService.CreateActivityAsync(assignDto.UserId, "AssignPet", "User granted pet");
-
-            return new UserOwnedPetDto 
-            { 
-                PetId = assignDto.PetId,
-                Level = assignDto.InitialLevel,
-                Experience = assignDto.InitialExperience,
-                UserId = assignDto.UserId,
-                IsFavorite = assignDto.IsFavorite,
-                IsActive = assignDto.IsActive,
-                AcquiredAt = DateTime.UtcNow
-            };
-        }
-
-
-        // Remove pet from user
-        public async Task<bool> RemovePetFromUserAsync(int userId, int petId)
-        {
-            var userOwnedPet = await _userOwnedPetRepository.GetUserOwnedPetByUserAndPetIdAsync(userId, petId);
-            if (userOwnedPet == null) return false;
-
-            await _userOwnedPetRepository.DeleteUserOwnedPetAsync(userOwnedPet);
-            return true;
-        }
-
-        // Evolve pet for user (kiểm tra exp >= required level của next form)
-        public async Task<UserOwnedPetDto?> EvolvePetForUserAsync(EvolvePetDto evolveDto)
-        {
-            var userOwnedPet = await _userOwnedPetRepository.GetUserOwnedPetByUserAndPetIdAsync(evolveDto.UserId, evolveDto.PetId);
-            if (userOwnedPet == null) return null;
-
-            userOwnedPet.Experience += evolveDto.ExperienceToAdd;
-
-            var currentPet = userOwnedPet.Pet;
-            if (userOwnedPet.Experience >= currentPet.RequiredLevel && currentPet.NextEvolutionId.HasValue)
-            {
-                // Evolve: Chuyển sang form mới
-                var evolvedPet = await _petRepository.GetPetByIdAsync(currentPet.NextEvolutionId.Value);
-                if (evolvedPet != null)
-                {
-                    userOwnedPet.PetId = evolvedPet.Id;  // Cập nhật PetId sang form mới
-                    userOwnedPet.Level++;  // Tăng level
-                }
-            }
-
-            await _userOwnedPetRepository.UpdateUserOwnedPetAsync(userOwnedPet);
-
-            await _activityLogService.CreateActivityAsync(evolveDto.UserId, "PetEvolved", $"Pet {evolveDto.PetId} evolved");
-            return new UserOwnedPetDto 
-            {
-                PetId = userOwnedPet.PetId,
-                Level = userOwnedPet.Level,
-                Experience = userOwnedPet.Experience,
-                UserId = userOwnedPet.UserId,
-                IsFavorite = userOwnedPet.IsFavorite,
-                IsActive = userOwnedPet.IsActive,
-                AcquiredAt = userOwnedPet.AcquiredAt,
-            };
-        }
-
+        
     }
 }

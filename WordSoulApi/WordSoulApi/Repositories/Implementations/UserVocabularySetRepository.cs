@@ -13,8 +13,29 @@ namespace WordSoulApi.Repositories.Implementations
             _context = context;
         }
 
+        //------------------------------- CREATE -----------------------------------
+        // Thêm sự sở hữu một bộ từ vựng cho người dùng
+        public async Task AddVocabularySetToUserAsync(UserVocabularySet userVocabularySet)
+        {
+            _context.UserVocabularySets.Add(userVocabularySet);
+            await _context.SaveChangesAsync();
+        }
+
+        // -------------------------------------READ-------------------------------------------
+
+        // Lấy UserVocabularySet theo userId và vocabularySetId
+        public async Task<UserVocabularySet?> GetUserVocabularySetAsync(int userId, int vocabularySetId)
+        {
+            return await _context.UserVocabularySets
+                .AsNoTracking()
+                .FirstOrDefaultAsync(uvs => uvs.UserId == userId && uvs.VocabularySetId == vocabularySetId);
+        }
+
+
+
+
         // Kiểm tra người dùng có sở hữu bộ từ vựng này chưa
-        public async Task<bool> CheckUserVocabualryExist(int userId, int vocabId)
+        public async Task<bool> CheckUserVocabularyExist(int userId, int vocabId)
         {
             // Sử dụng AsNoTracking để tối ưu hiệu suất khi chỉ đọc dữ liệu
             var exists = await _context.UserVocabularySets
@@ -23,41 +44,18 @@ namespace WordSoulApi.Repositories.Implementations
             return exists;
         }
 
-        // Thêm sự sở hữu một bộ từ vựng cho người dùng
-        public async Task AddVocabularySetToUserAsync(UserVocabularySet userVocabularySet)
+
+        //--------------------------------------- UPDATE ---------------------------------------
+
+        // Cập nhật UserVocabularySet
+        public async Task UpdateUserVocabularySetAsync(UserVocabularySet userVocabularySet)
         {
-            _context.UserVocabularySets.Add(userVocabularySet);
+
+            _context.UserVocabularySets.Update(userVocabularySet);
             await _context.SaveChangesAsync();
+            
         }
 
-        // Đếm số session đã hoàn thành cho một người dùng trong một bộ từ vựng
-        public async Task<int> GetCompletedLearningSessionAsync(int userId, int vocabularySetId)
-        {
-            // 1. Lấy số session đã hoàn thành từ bảng UserVocabularySets
-            var userVocabSet = await _context.UserVocabularySets
-                .AsNoTracking()
-                .Where(uvs => uvs.UserId == userId && uvs.VocabularySetId == vocabularySetId)
-                .Select(uvs => uvs.totalCompletedSession)
-                .FirstOrDefaultAsync();
-
-            return userVocabSet;
-        }
-
-        // Cập nhật số session đã hoàn thành cho một người dùng trong một bộ từ vựng
-        public async Task UpdateCompletedLearningSessionAsync(int userId, int vocabularySetId, int increment = 1)
-        {
-            var userVocabSet = await _context.UserVocabularySets
-                .FirstOrDefaultAsync(uvs => uvs.UserId == userId && uvs.VocabularySetId == vocabularySetId);
-            if (userVocabSet != null)
-            {
-                userVocabSet.totalCompletedSession += increment;
-                _context.UserVocabularySets.Update(userVocabSet);
-                await _context.SaveChangesAsync();
-            }
-            else
-            {
-                throw new InvalidOperationException("User does not own this vocabulary set.");
-            }
-        }
+        
     }
 }
