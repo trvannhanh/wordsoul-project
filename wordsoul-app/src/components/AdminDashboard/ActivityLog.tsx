@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getAllActivities } from '../../services/userService';
+import { getAllActivities } from '../../services/user';
 import type { ActivityLogDto } from '../../types/Dto';
 
 

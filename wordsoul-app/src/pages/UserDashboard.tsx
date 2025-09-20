@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Particles from 'react-particles';
 import { loadFull } from 'tsparticles';
-import type { UserProgressDto } from '../types/Dto';
 import { createReviewSession } from '../services/learningSession';
-import { getUserProgress } from '../services/userService';
-import ReviewBox from '../components/UserDashboard.tsx/ReviewBox';
-import StatsChart from '../components/UserDashboard.tsx/StatsChart';
+import { getUserProgress } from '../services/user';
+import ReviewBox from '../components/UserDashboard/ReviewBox';
+import StatsChart from '../components/UserDashboard/StatsChart';
 import ProfileCard from '../components/UserProfile/ProfileCard';
+import type { UserProgressDto } from '../types/UserDto';
 
 
 const UserDashboard: React.FC = () => {

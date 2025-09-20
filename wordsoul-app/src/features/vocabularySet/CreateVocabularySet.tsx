@@ -2,20 +2,22 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createVocabularySet } from '../../services/vocabularySet';
-import type { Vocabulary, SearchVocabularyDto, VocabularySetTheme, VocabularyDifficultyLevel } from '../../types/Dto';
 import { searchVocabularies } from '../../services/vocabulary';
-import { VocabularySetTheme as themeValues, VocabularyDifficultyLevel as difficultyValues } from '../../types/Dto';
+import { VocabularySetThemeEnum as themeValues } from '../../types/VocabularySetDto';
+import {  VocabularyDifficultyLevelEnum as difficultyValues } from '../../types/VocabularyDto';
+import type { SearchVocabularyDto, VocabularyDifficultyLevelEnum, VocabularyDto } from '../../types/VocabularyDto';
+import type { VocabularySetThemeEnum } from '../../types/VocabularySetDto';
 
 const CreateVocabularySet: React.FC = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState<1 | 2>(1);
   const [wordsInput, setWordsInput] = useState<string>('');
-  const [vocabularies, setVocabularies] = useState<Vocabulary[]>([]);
+  const [vocabularies, setVocabularies] = useState<VocabularyDto[]>([]);
   const [selectedVocabularyIds, setSelectedVocabularyIds] = useState<number[]>([]);
   const [title, setTitle] = useState<string>('');
   const [description, setDescription] = useState<string>('');
-  const [theme, setTheme] = useState<VocabularySetTheme>(themeValues.DailyLearning);
-  const [difficultyLevel, setDifficultyLevel] = useState<VocabularyDifficultyLevel>(difficultyValues.Beginner);
+  const [theme, setTheme] = useState<VocabularySetThemeEnum>(themeValues.DailyLearning);
+  const [difficultyLevel, setDifficultyLevel] = useState<VocabularyDifficultyLevelEnum>(difficultyValues.Beginner);
   const [isPublic, setIsPublic] = useState<boolean>(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -201,7 +203,7 @@ const CreateVocabularySet: React.FC = () => {
                 <label className="block text-sm font-medium mb-1">Chủ đề</label>
                 <select
                   value={theme}
-                  onChange={(e) => setTheme(Number(e.target.value) as VocabularySetTheme)}
+                  onChange={(e) => setTheme(Number(e.target.value) as VocabularySetThemeEnum)}
                   className="w-full p-2 border rounded-md bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value={themeValues.DailyLearning}>{themeValues.DailyLearning}</option>
@@ -212,7 +214,7 @@ const CreateVocabularySet: React.FC = () => {
                 <label className="block text-sm font-medium mb-1">Độ khó</label>
                 <select
                   value={difficultyLevel}
-                  onChange={(e) => setDifficultyLevel(Number(e.target.value) as VocabularyDifficultyLevel)}
+                  onChange={(e) => setDifficultyLevel(Number(e.target.value) as VocabularyDifficultyLevelEnum)}
                   className="w-full p-2 border rounded-md bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value={difficultyValues.Beginner}>{difficultyValues.Beginner}</option>

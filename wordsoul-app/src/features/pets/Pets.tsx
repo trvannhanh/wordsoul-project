@@ -1,14 +1,14 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useDebounce } from 'use-debounce';
-import type { Pet } from '../../types/Dto';
 import { fetchPets } from '../../services/pet';
-import PetCard from '../../components/PetCard';
+import PetCard from '../../components/Pet/PetCard';
+import type { PetDto } from '../../types/PetDto';
 
 const rarityOptions = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
 const typeOptions = ['Nomadica', 'Dynamora', 'Adornica', 'Velocira', 'Substitua', 'Connectara', 'Preposita', 'Exclamora'];
 
 const Pets: React.FC = () => {
-  const [pets, setPets] = useState<Pet[]>([]);
+  const [pets, setPets] = useState<PetDto[]>([]);
   const [searchName, setSearchName] = useState<string>('');
   const [debouncedSearchName] = useDebounce(searchName, 500);
   const [rarityFilter, setRarityFilter] = useState<string>('');

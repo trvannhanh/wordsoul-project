@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { Pet, UserDto } from '../../types/Dto';
 import { assignPetToUser, createPet, createPetsBulk, deletePet, getAllPets, updatePet } from '../../services/pet';
-import { getAllUsers } from '../../services/userService';
+import { getAllUsers } from '../../services/user';
 
 
 const PetList = () => {

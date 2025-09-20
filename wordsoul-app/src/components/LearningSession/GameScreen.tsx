@@ -1,7 +1,8 @@
-import { QuestionType, type QuizQuestion } from "../../types/Dto";
+import type { QuizQuestionDto } from "../../types/LearningSessionDto";
+
 
 interface GameScreenProps {
-  question: QuizQuestion | null;
+  question: QuizQuestionDto | null;
   loading: boolean;
   error: string | null;
 }
@@ -17,7 +18,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ question, loading, error }) => 
 
         
         
-          <h2 className="text-5xl">{question.word}</h2>
+        <h2 className="text-5xl">{question.word}</h2>
        
         <h2 className="text-4xl">{question.meaning}</h2>
 

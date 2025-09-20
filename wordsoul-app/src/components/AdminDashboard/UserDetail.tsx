@@ -6,7 +6,7 @@ import {
   assignRoleToUser,
   removeRoleFromUser,
   getUserActivities,
-} from '../../services/userService';
+} from '../../services/user';
 import type { ActivityLogDto, UserDto } from '../../types/Dto';
 
 
