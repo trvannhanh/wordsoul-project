@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { type CompleteLearningSessionResponseDto, type CompleteReviewSessionResponseDto, type QuizQuestion } from "../../types/Dto";
+import type { CompleteLearningSessionResponseDto, CompleteReviewSessionResponseDto, QuizQuestionDto } from "../../types/LearningSessionDto";
+
 
 interface PetScreenProps {
   showRewardAnimation: boolean;
@@ -10,7 +11,7 @@ interface PetScreenProps {
   mode: "learning" | "review";
   petId?: number;
   handleCloseReward: () => void;
-  currentQuestion?: QuizQuestion | null;
+  currentQuestion?: QuizQuestionDto | null;
 }
 
 const PetScreen: React.FC<PetScreenProps> = ({

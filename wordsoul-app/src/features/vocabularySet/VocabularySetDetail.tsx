@@ -5,7 +5,7 @@ import { fetchVocabularySetDetail } from "../../services/vocabularySet";
 import { createLearningSession } from "../../services/learningSession";
 import ProfileCard from "../../components/UserProfile/ProfileCard";
 import VocabularyList from "../../components/Vocabulary/VocabularyList";
-import { getUserVocabularySets, registerVocabularySet } from "../../services/userService";
+import { getUserVocabularySets, registerVocabularySet } from "../../services/user";
 import type { UserVocabularySetDto } from "../../types/Dto";
 
 interface VocabularySetMeta {

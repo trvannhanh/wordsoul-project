@@ -1,14 +1,14 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { type QuizQuestion, QuestionType } from "../../types/Dto";
 import { useState, useRef, useEffect } from "react";
+import { QuestionTypeEnum, type QuizQuestionDto } from "../../types/LearningSessionDto";
 
 interface AnswerScreenProps {
-  question: QuizQuestion | null;
+  question: QuizQuestionDto | null;
   loading: boolean;
   error: string | null;
-  handleAnswer: (question: QuizQuestion, answer: string, onAnswerProcessed: () => void) => Promise<boolean>;
+  handleAnswer: (question: QuizQuestionDto, answer: string, onAnswerProcessed: () => void) => Promise<boolean>;
   loadNextQuestion: () => void;
-  showPopup: (question: QuizQuestion) => void; // Callback để hiển thị pop-up
+  showPopup: (question: QuizQuestionDto) => void; // Callback để hiển thị pop-up
 }
 
 const AnswerScreen: React.FC<AnswerScreenProps> = ({
@@ -89,7 +89,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
   }, [question]);
 
   useEffect(() => {
-    if (question && question.questionType === QuestionType.Listening) {
+    if (question && question.questionType === QuestionTypeEnum.Listening) {
       const timer = setTimeout(() => {
         const input = document.querySelector('input[type="text"]') as HTMLInputElement;
         input?.focus();
@@ -99,7 +99,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
   }, [question]);
 
   useEffect(() => {
-    if (question?.questionType === QuestionType.Listening && question.pronunciationUrl) {
+    if (question?.questionType === QuestionTypeEnum.Listening && question.pronunciationUrl) {
       const audio = audioRef.current;
       if (!audio) return;
 
@@ -170,7 +170,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
 
         {(() => {
           switch (question.questionType) {
-            case QuestionType.Flashcard:
+            case QuestionTypeEnum.Flashcard:
               return (
                 <button
                   onClick={() => handleSubmitAnswer("viewed")}
@@ -181,7 +181,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
                 </button>
               );
               
-            case QuestionType.FillInBlank:
+            case QuestionTypeEnum.FillInBlank:
               return (
                 <input
                   type="text"
@@ -199,7 +199,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
                 />
               );
               
-            case QuestionType.MultipleChoice:
+            case QuestionTypeEnum.MultipleChoice:
               return (
                 <div className="grid grid-cols-2 gap-6 w-4/5">
                   {question.options?.map((opt) => (
@@ -217,7 +217,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
                 </div>
               );
 
-            case QuestionType.Listening:
+            case QuestionTypeEnum.Listening:
               return (
                 <div className="flex flex-col items-center space-y-4 w-4/5 max-w-md">
                   <motion.h3 

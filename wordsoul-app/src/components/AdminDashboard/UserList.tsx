@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getAllUsers } from '../../services/userService';
+import { getAllUsers } from '../../services/user';
 import { Link } from 'react-router-dom';
 import type { UserDto } from '../../types/Dto';
 

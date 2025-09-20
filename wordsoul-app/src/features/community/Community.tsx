@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import type { LeaderBoardDto } from '../../types/Dto';
-import { getLeaderBoard } from '../../services/userService';
+import { getLeaderBoard } from '../../services/user';
 
 const Community: React.FC = () => {
     const [xpLeaderboard, setXpLeaderboard] = useState<LeaderBoardDto[]>([]);

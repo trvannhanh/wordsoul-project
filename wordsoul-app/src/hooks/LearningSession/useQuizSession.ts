@@ -1,12 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useState, useCallback } from "react";
-import {
-  QuestionType,
-  type CompleteLearningSessionResponseDto,
-  type CompleteReviewSessionResponseDto,
-  type QuizQuestion,
-  type AnswerResponse,
-} from "../../types/Dto";
+
 import {
   answerQuiz,
   completeLearningSession,
@@ -14,15 +8,16 @@ import {
   fetchQuizOfSession,
 } from "../../services/learningSession";
 import { fetchPetById } from "../../services/pet";
+import { QuestionTypeEnum, type AnswerResponseDto, type CompleteLearningSessionResponseDto, type CompleteReviewSessionResponseDto, type QuizQuestionDto } from "../../types/LearningSessionDto";
 
 export const useQuizSession = (
   sessionId: number,
   mode: "learning" | "review",
   petId?: number
 ) => {
-  const [questionsBatch, setQuestionsBatch] = useState<QuizQuestion[]>([]);
+  const [questionsBatch, setQuestionsBatch] = useState<QuizQuestionDto[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState<QuizQuestion | null>(null);
+  const [currentQuestion, setCurrentQuestion] = useState<QuizQuestionDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sessionData, setSessionData] = useState<
@@ -40,11 +35,11 @@ export const useQuizSession = (
   const [showRewardAnimation, setShowRewardAnimation] = useState(false);
   const [captureComplete, setCaptureComplete] = useState(false);
 
-  const levelToType: Record<number, QuestionType> = {
-    0: QuestionType.Flashcard,
-    1: QuestionType.FillInBlank,
-    2: QuestionType.MultipleChoice,
-    3: QuestionType.Listening,
+  const levelToType: Record<number, QuestionTypeEnum> = {
+    0: QuestionTypeEnum.Flashcard,
+    1: QuestionTypeEnum.FillInBlank,
+    2: QuestionTypeEnum.MultipleChoice,
+    3: QuestionTypeEnum.Listening,
   };
 
   const loadNewQuestionsBatch = useCallback(async () => {
@@ -111,7 +106,7 @@ export const useQuizSession = (
   }, [loadNewQuestionsBatch]);
 
   const handleAnswer = useCallback(async (
-    question: QuizQuestion, 
+    question: QuizQuestionDto, 
     answer: string,
     onAnswerProcessed: () => void // Callback để báo hiệu khi xử lý xong
   ): Promise<boolean> => {
@@ -121,14 +116,14 @@ export const useQuizSession = (
       
       console.log(`💭 Answering question ${currentQuestionIndex + 1}/${questionsBatch.length}`);
       
-      const response: AnswerResponse = await answerQuiz(sessionId, {
+      const response: AnswerResponseDto = await answerQuiz(sessionId, {
         vocabularyId: question.vocabularyId,
         questionType: question.questionType,
         answer,
       });
 
       if (response.isCorrect) {
-        const nextLevelType = levelToType[response.newLevel] || QuestionType.Listening;
+        const nextLevelType = levelToType[response.newLevel] || QuestionTypeEnum.Listening;
         if (response.isVocabularyCompleted) {
           setLevelFeedback({
             message: `🎉 Mastered "${question.word}"!`,

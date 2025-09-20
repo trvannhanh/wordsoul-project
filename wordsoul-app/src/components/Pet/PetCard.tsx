@@ -1,8 +1,9 @@
 import { useNavigate } from "react-router-dom";
-import type { Pet } from "../types/Dto";
+import type { PetDto } from "../../types/PetDto";
+
 
 interface PetCardProps {
-  pet: Pet;
+  pet: PetDto;
 }
 
 const PetCard: React.FC<PetCardProps> = ({ pet }) => {

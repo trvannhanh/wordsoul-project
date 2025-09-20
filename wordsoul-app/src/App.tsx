@@ -9,7 +9,7 @@ import VocabularySet from './features/vocabularySet/VocabularySet';
 import Pets from './features/pets/Pets';
 import Community from './features/community/Community';
 import UserDashboard from './pages/UserDashboard';
-import DashboardLayout from './components/AdminDashboard/DashboardLayout';
+import DashboardLayout from './pages/AdminDashboardLayout';
 import UserList from './components/AdminDashboard/UserList';
 import UserDetail from './components/AdminDashboard/UserDetail';
 import ActivityLog from './components/AdminDashboard/ActivityLog';
