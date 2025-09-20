@@ -22,25 +22,84 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
-
-# .NET Core
-project.lock.json
-project.fragment.lock.json
 artifacts/
 
+#########################
+# .NET Core
+#########################
+project.lock.json
+project.fragment.lock.json
+
+
+#########################
 # ASP.NET Scaffolding
+#########################
 ScaffoldingReadMe.txt
 
+#########################
 # NuGet Packages
+#########################
 *.nupkg
 # NuGet Symbol Packages
 *.snupkg
+packages/
 
-# Others
+#########################
+# User-specific / IDE
+#########################
 .vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+#########################
+# Logs / Cache / Coverage
+#########################
+*.log
+*.tlog
 ~$*
 *~
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
 CodeCoverage/
+*.coverage
+*.coveragexml
+*.VisualState.xml
+TestResult.xml
+nunit-*.xml
+
+
+#########################
+# Azure Functions local settings
+#########################
+local.settings.json
+
+#########################
+# Secrets & Environment-specific config
+#########################
+# Ignore local configuration that may contain secrets
+appsettings.Development.json
+appsettings.Production.json
+appsettings.Staging.jso
+
+#########################
+# Entity Framework Migrations
+#########################
+#migrations/
+
+#########################
+# Others
+#########################
+*.swp
+*.swo
+*.bak
+*.tmp
+*.DS_Store
+Thumbs.db
+ehthumbs.db
 
 # MSBuild Binary and Structured Log
 *.binlog
