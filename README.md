@@ -56,22 +56,17 @@ WordSoul là một ứng dụng web hướng tới mục tiêu:
 
 ## Giao diện chính (Screenshots)
 
-<p align="center">
-  <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452852/Final_IF_Session_tjkrvk.png" alt="Session" width="300" style="margin:6px; border-radius:8px;"></a>
-  <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452853/Final_IF_Static_ofkoge.png" alt="Dashboard" width="300" style="margin:6px; border-radius:8px;"></a>
-</p>
+  <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452852/Final_IF_Session_tjkrvk.png" alt="Session" width="500" style="margin:6px; border-radius:8px;"></a>
+  <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452853/Final_IF_Static_ofkoge.png" alt="Dashboard" width="500" style="margin:6px; border-radius:8px;"></a>
 
-<p align="center">
-  <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452855/IF_SetList_jzmxrs.png" alt="Set List" width="300" style="margin:6px; border-radius:8px;"></a>
-  <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452854/IF_SetDetail_fa3dgl.png" alt="Set Detail" width="300" style="margin:6px; border-radius:8px;"></a>
-  <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452851/Final_IF_Set1_vnlpw6.png" alt="Create Set - Step 1" width="300" style="margin:6px; border-radius:8px;"></a>
-  <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452851/Final_IF_Set2_cwmmdw.png" alt="Create Set - Step 2" width="300" style="margin:6px; border-radius:8px;"></a>
-</p>
+  <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452855/IF_SetList_jzmxrs.png" alt="Set List" width="500" style="margin:6px; border-radius:8px;"></a>
+  <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452854/IF_SetDetail_fa3dgl.png" alt="Set Detail" width="500" style="margin:6px; border-radius:8px;"></a>
+  <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452851/Final_IF_Set1_vnlpw6.png" alt="Create Set - Step 1" width="500" style="margin:6px; border-radius:8px;"></a>
+  <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452851/Final_IF_Set2_cwmmdw.png" alt="Create Set - Step 2" width="500" style="margin:6px; border-radius:8px;"></a>
 
-<p align="center">
-  <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452837/IF_PetList_can1tg.png" alt="Pet List" width="300" style="margin:6px; border-radius:8px;"></a>
-  <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452853/Final_IF_Pet_yqsneg.png" alt="Pet Detail" width="300" style="margin:6px; border-radius:8px;"></a>
-</p>
+
+  <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452837/IF_PetList_can1tg.png" alt="Pet List" width="500" style="margin:6px; border-radius:8px;"></a>
+  <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452853/Final_IF_Pet_yqsneg.png" alt="Pet Detail" width="500" style="margin:6px; border-radius:8px;"></a>
 
 ---
 
