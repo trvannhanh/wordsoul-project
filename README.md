@@ -14,7 +14,7 @@
 <p align="center">
   <a href="#tổng-quan-dự-án">Tổng quan dự án</a> •
   <a href="#tính-năng-chính">Tính năng chính</a> •
-  <a href="#kiến-trúc-nguyên-tắc-thiết-kế">Kiến trúc & Nguyên tắc thiết kế</a> •
+  <a href="#kiến-trúc--nguyên-tắc-thiết-kế">Kiến trúc & Nguyên tắc thiết kế</a> •
   <a href="#giao-diện-chính">Giao diện chính</a> •
   <a href="#-yêu-cầu-cài-đặt">Yêu cầu cài đặt</a> •
   <a href="#how-to-use">Cách chạy project</a> •
@@ -54,7 +54,7 @@ WordSoul là một ứng dụng web hướng tới mục tiêu:
 - Patterns & Principles: Repository + Service, DTO, Dependency Injection, Unit of Work (DbContext), SOLID.
 ---
 
-## Giao diện chính (Screenshots)
+## Giao diện chính
 
   <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452852/Final_IF_Session_tjkrvk.png" alt="Session" width="500" style="margin:6px; border-radius:8px;"></a>
   <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452853/Final_IF_Static_ofkoge.png" alt="Dashboard" width="500" style="margin:6px; border-radius:8px;"></a>
