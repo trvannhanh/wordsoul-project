@@ -8,13 +8,14 @@
 </h1>
 
 <h4 align="center">
-  Một ứng dụng web hỗ trợ học và ôn tập từ vựng tiếng Anh kết hợp <i>gamification</i>: thu thập thú cưng, nhận điểm XP, vừa học vừa chơi đầy hứng thú.
+  WordSoul — Ứng dụng web học & ôn từ vựng tiếng Anh có gamification (thu thập thú cưng, nhận XP), kết hợp các nguyên lý khoa học về ghi nhớ (spaced repetition + retrieval practice) để vừa học vừa chơi — học mà vẫn nhớ lâu.
 </h4>
 
 <p align="center">
+  <a href="#tổng-quan-dự-án">Tổng quan dự án</a> •
   <a href="#tính-năng-chính">Tính năng chính</a> •
-  <a href="#-công-nghệ-sử-dụng">Công nghệ sử dụng</a> •
-  <a href="#-kiến-trúc--nguyên-tắc">Kiến trúc & Nguyên tắc</a> •
+  <a href="#kiến-trúc-nguyên-tắc-thiết-kế">Kiến trúc & Nguyên tắc thiết kế</a> •
+  <a href="#giao-diện-chính">Giao diện chính</a> •
   <a href="#-yêu-cầu-cài-đặt">Yêu cầu cài đặt</a> •
   <a href="#how-to-use">Cách chạy project</a> •
   <a href="#credits">Credits</a>
@@ -22,45 +23,56 @@
 
 ---
 
+## Tổng quan dự án
+
+WordSoul là một ứng dụng web hướng tới mục tiêu:
+- Kết hợp các nguyên lý khoa học về ghi nhớ (SRS — spaced repetition; retrieval practice) với cơ chế gamification để tăng động lực học.
+- Người dùng học theo bộ từ, mỗi từ trải qua chuỗi dạng bài (Flashcard → Fill-in-Blank → MultipleChoice → Listening) và được coi là hoàn thành khi vượt qua toàn bộ chuỗi này trong một phiên học.
+- Hệ thống còn có cơ chế pet (thú cưng): thu thập, nâng cấp, tiến hóa — dùng XP/AP để tăng tính gắn kết.
+---
+
 ## Tính năng chính
 
-- 📚 Học từ vựng: Luyện tập từ vựng theo chủ đề, hỗ trợ lọc theo từ, nghĩa, loại từ (PartOfSpeech), hoặc cấp độ CEFR.
-- 🔄 Ôn tập thông minh: Hệ thống theo dõi tiến độ học và nhắc nhở ôn tập từ vựng dựa trên thời gian cần ôn (spaced repetition).
-- 🎁 Gamification: Nhận điểm XP, thu thập thú cưng, và nhận thưởng khi hoàn thành nhiệm vụ học tập.
-- 📂 Quản lý bộ từ vựng: Người dùng có thể tạo, chỉnh sửa, thêm/xóa từ vựng vào các bộ từ vựng, với phân quyền rõ ràng (Admin/User).
-- 📊 Thống kê tiến trình: Theo dõi tiến độ học tập qua báo cáo và phân trang dữ liệu.
-- 🐾 Bộ sưu tập thú cưng: Thu thập và quản lý thú cưng, tạo động lực học tập.
-- 🔔 Thông báo thời gian thực: Sử dụng SignalR để gửi thông báo về tiến độ học hoặc các sự kiện trong ứng dụng.
-- 🔒 Xác thực và phân quyền: Sử dụng JWT để xác thực người dùng và phân quyền (Admin/User).
+- 📚 Học & ôn tập thông minh: SRS-based scheduling, lịch ôn tự động.
+- 🔁 4 loại câu hỏi trong phiên học: Flashcard, Fill-in-Blank, MultipleChoice, Listening.
+- 🧠 State machine cho mỗi từ: từ di chuyển giữa các trạng thái theo kết quả đúng/sai.
+- 🎮 Gamification: XP, thu thập & nâng cấp thú cưng, animation phần thưởng.
+- 🗂 Quản lý bộ từ: tạo, chỉnh sửa, thêm/xóa từ, phân quyền (sở hữu/công khai).
+- 📊 Dashboard & thống kê: biểu đồ trình độ, số từ cần ôn, tiến trình học.
+- 🏆 Bảng xếp hạng: xếp hạng người chơi theo điểm.
+- 🔔 Realtime notifications: SignalR để push thông báo sự kiện (phiên học, nâng cấp pet...).
+- 🔒 Xác thực & phân quyền: JWT-based authentication, role Admin/User.
 
 ---
 
-## 🛠 Công nghệ sử dụng
-
-- **Backend**: ASP.NET Core Web API (.NET 9), Entity Framework Core (ORM cho SQL Server), SQL Server (Cơ sở dữ liệu quan hệ), JWT Authentication (Xác thực người dùng), SignalR (Thông báo thời gian thực), Cloudinary (Lưu trữ và quản lý hình ảnh/pronunciation)
-- **Frontend**: ReactJS (Vite, TypeScript), TailwindCSS (Giao diện)
-- **Khác**: REST API (Giao tiếp client-server), CORS (Hỗ trợ truy cập từ localhost), Dependency Injection (Quản lý phụ thuộc trong ASP.NET Core)
-
+## Kiến trúc & Nguyên tắc thiết kế
+- Kiến trúc: Modular Monolith (module theo chức năng: User, Vocabulary, LearningSession, Pet, Reward, Notification).
+- Backend: ASP.NET Core (.NET 9 / .NET 8 tương thích), Entity Framework Core (Code First), SQL Server.
+- Frontend: React (Vite + TypeScript), TailwindCSS.
+- Realtime: SignalR.
+- Storage media: Cloudinary (ảnh / audio pronunciation).
+- Patterns & Principles: Repository + Service, DTO, Dependency Injection, Unit of Work (DbContext), SOLID.
 ---
 
-## 🔑 Kiến trúc & Nguyên tắc
-Dự án được thiết kế theo kiến trúc Modular Monolith, với các module chức năng riêng biệt (từ vựng, người dùng, thú cưng, phiên học, thông báo, v.v.), nhưng chạy trong một tiến trình duy nhất. Các Design Pattern và nguyên tắc được áp dụng:
-- Design Patterns:
-  - Repository Pattern: Tách biệt logic truy cập dữ liệu (VocabularyRepository, UserRepository) khỏi logic nghiệp vụ.
-  - Service Pattern: Xử lý logic nghiệp vụ trong các service (VocabularyService, UserService).
-  - Dependency Injection (DI): Quản lý phụ thuộc qua ASP.NET Core DI, sử dụng Scoped và Singleton lifetime.
-  - DTO Pattern: Sử dụng các DTO (VocabularyDto, AdminVocabularyDto) để truyền dữ liệu an toàn và hiệu quả.
-  - Unit of Work: Ngầm định qua Entity Framework Core với WordSoulDbContext.
-- Nguyên tắc SOLID:
-  - S (Single Responsibility): Mỗi lớp chỉ đảm nhận một nhiệm vụ (controller xử lý API, service xử lý logic, repository truy cập dữ liệu).
-  - O (Open/Closed): Dễ dàng mở rộng thông qua interface (IVocabularyService, IVocabularyRepository) mà không cần sửa mã hiện có.
-  - L (Liskov Substitution): Các lớp triển khai interface có thể thay thế lẫn nhau mà không làm hỏng hệ thống.
-  - I (Interface Segregation): Interface được chia nhỏ, cụ thể cho từng chức năng.
-  - D (Dependency Inversion): Các lớp phụ thuộc vào abstraction (interface) thay vì triển khai cụ thể.
-- Modular Monolith:
-  - Mã nguồn được tổ chức theo các chức năng (từ vựng, người dùng, thú cưng, v.v.) với các service/repository riêng biệt.
-  - Mỗi module giao tiếp qua interface, đảm bảo tính độc lập và dễ bảo trì.
-  - Dự án vẫn là một ứng dụng đơn khối, phù hợp cho quy mô nhỏ/vừa, dễ triển khai hơn microservices.
+## Giao diện chính (Screenshots)
+
+<p align="center">
+  <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452852/Final_IF_Session_tjkrvk.png" alt="Session" width="300" style="margin:6px; border-radius:8px;"></a>
+  <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452853/Final_IF_Static_ofkoge.png" alt="Dashboard" width="300" style="margin:6px; border-radius:8px;"></a>
+</p>
+
+<p align="center">
+  <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452855/IF_SetList_jzmxrs.png" alt="Set List" width="300" style="margin:6px; border-radius:8px;"></a>
+  <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452854/IF_SetDetail_fa3dgl.png" alt="Set Detail" width="300" style="margin:6px; border-radius:8px;"></a>
+  <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452851/Final_IF_Set1_vnlpw6.png" alt="Create Set - Step 1" width="300" style="margin:6px; border-radius:8px;"></a>
+  <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452851/Final_IF_Set2_cwmmdw.png" alt="Create Set - Step 2" width="300" style="margin:6px; border-radius:8px;"></a>
+</p>
+
+<p align="center">
+  <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452837/IF_PetList_can1tg.png" alt="Pet List" width="300" style="margin:6px; border-radius:8px;"></a>
+  <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452853/Final_IF_Pet_yqsneg.png" alt="Pet Detail" width="300" style="margin:6px; border-radius:8px;"></a>
+</p>
+
 ---
 
 ## ⚙️ Yêu cầu cài đặt
