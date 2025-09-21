@@ -1,4 +1,3 @@
-
 <h1 align="center">
   <br>
   <a href="https://github.com/your-username/wordsoul"><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1756452551/coin-logo_ysauhp.png" alt="WordSoul" width="100"></a>
@@ -8,53 +7,55 @@
 </h1>
 
 <h4 align="center">
-  WordSoul — Ứng dụng web học & ôn từ vựng tiếng Anh có gamification (thu thập thú cưng, nhận XP), kết hợp các nguyên lý khoa học về ghi nhớ (spaced repetition + retrieval practice) để vừa học vừa chơi — học mà vẫn nhớ lâu.
+  WordSoul — A web application for learning and reviewing English vocabulary with gamification (collecting pets, earning XP), incorporating scientific memory principles (spaced repetition + retrieval practice) for engaging and long-lasting learning.
 </h4>
 
 <p align="center">
-  <a href="#tổng-quan-dự-án">Tổng quan dự án</a> •
-  <a href="#tính-năng-chính">Tính năng chính</a> •
-  <a href="#kiến-trúc--nguyên-tắc-thiết-kế">Kiến trúc & Nguyên tắc thiết kế</a> •
-  <a href="#giao-diện-chính">Giao diện chính</a> •
-  <a href="#-yêu-cầu-cài-đặt">Yêu cầu cài đặt</a> •
-  <a href="#how-to-use">Cách chạy project</a> •
+  <a href="#project-overview">Project Overview</a> •
+  <a href="#key-features">Key Features</a> •
+  <a href="#architecture--design-principles">Architecture & Design Principles</a> •
+  <a href="#main-interface">Main Interface</a> •
+  <a href="#installation-requirements">Installation Requirements</a> •
+  <a href="#how-to-use">How to Run the Project</a> •
   <a href="#credits">Credits</a>
 </p>
 
 ---
 
-## Tổng quan dự án
+## Project Overview
 
-WordSoul là một ứng dụng web hướng tới mục tiêu:
-- Kết hợp các nguyên lý khoa học về ghi nhớ (SRS — spaced repetition; retrieval practice) với cơ chế gamification để tăng động lực học.
-- Người dùng học theo bộ từ, mỗi từ trải qua chuỗi dạng bài (Flashcard → Fill-in-Blank → MultipleChoice → Listening) và được coi là hoàn thành khi vượt qua toàn bộ chuỗi này trong một phiên học.
-- Hệ thống còn có cơ chế pet (thú cưng): thu thập, nâng cấp, tiến hóa — dùng XP/AP để tăng tính gắn kết.
----
-
-## Tính năng chính
-
-- 📚 Học & ôn tập thông minh: SRS-based scheduling, lịch ôn tự động.
-- 🔁 4 loại câu hỏi trong phiên học: Flashcard, Fill-in-Blank, MultipleChoice, Listening.
-- 🧠 State machine cho mỗi từ: từ di chuyển giữa các trạng thái theo kết quả đúng/sai.
-- 🎮 Gamification: XP, thu thập & nâng cấp thú cưng, animation phần thưởng.
-- 🗂 Quản lý bộ từ: tạo, chỉnh sửa, thêm/xóa từ, phân quyền (sở hữu/công khai).
-- 📊 Dashboard & thống kê: biểu đồ trình độ, số từ cần ôn, tiến trình học.
-- 🏆 Bảng xếp hạng: xếp hạng người chơi theo điểm.
-- 🔔 Realtime notifications: SignalR để push thông báo sự kiện (phiên học, nâng cấp pet...).
-- 🔒 Xác thực & phân quyền: JWT-based authentication, role Admin/User.
+WordSoul is a web application aimed at:
+- Combining scientific memory principles (SRS — spaced repetition; retrieval practice) with gamification to boost learning motivation.
+- Users learn through vocabulary sets, with each word progressing through a sequence of question types (Flashcard → Fill-in-Blank → MultipleChoice → Listening) and is considered mastered upon completing the sequence in a single session.
+- The system includes a pet mechanism: collect, upgrade, and evolve pets using XP/AP to enhance user engagement.
 
 ---
 
-## Kiến trúc & Nguyên tắc thiết kế
-- Kiến trúc: Modular Monolith (module theo chức năng: User, Vocabulary, LearningSession, Pet, Reward, Notification).
-- Backend: ASP.NET Core (.NET 9 / .NET 8 tương thích), Entity Framework Core (Code First), SQL Server.
+## Key Features
+
+- 📚 Smart Learning & Review: SRS-based scheduling, automatic review calendar.
+- 🔁 4 Question Types in a Session: Flashcard, Fill-in-Blank, MultipleChoice, Listening.
+- 🧠 State Machine for Each Word: Words transition between states based on correct/incorrect answers.
+- 🎮 Gamification: XP, pet collection and upgrades, reward animations.
+- 🗂 Vocabulary Set Management: Create, edit, add/remove words, permissions (owned/public).
+- 📊 Dashboard & Statistics: Proficiency charts, words due for review, learning progress.
+- 🏆 Leaderboard: Player ranking based on points.
+- 🔔 Realtime Notifications: SignalR for pushing event notifications (learning sessions, pet upgrades, etc.).
+- 🔒 Authentication & Authorization: JWT-based authentication, Admin/User roles.
+
+---
+
+## Architecture & Design Principles
+- Architecture: Modular Monolith (modules by function: User, Vocabulary, LearningSession, Pet, Reward, Notification).
+- Backend: ASP.NET Core (.NET 9 / .NET 8 compatible), Entity Framework Core (Code First), SQL Server.
 - Frontend: React (Vite + TypeScript), TailwindCSS.
 - Realtime: SignalR.
-- Storage media: Cloudinary (ảnh / audio pronunciation).
+- Storage Media: Cloudinary (images / audio pronunciation).
 - Patterns & Principles: Repository + Service, DTO, Dependency Injection, Unit of Work (DbContext), SOLID.
+
 ---
 
-## Giao diện chính
+## Main Interface
 <p align="center">
   <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452852/Final_IF_Session_tjkrvk.png" alt="Session" width="700" style="margin:6px; border-radius:8px;"></a>
   <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452853/Final_IF_Static_ofkoge.png" alt="Dashboard" width="700" style="margin:6px; border-radius:8px;"></a>
@@ -64,26 +65,24 @@ WordSoul là một ứng dụng web hướng tới mục tiêu:
   <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452851/Final_IF_Set1_vnlpw6.png" alt="Create Set - Step 1" width="700" style="margin:6px; border-radius:8px;"></a>
   <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452851/Final_IF_Set2_cwmmdw.png" alt="Create Set - Step 2" width="700" style="margin:6px; border-radius:8px;"></a>
 
-
   <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452837/IF_PetList_can1tg.png" alt="Pet List" width="500" style="margin:6px; border-radius:8px;"></a>
   <a href=""><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758452853/Final_IF_Pet_yqsneg.png" alt="Pet Detail" width="500" style="margin:6px; border-radius:8px;"></a>
 </p>
-  
 
 ---
 
-## ⚙️ Yêu cầu cài đặt
+## Installation Requirements
 
-Trước khi chạy dự án, cần cài đặt:
+Before running the project, install:
 
 - [Node.js](https://nodejs.org/) >= 18  
-- [npm](https://www.npmjs.com/) hoặc [yarn](https://yarnpkg.com/)  
+- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)  
 - [.NET SDK](https://dotnet.microsoft.com/download) >= 8.0  
 - [SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads)  
 
 ## How To Use
 
-Từ command line:
+From the command line:
 
 ```bash
 # Clone this repository
@@ -95,7 +94,7 @@ $ cd wordsoul
 # Backend
 $ cd wordsoulapi
 $ dotnet restore
-$ dotnet ef database update   # tạo database
+$ dotnet ef database update   # create database
 $ dotnet run
 
 # Frontend
@@ -103,13 +102,9 @@ $ cd wordsoul-app
 $ npm install
 $ npm run dev
 ```
-## Credits
-Dự án được xây dựng với các công nghệ và thư viện:
-  - Backend: ASP.NET Core, Entity Framework Core, SQL Server, SignalR, Cloudinary
-  - Frontend: React, Vite, TypeScript, TailwindCSS
-  - Công cụ: Git, Visual Studio, VS Code
 
----
-
-> GitHub [@trvannhanh](https://github.com/trvannhanh) &nbsp;&middot;&nbsp;
-
+## Credit
+The project was built with the following technologies and libraries:
+- Backend: ASP.NET Core, Entity Framework Core, SQL Server, SignalR, Cloudinary
+- Frontend: React, Vite, TypeScript, TailwindCSS
+- Tools: Git, Visual Studio, VS Code
