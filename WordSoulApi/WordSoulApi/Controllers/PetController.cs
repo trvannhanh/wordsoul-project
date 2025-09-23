@@ -197,6 +197,21 @@ namespace WordSoulApi.Controllers
             return Ok(updatedPets);
         }
 
+        // PUT: api/pets/{id}/active: Active pet
+        [Authorize(Roles = "User")]
+        [HttpPut("{id}/active")]
+        public async Task<IActionResult> ActivePet(int id)
+        {
+            // Lấy userId từ token
+            var userId = User.GetUserId();
+            // Nếu userId không hợp lệ, trả về lỗi Unauthorized
+            if (userId == 0) return Unauthorized();
+
+            var activePet = await _userOwnedPetService.ActivePetAsync(userId, id);
+            if (activePet == null) return NotFound();
+            return Ok(activePet);
+        }
+
         //------------------------------ DELETE -----------------------------------
 
         // DELETE: api/pets/{id} : Xóa pet theo ID

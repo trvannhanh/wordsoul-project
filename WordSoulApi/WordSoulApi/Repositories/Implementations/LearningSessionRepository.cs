@@ -42,6 +42,14 @@ namespace WordSoulApi.Repositories.Implementations
                 .FirstOrDefaultAsync(ls => ls.UserId == userId && ls.VocabularySetId == vocabularySetId && !ls.IsCompleted);
         }
 
+        public async Task<LearningSession?> GetExistingLearningSessionForUserAsync(int userId, int sessionId)
+        {
+            return await _context.LearningSessions
+                .AsNoTracking()
+                .FirstOrDefaultAsync(ls => ls.Id == sessionId && ls.UserId == userId );
+        }
+        
+
         //-------------------------------------UPDATE-----------------------------------------
 
         // Cập nhật một LearningSession hiện có

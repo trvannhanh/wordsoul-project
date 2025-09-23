@@ -60,6 +60,7 @@ namespace WordSoulApi.Services.Implementations
                 Level = user.XP / 100, // Ví dụ: 100 XP = 1 level
                 StreakDays = streakDays,
                 PetCount = user.UserOwnedPets.Count,
+                //PetActive = user.UserOwnedPets.FirstOrDefault(p => p.IsActive)?.Pet.Name,
                 AvatarUrl = user.UserOwnedPets.FirstOrDefault(p => p.IsActive)?.Pet.ImageUrl,
             };
         }

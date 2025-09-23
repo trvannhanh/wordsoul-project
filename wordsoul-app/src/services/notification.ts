@@ -1,4 +1,5 @@
-import type { NotificationDto } from "../types/Dto";
+
+import type { NotificationDto } from "../types/NotificationDto";
 import { authApi, endpoints } from "./api";
 
 

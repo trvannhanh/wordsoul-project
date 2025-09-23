@@ -14,7 +14,7 @@ namespace WordSoulApi.Models.DTOs.Pet
         public int? BaseFormId { get; set; }
         public int? NextEvolutionId { get; set; }
         public int? RequiredLevel { get; set; }
-
+        public int? Order { get; set; }
 
 
     }
@@ -32,6 +32,7 @@ namespace WordSoulApi.Models.DTOs.Pet
         public bool? IsActive { get; set; } = true;
         public DateTime? AcquiredAt { get; set; }
     }
+
 
     public class AdminPetDto : PetDto
     {

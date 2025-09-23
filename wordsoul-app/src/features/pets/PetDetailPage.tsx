@@ -1,21 +1,21 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { fetchPetDetailById, upgradePet } from '../../services/pet';
-import type { PetDetail, UpgradePetResponse, UserDto } from '../../types/Dto';
+import { useParams } from 'react-router-dom';
+import { activePet, fetchPetDetailById, upgradePet } from '../../services/pet';
 import { motion } from 'framer-motion';
 import Particles from 'react-particles';
 import { loadFull } from 'tsparticles';
 import ProfileCard from '../../components/UserProfile/ProfileCard';
 import { useAuth } from '../../store/AuthContext';
+import type { PetDetailDto, UpgradePetResponseDto } from '../../types/PetDto';
+import type { UserDto } from '../../types/UserDto';
 
 const PetDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const navigate = useNavigate();
-  const [pet, setPet] = useState<PetDetail | null>(null);
+  const [pet, setPet] = useState<PetDetailDto | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isUpgrading, setIsUpgrading] = useState<boolean>(false);
+  const [isActive, setIsActive] = useState<boolean>(false);
   const [levelUpAnimation, setLevelUpAnimation] = useState<boolean>(false);
   const [evolveAnimation, setEvolveAnimation] = useState<boolean>(false);
   const [currentImage, setCurrentImage] = useState<string | undefined>(undefined);
@@ -34,7 +34,7 @@ const PetDetailPage: React.FC = () => {
         const data = await fetchPetDetailById(Number(id));
         setPet(data);
         setCurrentImage(data.imageUrl);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         setError(`Không thể tải thông tin thú cưng: ${err.message}`);
       } finally {
@@ -50,7 +50,7 @@ const PetDetailPage: React.FC = () => {
     if (!pet) return;
     setIsUpgrading(true);
     try {
-      const response: UpgradePetResponse = await upgradePet(pet.id);
+      const response: UpgradePetResponseDto = await upgradePet(pet.id);
       if (response.isEvolved) {
         const updatedPet = await fetchPetDetailById(response.petId);
         setPet(updatedPet);
@@ -79,12 +79,29 @@ const PetDetailPage: React.FC = () => {
       }
 
       setUser({ ...user, totalAP: response.ap } as UserDto);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Lỗi khi nâng cấp thú cưng:', err);
       setError(err.response?.data?.message || 'Không thể nâng cấp thú cưng');
     } finally {
       setIsUpgrading(false);
+    }
+  };
+
+
+  const handleActive = async () => {
+    if (!pet) return;
+    setIsActive(true);
+    try {
+      const response: PetDetailDto = await activePet(pet.id);
+
+      setUser({ ...user, avatarUrl: response.imageUrl } as UserDto);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      console.error('Lỗi khi nâng cấp thú cưng:', err);
+      setError(err.response?.data?.message || 'Không thể nâng cấp thú cưng');
+    } finally {
+      setIsActive(false);
     }
   };
 
@@ -130,12 +147,12 @@ const PetDetailPage: React.FC = () => {
                     levelUpAnimation
                       ? { scale: [1, 1.1, 1], opacity: [1, 0.8, 1] }
                       : evolveAnimation
-                      ? {
+                        ? {
                           opacity: [1, 0.3, 0.3, 1], // Mờ dần rồi rõ lại
                           scale: [1, 1.2, 1.2, 1], // Phóng to rồi trở lại
                           rotate: [0, 180, 360, 0], // Xoay 1 vòng, kết thúc ở 0°
                         }
-                      : { scale: 1, opacity: 1, rotate: 0 } // Trạng thái bình thường
+                        : { scale: 1, opacity: 1, rotate: 0 } // Trạng thái bình thường
                   }
                   transition={
                     evolveAnimation
@@ -175,9 +192,12 @@ const PetDetailPage: React.FC = () => {
                 )}
               </>
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-700 text-6xl text-gray-400 rounded-lg">
-                ?
-              </div>
+              <img
+                src={pet.imageUrl}
+                alt={pet.name}
+                className="w-full max-h-100 object-contain transform hover:scale-105 transition-transform duration-300 rounded-lg"
+                style={{ filter: 'brightness(0)' }} // Tạo hiệu ứng bóng đen
+              />
             )}
           </div>
           {isOwned && (
@@ -254,32 +274,60 @@ const PetDetailPage: React.FC = () => {
             <ProfileCard />
           </div>
           {isOwned ? (
-            <motion.button
-              onClick={handleUpgrade}
-              disabled={isUpgrading}
-              className="relative flex items-center justify-center w-full px-4 py-2 bg-yellow-300 text-black rounded-lg hover:bg-yellow-400 hover:shadow-lg hover:shadow-yellow-300/50 transition-all duration-300"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <span className="absolute left-0 w-0.5 h-full bg-yellow-500" />
-              <span className="font-bold">Thăng cấp</span>
-              <span className="absolute right-0 w-0.5 h-full bg-yellow-500" />
-              {isUpgrading && (
-                <svg
-                  className="animate-spin h-5 w-5 ml-2 text-black"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-              )}
-            </motion.button>
+            <>
+              <motion.button
+                onClick={handleUpgrade}
+                disabled={isUpgrading}
+                className="relative flex items-center justify-center w-full px-4 py-2 bg-yellow-300 text-black rounded-lg hover:bg-yellow-400 hover:shadow-lg hover:shadow-yellow-300/50 transition-all duration-300"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <span className="absolute left-0 w-0.5 h-full bg-yellow-500" />
+                <span className="font-bold">Thăng cấp</span>
+                <span className="absolute right-0 w-0.5 h-full bg-yellow-500" />
+                {isUpgrading && (
+                  <svg
+                    className="animate-spin h-5 w-5 ml-2 text-black"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                )}
+              </motion.button>
+              <motion.button
+                onClick={handleActive}
+                disabled={isActive}
+                className="relative flex items-center justify-center w-full px-4 py-2 bg-yellow-300 text-black rounded-lg hover:bg-yellow-400 hover:shadow-lg hover:shadow-yellow-300/50 transition-all duration-300"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <span className="absolute left-0 w-0.5 h-full bg-yellow-500" />
+                <span className="font-bold">Mang theo</span>
+                <span className="absolute right-0 w-0.5 h-full bg-yellow-500" />
+                {isActive && (
+                  <svg
+                    className="animate-spin h-5 w-5 ml-2 text-black"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                )}
+              </motion.button>
+            </>
           ) : (
             <p className="text-red-500 text-center font-semibold">Bạn chưa sở hữu thú cưng này!</p>
           )}

@@ -12,6 +12,7 @@ interface PetScreenProps {
   petId?: number;
   handleCloseReward: () => void;
   currentQuestion?: QuizQuestionDto | null;
+  catchRate: number;
 }
 
 const PetScreen: React.FC<PetScreenProps> = ({
@@ -23,6 +24,7 @@ const PetScreen: React.FC<PetScreenProps> = ({
   mode,
   petId,
   handleCloseReward,
+  catchRate,
 }) => {
   // Placeholder pet khi chưa có sessionData
   const getPlaceholderPet = () => {
@@ -33,9 +35,9 @@ const PetScreen: React.FC<PetScreenProps> = ({
         imageUrl: "https://res.cloudinary.com/dqpkxxzaf/image/upload/v1757601990/Zapdos-removebg-preview_ztjvlh.png",
       };
     }
-    
+
     if (!petId) return null;
-    
+
     return {
       id: petId,
       name: `Pet #${petId}`,
@@ -44,6 +46,20 @@ const PetScreen: React.FC<PetScreenProps> = ({
   };
 
   const placeholderPet = getPlaceholderPet();
+
+  // Hàm để định dạng thông báo khi kết thúc phiên học
+  const getMessage = () => {
+    if (mode === "learning" && sessionData && "isPetAlreadyOwned" in sessionData) {
+      if (sessionData.isPetAlreadyOwned) {
+        return "Bạn đã sở hữu pet này!";
+      }
+      if (sessionData.isPetRewardGranted) {
+        return `Chúc mừng! Bạn đã bắt được ${sessionData.petName}!`;
+      }
+      return "Bắt pet thất bại, chúc may mắn lần sau!";
+    }
+    return sessionData?.message || "Hoàn thành phiên học!";
+  };
 
   return (
     <div
@@ -147,15 +163,15 @@ const PetScreen: React.FC<PetScreenProps> = ({
                     Zapdos đã bỏ trốn!
                   </motion.p>
                 )}
-                
+
                 <motion.h2
                   className="text-xl text-white font-pixel mb-4"
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                 >
-                  {sessionData.message}
+                  {getMessage()}
                 </motion.h2>
-                
+
                 <div className="space-y-2 mb-4">
                   <motion.p className="text-green-900 font-pixel">
                     💰 XP: +{sessionData.xpEarned}
@@ -192,7 +208,7 @@ const PetScreen: React.FC<PetScreenProps> = ({
                       </div>
                     </motion.div>
                   )}
-                
+
                 <motion.button
                   onClick={handleCloseReward}
                   className="bg-emerald-600 px-6 py-3 rounded-lg text-white font-pixel border-2 border-white hover:bg-emerald-700 transition-colors"
@@ -207,70 +223,75 @@ const PetScreen: React.FC<PetScreenProps> = ({
               </div>
             )}
           </motion.div>
-        ) : 
-        // Session đang diễn ra - Hiển thị pet preview hoặc placeholder
-        (encounteredPet || placeholderPet) ? (
-          <motion.div
-            className="flex flex-col items-center justify-center w-full h-full"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            {/* Pet Image */}
-            <motion.img
-              src={encounteredPet?.imageUrl || placeholderPet?.imageUrl}
-              alt={encounteredPet?.name || placeholderPet?.name}
-              className="w-100 h-100 object-contain pixel-art rounded-lg mb-3"
-              initial={{ scale: 0.8, rotate: 180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              whileHover={{ scale: 1.1, rotate: 5 }}
-              transition={{ type: "spring", stiffness: 300 }}
-            />
-            
-            {/* Pet Info */}
+        ) :
+          // Session đang diễn ra - Hiển thị pet preview hoặc placeholder
+          (encounteredPet || placeholderPet) ? (
             <motion.div
-              className="text-center space-y-2"
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
+              className="flex flex-col items-center justify-center w-full h-full"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
             >
-              <h3 className="text-white font-pixel text-lg">
-                {encounteredPet?.name || placeholderPet?.name}
-              </h3>
-              <p className="text-gray-300 font-pixel text-sm bg-black bg-opacity-50 px-2 py-1 rounded">
-                {mode === "learning"
-                  ? "Một sinh vật hoang dã xuất hiện"
-                  : "Vị thần bảo hộ trong truyền thuyết đã xuất hiện"}
-              </p>
+              {/* Pet Image */}
+              <motion.img
+                src={encounteredPet?.imageUrl || placeholderPet?.imageUrl}
+                alt={encounteredPet?.name || placeholderPet?.name}
+                className="w-100 h-100 object-contain pixel-art rounded-lg mb-3"
+                initial={{ scale: 0.8, rotate: 180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              />
+
+              {/* Pet Info */}
+              <motion.div
+                className="text-center space-y-2"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                <h3 className="text-white font-pixel text-lg">
+                  {encounteredPet?.name || placeholderPet?.name}
+                </h3>
+                <p className="text-gray-300 font-pixel text-sm bg-black bg-opacity-50 px-2 py-1 rounded">
+                  {mode === "learning"
+                    ? "Một sinh vật hoang dã xuất hiện"
+                    : "Vị thần bảo hộ trong truyền thuyết đã xuất hiện"}
+                </p>
+                {mode === "learning" && (
+                  <p className="text-yellow-300 font-pixel text-sm bg-black bg-opacity-50 px-2 py-1 rounded">
+                    Tỉ lệ bắt: {(catchRate * 100).toFixed(0)}%
+                  </p>
+                )}
+              </motion.div>
             </motion.div>
-          </motion.div>
-        ) : (
-          // No pet - Placeholder
-          <motion.div
-            className="flex flex-col items-center justify-center text-center w-full h-full"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <div className="w-24 h-24 bg-gray-600 rounded-full flex items-center justify-center mb-4">
-              <span className="text-gray-400 font-pixel text-2xl">?</span>
-            </div>
-            <motion.p
-              className="text-white font-pixel mb-2"
-              initial={{ y: 10 }}
-              animate={{ y: 0 }}
+          ) : (
+            // No pet - Placeholder
+            <motion.div
+              className="flex flex-col items-center justify-center text-center w-full h-full"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
             >
-              {mode === "learning" ? "Learning Pet" : "Review Pet"}
-            </motion.p>
-            <motion.p
-              className="text-gray-400 font-pixel text-sm"
-              initial={{ y: 10 }}
-              animate={{ y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              Complete session to meet your companion!
-            </motion.p>
-          </motion.div>
-        )}
+              <div className="w-24 h-24 bg-gray-600 rounded-full flex items-center justify-center mb-4">
+                <span className="text-gray-400 font-pixel text-2xl">?</span>
+              </div>
+              <motion.p
+                className="text-white font-pixel mb-2"
+                initial={{ y: 10 }}
+                animate={{ y: 0 }}
+              >
+                {mode === "learning" ? "Learning Pet" : "Review Pet"}
+              </motion.p>
+              <motion.p
+                className="text-gray-400 font-pixel text-sm"
+                initial={{ y: 10 }}
+                animate={{ y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                Complete session to meet your companion!
+              </motion.p>
+            </motion.div>
+          )}
       </AnimatePresence>
     </div>
   );

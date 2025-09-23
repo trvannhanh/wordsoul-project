@@ -45,6 +45,7 @@ export const endpoints = {
   pets: '/pets', // Tất cả pet
   pet: (petId: number) => `/pets/${petId}`, // Pet chỉ định
   petDetail: (petId: number) => `/pets/${petId}/details`, // Chi tiết pet
+  petActive: (petId: number) => `/pets/${petId}/active`, // Pet Active
   petBulk: '/pets/bulk', // Xử lý hàng loạt pet
   upgradePet: (petId: number) => `/pets/${petId}/upgrade`, // Nâng cấp pet
 

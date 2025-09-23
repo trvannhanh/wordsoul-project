@@ -1,4 +1,5 @@
-import type { LoginDto, RefreshTokenRequestDto, RegisterDto, TokenResponseDto, UserDto } from "../types/Dto";
+
+import type { LoginDto, RefreshTokenRequestDto, RegisterDto, TokenResponseDto, UserDto } from "../types/UserDto";
 import api, { endpoints } from "./api";
 
 

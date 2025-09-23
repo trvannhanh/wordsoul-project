@@ -22,5 +22,6 @@ namespace WordSoulApi.Repositories.Interfaces
         //------------------------------- DELETE -----------------------------------
         // Xóa VocabularySet theo ID
         Task<bool> DeleteVocabularySetAsync(int id);
+        Task<List<VocabularySet>> GetAllVocabularySetsAsync(string? title, VocabularySetTheme? theme, VocabularyDifficultyLevel? difficulty, DateTime? createdAfter, bool? isOwned, int? userId, int pageNumber, int pageSize);
     }
 }

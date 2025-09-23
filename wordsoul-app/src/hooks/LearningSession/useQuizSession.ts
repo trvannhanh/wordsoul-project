@@ -13,7 +13,8 @@ import { QuestionTypeEnum, type AnswerResponseDto, type CompleteLearningSessionR
 export const useQuizSession = (
   sessionId: number,
   mode: "learning" | "review",
-  petId?: number
+  petId?: number,
+  initialCatchRate?: number
 ) => {
   const [questionsBatch, setQuestionsBatch] = useState<QuizQuestionDto[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -34,6 +35,7 @@ export const useQuizSession = (
   } | null>(null);
   const [showRewardAnimation, setShowRewardAnimation] = useState(false);
   const [captureComplete, setCaptureComplete] = useState(false);
+  const [catchRate, setCatchRate] = useState<number>(initialCatchRate || 0);
 
   const levelToType: Record<number, QuestionTypeEnum> = {
     0: QuestionTypeEnum.Flashcard,
@@ -140,6 +142,7 @@ export const useQuizSession = (
         setLevelFeedback({
           message: `🔄 Retry ${retryType} for "${question.word}"`,
         });
+        setCatchRate((prev) => Math.max(0, prev - 0.05));
       }
 
       // Gọi callback để báo hiệu xử lý xong
@@ -207,5 +210,6 @@ export const useQuizSession = (
     captureComplete,
     setCaptureComplete,
     loadNextQuestion, // Xuất hàm này để AnswerScreen gọi
+    catchRate,
   };
 };

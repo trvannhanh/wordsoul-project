@@ -38,7 +38,7 @@ namespace WordSoulApi.Repositories.Implementations
 
 
         // Tìm kiếm bộ từ vựng với các tiêu chí và phân trang
-        public async Task<IEnumerable<VocabularySet>> GetAllVocabularySetsAsync(
+        public async Task<List<VocabularySet>> GetAllVocabularySetsAsync(
         string? title,
         VocabularySetTheme? theme,
         VocabularyDifficultyLevel? difficulty,
@@ -49,10 +49,13 @@ namespace WordSoulApi.Repositories.Implementations
         int pageSize)
         {
             var query = _context.VocabularySets
+                .AsNoTracking()
                 .Include(vs => vs.SetVocabularies)
                     .ThenInclude(sv => sv.Vocabulary)
                 .Include(vs => vs.CreatedBy)
                 .Include(vs => vs.UserVocabularySets)
+                .AsSplitQuery()
+                .OrderBy(vs => vs.Id)
                 .AsQueryable();
 
             // Chỉ lấy các set công khai hoặc thuộc sở hữu của user

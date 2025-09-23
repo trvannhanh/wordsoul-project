@@ -72,8 +72,8 @@ namespace WordSoulApi.Services.Implementations
             };
         }
 
-        // Thử cấp pet khi người dùng hoàn thành milestone
-        public async Task<(bool alreadyOwned, int bonusXp)> GrantPetAsync(int userId, int petId)
+        // Thử cấp pet
+        public async Task<(bool alreadyOwned, bool isSuccess, int bonusXp)> GrantPetAsync(int userId, int petId, double catchRate)
         {
             // Kiểm tra xem người dùng đã sở hữu pet này chưa
             bool alreadyOwned = await _userOwnedPetRepository.CheckPetOwnedByUserAsync(userId, petId);
@@ -88,21 +88,33 @@ namespace WordSoulApi.Services.Implementations
                     user.XP += bonusXp;
                     await _userRepository.UpdateUserAsync(user);
                 }
-                return (alreadyOwned, bonusXp);
+                return (alreadyOwned, false,  bonusXp);
             }
             else
             {
-                var newUserPet = new UserOwnedPet
+
+                var random = new Random(Guid.NewGuid().GetHashCode());
+                var eligiblePets = new List<Pet>();
+                double roll = random.NextDouble(); // 0.0 -> 1.0
+                if (roll <= catchRate)
                 {
-                    UserId = userId,
-                    PetId = petId,
-                    AcquiredAt = DateTime.UtcNow,
-                    Experience = 0,
-                    Level = 1
-                };
-                await _userOwnedPetRepository.CreateUserOwnedPetAsync(newUserPet);
-                await _activityLogService.CreateActivityLogAsync(userId, "AssignPet", "User granted pet");
-                return (alreadyOwned, 0);
+                    var newUserPet = new UserOwnedPet
+                    {
+                        UserId = userId,
+                        PetId = petId,
+                        AcquiredAt = DateTime.UtcNow,
+                        Experience = 0,
+                        Level = 1
+                    };
+                    await _userOwnedPetRepository.CreateUserOwnedPetAsync(newUserPet);
+                    await _activityLogService.CreateActivityLogAsync(userId, "AssignPet", "User granted pet");
+
+                    return (alreadyOwned, true , 0);
+                }
+                else
+                {
+                    return (alreadyOwned, false, 0);
+                }
             }
         }
 
@@ -164,6 +176,34 @@ namespace WordSoulApi.Services.Implementations
                 IsEvolved = isEvolve,
                 AP = updatedUser.AP
             };
+        }
+
+        //----------------------------UPDATE-------------------
+        public async Task<UserPetDetailDto?> ActivePetAsync(int userId, int petId)
+        {
+            var ownedPet = await _userOwnedPetRepository.GetUserOwnedPetByUserAndPetIdAsync(userId, petId);
+            if (ownedPet == null) throw new InvalidOperationException();
+
+            var allOwnedPets = await _userOwnedPetRepository.GetAllUserOwnedPetByUserIdAsync(userId);
+
+            foreach (var op in allOwnedPets) {
+                op.IsActive = false;
+                await _userOwnedPetRepository.UpdateUserOwnedPetAsync(op);
+            }
+
+            ownedPet.IsActive = true;
+
+            await _userOwnedPetRepository.UpdateUserOwnedPetAsync(ownedPet);
+            return new UserPetDetailDto
+            {
+                Id = ownedPet.PetId,
+                Name = ownedPet.Pet.Name,
+                Description = ownedPet.Pet.Description,
+                ImageUrl = ownedPet.Pet.ImageUrl,
+                Level = ownedPet.Level,
+                Experience = ownedPet.Experience
+            };
+            
         }
 
         //-----------------------------DELETE------------------

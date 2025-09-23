@@ -137,6 +137,7 @@ namespace WordSoulApi.Services.Implementations
                 ImageUrl = p.Pet.ImageUrl ?? "",
                 Rarity = p.Pet.Rarity.ToString(),
                 Type = p.Pet.Type.ToString(),
+                Order = p.Pet.Order,
                 IsOwned = p.IsOwned
             });
         }
@@ -186,6 +187,8 @@ namespace WordSoulApi.Services.Implementations
             };
         }
 
+
+        
 
 
 

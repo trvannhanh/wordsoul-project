@@ -1,4 +1,5 @@
-import type { ActivityLogDto, UserProgressDto, UserDto, UserVocabularySetDto, LeaderBoardDto } from "../types/Dto";
+
+import type { ActivityLogDto, LeaderBoardDto, UserDto, UserProgressDto, UserVocabularySetDto } from "../types/UserDto";
 import api, { authApi, endpoints } from "./api";
 
 export const getUserProgress= async (): Promise<UserProgressDto> => {

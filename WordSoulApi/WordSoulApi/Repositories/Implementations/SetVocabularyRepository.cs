@@ -105,6 +105,7 @@ namespace WordSoulApi.Repositories.Implementations
                 .Where(uvp => uvp.UserId == userId && uvp.NextReviewTime <= DateTime.UtcNow)
                 .Select(uvp => uvp.Vocabulary)
                 .Select(v => new Vocabulary { Id = v.Id })
+                .OrderBy(v => v.Id)
                 .Take(take)
                 .ToListAsync();
 

@@ -63,6 +63,11 @@ namespace WordSoulApi.Repositories.Implementations
                         : query.OrderBy(u => u.AP));
             }
 
+            if (!topXP.HasValue && !topAP.HasValue)
+            {
+                query = query.OrderBy(u => u.Id);
+            }
+
             // Phân trang
             return await query
                 .Skip((pageNumber - 1) * pageSize)
@@ -82,6 +87,7 @@ namespace WordSoulApi.Repositories.Implementations
             return await _context.Users
                 .Include(u => u.UserOwnedPets).ThenInclude(up => up.Pet)
                 .Include(u => u.UserVocabularyProgresses)
+                .AsSplitQuery() // Chia truy vấn thành nhiều truy vấn
                 .FirstOrDefaultAsync(u => u.Id == userId);
         }
 

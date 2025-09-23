@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
-import type { Pet, UserDto } from '../../types/Dto';
+
 import { assignPetToUser, createPet, createPetsBulk, deletePet, getAllPets, updatePet } from '../../services/pet';
 import { getAllUsers } from '../../services/user';
+import type { PetDto } from '../../types/PetDto';
+import type { UserDto } from '../../types/UserDto';
 
 
 const PetList = () => {
-  const [pets, setPets] = useState<Pet[]>([]);
-  const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
+  const [pets, setPets] = useState<PetDto[]>([]);
+  const [selectedPet, setSelectedPet] = useState<PetDto | null>(null);
   const [formData, setFormData] = useState({ name: '', description: '', imageFile: null as File | null, rarity: '', type: '', baseFormId: null, nextEvolutionId: null, requiredLevel: null });
   const [bulkPets, setBulkPets] = useState<File[]>([]); // For bulk create (list files or DTOs, adjust if needed)
   const [users, setUsers] = useState<UserDto[]>([]); // List users for assign

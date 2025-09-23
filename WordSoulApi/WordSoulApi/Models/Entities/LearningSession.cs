@@ -13,6 +13,7 @@
         public VocabularySet? VocabularySet { get; set; } // Navigation property to VocabularySet
         public int? PetId { get; set; } // Optional reference to a Pet
         public Pet? Pet { get; set; } // Navigation property to Pet
+        public double? CatchRate { get; set; }
         public List<SessionVocabulary> SessionVocabularies { get; set; } = new List<SessionVocabulary>();
         public List<AnswerRecord> AnswerRecords { get; set; } = new List<AnswerRecord>();
     }

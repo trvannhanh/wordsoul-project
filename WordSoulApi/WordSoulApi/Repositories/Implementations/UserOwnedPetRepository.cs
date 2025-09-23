@@ -34,6 +34,15 @@ namespace WordSoulApi.Repositories.Implementations
                 .FirstOrDefaultAsync(uop => uop.UserId == userId && uop.PetId == petId);
         }
 
+        // Lấy tất cả pet sở hữu của người dùng
+        public async Task<IEnumerable<UserOwnedPet>> GetAllUserOwnedPetByUserIdAsync(int userId)
+        {
+            return await _context.UserOwnedPets
+                .Where(uop => uop.UserId == userId)
+                .ToListAsync();
+                
+        }
+
         public async Task<Pet?> GetRandomPetBySetIdAsync(int vocabularySetId)
         {
             var setPets = await _context.SetRewardPets
@@ -68,6 +77,7 @@ namespace WordSoulApi.Repositories.Implementations
             _context.UserOwnedPets.Update(userOwnedPet);
             await _context.SaveChangesAsync();
         }
+
 
         //-------------------------------------DELETE-----------------------------------------
 

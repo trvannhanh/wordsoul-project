@@ -7,7 +7,8 @@ import {
   removeRoleFromUser,
   getUserActivities,
 } from '../../services/user';
-import type { ActivityLogDto, UserDto } from '../../types/Dto';
+import type { ActivityLogDto, UserDto } from '../../types/UserDto';
+
 
 
 const UserDetail = () => {

@@ -20,5 +20,6 @@ namespace WordSoulApi.Repositories.Interfaces
         //-------------------------------- DELETE -----------------------------------
         // Xóa từ vựng
         Task<bool> DeleteVocabularyAsync(int id);
+        Task<List<Vocabulary>> GetAllVocabulariesAsync(string? word, string? meaning, PartOfSpeech? partOfSpeech, CEFRLevel? cEFRLevel, int pageNumber, int pageSize);
     }
 }

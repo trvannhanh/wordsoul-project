@@ -28,7 +28,7 @@ const Card: React.FC<CardProps> = ({ title, description, theme, difficultyLevel,
                         <span className="bg-purple-600 text-white text-xs font-medium min-w-18 text-center px-2 py-1 rounded-full">
                             {createdByUsername ? `${createdByUsername}` : 'Unknown'}
                         </span>
-                    </div>
+                    </div>  
                     <p className="text-gray-600 mb-3">
                         {description}
                     </p>

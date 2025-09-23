@@ -1,4 +1,5 @@
-import type { UserDto } from "../types/Dto";
+import type { UserDto } from "../types/UserDto";
+
 
 
 interface AuthState {
