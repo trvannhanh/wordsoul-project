@@ -44,7 +44,7 @@ if (builder.Environment.IsDevelopment())
 }
 else
 {
-    var pgConn = Environment.GetEnvironmentVariable("DATABASE_URL");
+    var pgConn = Environment.GetEnvironmentVariable("DefaultConnection");
     builder.Services.AddDbContext<WordSoulDbContext>(options =>
         options.UseNpgsql(pgConn));
 }
