@@ -3,12 +3,13 @@ import Card from '../components/Card';
 import HeroSection from '../components/HeroSection';
 import { fetchVocabularySets } from '../services/vocabularySet';
 import Skeleton from '../components/Skeleton';
-import type { VocabularySet } from '../types/Dto';
+import type { VocabularySetDto } from '../types/VocabularySetDto';
+
 
 
 
 const Home: React.FC = () => {
-  const [vocabularySets, setVocabularySets] = useState<VocabularySet[]>([]);
+  const [vocabularySets, setVocabularySets] = useState<VocabularySetDto[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,7 +57,7 @@ const Home: React.FC = () => {
           height="29rem"
           hidden={false}
         />
-        <div className="background-color text-white h-screen px-10 py-3 text-center py-8 text-red-500">
+        <div className="background-color h-screen px-10 text-center py-8 text-red-500">
           {error}  // Hoặc thêm nút retry: <button onClick={() => window.location.reload()}>Retry</button>
         </div>
       </>

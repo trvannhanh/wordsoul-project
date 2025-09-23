@@ -24,9 +24,17 @@ namespace WordSoulApi.Services.Implementations
         private readonly ILogger<LearningSessionService> _logger;
         private readonly IActivityLogService _activityLogService;
         private readonly IUserVocabularyProgressRepository _userVocabularyProgressRepository;
+        private readonly ISetRewardPetService _setRewardPetService;
 
 
-        public LearningSessionService(ILearningSessionRepository sessionRepo, IVocabularyRepository vocabRepo, IUserVocabularySetRepository userVocabularySetRepository, ILogger<LearningSessionService> logger, IUserRepository userRepository, IUserOwnedPetService userOwnedPetService, IAnswerRecordRepository answerRecordRepository, IActivityLogService activityLogService, IUserOwnedPetRepository userOwnedPetRepository, IPetRepository petRepository, IUserVocabularyProgressRepository userVocabularyProgressRepository, ISetVocabularyRepository setVocabularyRepository, ISessionVocabularyRepository sessionVocabularyRepository)
+        public LearningSessionService(ILearningSessionRepository sessionRepo, IVocabularyRepository vocabRepo, 
+                                        IUserVocabularySetRepository userVocabularySetRepository, 
+                                        ILogger<LearningSessionService> logger, IUserRepository userRepository, 
+                                        IUserOwnedPetService userOwnedPetService, IAnswerRecordRepository answerRecordRepository,
+                                        IActivityLogService activityLogService, IUserOwnedPetRepository userOwnedPetRepository,
+                                        IPetRepository petRepository, IUserVocabularyProgressRepository userVocabularyProgressRepository,
+                                        ISetVocabularyRepository setVocabularyRepository, 
+                                        ISessionVocabularyRepository sessionVocabularyRepository, ISetRewardPetService setRewardPetService)
         {
             _sessionRepo = sessionRepo;
             _vocabRepo = vocabRepo;
@@ -41,6 +49,7 @@ namespace WordSoulApi.Services.Implementations
             _userVocabularyProgressRepository = userVocabularyProgressRepository;
             _setVocabularyRepository = setVocabularyRepository;
             _sessionVocabularyRepository = sessionVocabularyRepository;
+            _setRewardPetService = setRewardPetService;
         }
 
         //------------------------------------CREATE-----------------------------------------
@@ -62,15 +71,16 @@ namespace WordSoulApi.Services.Implementations
                     Id = existingSession.Id,
                     IsCompleted = existingSession.IsCompleted,
                     VocabularyIds = existingSession.SessionVocabularies.Select(v => v.VocabularyId).ToList(),
-                    PetId = existingSession.PetId 
+                    PetId = existingSession.PetId,
+                    CatchRate = existingSession.CatchRate,
                 };
             }
 
             if (wordCount <= 0)
                 throw new ArgumentException("WordCount must be greater than zero.", nameof(wordCount));
 
-            var exists = await _userVocabularySetRepository.CheckUserVocabularyExist(userId, setId);
-            if (!exists)
+            var exists = await _userVocabularySetRepository.GetUserVocabularySetAsync(userId, setId);
+            if (exists == null)
             {
                 _logger.LogWarning("User {UserId} doesn't own VocabularySet {SetId}", userId, setId);
                 throw new InvalidOperationException("VocabularySet doesn't exist for this user");
@@ -83,9 +93,17 @@ namespace WordSoulApi.Services.Implementations
                 throw new InvalidOperationException("No unlearned vocabularies available in this set");
             }
 
-            var randomPet = await _userOwnedPetRepository.GetRandomPetBySetIdAsync(setId); 
+            var randomPet = await _setRewardPetService.GetRandomPetBySetIdAsync(setId, exists.TotalCompletedSession);
 
-            return await CreateSessionAsync(userId, setId, SessionType.Learning, vocabularies, randomPet?.Id);
+            if (randomPet == null)
+            {
+                _logger.LogInformation("No pets in set {SetId}", setId);
+                throw new InvalidOperationException("No pets available in this set");
+            }
+
+            var petCatchRate = GetPetCatchRate(randomPet.Rarity);
+
+            return await CreateSessionAsync(userId, setId, SessionType.Learning, vocabularies, randomPet.Id, petCatchRate);
         }
 
         // Tạo một phiên học ôn tập mới cho người dùng
@@ -103,11 +121,11 @@ namespace WordSoulApi.Services.Implementations
                 throw new InvalidOperationException("No unreviewed vocabularies available");
             }
 
-            return await CreateSessionAsync(userId, null, SessionType.Review, vocabularies, null);
+            return await CreateSessionAsync(userId, null, SessionType.Review, vocabularies, null, null);
         }
 
         // Hàm helper để tạo phiên học
-        private async Task<LearningSessionDto> CreateSessionAsync(int userId, int? setId, SessionType type, IEnumerable<Vocabulary> vocabularies, int? petId)
+        private async Task<LearningSessionDto> CreateSessionAsync(int userId, int? setId, SessionType type, IEnumerable<Vocabulary> vocabularies, int? petId, double? catchRate)
         {
             var session = new LearningSession
             {
@@ -123,7 +141,8 @@ namespace WordSoulApi.Services.Implementations
                     CurrentLevel = 0,  // Bắt đầu từ Flashcard
                     IsCompleted = false
                 }).ToList(),
-                PetId = petId
+                PetId = petId,
+                CatchRate = catchRate
             };
 
             var savedSession = await _sessionRepo.CreateLearningSessionAsync(session);
@@ -133,7 +152,8 @@ namespace WordSoulApi.Services.Implementations
                 Id = savedSession.Id,
                 IsCompleted = savedSession.IsCompleted,
                 VocabularyIds = savedSession.SessionVocabularies.Select(v => v.VocabularyId).ToList(),
-                PetId = savedSession.PetId 
+                PetId = savedSession.PetId,
+                CatchRate = catchRate
             };
         }
 
@@ -161,7 +181,7 @@ namespace WordSoulApi.Services.Implementations
 
 
             var questions = new List<QuizQuestionDto>();
-            var levelToType = new Dictionary<int, QuestionType>
+            var levelToType = new Dictionary<int, QuestionType> 
             {
                 {0, QuestionType.Flashcard},
                 {1, QuestionType.FillInBlank},
@@ -239,6 +259,7 @@ namespace WordSoulApi.Services.Implementations
 
             // Xử lý logic đặc thù cho học từ mới
             bool isPetRewardGranted = false;
+            bool isPetAlreadyOwned = false;
             int petId = 0;
             string? petName = null;
             string? petDescription = null;
@@ -265,14 +286,15 @@ namespace WordSoulApi.Services.Implementations
             }
 
 
-            if (sessionType == SessionType.Learning && session.PetId.HasValue)
+            if (sessionType == SessionType.Learning && session.PetId.HasValue && session.CatchRate.HasValue)
             {
                 if (!session.VocabularySetId.HasValue)
                     throw new InvalidOperationException("VocabularySetId is required for learning session");
 
                 // Grant Pet ngay lập tức với catch rate 100% (nếu chưa sở hữu)
-                var (alreadyOwned, bonusXp) = await _userOwnedPetService.GrantPetAsync(userId, session.PetId.Value);
-                isPetRewardGranted = !alreadyOwned; // Chỉ true nếu grant mới
+                var (alreadyOwned, isSuccess, bonusXp) = await _userOwnedPetService.GrantPetAsync(userId, session.PetId.Value, session.CatchRate.Value);
+                isPetRewardGranted = isSuccess; // Chỉ true nếu grant mới
+                isPetAlreadyOwned = alreadyOwned;
                 if (alreadyOwned) xpEarned += bonusXp; // Thêm bonus XP nếu đã sở hữu
 
                 // Lấy thông tin Pet để trả về (giả sử có DbContext)
@@ -302,6 +324,7 @@ namespace WordSoulApi.Services.Implementations
                 {
                     XpEarned = xpEarned,
                     IsPetRewardGranted = isPetRewardGranted,
+                    IsPetAlreadyOwned = isPetAlreadyOwned,
                     PetId = petId,
                     PetName = petName,
                     Description = petDescription,
@@ -330,8 +353,8 @@ namespace WordSoulApi.Services.Implementations
                 throw new ArgumentException("Invalid request data");
 
             // Kiểm tra user có tham gia session này không
-            var userSessionExist = await _sessionRepo.CheckUserLearningSessionExist(userId, sessionId);
-            if (!userSessionExist)
+            var userSessionExist = await _sessionRepo.GetExistingLearningSessionForUserAsync(userId, sessionId);
+            if (userSessionExist == null)
                 throw new UnauthorizedAccessException("User does not have access to this session");
 
             var sessionVocab = await _sessionVocabularyRepository.GetSessionVocabularyAsync(sessionId, request.VocabularyId);
@@ -414,6 +437,12 @@ namespace WordSoulApi.Services.Implementations
             {
                 sessionVocab.CurrentLevel = Math.Max(0, sessionVocab.CurrentLevel - 1);
                 sessionVocab.IsCompleted = false;
+                if(userSessionExist.CatchRate != null)
+                {
+                    userSessionExist.CatchRate -= 0.05;
+                    await _sessionRepo.UpdateLearningSessionAsync(userSessionExist);
+                }    
+                
             }
 
             await _sessionVocabularyRepository.UpdateSessionVocabularyAsync(sessionVocab);
@@ -461,6 +490,20 @@ namespace WordSoulApi.Services.Implementations
             progress.NextReviewTime = DateTime.UtcNow.AddDays(daysToAdd);
 
             await _userVocabularyProgressRepository.UpdateUserVocabularyProgressAsync(progress);
+        }
+
+
+        private static double GetPetCatchRate(PetRarity level)
+        {
+            return level switch
+            {
+                PetRarity.Common => 1.0,
+                PetRarity.Uncommon => 0.8,
+                PetRarity.Rare => 0.6,
+                PetRarity.Epic => 0.4,
+                PetRarity.Legendary => 0.2,
+                _ => 1.0
+            };
         }
 
     }

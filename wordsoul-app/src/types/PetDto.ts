@@ -6,6 +6,7 @@ export interface PetDto {
   imageUrl: string;
   rarity: string;
   type: string;
+  order: number
 }
 
 export interface PetDetailDto {

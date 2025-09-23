@@ -1,6 +1,8 @@
 import { AxiosError } from "axios";
-import type { Vocabulary, VocabularySet, VocabularySetDetail } from "../types/Dto";
 import api, { authApi, endpoints } from "./api";
+import type { VocabularySetDetailDto, VocabularySetDto } from "../types/VocabularySetDto";
+
+
 
 export const fetchVocabularySets = async (
   title?: string,
@@ -10,9 +12,9 @@ export const fetchVocabularySets = async (
   isOwned?: boolean, // Mới: Thêm tham số isOwned
   pageNumber: number = 1,
   pageSize: number = 10
-): Promise<VocabularySet[]> => {
+): Promise<VocabularySetDto[]> => {
   try {
-    const response = await api.get<VocabularySet[]>(endpoints.vocabularySets, {
+    const response = await api.get<VocabularySetDto[]>(endpoints.vocabularySets, {
       params: {
         title: title || undefined,
         theme: theme || undefined,
@@ -40,9 +42,9 @@ export const fetchUserVocabularySets = async (
   isOwned?: boolean, // Mới: Thêm tham số isOwned
   pageNumber: number = 1,
   pageSize: number = 10
-): Promise<VocabularySet[]> => {
+): Promise<VocabularySetDto[]> => {
   try {
-    const response = await authApi.get<VocabularySet[]>(endpoints.vocabularySets, {
+    const response = await authApi.get<VocabularySetDto[]>(endpoints.vocabularySets, {
       params: {
         title: title || undefined,
         theme: theme || undefined,
@@ -62,9 +64,9 @@ export const fetchUserVocabularySets = async (
   }
 };
 
-export const fetchVocabularySetDetail = async (id: number, page = 1, pageSize = 10): Promise<VocabularySetDetail> => {
+export const fetchVocabularySetDetail = async (id: number, page = 1, pageSize = 10): Promise<VocabularySetDetailDto> => {
  try {
-    const response = await api.get<VocabularySetDetail>(endpoints.vocabularySetDetail(id), {
+    const response = await api.get<VocabularySetDetailDto>(endpoints.vocabularySetDetail(id), {
       params: {
         page,
         pageSize,
@@ -79,14 +81,14 @@ export const fetchVocabularySetDetail = async (id: number, page = 1, pageSize = 
   }
 };
 
-export const createVocabularySet = async (formData: FormData): Promise<VocabularySet> => {
-  const response = await authApi.post<VocabularySet>(endpoints.vocabularySets, formData, {
+export const createVocabularySet = async (formData: FormData): Promise<VocabularySetDto> => {
+  const response = await authApi.post<VocabularySetDto>(endpoints.vocabularySets, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
-  return response.data;
+  return response.data; 
 };
 
-export const updateVocabularySet = async (id: number, data: VocabularySet): Promise<void> => {
+export const updateVocabularySet = async (id: number, data: VocabularySetDto): Promise<void> => {
   await authApi.put(endpoints.vocabularySet(id), data);
 };
 
@@ -94,25 +96,7 @@ export const deleteVocabularySet = async (id: number): Promise<void> => {
   await authApi.delete(endpoints.vocabularySet(id));
 };
 
-export const getAllVocabularies = async (): Promise<Vocabulary[]> => {
-  const response = await authApi.get<Vocabulary[]>(endpoints.vocabularies);
-  return response.data;
-};
 
-export const createVocabulary = async (formData: FormData): Promise<Vocabulary> => {
-  const response = await authApi.post<Vocabulary>(endpoints.vocabularies, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
-  return response.data;
-};
 
-export const addVocabularyToSet = async (setId: number, formData: FormData): Promise<Vocabulary> => {
-  const response = await authApi.post<Vocabulary>(endpoints.setVocabulary(setId), formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
-  return response.data;
-};
 
-export const removeVocabularyFromSet = async (setId: number, vocabId: number): Promise<void> => {
-  await authApi.delete(endpoints.deleteSetVocabulary(setId, vocabId));
-};
+

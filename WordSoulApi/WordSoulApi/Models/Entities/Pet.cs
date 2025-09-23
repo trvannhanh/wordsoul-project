@@ -34,6 +34,8 @@ namespace WordSoulApi.Models.Entities
         Legendary // e.g., "Legendary"
     }
 
+
+
     public enum PetType
     {
         Nomadica,

@@ -30,10 +30,12 @@ namespace WordSoulApi.Repositories.Implementations
 
         //-------------------------------------READ-------------------------------------------
         // Lấy tất cả các từ vựng
-        public async Task<IEnumerable<Vocabulary>> GetAllVocabulariesAsync(string? word, string? meaning, PartOfSpeech? partOfSpeech, CEFRLevel? cEFRLevel, int pageNumber, int pageSize)
+        public async Task<List<Vocabulary>> GetAllVocabulariesAsync(string? word, string? meaning, PartOfSpeech? partOfSpeech, CEFRLevel? cEFRLevel, int pageNumber, int pageSize)
         {
 
             var query = _context.Vocabularies
+                .AsNoTracking()
+                .OrderBy(v => v.Id)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(word))
@@ -64,7 +66,7 @@ namespace WordSoulApi.Repositories.Implementations
 
 
         // Lấy các từ vựng theo danh sách từ
-        public async Task<IEnumerable<Vocabulary>> GetVocabulariesByWordsAsync(List<string> words)
+        public async Task<List<Vocabulary>> GetVocabulariesByWordsAsync(List<string> words)
         {
             if (words == null || !words.Any())
             {

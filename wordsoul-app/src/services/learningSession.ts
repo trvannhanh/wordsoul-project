@@ -1,35 +1,30 @@
-import type {
-  AnswerResponse,
-  LearningSession,
-  QuizQuestion,
-  AnswerRequest,
-  CompleteLearningSessionResponseDto,
-  CompleteReviewSessionResponseDto,
-} from "../types/Dto";
+
+
+import type { AnswerRequestDto, AnswerResponseDto, CompleteLearningSessionResponseDto, CompleteReviewSessionResponseDto, LearningSessionDto, QuizQuestionDto } from "../types/LearningSessionDto";
 import { authApi, endpoints } from "./api";
 
-export const createLearningSession = async (id: number): Promise<LearningSession> => {
-  const response = await authApi.post<LearningSession>(endpoints.learningSession(id));
+export const createLearningSession = async (id: number): Promise<LearningSessionDto> => {
+  const response = await authApi.post<LearningSessionDto>(endpoints.learningSession(id));
   return response.data;
 };
 
-export const createReviewSession = async (): Promise<LearningSession> => {
-  const response = await authApi.post<LearningSession>(endpoints.reviewSession);
+export const createReviewSession = async (): Promise<LearningSessionDto> => {
+  const response = await authApi.post<LearningSessionDto>(endpoints.reviewSession);
   return response.data;
 };
 
 export const fetchQuizOfSession = async (
   id: number
-): Promise<QuizQuestion[]> => {
-  const response = await authApi.get<QuizQuestion[]>(endpoints.quizQuestions(id));
+): Promise<QuizQuestionDto[]> => {
+  const response = await authApi.get<QuizQuestionDto[]>(endpoints.quizQuestions(id));
   return response.data;
 };
 
 export const answerQuiz = async (
   sessionId: number,
-  req: AnswerRequest
-): Promise<AnswerResponse> => {
-  const response = await authApi.post<AnswerResponse>(
+  req: AnswerRequestDto
+): Promise<AnswerResponseDto> => {
+  const response = await authApi.post<AnswerResponseDto>(
     endpoints.answerRecord(sessionId),
     req
   );

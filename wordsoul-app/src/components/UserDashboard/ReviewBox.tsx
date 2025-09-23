@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import type { UserProgressDto } from '../../types/Dto';
+import type { UserProgressDto } from '../../types/UserDto';
+
 
 interface ReviewBoxProps {
   progress: UserProgressDto | null;

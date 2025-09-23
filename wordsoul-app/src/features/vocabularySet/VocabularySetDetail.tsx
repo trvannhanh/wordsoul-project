@@ -6,7 +6,8 @@ import { createLearningSession } from "../../services/learningSession";
 import ProfileCard from "../../components/UserProfile/ProfileCard";
 import VocabularyList from "../../components/Vocabulary/VocabularyList";
 import { getUserVocabularySets, registerVocabularySet } from "../../services/user";
-import type { UserVocabularySetDto } from "../../types/Dto";
+import type { UserVocabularySetDto } from "../../types/UserDto";
+
 
 interface VocabularySetMeta {
   id: number;
@@ -34,7 +35,7 @@ const VocabularySetDetail: React.FC = () => {
     try {
       const session = await createLearningSession(Number(id));
       navigate(`/learningSession/${session.id}?mode=learning`, {
-        state: { petId: session.petId },
+        state: { petId: session.petId , catchRate: session.catchRate},
       });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {

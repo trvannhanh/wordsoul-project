@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getAllActivities } from '../../services/user';
-import type { ActivityLogDto } from '../../types/Dto';
+import type { ActivityLogDto } from '../../types/UserDto';
+
 
 
 const ActivityLog = () => {

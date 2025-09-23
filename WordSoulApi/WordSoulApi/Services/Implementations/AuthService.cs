@@ -17,12 +17,18 @@ namespace WordSoulApi.Services.Implementations
         private readonly IAuthRepository _authRepository;
         private readonly IConfiguration _configuration;
         private readonly IActivityLogService _activityLogService;
+        private readonly IUserAchievementRepository _userAchievementRepository;
+        private readonly IAchievementRepository _achievementRepository;
 
-        public AuthService(IAuthRepository authRepository, IConfiguration configuration, IActivityLogService activityLogService)
+        public AuthService(IAuthRepository authRepository, IConfiguration configuration, 
+                            IActivityLogService activityLogService, IAchievementRepository achievementRepository,
+                            IUserAchievementRepository userAchievementRepository)
         {
             _authRepository = authRepository;
             _configuration = configuration;
             _activityLogService = activityLogService;
+            _userAchievementRepository = userAchievementRepository;
+            _achievementRepository = achievementRepository;
         }
 
         // Đăng nhập người dùng và trả về TokenResponseDto nếu thành công, ngược lại trả về null
@@ -70,6 +76,18 @@ namespace WordSoulApi.Services.Implementations
             };
 
             var registeredUser = await _authRepository.RegisterUserAsync(user);
+
+            var allAchievements = await _achievementRepository.GetAchievementsAsync(null, 1, 10);
+            var userAchievements = allAchievements.Select(a => new UserAchievement
+            {
+                UserId = registeredUser.Id,
+                AchievementId = a.Id,
+                ProgressValue = 0,
+                IsCompleted = false,
+                CompletedAt = null
+            }).ToList();
+
+            await _userAchievementRepository.BulkCreateUserAchievementAsync(userAchievements);
 
             return new UserDto
             {

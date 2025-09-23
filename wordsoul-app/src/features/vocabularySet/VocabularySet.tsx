@@ -1,19 +1,20 @@
 
 import { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
-import type { VocabularySet } from '../../types/Dto';
+
 import { fetchUserVocabularySets, fetchVocabularySets } from '../../services/vocabularySet';
 import Card from '../../components/Card';
 import Skeleton from '../../components/Skeleton';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../store/AuthContext';
+import type { VocabularySetDto } from '../../types/VocabularySetDto';
 
 const VocabularySetsPage = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
-    const [dailyLearningSets, setDailyLearningSets] = useState<VocabularySet[]>([]);
-    const [advancedTopicsSets, setAdvancedTopicsSets] = useState<VocabularySet[]>([]);
-    const [mySets, setMySets] = useState<VocabularySet[]>([]);
+    const [dailyLearningSets, setDailyLearningSets] = useState<VocabularySetDto[]>([]);
+    const [advancedTopicsSets, setAdvancedTopicsSets] = useState<VocabularySetDto[]>([]);
+    const [mySets, setMySets] = useState<VocabularySetDto[]>([]);
     const [searchTitle, setSearchTitle] = useState<string>('');
     const [debouncedSearchTitle] = useDebounce(searchTitle, 500);
     const [loading, setLoading] = useState<boolean>(true);

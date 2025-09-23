@@ -1,5 +1,5 @@
 import { Bar } from 'react-chartjs-2';
-import type { UserProgressDto } from '../../types/Dto';
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -9,6 +9,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import type { UserProgressDto } from '../../types/UserDto';
 
 // Đăng ký ChartJS components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);

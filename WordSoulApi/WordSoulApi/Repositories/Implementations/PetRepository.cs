@@ -76,6 +76,8 @@ namespace WordSoulApi.Repositories.Implementations
                 query = query.Where(x => x.IsOwned == isOwned.Value);
             }
 
+            query = query.OrderBy(x => x.Pet.Order);
+
             // Pagination
             query = query
                 .Skip((pageNumber - 1) * pageSize)

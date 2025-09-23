@@ -10,6 +10,7 @@
     public class CompleteLearningSessionResponseDto : CompleteSessionResponseDto
     {
         public bool IsPetRewardGranted { get; set; }
+        public bool IsPetAlreadyOwned { get; set; }
         public int? PetId { get; set; } // Pet được cấp nếu có
         public string? PetName { get; set; }
         public string? Description { get; set; }

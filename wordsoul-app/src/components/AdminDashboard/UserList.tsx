@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { getAllUsers } from '../../services/user';
 import { Link } from 'react-router-dom';
-import type { UserDto } from '../../types/Dto';
+import type { UserDto } from '../../types/UserDto';
+
 
 const UserList = () => {
   const [users, setUsers] = useState<UserDto[]>([]);

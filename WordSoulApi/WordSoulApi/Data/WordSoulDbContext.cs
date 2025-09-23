@@ -19,7 +19,10 @@ namespace WordSoulApi.Data
         public DbSet<SetRewardPet> SetRewardPets { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<ActivityLog> ActivityLogs { get; set; }
-
+        public DbSet<Item> Items { get; set; }
+        public DbSet<UserItem> UserItems { get; set; }
+        public DbSet<Achievement> Achievements { get; set; }
+        public DbSet<UserAchievement> UserAchievements { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -131,6 +134,50 @@ namespace WordSoulApi.Data
                 .WithMany(vs => vs.SetRewardPets)
                 .HasForeignKey(srp => srp.VocabularySetId)
                 .OnDelete(DeleteBehavior.Cascade); // Cascade delete if vocabulary set is deleted
+
+            // User N - N Item relationship (UserItem)
+
+            modelBuilder.Entity<UserItem>()
+               .HasKey(ui => ui.Id); // Đặt Id là khóa chính
+
+            modelBuilder.Entity<UserItem>()
+                .Property(ui => ui.Id)
+                .ValueGeneratedOnAdd(); // Tự động tăng
+
+            modelBuilder.Entity<UserItem>()
+                .HasOne(ui => ui.Item)
+                .WithMany(i => i.UserItems)
+                .HasForeignKey(ui => ui.ItemId)
+                .OnDelete(DeleteBehavior.Cascade); // Cascade delete if pet is deleted
+
+            modelBuilder.Entity<UserItem>()
+                .HasOne(ui => ui.User)
+                .WithMany(u => u.UserItems)
+                .HasForeignKey(ui => ui.UserId)
+                .OnDelete(DeleteBehavior.Cascade); // Cascade delete if pet is deleted
+
+            // User N - N Achievement relationship (UserItem)
+
+            modelBuilder.Entity<UserAchievement>()
+              .HasKey(ua => ua.Id); // Đặt Id là khóa chính
+
+            modelBuilder.Entity<UserAchievement>()
+                .Property(ua => ua.Id)
+                .ValueGeneratedOnAdd(); // Tự động tăng
+
+
+            modelBuilder.Entity<UserAchievement>()
+                .HasOne(ua => ua.Achievement)
+                .WithMany(a => a.UserAchievements)
+                .HasForeignKey(ua => ua.AchievementId)
+                .OnDelete(DeleteBehavior.Cascade); // Cascade delete if pet is deleted
+
+            modelBuilder.Entity<UserAchievement>()
+               .HasOne(ua => ua.User)
+               .WithMany(u => u.UserAchievements)
+               .HasForeignKey(ua => ua.UserId)
+               .OnDelete(DeleteBehavior.Cascade); // Cascade delete if pet is deleted
+
 
             // User N - N Vocabulary relationship (UserVocabularyProgress)
             modelBuilder.Entity<UserVocabularyProgress>()

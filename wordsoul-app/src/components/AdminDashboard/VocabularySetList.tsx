@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react';
-import type { VocabularySet, VocabularySetDetail } from '../../types/Dto';
+
 import {
   fetchVocabularySets,
   createVocabularySet,
   fetchVocabularySetDetail,
   updateVocabularySet,
   deleteVocabularySet,
-  addVocabularyToSet,
-  removeVocabularyFromSet,
 } from '../../services/vocabularySet';
+import type { VocabularySetDetailDto, VocabularySetDto } from '../../types/VocabularySetDto';
+import { addVocabularyToSet, removeVocabularyFromSet } from '../../services/vocabulary';
 
 const VocabularySetList = () => {
-  const [sets, setSets] = useState<VocabularySet[]>([]);
-  const [selectedSet, setSelectedSet] = useState<VocabularySetDetail | null>(null);
+  const [sets, setSets] = useState<VocabularySetDto[]>([]);
+  const [selectedSet, setSelectedSet] = useState<VocabularySetDetailDto | null>(null);
   const [formData, setFormData] = useState({ title: '', description: '', imageFile: null as File | null });
   const [vocabForm, setVocabForm] = useState({ word: '', meaning: '', imageFile: null as File | null });
   const [loading, setLoading] = useState(true);

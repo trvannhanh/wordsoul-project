@@ -20,7 +20,6 @@ namespace WordSoulApi.Repositories.Interfaces
 
         // kiểm tra người dùng có sở hữu pet này chưa
         Task<bool> CheckPetOwnedByUserAsync(int userId, int petId);
-        
-
+        Task<IEnumerable<UserOwnedPet>> GetAllUserOwnedPetByUserIdAsync(int userId);
     }
 }

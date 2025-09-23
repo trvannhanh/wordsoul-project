@@ -6,7 +6,8 @@ import AnswerScreen from "../../components/LearningSession/AnswerScreen";
 import BackgroundMusic from "../../components/LearningSession/BackgroundMusic";
 import PetScreen from "../../components/LearningSession/PetScreen";
 import { useQuizSession } from "../../hooks/LearningSession/useQuizSession";
-import { type QuizQuestion } from "../../types/Dto";
+import type { QuizQuestionDto } from "../../types/LearningSessionDto";
+
 
 const LearningSession: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -16,6 +17,7 @@ const LearningSession: React.FC = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
   const petId = state?.petId;
+  const catchRate = state?.catchRate;
 
   const {
     currentQuestion,
@@ -28,18 +30,19 @@ const LearningSession: React.FC = () => {
     captureComplete,
     setCaptureComplete,
     loadNextQuestion,
-  } = useQuizSession(sessionId, mode, petId);
+    catchRate: currentCatchRate,
+  } = useQuizSession(sessionId, mode, petId, catchRate);
 
   const [isPlaying, setIsPlaying] = useState(true);
   const [showPopup, setShowPopup] = useState(false); // Trạng thái pop-up
-  const [answeredQuestion, setAnsweredQuestion] = useState<QuizQuestion | null>(null); // Câu hỏi vừa trả lời
+  const [answeredQuestion, setAnsweredQuestion] = useState<QuizQuestionDto | null>(null); // Câu hỏi vừa trả lời
 
   const toggleMusic = () => {
     setIsPlaying((prev) => !prev);
   };
 
   // Callback để hiển thị pop-up từ AnswerScreen
-  const handleShowPopup = (question: QuizQuestion) => {
+  const handleShowPopup = (question: QuizQuestionDto) => {
     setAnsweredQuestion(question);
     setShowPopup(true);
     setTimeout(() => {
@@ -91,6 +94,7 @@ const LearningSession: React.FC = () => {
         mode={mode}
         petId={petId}
         handleCloseReward={() => navigate(-1)}
+        catchRate={currentCatchRate}
       />
 
       {/* Pop-up hiển thị thông tin từ vựng */}

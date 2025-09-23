@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom"
 import { useAuth } from "../store/AuthContext";
-import type { NotificationDto } from "../types/Dto";
 import { useEffect, useMemo, useState } from "react";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import { deleteNotification, fetchNotifications, markReadAllNotifications, markReadNotifications } from "../services/notification";
+import type { NotificationDto } from "../types/NotificationDto";
 
 const Header: React.FC = () => {
     const { user, logout } = useAuth();
