@@ -21,7 +21,7 @@ builder.Configuration
 
 // Add services to the container.
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+// builder.Services.AddOpenApi();
 
 // Cấu hình Serilog
 builder.Host.UseSerilog((context, configuration) =>
@@ -142,7 +142,7 @@ app.MapHub<NotificationHub>("/notificationHub");
 if (app.Environment.IsDevelopment())
 {
     app.MapScalarApiReference();
-    app.MapOpenApi();
+    // app.MapOpenApi();
 }
 
 app.UseSerilogRequestLogging();
