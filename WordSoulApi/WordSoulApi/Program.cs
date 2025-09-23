@@ -106,6 +106,7 @@ builder.Services.AddScoped<IUserVocabularyProgressRepository, UserVocabularyProg
 builder.Services.AddScoped<IUserVocabularyProgressService, UserVocabularyProgressService>();
 // Set Reward Pet
 builder.Services.AddScoped<ISetRewardPetRepository, SetRewardPetRepository>();
+builder.Services.AddScoped<ISetRewardPetService, SetRewardPetService>();
 // User Owned Pet
 builder.Services.AddScoped<IUserOwnedPetRepository, UserOwnedPetRepository>();
 builder.Services.AddScoped<IUserOwnedPetService, UserOwnedPetService>();
@@ -123,6 +124,16 @@ builder.Services.AddScoped<ISetVocabularyRepository, SetVocabularyRepository>();
 builder.Services.AddScoped<ISetVocabularyService, SetVocabularyService>();
 // SessionVocabulary
 builder.Services.AddScoped<ISessionVocabularyRepository, SessionVocabularyRepository>();
+// Item
+builder.Services.AddScoped<IItemRepository, ItemRepository>();
+builder.Services.AddScoped<IItemService, ItemService>();
+
+
+// Achievement
+builder.Services.AddScoped<IAchievementRepository, AchievementRepository>();
+builder.Services.AddScoped<IAchievementService, AchievementService>();
+// UserAchievement
+builder.Services.AddScoped<IUserAchievementRepository, UserAchievementRepository>();
 // Upload Assests
 builder.Services.AddScoped<IUploadAssetsService, UploadAssetsService>();
 

@@ -10,7 +10,7 @@ namespace WordSoulApi.Repositories.Interfaces
 
         //------------------------------- READ -----------------------------------
         // Lấy tất cả VocabularySet với tùy chọn lọc và phân trang
-        Task<IEnumerable<VocabularySet>> GetAllVocabularySetsAsync(string? title, VocabularySetTheme? theme, 
+        Task<List<VocabularySet>> GetAllVocabularySetsAsync(string? title, VocabularySetTheme? theme, 
                                                                     VocabularyDifficultyLevel? difficulty, 
                                                                     DateTime? createdAfter, bool? isOwned, 
                                                                     int? userId, int pageNumber, int pageSize);
@@ -22,6 +22,5 @@ namespace WordSoulApi.Repositories.Interfaces
         //------------------------------- DELETE -----------------------------------
         // Xóa VocabularySet theo ID
         Task<bool> DeleteVocabularySetAsync(int id);
-        Task<List<VocabularySet>> GetAllVocabularySetsAsync(string? title, VocabularySetTheme? theme, VocabularyDifficultyLevel? difficulty, DateTime? createdAfter, bool? isOwned, int? userId, int pageNumber, int pageSize);
     }
 }

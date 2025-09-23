@@ -9,9 +9,9 @@ namespace WordSoulApi.Repositories.Interfaces
         Task<Vocabulary> CreateVocabularyAsync(Vocabulary vocabulary);
         //-------------------------------- READ -----------------------------------
         // Lấy tất cả Vocabulary với phân trang và lọc
-        Task<IEnumerable<Vocabulary>> GetAllVocabulariesAsync(string? word, string? meaning, PartOfSpeech? partOfSpeech, CEFRLevel? cEFRLevel, int pageNumber, int pageSize);
+        Task<List<Vocabulary>> GetAllVocabulariesAsync(string? word, string? meaning, PartOfSpeech? partOfSpeech, CEFRLevel? cEFRLevel, int pageNumber, int pageSize);
         // Lấy từ vựng theo danh sách từ
-        Task<IEnumerable<Vocabulary>> GetVocabulariesByWordsAsync(List<string> words);
+        Task<List<Vocabulary>> GetVocabulariesByWordsAsync(List<string> words);
         // Lấy từ vựng theo id
         Task<Vocabulary?> GetVocabularyByIdAsync(int id);
         //-------------------------------- UPDATE -----------------------------------
@@ -20,6 +20,5 @@ namespace WordSoulApi.Repositories.Interfaces
         //-------------------------------- DELETE -----------------------------------
         // Xóa từ vựng
         Task<bool> DeleteVocabularyAsync(int id);
-        Task<List<Vocabulary>> GetAllVocabulariesAsync(string? word, string? meaning, PartOfSpeech? partOfSpeech, CEFRLevel? cEFRLevel, int pageNumber, int pageSize);
     }
 }

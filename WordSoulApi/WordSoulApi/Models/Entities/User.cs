@@ -27,6 +27,8 @@ namespace WordSoulApi.Models.Entities
         public List<UserVocabularyProgress> UserVocabularyProgresses { get; set; } = new List<UserVocabularyProgress>();
         public List<UserOwnedPet> UserOwnedPets { get; set; } = new List<UserOwnedPet>();
         public List<Notification> Notifications { get; set; } = new List<Notification>();
+        public List<UserItem> UserItems { get; set; } = new List<UserItem>();
+        public List<UserAchievement> UserAchievements { get; set; } = new List<UserAchievement>();
 
 
     }
