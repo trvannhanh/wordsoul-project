@@ -1,6 +1,0 @@
-[build]
-builder = "NIXPACKS"
-buildCommand = "dotnet publish WordSoulApi/WordSoulApi.csproj -c Release -o out"
-
-[start]
-startCommand = "dotnet out/WordSoulApi.dll"
