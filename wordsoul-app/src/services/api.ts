@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-const BASE_URL = 'https://localhost:7272/api';
+export const BASE_URL = 'https://localhost:7272/api';
 
 // ---- Endpoints ----
 export const endpoints = {
@@ -54,6 +54,7 @@ export const endpoints = {
   markReadAllNotification: '/notifications/read-all', // Đánh dấu tất cả thông báo đã đọc
   markReadNotification: (notificationId: number) => `/notifications/${notificationId}/read`, // Đánh dấu thông báo chỉ định đã đọc
   deleteNotification: (notificationId: number) => `/notifications/${notificationId}`, // Xóa thông báo chỉ định
+  notificationHub: '/notificationHub'
 };
 
 // ---- Helpers ----

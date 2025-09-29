@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import type { UserProgressDto } from '../../types/UserDto';
 
-
 interface ReviewBoxProps {
   progress: UserProgressDto | null;
   loading: boolean;
@@ -31,32 +30,36 @@ const ReviewBox: React.FC<ReviewBoxProps> = ({ progress, loading, onCreateReview
             {progress.nextReviewTime &&
               `sau ${new Date(progress.nextReviewTime).toLocaleTimeString()}`}
           </p>
-          <motion.button
-            className="relative flex items-center justify-center w-32 px-4 py-2 bg-yellow-400 text-black font-pixel text-sm rounded pixel-border hover:bg-yellow-300"
-            onClick={onCreateReviewSession}
-            disabled={loading}
-            whileHover={{ scale: 1.05, boxShadow: '0 0 10px rgba(255, 204, 0, 0.7)' }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <span className="absolute left-0 w-1 h-full bg-yellow-600" />
-            <span>Ôn tập</span>
-            <span className="absolute right-0 w-1 h-full bg-yellow-600" />
-          </motion.button>
+          <div className="flex justify-center"> {/* Container Flexbox để căn giữa nút */}
+            <motion.button
+              className="relative flex items-center justify-center w-32 px-4 py-2 bg-yellow-400 text-black font-pixel text-sm rounded pixel-border hover:bg-yellow-300 custom-cursor"
+              onClick={onCreateReviewSession}
+              disabled={loading}
+              whileHover={{ scale: 1.05, boxShadow: '0 0 10px rgba(255, 204, 0, 0.7)' }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <span className="absolute left-0 w-1 h-full bg-yellow-600" />
+              <span>Ôn tập</span>
+              <span className="absolute right-0 w-1 h-full bg-yellow-600" />
+            </motion.button>
+          </div>
         </>
       ) : (
         <>
           <p className="text-sm text-gray-200 mb-4">
             Hành trình của bạn chỉ mới bắt đầu, cùng khám phá nào!!
           </p>
-          <motion.button
-            className="relative flex items-center justify-center w-32 px-4 py-2 bg-yellow-400 text-black font-pokemon text-sm rounded pixel-border hover:bg-yellow-300"
-            whileHover={{ scale: 1.05, boxShadow: '0 0 10px rgba(255, 204, 0, 0.7)' }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <span className="absolute left-0 w-1 h-full bg-yellow-600" />
-            <span>Học</span>
-            <span className="absolute right-0 w-1 h-full bg-yellow-600" />
-          </motion.button>
+          <div className="flex justify-center"> {/* Container Flexbox để căn giữa nút */}
+            <motion.button
+              className="relative flex items-center justify-center w-32 px-4 py-2 bg-yellow-400 text-black font-pokemon text-sm rounded pixel-border hover:bg-yellow-300 custom-cursor"
+              whileHover={{ scale: 1.05, boxShadow: '0 0 10px rgba(255, 204, 0, 0.7)' }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <span className="absolute left-0 w-1 h-full bg-yellow-600" />
+              <span>Học</span>
+              <span className="absolute right-0 w-1 h-full bg-yellow-600" />
+            </motion.button>
+          </div>
         </>
       )}
     </motion.div>

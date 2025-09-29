@@ -9,7 +9,6 @@ import StatsChart from '../components/UserDashboard/StatsChart';
 import ProfileCard from '../components/UserProfile/ProfileCard';
 import type { UserProgressDto } from '../types/UserDto';
 
-
 const UserDashboard: React.FC = () => {
   const [dashboard, setDashboard] = useState<UserProgressDto | null>(null);
   const [loading, setLoading] = useState(true);
@@ -72,24 +71,25 @@ const UserDashboard: React.FC = () => {
   }
 
   return (
-    <div className="pixel-background text-white h-screen font-pokemon relative overflow-hidden">
+    <div className="pixel-background text-white min-h-screen font-pokemon relative overflow-auto">
       <Particles
         id="tsparticles"
         init={particlesInit}
         options={{
           particles: {
-            number: { value: 30 },
-            size: { value: { min: 1, max: 3 } },
-            move: { enable: true, speed: 1, direction: 'none', random: true },
+            number: { value: 20, density: { enable: true, value_area: 800 } }, // Giảm số particles trên mobile
+            size: { value: { min: 1, max: 2 } }, // Kích thước nhỏ hơn trên mobile
+            move: { enable: true, speed: 0.5, direction: 'none', random: true },
             opacity: { value: { min: 0.2, max: 0.5 } },
             color: { value: '#FFD700' },
           },
           interactivity: { events: { onHover: { enable: false } } },
+          retina_detect: true,
         }}
         className="absolute inset-0"
       />
-      <div className="container mx-auto w-7/12 flex items-start gap-8 pt-20 pb-10 relative z-10">
-        <div className="w-8/12 space-y-6">
+      <div className="container mx-auto w-full sm:w-10/12 lg:w-7/12 flex flex-col sm:flex-row items-start gap-6 sm:gap-8 pt-16 sm:pt-20 pb-6 sm:pb-10 relative z-10">
+        <div className="w-full sm:w-7/12 space-y-6">
           <ReviewBox
             progress={dashboard}
             loading={loading}
@@ -97,7 +97,7 @@ const UserDashboard: React.FC = () => {
           />
           <StatsChart progress={dashboard} />
         </div>
-        <div className="w-4/12">
+        <div className="w-full sm:w-5/12">
           <ProfileCard />
         </div>
       </div>

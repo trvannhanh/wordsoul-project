@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { activePet, fetchPetDetailById, upgradePet } from '../../services/pet';
@@ -34,7 +35,6 @@ const PetDetailPage: React.FC = () => {
         const data = await fetchPetDetailById(Number(id));
         setPet(data);
         setCurrentImage(data.imageUrl);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         setError(`Không thể tải thông tin thú cưng: ${err.message}`);
       } finally {
@@ -54,12 +54,12 @@ const PetDetailPage: React.FC = () => {
       if (response.isEvolved) {
         const updatedPet = await fetchPetDetailById(response.petId);
         setPet(updatedPet);
-        setCurrentImage(updatedPet.imageUrl); // Cập nhật ảnh ngay lập tức
+        setCurrentImage(updatedPet.imageUrl);
         setEvolveAnimation(true);
         const evolveSound = new Audio('https://res.cloudinary.com/dqpkxxzaf/video/upload/v1757584431/pokemon-evolve_vzpzqg.mp3');
-        evolveSound.play();
+        evolveSound.play().catch(() => console.warn('Autoplay âm thanh bị chặn'));
         setTimeout(() => {
-          setEvolveAnimation(false); // Kết thúc hiệu ứng sau 3 giây
+          setEvolveAnimation(false);
         }, 3000);
       } else {
         setPet((prevPet) => {
@@ -74,12 +74,11 @@ const PetDetailPage: React.FC = () => {
       if (response.isLevelUp) {
         setLevelUpAnimation(true);
         const levelUpSound = new Audio('https://res.cloudinary.com/dqpkxxzaf/video/upload/v1757584438/12_3_gdjgqm.mp3');
-        levelUpSound.play();
+        levelUpSound.play().catch(() => console.warn('Autoplay âm thanh bị chặn'));
         setTimeout(() => setLevelUpAnimation(false), 1000);
       }
 
       setUser({ ...user, totalAP: response.ap } as UserDto);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Lỗi khi nâng cấp thú cưng:', err);
       setError(err.response?.data?.message || 'Không thể nâng cấp thú cưng');
@@ -88,18 +87,15 @@ const PetDetailPage: React.FC = () => {
     }
   };
 
-
   const handleActive = async () => {
     if (!pet) return;
     setIsActive(true);
     try {
       const response: PetDetailDto = await activePet(pet.id);
-
       setUser({ ...user, avatarUrl: response.imageUrl } as UserDto);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      console.error('Lỗi khi nâng cấp thú cưng:', err);
-      setError(err.response?.data?.message || 'Không thể nâng cấp thú cưng');
+      console.error('Lỗi khi kích hoạt thú cưng:', err);
+      setError(err.response?.data?.message || 'Không thể kích hoạt thú cưng');
     } finally {
       setIsActive(false);
     }
@@ -109,7 +105,7 @@ const PetDetailPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="pixel-background text-white h-screen w-full flex justify-center items-center py-10">
+      <div className="pixel-background text-white min-h-screen w-full flex justify-center items-center py-6">
         <div>Đang tải...</div>
       </div>
     );
@@ -117,18 +113,18 @@ const PetDetailPage: React.FC = () => {
 
   if (error || !pet) {
     return (
-      <div className="pixel-background text-white h-screen w-full flex justify-center items-center py-10">
+      <div className="pixel-background text-white min-h-screen w-full flex justify-center items-center py-6">
         <div className="text-red-500">{error || 'Không tìm thấy thú cưng'}</div>
       </div>
     );
   }
 
   return (
-    <div className="pixel-background text-white h-screen w-full flex justify-center items-center py-10">
-      <div className="w-7/12 h-10/12 flex items-start gap-5 bg-gradient-to-br from-blue-200 to-blue-400 border-4 border-black rounded-lg p-5 shadow-lg">
+    <div className="pixel-background text-white min-h-screen w-full flex justify-center items-center py-6 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-5xl flex flex-col md:flex-row items-start gap-4 sm:gap-6 bg-gradient-to-br from-blue-200 to-blue-400 border-4 border-black rounded-lg p-4 sm:p-6 shadow-lg">
         {/* Bên trái: Hình ảnh pet hoặc dấu chấm hỏi */}
-        <div className="w-1/2 h-full">
-          <div className="relative h-2/3 rounded-lg overflow-hidden p-5 pet-background">
+        <div className="w-full md:w-1/2">
+          <div className="relative h-64 sm:h-80 lg:h-96 rounded-lg overflow-hidden p-4 pet-background">
             {isOwned ? (
               <>
                 {evolveAnimation && (
@@ -148,11 +144,11 @@ const PetDetailPage: React.FC = () => {
                       ? { scale: [1, 1.1, 1], opacity: [1, 0.8, 1] }
                       : evolveAnimation
                         ? {
-                          opacity: [1, 0.3, 0.3, 1], // Mờ dần rồi rõ lại
-                          scale: [1, 1.2, 1.2, 1], // Phóng to rồi trở lại
-                          rotate: [0, 180, 360, 0], // Xoay 1 vòng, kết thúc ở 0°
-                        }
-                        : { scale: 1, opacity: 1, rotate: 0 } // Trạng thái bình thường
+                            opacity: [1, 0.3, 0.3, 1],
+                            scale: [1, 1.2, 1.2, 1],
+                            rotate: [0, 180, 360, 0],
+                          }
+                        : { scale: 1, opacity: 1, rotate: 0 }
                   }
                   transition={
                     evolveAnimation
@@ -163,7 +159,7 @@ const PetDetailPage: React.FC = () => {
                   <img
                     src={currentImage}
                     alt={pet.name}
-                    className="w-full max-h-100 object-contain transform hover:scale-105 transition-transform duration-300 rounded-lg"
+                    className="w-full h-full max-h-80 sm:max-h-96 object-contain transform hover:scale-105 transition-transform duration-300 rounded-lg"
                   />
                 </motion.div>
                 {evolveAnimation && (
@@ -179,14 +175,14 @@ const PetDetailPage: React.FC = () => {
                       init={particlesInit}
                       options={{
                         particles: {
-                          number: { value: 50 },
+                          number: { value: window.innerWidth < 768 ? 20 : 50 },
                           size: { value: { min: 1, max: 5 } },
-                          move: { enable: true, speed: 6, direction: 'none', random: true },
+                          move: { enable: true, speed: window.innerWidth < 768 ? 3 : 6, direction: 'none', random: true },
                           opacity: { value: { min: 0.3, max: 0.7 } },
                         },
                         interactivity: { events: { onHover: { enable: false } } },
                       }}
-                      className="absolute inset-0"
+                      className="absolute inset-0 md:block hidden"
                     />
                   </>
                 )}
@@ -195,16 +191,16 @@ const PetDetailPage: React.FC = () => {
               <img
                 src={pet.imageUrl}
                 alt={pet.name}
-                className="w-full max-h-100 object-contain transform hover:scale-105 transition-transform duration-300 rounded-lg"
-                style={{ filter: 'brightness(0)' }} // Tạo hiệu ứng bóng đen
+                className="w-full h-full max-h-80 sm:max-h-96 object-contain transform hover:scale-105 transition-transform duration-300 rounded-lg"
+                style={{ filter: 'brightness(0)' }}
               />
             )}
           </div>
           {isOwned && (
             <>
               <div className="mt-4 text-center">
-                <span className="font-bold text-lg">Cấp độ: </span>
-                <span className="text-xl font-semibold">{pet.level ?? 'N/A'}</span>
+                <span className="font-bold text-base sm:text-lg">Cấp độ: </span>
+                <span className="text-lg sm:text-xl font-semibold">{pet.level ?? 'N/A'}</span>
               </div>
               <div className="mt-2 px-4">
                 <div className="w-full bg-gray-300 rounded-full h-3 relative overflow-hidden">
@@ -215,7 +211,7 @@ const PetDetailPage: React.FC = () => {
                     transition={{ duration: 0.5 }}
                   />
                 </div>
-                <p className="text-center mt-1 text-sm">
+                <p className="text-center mt-1 text-sm sm:text-base">
                   Kinh nghiệm: {pet.experience != null ? pet.experience : 0}/100
                 </p>
               </div>
@@ -223,11 +219,11 @@ const PetDetailPage: React.FC = () => {
           )}
         </div>
         {/* Bên phải: Thông tin và nút thăng cấp */}
-        <div className="w-1/2 flex flex-col gap-4">
-          <div className="border-2 border-white rounded-lg p-5 bg-gray-800 bg-opacity-80">
-            <h2 className="text-3xl font-bold mb-3 text-yellow-300">{pet.name}</h2>
-            <p className="text-gray-200 mb-3 text-sm">{pet.description}</p>
-            <div className="grid grid-cols-2 gap-3 text-sm">
+        <div className="w-full md:w-1/2 flex flex-col gap-4 sm:gap-6">
+          <div className="border-2 border-white rounded-lg p-4 sm:p-5 bg-gray-800 bg-opacity-80">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-3 text-yellow-300">{pet.name}</h2>
+            <p className="text-gray-200 mb-3 text-sm sm:text-base">{pet.description}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm sm:text-base">
               <div>
                 <span className="font-bold">Độ hiếm: </span>
                 <span className="text-yellow-200">{pet.rarity}</span>
@@ -278,12 +274,12 @@ const PetDetailPage: React.FC = () => {
               <motion.button
                 onClick={handleUpgrade}
                 disabled={isUpgrading}
-                className="relative flex items-center justify-center w-full px-4 py-2 bg-yellow-300 text-black rounded-lg hover:bg-yellow-400 hover:shadow-lg hover:shadow-yellow-300/50 transition-all duration-300"
+                className="relative flex items-center justify-center w-full px-4 sm:px-6 py-2 sm:py-3 bg-yellow-300 text-black rounded-lg hover:bg-yellow-400 hover:shadow-lg hover:shadow-yellow-300/50 transition-all duration-300 text-sm sm:text-base font-bold"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
                 <span className="absolute left-0 w-0.5 h-full bg-yellow-500" />
-                <span className="font-bold">Thăng cấp</span>
+                <span>Thăng cấp</span>
                 <span className="absolute right-0 w-0.5 h-full bg-yellow-500" />
                 {isUpgrading && (
                   <svg
@@ -304,12 +300,12 @@ const PetDetailPage: React.FC = () => {
               <motion.button
                 onClick={handleActive}
                 disabled={isActive}
-                className="relative flex items-center justify-center w-full px-4 py-2 bg-yellow-300 text-black rounded-lg hover:bg-yellow-400 hover:shadow-lg hover:shadow-yellow-300/50 transition-all duration-300"
+                className="relative flex items-center justify-center w-full px-4 sm:px-6 py-2 sm:py-3 bg-yellow-300 text-black rounded-lg hover:bg-yellow-400 hover:shadow-lg hover:shadow-yellow-300/50 transition-all duration-300 text-sm sm:text-base font-bold"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
                 <span className="absolute left-0 w-0.5 h-full bg-yellow-500" />
-                <span className="font-bold">Mang theo</span>
+                <span>Mang theo</span>
                 <span className="absolute right-0 w-0.5 h-full bg-yellow-500" />
                 {isActive && (
                   <svg
@@ -329,7 +325,9 @@ const PetDetailPage: React.FC = () => {
               </motion.button>
             </>
           ) : (
-            <p className="text-red-500 text-center font-semibold">Bạn chưa sở hữu thú cưng này!</p>
+            <p className="text-red-500 text-center font-semibold text-sm sm:text-base">
+              Bạn chưa sở hữu thú cưng này!
+            </p>
           )}
         </div>
       </div>

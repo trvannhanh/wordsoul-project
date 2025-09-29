@@ -52,7 +52,7 @@ const LearningSession: React.FC = () => {
   };
 
   return (
-    <div className="h-screen w-screen bg-gray-900 flex items-center justify-between p-4 pixel-background relative">
+    <div className="h-screen w-screen bg-gray-900 flex flex-col sm:flex-row items-center justify-between p-4 pixel-background relative">
       <BackgroundMusic 
         isPlaying={isPlaying} 
         volume={0.5} 
@@ -60,8 +60,8 @@ const LearningSession: React.FC = () => {
         toggleMusic={toggleMusic}
       />
       
-      <div className="w-1/2 h-3/4 bg-gray-800 border-4 border-black rounded-lg flex flex-col overflow-hidden">
-        <div className="flex-1 bg-gray-700 border-b-4 border-black p-4">
+      <div className="w-full sm:w-10/12 lg:w-3/4 h-full sm:h-full lg:h-full bg-gray-800 border-4 border-black rounded-lg flex flex-col overflow-hidden">
+        <div className="flex-1 bg-gray-700 border-b-4 border-black p-4 h-1/2">
           <div className="h-full bg-black border-2 border-white rounded-sm flex items-center justify-center">
             <GameScreen
               question={currentQuestion}
@@ -71,7 +71,7 @@ const LearningSession: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex-1 bg-gray-700 p-4">
+        <div className="flex-1 bg-gray-700 p-4 h-1/2">
           <div className="h-full bg-black border-2 border-white rounded-sm flex items-center justify-center">
             <AnswerScreen
               question={currentQuestion}

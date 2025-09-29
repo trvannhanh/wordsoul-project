@@ -8,10 +8,15 @@
 
 @font-face {
   font-family: "PixelFont";
-  src: url("/src/assets/font/font-pixel.ttf") format("truetype");
+  src: url("https://res.cloudinary.com/dqpkxxzaf/raw/upload/v1758712067/font-pixel_lcgu07.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
+
+body {
+  cursor: url('https://res.cloudinary.com/dqpkxxzaf/image/upload/v1759052941/defautl_cursor_oq89ga.png'), auto;
+}
+
 
 .pixel-background {
   background: url("https://res.cloudinary.com/dqpkxxzaf/image/upload/v1756297343/vocabulary_sets/banner5_jhzrxv.gif") repeat;
@@ -61,7 +66,8 @@
 
 /* Custom class */
 .custom-cursor {
-  cursor: url("./assets/cursor.png"), auto;
+  cursor: url("https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758712042/cursor_u4b8ir.png"), auto;
+  
 }
 
 .background-color{

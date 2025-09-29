@@ -49,7 +49,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowLocalhost", builder =>
     {
-        builder.WithOrigins("http://localhost:5173", "http://localhost:3000")
+        builder.WithOrigins("http://localhost:5173", "http://localhost:3000", "https://wordsoul-frontend-cqb5awdca4c7cceg.southeastasia-01.azurewebsites.net")
                .AllowAnyMethod()
                .AllowAnyHeader()
                .AllowCredentials();
@@ -71,8 +71,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-//Thêm dịch vụ SignalR
-builder.Services.AddSignalR();
+// Thêm dịch vụ SignalR
+builder.Services.AddSignalR(options =>
+{
+    // Tùy chọn debug trong môi trường phát triển
+    if (builder.Environment.IsDevelopment())
+    {
+        options.EnableDetailedErrors = true;
+    }
+});
 
 // Add in-memory caching service
 builder.Services.AddMemoryCache();
@@ -157,11 +164,20 @@ builder.Services.AddSingleton<Cloudinary>(sp =>
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<WordSoulDbContext>();
+    if (dbContext.Database.IsRelational() )
+    {
+        dbContext.Database.Migrate();
+    }    
+}    
+
 
 //Hub SignalR
 app.MapHub<NotificationHub>("/notificationHub");
 
-// Configure the HTTP request pipeline.
+//Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapScalarApiReference();
@@ -176,7 +192,7 @@ app.UseCors("AllowLocalhost");
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication();
+app.UseAuthentication();    
 app.UseAuthorization();
 
 app.MapControllers();
