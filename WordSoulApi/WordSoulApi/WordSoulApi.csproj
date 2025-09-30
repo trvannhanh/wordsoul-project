@@ -25,9 +25,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Middleware\" />
-    <Folder Include="Filters\" />
     <Folder Include="Helpers\" />
+    <Folder Include="Middleware\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 

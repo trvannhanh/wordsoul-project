@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WordSoulApi.Data;
+using WordSoulApi.Filters;
 using WordSoulApi.Models.Entities;
 using WordSoulApi.Repositories.Interfaces;
 
@@ -28,12 +29,7 @@ namespace WordSoulApi.Repositories.Implementations
         // Lấy danh sách Pet cho người dùng
         public async Task<IEnumerable<(Pet Pet, bool IsOwned)>> GetAllPetsAsync(
             int userId,
-            string? name,
-            PetRarity? rarity,
-            PetType? type,
-            bool? isOwned,
-            int pageNumber,
-            int pageSize)
+            PetFilter filter)
         {
             // Base query: left join Pets với UserOwnedPets
             var query = _context.Pets
@@ -53,40 +49,52 @@ namespace WordSoulApi.Repositories.Implementations
                 );
 
             // Filter theo name
-            if (!string.IsNullOrEmpty(name))
+            if (!string.IsNullOrEmpty(filter.Name))
             {
-                query = query.Where(x => x.Pet.Name.Contains(name));
+                query = query.Where(x => x.Pet.Name.Contains(filter.Name));
             }
 
             // Filter theo rarity
-            if (rarity.HasValue)
+            if (filter.Rarity.HasValue)
             {
-                query = query.Where(x => x.Pet.Rarity == rarity.Value);
+                query = query.Where(x => x.Pet.Rarity == filter.Rarity.Value);
             }
 
             // Filter theo type
-            if (type.HasValue)
+            if (filter.Type.HasValue)
             {
-                query = query.Where(x => x.Pet.Type == type.Value);
+                query = query.Where(x => x.Pet.Type == filter.Type.Value);
             }
 
             // Filter theo isOwned
-            if (isOwned.HasValue)
+            if (filter.IsOwned.HasValue)
             {
-                query = query.Where(x => x.IsOwned == isOwned.Value);
+                query = query.Where(x => x.IsOwned == filter.IsOwned.Value);
             }
 
-            query = query.OrderBy(x => x.Pet.Order);
+            if (filter.VocabularySetId.HasValue)
+            {
+                query = query.Where(x => x.Pet.SetRewardPets.Any(sp => sp.VocabularySetId == filter.VocabularySetId.Value));
 
+                query = query.OrderBy(x => x.Pet.Rarity).ThenBy(x => x.Pet.Order);
+            }
+            else
+            {
+                query = query.OrderBy(x => x.Pet.Order);
+            }
+
+            
             // Pagination
             query = query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize);
+                .Skip((filter.PageNumber - 1) * filter.PageSize)
+                .Take(filter.PageSize);
 
             var result = await query.ToListAsync();
 
             return result.Select(x => (x.Pet, x.IsOwned));
         }
+
+
 
 
         // Lấy pet theo ID

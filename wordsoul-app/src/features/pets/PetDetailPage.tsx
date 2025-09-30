@@ -7,7 +7,7 @@ import Particles from 'react-particles';
 import { loadFull } from 'tsparticles';
 import ProfileCard from '../../components/UserProfile/ProfileCard';
 import { useAuth } from '../../store/AuthContext';
-import type { PetDetailDto, UpgradePetResponseDto } from '../../types/PetDto';
+import { typeBackgrounds, type PetDetailDto, type UpgradePetResponseDto } from '../../types/PetDto';
 import type { UserDto } from '../../types/UserDto';
 
 const PetDetailPage: React.FC = () => {
@@ -22,8 +22,10 @@ const PetDetailPage: React.FC = () => {
   const [currentImage, setCurrentImage] = useState<string | undefined>(undefined);
   const { user, setUser } = useAuth();
 
+  // Chọn background dựa trên pet.type, mặc định là pet-background
+  const backgroundClass = pet?.type ? typeBackgrounds[pet.type] || "pet-background" : "pet-background";
+
   // Khởi tạo particles
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const particlesInit = async (main: any) => {
     await loadFull(main);
   };
@@ -124,7 +126,7 @@ const PetDetailPage: React.FC = () => {
       <div className="w-full max-w-5xl flex flex-col md:flex-row items-start gap-4 sm:gap-6 bg-gradient-to-br from-blue-200 to-blue-400 border-4 border-black rounded-lg p-4 sm:p-6 shadow-lg">
         {/* Bên trái: Hình ảnh pet hoặc dấu chấm hỏi */}
         <div className="w-full md:w-1/2">
-          <div className="relative h-64 sm:h-80 lg:h-96 rounded-lg overflow-hidden p-4 pet-background">
+          <div className={`${backgroundClass} bg-no-repeat bg-cover bg-center h-64 sm:h-80 lg:h-96 rounded-lg overflow-hidden p-4`}>
             {isOwned ? (
               <>
                 {evolveAnimation && (
@@ -304,7 +306,7 @@ const PetDetailPage: React.FC = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <span className="absolute left-0 w-0.5 h-full bg-yellow-500" />
+                <span className="absolute left-0 w-0.5 h-full bg-yellow-500" /> 
                 <span>Mang theo</span>
                 <span className="absolute right-0 w-0.5 h-full bg-yellow-500" />
                 {isActive && (

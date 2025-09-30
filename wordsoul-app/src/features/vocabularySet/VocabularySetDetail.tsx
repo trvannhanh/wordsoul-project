@@ -7,7 +7,10 @@ import { createLearningSession } from "../../services/learningSession";
 import ProfileCard from "../../components/UserProfile/ProfileCard";
 import VocabularyList from "../../components/Vocabulary/VocabularyList";
 import { getUserVocabularySets, registerVocabularySet } from "../../services/user";
+import { fetchPets } from "../../services/pet";
+import PetCard from "../../components/Pet/PetCard";
 import type { UserVocabularySetDto } from "../../types/UserDto";
+import type { PetDto } from "../../types/PetDto";
 
 interface VocabularySetMeta {
   id: number;
@@ -26,6 +29,10 @@ const VocabularySetDetail: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [userSetInfo, setUserSetInfo] = useState<UserVocabularySetDto | null>(null);
   const [showBackToTop, setShowBackToTop] = useState<boolean>(false);
+  const [pets, setPets] = useState<PetDto[]>([]);
+  const [showPetsModal, setShowPetsModal] = useState<boolean>(false);
+  const [petsLoading, setPetsLoading] = useState<boolean>(false);
+  const [petsError, setPetsError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const userId = 1; // TODO: lấy từ auth context hoặc localStorage
@@ -60,6 +67,22 @@ const VocabularySetDetail: React.FC = () => {
     }
   };
 
+  const handleFetchPets = async () => {
+    setPetsLoading(true);
+    setPetsError(null);
+    try {
+      const filters = { vocabularySetId: Number(id), pageSize: 20 };
+      const data = await fetchPets(filters);
+      setPets(data);
+      setShowPetsModal(true);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (err: any) {
+      setPetsError("Lỗi tải danh sách pet");
+    } finally {
+      setPetsLoading(false);
+    }
+  };
+
   useEffect(() => {
     const fetchMeta = async () => {
       try {
@@ -89,7 +112,6 @@ const VocabularySetDetail: React.FC = () => {
     if (id && userId) fetchUserSetInfo();
   }, [userId, id]);
 
-  // Theo dõi cuộn để hiển thị nút Back to Top
   useEffect(() => {
     const handleScroll = () => {
       setShowBackToTop(window.scrollY > 300);
@@ -98,7 +120,6 @@ const VocabularySetDetail: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Hàm cuộn lên đầu trang
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -118,7 +139,7 @@ const VocabularySetDetail: React.FC = () => {
         hidden={true}
       />
 
-      <div className="background-color flex justify-center items-center py-4">
+      <div className="background-color flex justify-center items-center py-4 gap-4">
         <button
           className="w-full sm:w-1/5 max-w-xs px-2 py-1.5 bg-yellow-300 text-black rounded-xs hover:bg-yellow-200 custom-cursor"
           onClick={userSetInfo ? handleCreateLearningSession : handleRegisterSet}
@@ -132,16 +153,22 @@ const VocabularySetDetail: React.FC = () => {
               : "Đăng ký"}
           </span>
         </button>
+        <button
+          className="w-full sm:w-1/5 max-w-xs px-2 py-1.5 bg-blue-300 text-black rounded-xs hover:bg-blue-200 custom-cursor"
+          onClick={handleFetchPets}
+          disabled={petsLoading}
+        >
+          <span className="mx-1 text-xs font-bold font-sans">
+            {petsLoading ? "Đang tải..." : "Xem Pets"}
+          </span>
+        </button>
       </div>
 
       <div className="pixel2-background text-white min-h-screen w-full flex justify-center items-start px-4 sm:px-6 lg:px-8 py-6 sm:py-10 overflow-auto">
         <div className="w-full sm:w-10/12 lg:w-7/12 flex flex-col sm:flex-row items-start gap-4 sm:gap-5">
-          {/* Bên trái */}
           <div className="w-full sm:w-8/12">
             <VocabularyList setId={meta.id} pageSize={5} />
           </div>
-
-          {/* Bên phải */}
           <div className="w-full sm:w-4/12 flex flex-col gap-3">
             <div className="flex flex-col gap-3 items-center rounded-lg">
               <div className="w-full">
@@ -163,7 +190,61 @@ const VocabularySetDetail: React.FC = () => {
           </div>
         </div>
 
-        {/* Nút Back to Top (chỉ hiển thị trên mobile) */}
+        {showPetsModal && (
+          <div className="fixed inset-0 bg-opacity-50 flex justify-center items-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-3xl max-h-[80vh] overflow-auto">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-black">Danh sách Pet</h2>
+                <button
+                  className="text-black hover:text-gray-700"
+                  onClick={() => setShowPetsModal(false)}
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+              {petsError && <div className="text-red-500 mb-4">{petsError}</div>}
+              {pets.length === 0 && !petsLoading && !petsError && (
+                <div className="text-center text-black">Không có pet nào.</div>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {pets.map((pet) => (
+                  <PetCard key={pet.id} pet={pet} />
+                ))}
+              </div>
+              {petsLoading && (
+                <div className="text-center py-4">
+                  <svg
+                    className="animate-spin h-8 w-8 text-blue-500 mx-auto"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {showBackToTop && (
           <button
             onClick={scrollToTop}

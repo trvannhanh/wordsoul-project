@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
+using WordSoulApi.Filters;
 using WordSoulApi.Models.DTOs.Pet;
 using WordSoulApi.Models.Entities;
 using WordSoulApi.Repositories.Implementations;
@@ -119,15 +120,10 @@ namespace WordSoulApi.Services.Implementations
         // Lây tất cả pet
         public async Task<IEnumerable<UserPetDto>> GetAllPetsAsync(
             int userId,
-            string? name,
-            PetRarity? rarity,
-            PetType? type,
-            bool? isOwned,
-            int pageNumber,
-            int pageSize)
+            PetFilter filter)
         {
             var pets = await _petRepository.GetAllPetsAsync(
-                userId, name, rarity, type, isOwned, pageNumber, pageSize);
+                userId, filter);
 
             return pets.Select(p => new UserPetDto
             {
@@ -137,6 +133,9 @@ namespace WordSoulApi.Services.Implementations
                 ImageUrl = p.Pet.ImageUrl ?? "",
                 Rarity = p.Pet.Rarity.ToString(),
                 Type = p.Pet.Type.ToString(),
+                BaseFormId = p.Pet.BaseFormId,
+                NextEvolutionId = p.Pet.NextEvolutionId,
+                RequiredLevel = p.Pet.RequiredLevel,
                 Order = p.Pet.Order,
                 IsOwned = p.IsOwned
             });
