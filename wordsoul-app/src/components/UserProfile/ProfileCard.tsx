@@ -2,7 +2,8 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import StatCard from './StatCard';
-import { useAuth } from '../../store/AuthContext';
+import { useAuth } from '../../hooks/Auth/useAuth';
+
 
 const ProfileCard: React.FC = () => {
   const { user } = useAuth();

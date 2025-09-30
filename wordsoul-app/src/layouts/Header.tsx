@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
-import { useAuth } from "../store/AuthContext";
+
 import { useEffect, useMemo, useState } from "react";
 import { deleteNotification, fetchNotifications, markReadAllNotifications, markReadNotifications } from "../services/notification";
 import { useNotifications } from "../hooks/Notification/useNotifications";
+import { useAuth } from "../hooks/Auth/useAuth";
 
 const Header: React.FC = () => {
     const { user, logout } = useAuth();
@@ -69,16 +70,22 @@ const Header: React.FC = () => {
                     <h2 className="flex items-center cursor-pointer">
                         <div>
                             <img
-                                src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1756452551/coin-logo_ysauhp.png"
-                                width="25"
-                                height="28"
+                                src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1759222012/egg-logo_pflvdz.png"
+                                width="35"
+                                height="35"
                                 alt="coin logo"
                                 className="animate-pulse"
                             />
                         </div>
-                        <Link to="/" className="ml-2 text-xs sm:text-sm font-press text-white hover:text-blue-700 custom-cursor">
-                            WordSoul
-                        </Link>
+                        {user ? (
+                            <Link to="/home" className="ml-2 text-xs sm:text-sm font-press text-white hover:text-blue-700 custom-cursor">
+                                WordSoul
+                            </Link>
+                        ) : (
+                            <Link to="/" className="ml-2 text-xs sm:text-sm font-press text-white hover:text-blue-700 custom-cursor">
+                                WordSoul
+                            </Link>
+                        )}
                     </h2>
 
                     {/* Hamburger Menu cho mobile */}

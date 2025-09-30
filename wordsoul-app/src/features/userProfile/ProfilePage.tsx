@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useAuth } from '../../store/AuthContext';
 import StatCard from '../../components/UserProfile/StatCard';
+import { useAuth } from '../../hooks/Auth/useAuth';
 
 
 const ProfilePage: React.FC = () => {

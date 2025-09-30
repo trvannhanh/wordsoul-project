@@ -4,8 +4,8 @@ import { fetchUserVocabularySets, fetchVocabularySets } from '../../services/voc
 import Card from '../../components/Card';
 import Skeleton from '../../components/Skeleton';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../store/AuthContext';
 import type { VocabularySetDto } from '../../types/VocabularySetDto';
+import { useAuth } from '../../hooks/Auth/useAuth';
 
 const VocabularySetsPage = () => {
     const { user } = useAuth();

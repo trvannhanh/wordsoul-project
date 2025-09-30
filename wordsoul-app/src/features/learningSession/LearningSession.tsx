@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion"; // Thêm framer-motion
 import GameScreen from "../../components/LearningSession/GameScreen";
@@ -7,6 +7,7 @@ import BackgroundMusic from "../../components/LearningSession/BackgroundMusic";
 import PetScreen from "../../components/LearningSession/PetScreen";
 import { useQuizSession } from "../../hooks/LearningSession/useQuizSession";
 import type { QuizQuestionDto } from "../../types/LearningSessionDto";
+import LoadingScreen from "../../components/LearningSession/LoadingScreen";
 
 
 const LearningSession: React.FC = () => {
@@ -37,6 +38,14 @@ const LearningSession: React.FC = () => {
   const [showPopup, setShowPopup] = useState(false); // Trạng thái pop-up
   const [answeredQuestion, setAnsweredQuestion] = useState<QuizQuestionDto | null>(null); // Câu hỏi vừa trả lời
 
+  // 👇 intro animation state
+  const [showIntro, setShowIntro] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowIntro(false), 1200); // chạy 1.5s rồi tắt
+    return () => clearTimeout(timer);
+  }, []);
+
   const toggleMusic = () => {
     setIsPlaying((prev) => !prev);
   };
@@ -50,6 +59,10 @@ const LearningSession: React.FC = () => {
       setAnsweredQuestion(null);
     }, 3000); // Đóng pop-up sau 3 giây
   };
+
+  if (showIntro) {
+    return <LoadingScreen />;
+  }
 
   return (
     <div className="h-screen w-screen bg-gray-900 flex flex-col sm:flex-row items-center justify-between p-4 pixel-background relative">

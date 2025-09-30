@@ -6,9 +6,9 @@ import { motion } from 'framer-motion';
 import Particles from 'react-particles';
 import { loadFull } from 'tsparticles';
 import ProfileCard from '../../components/UserProfile/ProfileCard';
-import { useAuth } from '../../store/AuthContext';
 import { typeBackgrounds, type PetDetailDto, type UpgradePetResponseDto } from '../../types/PetDto';
 import type { UserDto } from '../../types/UserDto';
+import { useAuth } from '../../hooks/Auth/useAuth';
 
 const PetDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
