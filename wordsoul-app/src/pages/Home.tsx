@@ -72,11 +72,11 @@ const Home: React.FC = () => {
         textButton="Bắt đầu"
         image="./src/assets/thumb.gif"
         bottomImage="./src/assets/grass.gif"
-        height="29rem"
+        height="35rem"
         hidden={false}
       />
 
-      <div className="background-color text-white min-h-100 flex justify-center items-center">
+      <div className="home-background-color text-white min-h-100 flex justify-center items-center">
         <div className="px-10 py-20 flex flex-col justify-center items-center w-full max-w-2xl">
           <div className="mb-5 text-2xl font-press w-2/3">
             All things you can learn
@@ -87,20 +87,20 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      <div className="background-color text-white h-screen px-10 py-3">
-        <div className="container mx-auto w-7/12 grid grid-cols-3 gap-4">
+      <div className="home-background-color text-white min-h-screen px-4 sm:px-6 lg:px-10 py-3 overflow-auto">
+        <div className="container mx-auto w-full sm:w-10/12 lg:w-7/12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {vocabularySets.map((vocabularySet) => (
             <Card
               key={vocabularySet.id}
               title={vocabularySet.title}
-              description={vocabularySet.description || 'Không có mô tả'}
+              description={vocabularySet.description || "Không có mô tả"}
               theme={vocabularySet.theme}
               difficultyLevel={vocabularySet.difficultyLevel}
-              image={vocabularySet.imageUrl || ''}
+              image={vocabularySet.imageUrl || ""}
               vocabularySetid={vocabularySet.id}
               isPublic={vocabularySet.isPublic}
               isOwned={vocabularySet.isOwned}
-              createdByUsername={vocabularySet.createdByUsername || 'Unknown'}
+              createdByUsername={vocabularySet.createdByUsername || "Unknown"}
             />
           ))}
         </div>

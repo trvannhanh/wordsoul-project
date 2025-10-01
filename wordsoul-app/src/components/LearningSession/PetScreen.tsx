@@ -1,7 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import type { CompleteLearningSessionResponseDto, CompleteReviewSessionResponseDto, QuizQuestionDto } from "../../types/LearningSessionDto";
 
-
 interface PetScreenProps {
   showRewardAnimation: boolean;
   captureComplete: boolean;
@@ -30,9 +29,9 @@ const PetScreen: React.FC<PetScreenProps> = ({
   const getPlaceholderPet = () => {
     if (mode === "review") {
       return {
-        id: petId || 0, // Sử dụng 0 nếu petId không có
+        id: petId || 0,
         name: "Zapdos",
-        imageUrl: "https://res.cloudinary.com/dqpkxxzaf/image/upload/v1757601990/Zapdos-removebg-preview_ztjvlh.png",
+        imageUrl: "https://img.pokemondb.net/sprites/black-white/anim/normal/charizard.gif",
       };
     }
 
@@ -56,14 +55,14 @@ const PetScreen: React.FC<PetScreenProps> = ({
       if (sessionData.isPetRewardGranted) {
         return `Chúc mừng! Bạn đã bắt được ${sessionData.petName}!`;
       }
-      return "Bắt pet thất bại, chúc may mắn lần sau!";
+      return `${sessionData.petName} đã bỏ trốn!`;
     }
     return sessionData?.message || "Hoàn thành phiên học!";
   };
 
   return (
     <div
-      className="w-1/2 h-3/4 bg-gray-700 border-4 border-black rounded-lg flex flex-col items-center justify-center overflow-hidden p-4"
+      className="w-full sm:w-2/12 lg:w-1/2 h-2/4 sm:h-2/4 lg:h-full bg-gray-700 border-4 border-black rounded-lg flex flex-col items-center justify-center overflow-hidden p-4"
       style={{
         backgroundImage: `url('https://res.cloudinary.com/dqpkxxzaf/image/upload/v1756297202/vocabulary_sets/banner4_duprqr.gif')`,
         backgroundSize: "cover",
@@ -97,7 +96,7 @@ const PetScreen: React.FC<PetScreenProps> = ({
                 onAnimationComplete={() => setCaptureComplete(true)}
               >
                 <img
-                  src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1757601990/Zapdos-removebg-preview_ztjvlh.png"
+                  src="https://img.pokemondb.net/sprites/black-white/anim/normal/charizard.gif"
                   alt="Zapdos"
                   className="w-50 h-50 object-contain pixel-art mb-2"
                 />
@@ -141,6 +140,39 @@ const PetScreen: React.FC<PetScreenProps> = ({
                   src="https://res.cloudinary.com/dqpkxxzaf/video/upload/v1757509871/06-caught-a-pokemon_a3r9h1.mp3"
                 />
               </motion.div>
+            ) : mode === "learning" &&
+              "isPetRewardGranted" in sessionData &&
+              sessionData.petId &&
+              !sessionData.isPetRewardGranted &&
+              !captureComplete ? (
+              // Hiệu ứng pet bỏ trốn trong mode learning
+              <motion.div
+                className="flex flex-col items-center"
+                initial={{ scale: 1, y: 0, opacity: 1 }}
+                animate={{
+                  scale: 0.5,
+                  y: -200,
+                  opacity: 0,
+                }}
+                transition={{
+                  duration: 2,
+                  ease: "easeInOut",
+                }}
+                onAnimationComplete={() => setCaptureComplete(true)}
+              >
+                <img
+                  src={`https://img.pokemondb.net/sprites/black-white/anim/normal/${sessionData.petName}.gif`}
+                  alt={sessionData.petName || "Pet"}
+                  className="w-50 h-50 object-contain pixel-art mb-2"
+                />
+                <p className="text-white text-sm font-pixel bg-black bg-opacity-70 p-2 rounded">
+                  {sessionData.petName || "Pet"} đã bỏ trốn!
+                </p>
+                <audio
+                  autoPlay
+                  src="https://res.cloudinary.com/dqpkxxzaf/video/upload/v1758225103/pokemon-red_blue_yellow-run-away-sound-effect-1_g4iona.mp3"
+                />
+              </motion.div>
             ) : (
               // Reward Complete Screen (cho cả learning và review sau khi pet bỏ trốn hoặc bắt xong)
               <div className="flex flex-col items-center justify-center text-center bg-opacity-70 p-4 rounded-lg w-3/4 h-3/4">
@@ -151,7 +183,7 @@ const PetScreen: React.FC<PetScreenProps> = ({
                       initial={{ scale: 0.8, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                     >
-                      No new pet reward available
+                      {"petName" in sessionData && sessionData.petName ? `${sessionData.petName} đã bỏ trốn!` : "No new pet reward available"}
                     </motion.p>
                   )}
                 {mode === "review" && (
@@ -183,7 +215,7 @@ const PetScreen: React.FC<PetScreenProps> = ({
                   )}
                 </div>
 
-                {/* Pet Reward Display (chỉ cho mode learning) */}
+                {/* Pet Reward Display (chỉ cho mode learning khi bắt thành công) */}
                 {mode === "learning" &&
                   "isPetRewardGranted" in sessionData &&
                   sessionData.petId &&
@@ -195,9 +227,12 @@ const PetScreen: React.FC<PetScreenProps> = ({
                       transition={{ delay: 0.5, type: "spring" }}
                     >
                       <img
-                        src={sessionData.imageUrl || "https://via.placeholder.com/100"}
+                        src={`https://img.pokemondb.net/sprites/black-white/anim/normal/${encounteredPet?.name.toLowerCase()}.gif`}
                         alt={sessionData.petName}
                         className="w-50 h-50 object-contain pixel-art rounded-lg border-2 border-yellow-400"
+                        onError={(e) => {
+                          e.currentTarget.src = encounteredPet?.imageUrl ?? placeholderPet?.imageUrl ?? "";
+                        }}
                       />
                       <h3 className="text-yellow-300 font-pixel text-lg">
                         {sessionData.petName}
@@ -234,13 +269,16 @@ const PetScreen: React.FC<PetScreenProps> = ({
             >
               {/* Pet Image */}
               <motion.img
-                src={encounteredPet?.imageUrl || placeholderPet?.imageUrl}
+                src={`https://img.pokemondb.net/sprites/black-white/anim/normal/${encounteredPet?.name.toLowerCase()}.gif`}
                 alt={encounteredPet?.name || placeholderPet?.name}
-                className="w-100 h-100 object-contain pixel-art rounded-lg mb-3"
+                className="w-40 h-40 sm:w-40 sm:h-40 lg:w-100 lg:h-100 object-contain pixel-art rounded-lg mb-3"
                 initial={{ scale: 0.8, rotate: 180 }}
                 animate={{ scale: 1, rotate: 0 }}
                 whileHover={{ scale: 1.1, rotate: 5 }}
                 transition={{ type: "spring", stiffness: 300 }}
+                onError={(e) => {
+                  e.currentTarget.src = encounteredPet?.imageUrl ?? placeholderPet?.imageUrl ?? "";
+                }}
               />
 
               {/* Pet Info */}

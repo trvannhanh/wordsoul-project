@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using WordSoulApi.Extensions;
+using WordSoulApi.Filters;
 using WordSoulApi.Models.DTOs.Pet;
 using WordSoulApi.Models.Entities;
 using WordSoulApi.Services.Implementations;
@@ -107,7 +108,7 @@ namespace WordSoulApi.Controllers
         [Authorize(Roles = "Admin,User")]
         [HttpGet]
         public async Task<IActionResult> GetAllPets(string? name, PetRarity? rarity, PetType? type,
-                                                                bool? isOwned, int pageNumber = 1, int pageSize = 20)
+                                                                bool? isOwned, int? vocabularySetId, int pageNumber = 1, int pageSize = 20)
         {
 
             // Lấy userId từ token
@@ -115,7 +116,18 @@ namespace WordSoulApi.Controllers
             // Nếu userId không hợp lệ, trả về lỗi Unauthorized
             if (userId == 0) return Unauthorized();
 
-            var pets = await _petService.GetAllPetsAsync(userId, name, rarity, type, isOwned, pageNumber, pageSize);
+            var filter = new PetFilter
+            {
+                Name = name,
+                VocabularySetId = vocabularySetId,
+                Rarity = rarity,
+                Type = type,
+                IsOwned = isOwned,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            var pets = await _petService.GetAllPetsAsync(userId, filter);
             return Ok(pets);
         }
 

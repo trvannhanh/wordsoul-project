@@ -3,7 +3,6 @@ import LearningSession from './features/learningSession/LearningSession';
 import Home from './pages/Home';
 import VocabularySetDetail from './features/vocabularySet/VocabularySetDetail';
 import Login from './features/auth/Login';
-import { AuthProvider } from './store/AuthContext';
 import Register from './features/auth/Register';
 import VocabularySet from './features/vocabularySet/VocabularySet';
 import Pets from './features/pets/Pets';
@@ -20,22 +19,26 @@ import PetDetailPage from './features/pets/PetDetailPage';
 import NoFooterLayout from './layouts/NoFooterLayout';
 import CreateVocabularySet from './features/vocabularySet/CreateVocabularySet';
 import ProfilePage from './features/userProfile/ProfilePage';
+import { AuthProvider } from './store/AuthProvider';
+
+
 
 
 const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <BrowserRouter>
+
+    <BrowserRouter>
+      <AuthProvider>
         <Routes>
           <Route element={<MainLayout />}>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/" element={<Home />} />
-            
+
             <Route path="/vocabularySet/:id" element={<VocabularySetDetail />} />
             <Route path="/vocabularySet" element={<VocabularySet />} />
             <Route path="/vocabulary-sets/create" element={<CreateVocabularySet />} />
-            
+
             <Route path='/home' element={<UserDashboard />} />
             <Route path='/profile' element={<ProfilePage />} />
           </Route>
@@ -47,8 +50,8 @@ const App: React.FC = () => {
             <Route path='/pets/:id' element={<PetDetailPage />} />
             <Route path='/community' element={<Community />} />
           </Route>
-          
-          
+
+
 
           <Route path="/admin" element={<DashboardLayout />}>
             <Route index element={<UserList />} />
@@ -58,8 +61,9 @@ const App: React.FC = () => {
             <Route path='pets' element={<PetList />} />
           </Route>
         </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+
+      </AuthProvider>
+    </BrowserRouter>
   );
 };
 

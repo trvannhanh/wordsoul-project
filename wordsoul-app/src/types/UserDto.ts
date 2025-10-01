@@ -61,7 +61,7 @@ export interface AssignRoleDto {
 
 export interface UserVocabularySetDto {
   vocabularySetId: number;
-  totalCompletedSessions: number;
+  totalCompletedSession: number;
   isCompleted: boolean;
   createdAt: string;
   isActive: boolean;

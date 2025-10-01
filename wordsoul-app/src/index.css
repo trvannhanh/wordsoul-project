@@ -8,24 +8,83 @@
 
 @font-face {
   font-family: "PixelFont";
-  src: url("/src/assets/font/font-pixel.ttf") format("truetype");
+  src: url("https://res.cloudinary.com/dqpkxxzaf/raw/upload/v1758712067/font-pixel_lcgu07.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
+}
+
+:root {
+  /* Light mode variables */
+  --background-color: #ffffff;
+  --text-color: #1f2937;
+  --hover-bg: #e5e7eb;
+  --border-color: rgb(2, 6, 23);
+  --review-box-background: url("https://res.cloudinary.com/dqpkxxzaf/image/upload/v1759252607/1089608_vq7ah8.png");
+  --sidebar-background-color: #e5e7eb; 
+}
+
+.dark {
+  /* Dark mode variables */
+  --background-color: rgb(2, 6, 23);
+  --text-color: #f3f4f6;
+  --hover-bg: #374151;
+  --border-color: #374151;
+  --review-box-background: url("https://res.cloudinary.com/dqpkxxzaf/image/upload/v1757662431/wp7159979-anime-pixel-art-wallpapers_kxhy41.png");
+  --sidebar-background-color: #101828; 
+}
+
+body {
+  cursor: url('https://res.cloudinary.com/dqpkxxzaf/image/upload/v1759217023/download_1_keit9n.png'), auto;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.background-color {
+  background-color: var(--background-color);
+}
+
+.pixel-border {
+  border: 4px solid var(--border-color);
+  /* border-image: url('') 4;  */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.review-box-background {
+  background-image: var(--review-box-background);
+  background-size: cover;
+  background-position: bottom;
+  background-repeat: no-repeat;
+}
+
+.text-color{
+  color: var(--text-color);
+}
+
+.border {
+  border-color: var(--border-color);
+}
+
+.sidebar-color{
+  background-color: var(--sidebar-background-color);
 }
 
 .pixel-background {
   background: url("https://res.cloudinary.com/dqpkxxzaf/image/upload/v1756297343/vocabulary_sets/banner5_jhzrxv.gif") repeat;
 }
 
-.pixel2-background {
-  background: url("https://res.cloudinary.com/dqpkxxzaf/image/upload/v1757662431/wp7159979-anime-pixel-art-wallpapers_kxhy41.png");
-  background-size: cover;
-  background-position: bottom;
-  background-repeat: no-repeat;
+.home-background-color{
+  background-color: rgb(2, 6, 23);
 }
 
 .pokemon-background {
   background: url("https://res.cloudinary.com/dqpkxxzaf/image/upload/v1757661311/wp10425539-pixel-pokemon-wallpapers_j44si1.png") ;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.loading-background {
+  background: url("../src/assets/loadingscreen.gif") ;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -61,12 +120,10 @@
 
 /* Custom class */
 .custom-cursor {
-  cursor: url("./assets/cursor.png"), auto;
+  cursor: url("https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758712042/cursor_u4b8ir.png"), auto;
+  
 }
 
-.background-color{
-  background-color: rgb(2, 6, 23);
-}
 
 @keyframes play {
   from {
@@ -79,11 +136,7 @@
   }
 }
 
-.pixel-border {
-  border: 4px solid #000;
-  /* border-image: url('') 4;  */
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-}
+
 
 .background-color2{
   background-color: rgb(15, 23, 42);

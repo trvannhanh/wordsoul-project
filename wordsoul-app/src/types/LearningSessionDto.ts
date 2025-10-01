@@ -3,6 +3,7 @@ export interface LearningSessionDto {
   vocabularies: number[];
   isCompleted: boolean;
   petId?: number;
+  catchRate?: number;
 }
 
 export interface QuizQuestionDto {
@@ -33,13 +34,13 @@ export interface AnswerResponseDto {
   attemptNumber: number;
   newLevel: number; // 0-3: Flashcard → Listening
   isVocabularyCompleted: boolean;
-  // remainingVocabs: number; // Số từ còn lại cần học
 }
 
 
 export interface CompleteLearningSessionResponseDto {
   xpEarned: number;
   isPetRewardGranted: boolean;
+  isPetAlreadyOwned: boolean;
   petId?: number;
   petName?: string;
   description?: string;

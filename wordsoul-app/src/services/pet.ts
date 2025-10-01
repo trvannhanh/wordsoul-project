@@ -2,7 +2,7 @@
 import type { PetDetailDto, PetDto, UpgradePetResponseDto } from "../types/PetDto";
 import { authApi, endpoints } from "./api";
 
-export const fetchPets = async (filters: { name?: string; rarity?: string; type?: string; isOwned?: boolean }): Promise<PetDto[]> => {
+export const fetchPets = async (filters: { name?: string; rarity?: string; type?: string; isOwned?: boolean; vocabularySetId?: number }): Promise<PetDto[]> => {
   try {
     const response = await authApi.get<PetDto[]>(endpoints.pets ,{
       params: filters,

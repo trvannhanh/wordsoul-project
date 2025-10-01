@@ -19,6 +19,7 @@ const Pets: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [hasMore, setHasMore] = useState<boolean>(true);
+  const [showBackToTop, setShowBackToTop] = useState<boolean>(false);
   const observer = useRef<IntersectionObserver | null>(null);
 
   const lastPetElementRef = useCallback(
@@ -35,7 +36,7 @@ const Pets: React.FC = () => {
     [isSearching, hasMore]
   );
 
-  const loadPets = async (page: number, reset: boolean = false) => {
+  const loadPets = async (reset: boolean = false) => {
     setIsSearching(true);
     try {
       const filters = {
@@ -48,7 +49,7 @@ const Pets: React.FC = () => {
       };
       const data = await fetchPets(filters);
       setPets((prev) => (reset ? data : [...prev, ...data]));
-      setHasMore(data.length === 20); // Nếu dữ liệu trả về < pageSize, không còn dữ liệu để tải
+      setHasMore(data.length === 20);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       setError('Error loading pets');
@@ -63,15 +64,29 @@ const Pets: React.FC = () => {
     setPets([]);
     setPageNumber(1);
     setHasMore(true);
-    loadPets(1, true);
+    loadPets(true);
   }, [debouncedSearchName, rarityFilter, typeFilter, ownedOnly]);
 
   // Tải thêm khi pageNumber thay đổi
   useEffect(() => {
     if (pageNumber > 1) {
-      loadPets(pageNumber);
+      loadPets();
     }
   }, [pageNumber]);
+
+  // Theo dõi cuộn để hiển thị nút Back to Top
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 300); // Hiển thị nút khi cuộn xuống > 300px
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Hàm cuộn lên đầu trang
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   if (loading && pageNumber === 1) {
     return <div className="text-center py-8">Loading...</div>;
@@ -82,7 +97,7 @@ const Pets: React.FC = () => {
   }
 
   return (
-    <div className="pixel-background font-pixel text-white mt-12 min-h-screen">
+    <div className="review-box-background bg-fixed font-pixel text-color mt-12 min-h-screen">
       <div className="container mx-auto p-4 w-7/12">
         <div className="mb-8">
           <div className="relative mb-4">
@@ -114,21 +129,19 @@ const Pets: React.FC = () => {
 
           <div className="flex items-center mb-4">
             <label className="flex items-center cursor-pointer">
-              <div className="relative">
+              <div className="relative custom-cursor">
                 <input
                   type="checkbox"
                   checked={ownedOnly}
                   onChange={(e) => setOwnedOnly(e.target.checked)}
-                  className="sr-only"
+                  className="sr-only "
                 />
                 <div className={`w-10 h-4 bg-gray-400 rounded-full shadow-inner ${ownedOnly ? 'bg-blue-500' : ''}`}></div>
                 <div
-                  className={`dot absolute w-6 h-6 bg-white rounded-full shadow -left-1 -top-1 transition ${
-                    ownedOnly ? 'transform translate-x-full' : ''
-                  }`}
+                  className={`dot absolute w-6 h-6 bg-white rounded-full shadow -left-1 -top-1 transition ${ownedOnly ? 'transform translate-x-full' : ''}`}
                 ></div>
               </div>
-              <span className="ml-2 text-black">Chỉ hiển thị pet đã sở hữu</span>
+              <span className="ml-2 text-color ">Chỉ hiển thị pet đã sở hữu</span>
             </label>
           </div>
 
@@ -136,11 +149,11 @@ const Pets: React.FC = () => {
             <select
               value={rarityFilter}
               onChange={(e) => setRarityFilter(e.target.value)}
-              className="p-2 border rounded-md w-full background-color"
+              className="p-2 border rounded-md w-full background-color custom-cursor"
             >
-              <option value="">Chọn Rarity</option>
+              <option value="" >Chọn Rarity</option>
               {rarityOptions.map((rarity) => (
-                <option key={rarity} value={rarity}>
+                <option key={rarity} value={rarity} >
                   {rarity}
                 </option>
               ))}
@@ -151,7 +164,7 @@ const Pets: React.FC = () => {
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="p-2 border rounded-md w-full background-color"
+              className="p-2 border rounded-md w-full background-color custom-cursor"
             >
               <option value="">Chọn Type</option>
               {typeOptions.map((type) => (
@@ -163,12 +176,12 @@ const Pets: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-4">
           {pets.map((pet, index) => (
             <div
               key={pet.id}
               ref={index === pets.length - 1 ? lastPetElementRef : null}
-              className="pet-card-container"
+              className="pet-card-container custom-cursor"
             >
               <PetCard pet={pet} />
             </div>
@@ -195,6 +208,24 @@ const Pets: React.FC = () => {
 
         {!hasMore && pets.length > 0 && (
           <div className="text-center py-4 text-gray-400">No more pets to load</div>
+        )}
+
+        {/* Nút Back to Top (chỉ hiển thị trên mobile) */}
+        {showBackToTop && (
+          <button
+            onClick={scrollToTop}
+            className="fixed bottom-4 right-4 sm:hidden bg-blue-500 text-white p-3 rounded-full shadow-lg hover:bg-blue-600 transition-opacity duration-300 z-50"
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+            </svg>
+          </button>
         )}
       </div>
     </div>

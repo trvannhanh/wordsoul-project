@@ -13,7 +13,7 @@ const Bar: React.FC<BarDetailProps> = ({ id, word, meaning, pronunciation, partO
     return (
         <>
             {/* Thanh từ vựng */}
-            <div key={id} className="flex justify-between items-start mt-2 border-t-2 border-white pt-3 font-pixel">
+            <div key={id} className="flex justify-between items-start mt-2 border-t-2 text-color pt-3 font-pixel">
                 {/* Flex column Word, loai tu, phat am,  */}
                 <div className="flex flex-col gap-1 mb-4">
                     {/* Word */}

@@ -22,6 +22,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
   const [answerFeedback, setAnswerFeedback] = useState<"correct" | "wrong" | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [userAnswer, setUserAnswer] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -59,6 +60,12 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
     setIsPlaying(false);
     setAudioProgress(0);
   };
+
+  useEffect(() => {
+    if (question && question.questionType === QuestionTypeEnum.Listening && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [question]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -122,7 +129,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
     }
   }, [question]);
 
-  if (loading) return <div className="text-white font-pixel">Đang tải...</div>;
+  if (loading) return <div className="text-white font-pixel"></div>;
   if (error) return <div className="text-red-500 font-pixel">{error}</div>;
   if (!question) return <div className="text-white font-pixel">Hoàn thành session!</div>;
 
@@ -174,7 +181,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
               return (
                 <button
                   onClick={() => handleSubmitAnswer("viewed")}
-                  className="bg-emerald-600 w-3/4 h-1/4 border-2 border-white rounded-lg font-pixel text-white hover:bg-emerald-700 disabled:opacity-50"
+                  className="bg-emerald-600 w-3/4 h-2/4 border-2 border-white rounded-lg font-pixel text-white hover:bg-emerald-700 disabled:opacity-50"
                   disabled={showFeedback}
                 >
                   Đã Xem
@@ -184,6 +191,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
             case QuestionTypeEnum.FillInBlank:
               return (
                 <input
+                  ref={inputRef}
                   type="text"
                   value={userAnswer}
                   className="bg-white p-4 rounded w-3/4 text-2xl text-black font-pixel text-center focus:outline-none focus:ring-2 focus:ring-blue-500"

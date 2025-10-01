@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useAuth } from '../../store/AuthContext';
 import StatCard from '../../components/UserProfile/StatCard';
+import { useAuth } from '../../hooks/Auth/useAuth';
 
 
 const ProfilePage: React.FC = () => {
@@ -10,20 +10,20 @@ const ProfilePage: React.FC = () => {
 
   if (!user) {
     return (
-      <div className="pixel-background font-pixel text-white min-h-screen flex items-center justify-center">
+      <div className="review-box-background font-pixel text-white min-h-screen flex items-center justify-center">
         <div className="text-center text-red-500">Please log in to view your profile.</div>
       </div>
     );
   }
 
   return (
-    <div className="pixel-background font-pixel text-white min-h-screen w-full flex justify-center items-center">
+    <div className="review-box-background font-pixel text-color min-h-screen w-full flex justify-center items-center">
       <div className="container mx-auto p-4 w-7/12">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-gradient-to-br from-gray-700 to-gray-900 pixel-border rounded-xl p-6 shadow-lg"
+          className="background-color pixel-border rounded-xl p-6 shadow-lg"
         >
           {/* Header with Avatar and Username */}
           <div className="flex items-center gap-6 mb-6">
@@ -42,15 +42,15 @@ const ProfilePage: React.FC = () => {
               />
             </motion.div>
             <div>
-              <h1 className="text-3xl font-pokemon text-yellow-300">{user.username}</h1>
-              <div className="text-lg text-gray-300">Level {user.level}</div>
-              <div className="text-sm text-gray-400">{user.email}</div>
+              <h1 className="text-3xl font-pokemon text-yellow-500">{user.username}</h1>
+              <div className="text-lg text-color">Level {user.level}</div>
+              <div className="text-sm text-color">{user.email}</div>
             </div>
           </div>
 
           {/* User Info Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div className="bg-gray-800 bg-opacity-80 p-4 rounded-md pixel-border">
+            <div className="background-color bg-opacity-80 p-4 rounded-md pixel-border">
               <h2 className="text-xl font-bold text-blue-400 mb-2">Account Details</h2>
               <div className="text-sm">
                 <p>
@@ -69,7 +69,7 @@ const ProfilePage: React.FC = () => {
             </div>
 
             {/* Stats Section */}
-            <div className="bg-gray-800 bg-opacity-80 p-4 rounded-md pixel-border">
+            <div className="background-color bg-opacity-80 p-4 rounded-md pixel-border">
               <h2 className="text-xl font-bold text-blue-400 mb-2">Trainer Stats</h2>
               <div className="grid grid-cols-2 gap-2">
                 <StatCard label="Total XP" value={user.totalXP} />

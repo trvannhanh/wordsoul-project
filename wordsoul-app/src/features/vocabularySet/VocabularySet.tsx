@@ -1,13 +1,11 @@
-
 import { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
-
 import { fetchUserVocabularySets, fetchVocabularySets } from '../../services/vocabularySet';
 import Card from '../../components/Card';
 import Skeleton from '../../components/Skeleton';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../store/AuthContext';
 import type { VocabularySetDto } from '../../types/VocabularySetDto';
+import { useAuth } from '../../hooks/Auth/useAuth';
 
 const VocabularySetsPage = () => {
     const { user } = useAuth();
@@ -20,12 +18,12 @@ const VocabularySetsPage = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [isSearching, setIsSearching] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [showBackToTop, setShowBackToTop] = useState<boolean>(false);
 
     useEffect(() => {
         const loadData = async () => {
             setIsSearching(true);
             try {
-                // Gọi API cho theme DailyLearning
                 const dailyData = await fetchVocabularySets(
                     debouncedSearchTitle,
                     'DailyLearning',
@@ -34,7 +32,6 @@ const VocabularySetsPage = () => {
                 );
                 setDailyLearningSets(dailyData);
 
-                // Gọi API cho theme AdvancedTopics
                 const advancedData = await fetchVocabularySets(
                     debouncedSearchTitle,
                     'AdvancedTopics',
@@ -43,14 +40,13 @@ const VocabularySetsPage = () => {
                 );
                 setAdvancedTopicsSets(advancedData);
 
-                // Gọi API cho My Vocabulary Sets (chỉ khi đăng nhập)
                 if (user) {
                     const mySetsData = await fetchUserVocabularySets(
                         debouncedSearchTitle,
                         undefined,
                         undefined,
                         undefined,
-                        true // Lấy các bộ sở hữu
+                        true
                     );
                     setMySets(mySetsData);
                 } else {
@@ -67,6 +63,20 @@ const VocabularySetsPage = () => {
         loadData();
     }, [debouncedSearchTitle, user]);
 
+    // Theo dõi cuộn để hiển thị nút Back to Top
+    useEffect(() => {
+        const handleScroll = () => {
+            setShowBackToTop(window.scrollY > 300);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    // Hàm cuộn lên đầu trang
+    const scrollToTop = () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTitle(e.target.value);
     };
@@ -77,8 +87,8 @@ const VocabularySetsPage = () => {
 
     if (loading && !dailyLearningSets.length && !advancedTopicsSets.length && !mySets.length) {
         return (
-            <div className='background-color mt-13 text-white'>
-                <div className="container mx-auto p-4 w-7/12">
+            <div className='background-color pt-13 text-color min-h-screen overflow-auto'>
+                <div className="container mx-auto p-4 sm:p-6 lg:p-8 w-full sm:w-10/12 lg:w-7/12">
                     <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:space-x-4">
                         <div className="relative flex-grow">
                             <input
@@ -86,12 +96,12 @@ const VocabularySetsPage = () => {
                                 value={searchTitle}
                                 onChange={handleSearchChange}
                                 placeholder="Tìm kiếm bộ từ vựng theo tiêu đề..."
-                                className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full p-2 sm:p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                             {isSearching && (
                                 <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
                                     <svg
-                                        className="animate-spin h-5 w-5 text-blue-500"
+                                        className="animate-spin h-5 w-5 sm:h-6 sm:w-6 text-blue-500"
                                         xmlns="http://www.w3.org/2000/svg"
                                         fill="none"
                                         viewBox="0 0 24 24"
@@ -122,17 +132,23 @@ const VocabularySetsPage = () => {
 
     if (error) {
         return (
-            <div className='background-color mt-13 text-white'>
-                <div className="container mx-auto p-4 w-7/12 text-center py-8 text-red-500">
-                    {error} <button onClick={() => window.location.reload()}>Retry</button>
+            <div className='background-color pt-13 text-white min-h-screen overflow-auto'>
+                <div className="container mx-auto p-4 sm:p-6 lg:p-8 w-full sm:w-10/12 lg:w-7/12 text-center py-8">
+                    <p className="text-base sm:text-lg text-red-500">{error}</p>
+                    <button 
+                        onClick={() => window.location.reload()} 
+                        className="mt-2 text-blue-500 hover:text-blue-400"
+                    >
+                        Retry
+                    </button>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className='background-color mt-13 text-white'>
-            <div className="container mx-auto p-4 w-7/12">
+        <div className='review-box-background bg-fixed pt-13 text-color min-h-screen overflow-auto'>
+            <div className="container mx-auto p-4 sm:p-6 lg:p-8 w-full sm:w-10/12 lg:w-7/12">
                 <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:space-x-4">
                     <div className="relative flex-grow">
                         <input
@@ -140,12 +156,12 @@ const VocabularySetsPage = () => {
                             value={searchTitle}
                             onChange={handleSearchChange}
                             placeholder="Tìm kiếm bộ từ vựng theo tiêu đề..."
-                            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full p-2 sm:p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                         {isSearching && (
                             <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
                                 <svg
-                                    className="animate-spin h-5 w-5 text-blue-500"
+                                    className="animate-spin h-5 w-5 sm:h-6 sm:w-6 text-blue-500"
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
                                     viewBox="0 0 24 24"
@@ -172,26 +188,24 @@ const VocabularySetsPage = () => {
                     {/* Section My Vocabulary Sets */}
                     {user && (
                         <section className="mb-12">
-                            <h2 className="text-2xl font-bold mb-4">Bộ từ vựng của tôi</h2>
+                            <h2 className="text-xl sm:text-2xl font-bold mb-4">Bộ từ vựng của tôi</h2>
                             {mySets.length === 0 ? (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
                                     <div
                                         onClick={handleCreateSet}
-                                        className="border border-gray-300 rounded-md p-4 bg-transparent flex items-center justify-center cursor-pointer hover:border-blue-500 transition-colors"
-                                        style={{ minHeight: '200px' }} // Đảm bảo kích thước tương tự Card
+                                        className="w-full border border-gray-300 rounded-md p-4 bg-transparent flex items-center justify-center cursor-pointer hover:border-blue-500 transition-colors"
                                     >
-                                        <span className="text-4xl text-white">+</span>
+                                        <span className="text-3xl sm:text-4xl ">+</span>
                                     </div>
-                                    <p className="text-gray-500 col-span-full">Bạn chưa sở hữu bộ từ vựng nào.</p>
+                                    <p className="text-sm sm:text-base text-gray-500 col-span-full">Bạn chưa sở hữu bộ từ vựng nào.</p>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
                                     <div
                                         onClick={handleCreateSet}
-                                        className="border border-gray-300 rounded-md p-4 bg-transparent flex items-center justify-center cursor-pointer hover:border-blue-500 transition-colors"
-                                        style={{ minHeight: '200px' }}
+                                        className="w-full border border-gray-300 rounded-md p-4 bg-transparent flex items-center justify-center custom-cursor  overflow-hidden hover:scale-105 transition-transform duration-300"
                                     >
-                                        <span className="text-4xl text-white">+</span>
+                                        <span className="text-3xl sm:text-4xl">+</span>
                                     </div>
                                     {mySets.map((item) => (
                                         <Card
@@ -212,13 +226,13 @@ const VocabularySetsPage = () => {
                         </section>
                     )}
 
-                    {/* Section DailyLearning */}
+                    {/* Section Daily Learning */}
                     <section className="mb-12">
-                        <h2 className="text-2xl font-bold mb-4">Daily Learning</h2>
+                        <h2 className="text-xl sm:text-2xl font-bold mb-4">Daily Learning</h2>
                         {dailyLearningSets.length === 0 ? (
-                            <p className="text-gray-500">Không tìm thấy bộ từ vựng.</p>
+                            <p className="text-sm sm:text-base text-gray-500">Không tìm thấy bộ từ vựng.</p>
                         ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
                                 {dailyLearningSets.map((item) => (
                                     <Card
                                         key={item.id}
@@ -237,13 +251,13 @@ const VocabularySetsPage = () => {
                         )}
                     </section>
 
-                    {/* Section AdvancedTopics */}
+                    {/* Section Advanced Topics */}
                     <section>
-                        <h2 className="text-2xl font-bold mb-4">Advanced Topics</h2>
+                        <h2 className="text-xl sm:text-2xl font-bold mb-4">Advanced Topics</h2>
                         {advancedTopicsSets.length === 0 ? (
-                            <p className="text-gray-500">Không tìm thấy bộ từ vựng.</p>
+                            <p className="text-sm sm:text-base text-gray-500">Không tìm thấy bộ từ vựng.</p>
                         ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
                                 {advancedTopicsSets.map((item) => (
                                     <Card
                                         key={item.id}
@@ -261,6 +275,24 @@ const VocabularySetsPage = () => {
                             </div>
                         )}
                     </section>
+
+                    {/* Nút Back to Top (chỉ hiển thị trên mobile) */}
+                    {showBackToTop && (
+                        <button
+                            onClick={scrollToTop}
+                            className="fixed bottom-4 right-4 sm:hidden bg-blue-500 text-white p-3 rounded-full shadow-lg hover:bg-blue-600 transition-opacity duration-300 z-50"
+                        >
+                            <svg
+                                className="w-6 h-6"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                            </svg>
+                        </button>
+                    )}
                 </div>
             </div>
         );

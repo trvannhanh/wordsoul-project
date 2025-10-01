@@ -14,7 +14,7 @@ const Footer: React.FC = () => {
             <p className="text-gray-400">
               123 Innovation Street, Tech City, TC 12345
             </p>
-            <p className="text-gray-400">Email: contact@yourcompany.com</p>
+            <p className="text-gray-400">Email: trvannhanh@gmail.com</p>
           </div>
 
           {/* Quick Links */}

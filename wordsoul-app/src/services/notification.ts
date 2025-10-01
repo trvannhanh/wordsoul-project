@@ -1,4 +1,5 @@
 
+import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import type { NotificationDto } from "../types/NotificationDto";
 import { authApi, endpoints } from "./api";
 
@@ -19,6 +20,16 @@ export const deleteNotification = async (notificationId: number) => {
 };
 
 export const markReadNotifications = async (notificationId: number) => {
-  const response = await authApi.delete(endpoints.markReadNotification(notificationId));
+  const response = await authApi.put(endpoints.markReadNotification(notificationId));
   return response.data;
+};
+
+export const createHubConnection = () => {
+  return new HubConnectionBuilder()
+    .withUrl(`https://localhost:7272/notificationHub`, {
+      accessTokenFactory: () => localStorage.getItem("accessToken") || "",
+    })
+    .configureLogging(LogLevel.Information)
+    .withAutomaticReconnect()
+    .build();
 };

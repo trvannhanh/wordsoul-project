@@ -8,7 +8,7 @@ interface GameScreenProps {
 }
 
 const GameScreen: React.FC<GameScreenProps> = ({ question, loading, error }) => {
-  if (loading) return <div className="text-white font-pixel">Đang tải...</div>;
+  if (loading) return <div className="text-white font-pixel"></div>;
   if (error) return <div className="text-red-500 font-pixel">{error}</div>;
   if (!question) return <div className="text-white font-pixel">Hoàn thành session!</div>;
 
@@ -24,7 +24,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ question, loading, error }) => 
 
         <p className="text-sm">{question.pronunciation || "N/A"}</p>
         <p className="text-sm">{question.partOfSpeech || "N/A"}</p>
-        {question.imageUrl && <img src={question.imageUrl} alt={question.word} className="w-42 h-42 object-contain mx-auto mt-2" />}
+        {question.imageUrl && <img src={question.imageUrl} alt={question.word} className="w-20 h-20 sm:w-20 sm:h-20 lg:w-42 lg:h-42  object-contain mx-auto mt-2" />}
       </div>
     </div>
   );

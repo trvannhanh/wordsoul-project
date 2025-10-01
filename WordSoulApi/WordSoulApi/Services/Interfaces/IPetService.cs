@@ -1,4 +1,5 @@
-﻿using WordSoulApi.Models.DTOs.Pet;
+﻿using WordSoulApi.Filters;
+using WordSoulApi.Models.DTOs.Pet;
 using WordSoulApi.Models.Entities;
 
 namespace WordSoulApi.Services.Interfaces
@@ -17,7 +18,7 @@ namespace WordSoulApi.Services.Interfaces
         Task<bool> DeletePetsBulkAsync(List<int> petIds);
 
         // Lấy tất cả các con pet
-        Task<IEnumerable<UserPetDto>> GetAllPetsAsync(int userId, string? name, PetRarity? rarity, PetType? type, bool? isOwned, int pageNumber, int pageSize);
+        Task<IEnumerable<UserPetDto>> GetAllPetsAsync(int userId, PetFilter filter);
 
         // Lấy con pet theo ID
         Task<PetDto?> GetPetByIdAsync(int id);

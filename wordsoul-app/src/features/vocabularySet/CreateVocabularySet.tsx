@@ -93,7 +93,7 @@ const CreateVocabularySet: React.FC = () => {
 
       const newSet = await createVocabularySet(formData);
       if (newSet && newSet.id) {
-        navigate('/vocabulary-sets');
+        navigate('/vocabularySet');
       } else {
         throw new Error('Tạo bộ từ vựng thất bại, không nhận được ID');
       }

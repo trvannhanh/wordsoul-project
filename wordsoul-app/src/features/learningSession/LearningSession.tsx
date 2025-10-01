@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion"; // Thêm framer-motion
 import GameScreen from "../../components/LearningSession/GameScreen";
@@ -7,6 +7,7 @@ import BackgroundMusic from "../../components/LearningSession/BackgroundMusic";
 import PetScreen from "../../components/LearningSession/PetScreen";
 import { useQuizSession } from "../../hooks/LearningSession/useQuizSession";
 import type { QuizQuestionDto } from "../../types/LearningSessionDto";
+import LoadingScreen from "../../components/LearningSession/LoadingScreen";
 
 
 const LearningSession: React.FC = () => {
@@ -37,6 +38,14 @@ const LearningSession: React.FC = () => {
   const [showPopup, setShowPopup] = useState(false); // Trạng thái pop-up
   const [answeredQuestion, setAnsweredQuestion] = useState<QuizQuestionDto | null>(null); // Câu hỏi vừa trả lời
 
+  // 👇 intro animation state
+  const [showIntro, setShowIntro] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowIntro(false), 1200); // chạy 1.5s rồi tắt
+    return () => clearTimeout(timer);
+  }, []);
+
   const toggleMusic = () => {
     setIsPlaying((prev) => !prev);
   };
@@ -51,8 +60,12 @@ const LearningSession: React.FC = () => {
     }, 3000); // Đóng pop-up sau 3 giây
   };
 
+  if (showIntro) {
+    return <LoadingScreen />;
+  }
+
   return (
-    <div className="h-screen w-screen bg-gray-900 flex items-center justify-between p-4 pixel-background relative">
+    <div className="h-screen w-screen bg-gray-900 flex flex-col sm:flex-row items-center justify-between p-4 pixel-background relative">
       <BackgroundMusic 
         isPlaying={isPlaying} 
         volume={0.5} 
@@ -60,8 +73,8 @@ const LearningSession: React.FC = () => {
         toggleMusic={toggleMusic}
       />
       
-      <div className="w-1/2 h-3/4 bg-gray-800 border-4 border-black rounded-lg flex flex-col overflow-hidden">
-        <div className="flex-1 bg-gray-700 border-b-4 border-black p-4">
+      <div className="w-full sm:w-10/12 lg:w-3/4 h-full sm:h-full lg:h-full bg-gray-800 border-4 border-black rounded-lg flex flex-col overflow-hidden">
+        <div className="flex-1 bg-gray-700 border-b-4 border-black p-4 h-1/2">
           <div className="h-full bg-black border-2 border-white rounded-sm flex items-center justify-center">
             <GameScreen
               question={currentQuestion}
@@ -71,7 +84,7 @@ const LearningSession: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex-1 bg-gray-700 p-4">
+        <div className="flex-1 bg-gray-700 p-4 h-1/2">
           <div className="h-full bg-black border-2 border-white rounded-sm flex items-center justify-center">
             <AnswerScreen
               question={currentQuestion}
