@@ -122,11 +122,11 @@ const PetDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="pixel-background text-white min-h-screen w-full flex justify-center items-center py-6 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-5xl flex flex-col md:flex-row items-start gap-4 sm:gap-6 bg-gradient-to-br from-blue-200 to-blue-400 border-4 border-black rounded-lg p-4 sm:p-6 shadow-lg">
+    <div className="review-box-background text-white min-h-screen w-full flex justify-center items-center py-6 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-5xl flex flex-col md:flex-row items-start gap-4 sm:gap-6 background-color  pixel-border rounded-lg p-4 sm:p-6 shadow-lg">
         {/* Bên trái: Hình ảnh pet hoặc dấu chấm hỏi */}
         <div className="w-full md:w-1/2">
-          <div className={`${backgroundClass} bg-no-repeat bg-cover bg-center h-64 sm:h-80 lg:h-96 rounded-lg overflow-hidden p-4`}>
+          <div className={`${backgroundClass} bg-no-repeat bg-cover bg-center pixel-border h-64 sm:h-80 lg:h-96 rounded-lg overflow-hidden p-4`}>
             {isOwned ? (
               <>
                 {evolveAnimation && (
@@ -200,12 +200,12 @@ const PetDetailPage: React.FC = () => {
           </div>
           {isOwned && (
             <>
-              <div className="mt-4 text-center">
+              <div className="mt-4 text-center text-color">
                 <span className="font-bold text-base sm:text-lg">Cấp độ: </span>
                 <span className="text-lg sm:text-xl font-semibold">{pet.level ?? 'N/A'}</span>
               </div>
               <div className="mt-2 px-4">
-                <div className="w-full bg-gray-300 rounded-full h-3 relative overflow-hidden">
+                <div className="w-full bg-gray-400 rounded-full h-3 relative overflow-hidden">
                   <motion.div
                     className="bg-blue-500 h-3 rounded-full"
                     initial={{ width: 0 }}
@@ -213,7 +213,7 @@ const PetDetailPage: React.FC = () => {
                     transition={{ duration: 0.5 }}
                   />
                 </div>
-                <p className="text-center mt-1 text-sm sm:text-base">
+                <p className="text-center text-color mt-1 text-sm sm:text-base">
                   Kinh nghiệm: {pet.experience != null ? pet.experience : 0}/100
                 </p>
               </div>
@@ -222,27 +222,27 @@ const PetDetailPage: React.FC = () => {
         </div>
         {/* Bên phải: Thông tin và nút thăng cấp */}
         <div className="w-full md:w-1/2 flex flex-col gap-4 sm:gap-6">
-          <div className="border-2 border-white rounded-lg p-4 sm:p-5 bg-gray-800 bg-opacity-80">
-            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-3 text-yellow-300">{pet.name}</h2>
-            <p className="text-gray-200 mb-3 text-sm sm:text-base">{pet.description}</p>
+          <div className=" pixel-border rounded-lg p-4 sm:p-5 background-color bg-opacity-80">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-3 text-yellow-400">{pet.name}</h2>
+            <p className="text-color text- mb-3 text-sm sm:text-base">{pet.description}</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm sm:text-base">
               <div>
-                <span className="font-bold">Độ hiếm: </span>
-                <span className="text-yellow-200">{pet.rarity}</span>
+                <span className="font-bold text-color">Độ hiếm: </span>
+                <span className="text-yellow-400">{pet.rarity}</span>
               </div>
               <div>
-                <span className="font-bold">Loại: </span>
-                <span className="text-yellow-200">{pet.type}</span>
+                <span className="font-bold text-color">Loại: </span>
+                <span className="text-yellow-400">{pet.type}</span>
               </div>
               {isOwned && (
                 <>
                   <div>
-                    <span className="font-bold">Yêu thích: </span>
-                    <span className="text-yellow-200">{pet.isFavorite ? 'Có' : 'Không'}</span>
+                    <span className="font-bold text-color">Yêu thích: </span>
+                    <span className="text-yellow-400">{pet.isFavorite ? 'Có' : 'Không'}</span>
                   </div>
                   <div>
-                    <span className="font-bold">Sở hữu: </span>
-                    <span className="text-yellow-200">
+                    <span className="font-bold text-color">Sở hữu: </span>
+                    <span className="text-yellow-400">
                       {pet.acquiredAt ? new Date(pet.acquiredAt).toLocaleDateString() : 'N/A'}
                     </span>
                   </div>

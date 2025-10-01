@@ -42,13 +42,13 @@ const VocabularyList: React.FC<VocabularyListProps> = ({ setId, pageSize = 5 }) 
   }, [page, setId]);
 
   return (
-    <div className="w-full border-white border-2 rounded-lg p-3">
+    <div className="w-full border rounded-lg p-3">
       {/* Pagination */}
       <div className="mb-3 flex justify-between items-center text-gray-400">
         <button
           disabled={page <= 1}
           onClick={() => setPage((prev) => prev - 1)}
-          className="px-3 py-1 background-color text-white rounded disabled:opacity-50 custom-cursor"
+          className="px-3 py-1 background-color text-color rounded disabled:opacity-50 custom-cursor"
         >
           Previous
         </button>
@@ -60,7 +60,7 @@ const VocabularyList: React.FC<VocabularyListProps> = ({ setId, pageSize = 5 }) 
         <button
           disabled={page >= totalPages}
           onClick={() => setPage((prev) => prev + 1)}
-          className="px-3 py-1 background-color text-white rounded disabled:opacity-50 custom-cursor"
+          className="px-3 py-1 background-color text-color rounded disabled:opacity-50 custom-cursor"
         >
           Next
         </button>

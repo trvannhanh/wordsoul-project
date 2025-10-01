@@ -97,7 +97,7 @@ const Pets: React.FC = () => {
   }
 
   return (
-    <div className="pixel-background font-pixel text-white mt-12 min-h-screen">
+    <div className="review-box-background bg-fixed font-pixel text-color mt-12 min-h-screen">
       <div className="container mx-auto p-4 w-7/12">
         <div className="mb-8">
           <div className="relative mb-4">
@@ -141,7 +141,7 @@ const Pets: React.FC = () => {
                   className={`dot absolute w-6 h-6 bg-white rounded-full shadow -left-1 -top-1 transition ${ownedOnly ? 'transform translate-x-full' : ''}`}
                 ></div>
               </div>
-              <span className="ml-2 text-black">Chỉ hiển thị pet đã sở hữu</span>
+              <span className="ml-2 text-color ">Chỉ hiển thị pet đã sở hữu</span>
             </label>
           </div>
 
@@ -176,7 +176,7 @@ const Pets: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-4">
           {pets.map((pet, index) => (
             <div
               key={pet.id}

@@ -87,7 +87,7 @@ const VocabularySetsPage = () => {
 
     if (loading && !dailyLearningSets.length && !advancedTopicsSets.length && !mySets.length) {
         return (
-            <div className='background-color pt-13 text-white min-h-screen overflow-auto'>
+            <div className='background-color pt-13 text-color min-h-screen overflow-auto'>
                 <div className="container mx-auto p-4 sm:p-6 lg:p-8 w-full sm:w-10/12 lg:w-7/12">
                     <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:space-x-4">
                         <div className="relative flex-grow">
@@ -147,7 +147,7 @@ const VocabularySetsPage = () => {
     }
 
     return (
-        <div className='background-color pt-13 text-white min-h-screen overflow-auto'>
+        <div className='review-box-background bg-fixed pt-13 text-color min-h-screen overflow-auto'>
             <div className="container mx-auto p-4 sm:p-6 lg:p-8 w-full sm:w-10/12 lg:w-7/12">
                 <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:space-x-4">
                     <div className="relative flex-grow">
@@ -194,9 +194,8 @@ const VocabularySetsPage = () => {
                                     <div
                                         onClick={handleCreateSet}
                                         className="w-full border border-gray-300 rounded-md p-4 bg-transparent flex items-center justify-center cursor-pointer hover:border-blue-500 transition-colors"
-                                        style={{ minHeight: '200px' }}
                                     >
-                                        <span className="text-3xl sm:text-4xl text-white">+</span>
+                                        <span className="text-3xl sm:text-4xl ">+</span>
                                     </div>
                                     <p className="text-sm sm:text-base text-gray-500 col-span-full">Bạn chưa sở hữu bộ từ vựng nào.</p>
                                 </div>
@@ -204,10 +203,9 @@ const VocabularySetsPage = () => {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
                                     <div
                                         onClick={handleCreateSet}
-                                        className="w-full border border-gray-300 rounded-md p-4 bg-transparent flex items-center justify-center cursor-pointer hover:border-blue-500 transition-colors"
-                                        style={{ minHeight: '200px' }}
+                                        className="w-full border border-gray-300 rounded-md p-4 bg-transparent flex items-center justify-center custom-cursor  overflow-hidden hover:scale-105 transition-transform duration-300"
                                     >
-                                        <span className="text-3xl sm:text-4xl text-white">+</span>
+                                        <span className="text-3xl sm:text-4xl">+</span>
                                     </div>
                                     {mySets.map((item) => (
                                         <Card

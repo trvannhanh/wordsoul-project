@@ -175,7 +175,7 @@ const VocabularySetDetail: React.FC = () => {
                 <ProfileCard />
               </div>
             </div>
-            <div className="flex flex-col gap-3 items-center border-2 border-white rounded-lg p-3">
+            <div className="flex flex-col gap-3 items-center text-color border rounded-lg p-3">
               <div className="text-lg font-bold">Progress</div>
               {userSetInfo ? (
                 <div className="text-sm">
@@ -192,11 +192,11 @@ const VocabularySetDetail: React.FC = () => {
 
         {showPetsModal && (
           <div className="fixed inset-0 bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-3xl max-h-[80vh] overflow-auto">
+            <div className="background-color rounded-lg p-6 w-full max-w-3xl max-h-[80vh] overflow-auto">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-black">Danh sách Pet</h2>
+                <h2 className="text-xl font-bold text-color">Danh sách Pet</h2>
                 <button
-                  className="text-black hover:text-gray-700"
+                  className="text-color hover:text-gray-700"
                   onClick={() => setShowPetsModal(false)}
                 >
                   <svg

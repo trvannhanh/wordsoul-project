@@ -14,7 +14,7 @@ interface CardProps {
 
 const Card: React.FC<CardProps> = ({ title, description, theme, difficultyLevel, image, vocabularySetid, createdByUsername, }) => {
     return (
-        <div className="my-1 rounded-xl shadow-md overflow-hidden border-white border-2 hover:scale-105 transition-transform duration-300">
+        <div className="background-color my-1 rounded-xl shadow-md overflow-hidden border hover:scale-105 transition-transform duration-300">
             {/* truyền vào id để link đến trang chi tiết */}
             <Link to={`/vocabularySet/${vocabularySetid}`} className="custom-cursor">
                 <img
@@ -24,7 +24,7 @@ const Card: React.FC<CardProps> = ({ title, description, theme, difficultyLevel,
                 />
                 <div className="p-4">
                     <div className="flex items-center justify-between mb-2">
-                        <h2 className="text-xl font-pixel">{title}</h2>
+                        <h2 className="text-xl text-color font-pixel">{title}</h2>
                         <span className="bg-purple-600 text-white text-xs font-medium min-w-18 text-center px-2 py-1 rounded-full">
                             {createdByUsername ? `${createdByUsername}` : 'Unknown'}
                         </span>

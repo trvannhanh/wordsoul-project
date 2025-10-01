@@ -71,7 +71,7 @@ const UserDashboard: React.FC = () => {
   }
 
   return (
-    <div className="pixel-background text-white min-h-screen font-pokemon relative overflow-auto">
+    <div className="review-box-background bg-fixed text-white min-h-screen font-pokemon relative overflow-auto">
       <Particles
         id="tsparticles"
         init={particlesInit}

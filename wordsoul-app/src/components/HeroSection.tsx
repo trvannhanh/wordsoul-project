@@ -13,7 +13,7 @@ interface HeroProps {
 const HeroSection: React.FC<HeroProps> = ({ title, description, hidden = false, textButton, height = '15rem', }) => {
     return (
         // truyền props image vào background
-        <div className={`min-h-[15rem] max-h-[50rem] mb-10 bg-auto bg-center flex items-center justify-center relative top-[2.5rem]`} style={{ backgroundImage: "url(https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758712020/thumb_wkbmcv.gif)", height: `${height}` }} >
+        <div className={`min-h-[15rem] max-h-[50rem] mb-10 bg-fixed bg-contain bg-center flex items-center justify-center relative top-[2.5rem]`} style={{ backgroundImage: "url(https://res.cloudinary.com/dqpkxxzaf/image/upload/v1759257741/zl6vjhfc09aa1_leyauw.gif)", height: `${height}` }} >
             <div className="absolute inset-0 bg-black/50"></div>
             <div className="relative text-center text-white">
                 <div className="max-w-md px-4 flex flex-col items-center text-center">
@@ -22,7 +22,7 @@ const HeroSection: React.FC<HeroProps> = ({ title, description, hidden = false, 
                     {/* truyền props hidden vào image để ẩn*/}
                     {!hidden && (
                         <img
-                            src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1758712032/title_q8ellc.gif"
+                            src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1759258654/Vocamon-text_ahrqpq.png"
                             alt="Hero title"
                             className="w-2xs"
                         />

@@ -10,8 +10,8 @@ const StatCard: React.FC<StatCardProps> = ({ label, value }) => (
   <div className="flex items-center gap-2">
     {icons[label]}
     <div className="flex-col">
-      <div className="text-sm font-pokemon text-yellow-300">{value}</div>
-      <div className="text-xs text-gray-300">{label}</div>
+      <div className="text-sm font-pokemon text-color">{value}</div>
+      <div className="text-xs text-gray-500">{label}</div>
     </div>
   </div>
 );

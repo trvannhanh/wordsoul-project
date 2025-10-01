@@ -13,7 +13,7 @@ const LoadingScreen = () => {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center pokemon-background pixelated font-mono">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center background-color pixelated font-mono">
       {/* Audio element for battle intro sound */}
       <audio
         ref={audioRef}

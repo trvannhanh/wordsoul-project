@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-
 import { useEffect, useMemo, useState } from "react";
 import { deleteNotification, fetchNotifications, markReadAllNotifications, markReadNotifications } from "../services/notification";
 import { useNotifications } from "../hooks/Notification/useNotifications";
@@ -10,10 +9,31 @@ const Header: React.FC = () => {
     const { notifications, setNotifications } = useNotifications(user?.id);
     const [isNotificationSidebarOpen, setIsNotificationSidebarOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+        // Khôi phục chế độ từ localStorage, mặc định là dark mode
+        const savedTheme = localStorage.getItem("theme");
+        return savedTheme ? savedTheme === "dark" : true; // Mặc định là true (dark mode) nếu không có giá trị trong localStorage
+    });
 
     const unreadCount = useMemo(() => notifications.filter((n) => !n.isRead).length, [notifications]);
 
-    /// Fetch initial notifications
+    // Áp dụng theme và lưu vào localStorage
+    useEffect(() => {
+        if (isDarkMode) {
+            document.documentElement.classList.add("dark");
+            localStorage.setItem("theme", "dark");
+        } else {
+            document.documentElement.classList.remove("dark");
+            localStorage.setItem("theme", "light");
+        }
+    }, [isDarkMode]);
+
+    // Toggle dark/light mode
+    const toggleTheme = () => {
+        setIsDarkMode(!isDarkMode);
+    };
+
+    // Fetch initial notifications
     useEffect(() => {
         if (user?.id) {
             fetchNotifications()
@@ -64,7 +84,7 @@ const Header: React.FC = () => {
     return (
         <>
             {/* Header chính */}
-            <div className="flex items-center justify-between background-color px-4 sm:px-6 lg:px-10 py-2 shadow-sm fixed top-0 left-0 z-50 w-full">
+            <div className="flex items-center justify-between background-color text-color px-4 sm:px-6 lg:px-10 py-2 shadow-sm fixed top-0 left-0 z-50 w-full">
                 <div className="container mx-auto flex items-center justify-between w-full sm:w-10/12 lg:w-7/12 max-w-7xl">
                     {/* Logo Section */}
                     <h2 className="flex items-center cursor-pointer">
@@ -74,15 +94,15 @@ const Header: React.FC = () => {
                                 width="35"
                                 height="35"
                                 alt="coin logo"
-                                className="animate-pulse"
+                                className="animate-pulse "
                             />
                         </div>
                         {user ? (
-                            <Link to="/home" className="ml-2 text-xs sm:text-sm font-press text-white hover:text-blue-700 custom-cursor">
+                            <Link to="/home" className="ml-2 text-xs sm:text-sm font-press hover:text-blue-700 custom-cursor">
                                 WordSoul
                             </Link>
                         ) : (
-                            <Link to="/" className="ml-2 text-xs sm:text-sm font-press text-white hover:text-blue-700 custom-cursor">
+                            <Link to="/" className="ml-2 text-xs sm:text-sm font-press  hover:text-blue-700 custom-cursor">
                                 WordSoul
                             </Link>
                         )}
@@ -90,7 +110,7 @@ const Header: React.FC = () => {
 
                     {/* Hamburger Menu cho mobile */}
                     <div className="md:hidden">
-                        <button onClick={toggleMobileMenu} className="text-white custom-cursor">
+                        <button onClick={toggleMobileMenu} className="custom-cursor">
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                             </svg>
@@ -101,7 +121,7 @@ const Header: React.FC = () => {
                     <div className="hidden md:flex items-center justify-center gap-2 text-xs">
                         <div className="relative">
                             <Link to="/vocabularySet">
-                                <button className="flex items-center gap-1 px-3 py-2 text-white hover:text-blue-400 hover:bg-slate-800 rounded-md custom-cursor">
+                                <button className="flex items-center gap-1 px-3 py-2  hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-md custom-cursor">
                                     Bộ từ vựng
                                     <span>
                                         <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
@@ -113,7 +133,7 @@ const Header: React.FC = () => {
                         </div>
                         <div className="relative">
                             <Link to="/home">
-                                <button className="flex items-center gap-1 px-3 py-2 text-white hover:text-blue-400 hover:bg-slate-800 rounded-md custom-cursor">
+                                <button className="flex items-center gap-1 px-3 py-2 hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-md custom-cursor">
                                     Ôn tập
                                     <span>
                                         <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
@@ -125,14 +145,14 @@ const Header: React.FC = () => {
                         </div>
                         <div>
                             <Link to="/pets">
-                                <button className="px-3 py-2 text-white hover:text-blue-400 hover:bg-slate-800 rounded-md custom-cursor">
-                                    Linh Thú
+                                <button className="px-3 py-2 hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-md custom-cursor">
+                                    Pokédex
                                 </button>
                             </Link>
                         </div>
                         <div className="relative">
                             <Link to="/community">
-                                <button className="flex items-center gap-1 px-3 py-2 text-white hover:text-blue-400 hover:bg-slate-800 rounded-md custom-cursor">
+                                <button className="flex items-center gap-1 px-3 py-2  hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-md custom-cursor">
                                     Cộng đồng
                                     <span>
                                         <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
@@ -156,7 +176,7 @@ const Header: React.FC = () => {
                                     viewBox="0 0 24 24"
                                     fill="none"
                                     onClick={toggleNotificationSidebar}
-                                    className="custom-cursor text-white"
+                                    className="custom-cursor"
                                 >
                                     <path
                                         fillRule="evenodd"
@@ -166,37 +186,22 @@ const Header: React.FC = () => {
                                     />
                                 </svg>
                                 {unreadCount > 0 && (
-                                    <span className="absolute top-0 right-0 inline-flex items-center justify-center w-3 h-3 text-xs font-bold text-white bg-red-500 rounded-full -mt-1 -mr-1">
+                                    <span className="absolute top-0 right-0 inline-flex items-center justify-center w-3 h-3 text-xs font-bold bg-red-500 rounded-full -mt-1 -mr-1">
                                         {unreadCount}
                                     </span>
                                 )}
                             </div>
                         ) : null}
 
-                        {/* Icon khác */}
-                        <div className="hidden sm:block custom-cursor">
-                            <svg
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <g clipPath="url(#clip0_681_6745)">
-                                    <path
-                                        fillRule="evenodd"
-                                        clipRule="evenodd"
-                                        d="M6 2H14V4H12V6H10V4H6V2ZM4 6V4H6V6H4ZM4 16H2V6H4V16ZM6 18H4V16H6V18ZM8 20H6V18H8V20ZM18 20V22H8V20H18ZM20 18V20H18V18H20ZM18 14H20V18H22V10H20V12H18V14ZM12 14V16H18V14H12ZM10 12H12V14H10V12ZM10 12V6H8V12H10Z"
-                                        fill="#94A3B8"
-                                    />
-                                </g>
-                                <defs>
-                                    <clipPath id="clip0_681_6745">
-                                        <rect width="24" height="24" fill="white" />
-                                    </clipPath>
-                                </defs>
-                            </svg>
-                        </div>
+                        {/* Dark/Light Mode Toggle */}
+                        <button onClick={toggleTheme} className="hidden sm:block icon-container custom-cursor">
+                            {isDarkMode ? (
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_681_9546)"><g clip-path="url(#clip1_681_9546)"><path fill-rule="evenodd" clip-rule="evenodd" d="M13 0H11V4H13V0ZM0 11V13H4V11H0ZM24 11V13H20V11H24ZM13 24H11V20H13V24ZM8 6H16V8H8V6ZM6 8H8V16H6V8ZM8 18V16H16V18H8ZM18 16H16V8H18V16ZM20 2H22V4H20V2ZM20 4V6H18V4H20ZM22 22H20V20H22V22ZM20 20H18V18H20V20ZM4 2H2V4H4V6H6V4H4V2ZM2 22H4V20H6V18H4V20H2V22Z" fill="#64748B"></path></g></g><defs><clipPath id="clip0_681_9546"><rect width="24" height="24" fill="white"></rect></clipPath><clipPath id="clip1_681_9546"><rect width="24" height="24" fill="white"></rect></clipPath></defs></svg>
+                            ) : (
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_681_6745)"><path fill-rule="evenodd" clip-rule="evenodd" d="M6 2H14V4H12V6H10V4H6V2ZM4 6V4H6V6H4ZM4 16H2V6H4V16ZM6 18H4V16H6V18ZM8 20H6V18H8V20ZM18 20V22H8V20H18ZM20 18V20H18V18H20ZM18 14H20V18H22V10H20V12H18V14ZM12 14V16H18V14H12ZM10 12H12V14H10V12ZM10 12V6H8V12H10Z" fill="#94A3B8"></path></g><defs><clipPath id="clip0_681_6745"><rect width="24" height="24" fill="white"></rect></clipPath></defs></svg>
+                            )}
+                        </button>
+
 
                         {/* Login/Logout button */}
                         {user ? (
@@ -219,7 +224,7 @@ const Header: React.FC = () => {
 
             {/* Mobile Menu Dropdown */}
             {isMobileMenuOpen && (
-                <div className="md:hidden bg-slate-800 text-white px-4 py-2 absolute top-[48px] left-0 w-full z-40">
+                <div className="md:hidden bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2 absolute top-[48px] left-0 w-full z-40">
                     <div className="flex flex-col gap-2">
                         <Link to="/vocabularySet" className="py-2 hover:text-blue-400" onClick={toggleMobileMenu}>
                             Bộ từ vựng
@@ -228,7 +233,7 @@ const Header: React.FC = () => {
                             Ôn tập
                         </Link>
                         <Link to="/pets" className="py-2 hover:text-blue-400" onClick={toggleMobileMenu}>
-                            Linh Thú
+                            Pokédex
                         </Link>
                         <Link to="/community" className="py-2 hover:text-blue-400" onClick={toggleMobileMenu}>
                             Cộng đồng
@@ -239,13 +244,13 @@ const Header: React.FC = () => {
 
             {/* Notification Sidebar */}
             <div
-                className={`fixed top-0 right-0 h-full background-color shadow-lg z-50 w-full sm:w-80 md:w-96 transform transition-transform duration-300 ease-in-out ${isNotificationSidebarOpen ? "translate-x-0" : "translate-x-full"
+                className={`fixed top-0 right-0 h-full sidebar-color shadow-lg z-50 w-full sm:w-80 md:w-96 transform transition-transform duration-300 ease-in-out ${isNotificationSidebarOpen ? "translate-x-0" : "translate-x-full"
                     }`}
             >
                 <div className="flex flex-col h-full">
                     {/* Header của Sidebar */}
-                    <div className="flex justify-between items-center p-4 border-b">
-                        <h3 className="text-xl text-white font-semibold">Thông báo</h3>
+                    <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 className="text-xl text-color font-semibold">Thông báo</h3>
                         <div className="flex gap-2">
                             <button
                                 onClick={handleMarkAllRead}
@@ -255,7 +260,7 @@ const Header: React.FC = () => {
                             </button>
                             <button
                                 onClick={toggleNotificationSidebar}
-                                className="text-gray-500 hover:text-gray-700 custom-cursor"
+                                className="text-color custom-cursor"
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -270,11 +275,11 @@ const Header: React.FC = () => {
                             notifications.map((notif) => (
                                 <div
                                     key={notif.id}
-                                    className={`p-3 border-b ${!notif.isRead ? "bg-white" : "bg-gray-800"}`}
+                                    className={`p-3 border-b border-gray-200 dark:border-gray-700 ${!notif.isRead ? "background-color" : "sidebar-color"}`}
                                 >
-                                    <div className="text-sm text-black font-medium">{notif.title}</div>
-                                    <div className="text-xs text-gray-600">{notif.message}</div>
-                                    <div className="text-xs text-gray-400">
+                                    <div className="text-sm text-color font-medium">{notif.title}</div>
+                                    <div className="text-xs text-gray-600 dark:text-gray-400">{notif.message}</div>
+                                    <div className="text-xs text-gray-400 dark:text-gray-500">
                                         {new Date(notif.createdAt).toLocaleTimeString()}
                                     </div>
                                     <div className="flex gap-2 mt-2 flex-wrap">
@@ -296,7 +301,7 @@ const Header: React.FC = () => {
                                 </div>
                             ))
                         ) : (
-                            <div className="text-xs text-gray-500 text-center py-4">Không có thông báo</div>
+                            <div className="text-xs text-color text-center py-4">Không có thông báo</div>
                         )}
                     </div>
                 </div>

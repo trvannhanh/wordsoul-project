@@ -50,7 +50,7 @@ const Community: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="pixel-background font-pixel text-white mt-12 min-h-screen">
+            <div className="background-color font-pixel text-white mt-12 min-h-screen">
                 <div className="container mx-auto p-4 w-7/12">
                     <h1 className="text-3xl mb-6 text-center">Trainer Leaderboard</h1>
                     <div className="flex justify-center mb-6">
@@ -102,7 +102,7 @@ const Community: React.FC = () => {
     }
 
     return (
-        <div className="pixel-background font-pixel text-white min-h-screen">
+        <div className="review-box-background font-pixel text-white min-h-screen">
             <div className="container mx-auto p-4 w-7/12">
                 <h1 className="text-3xl mb-6 text-center">Trainer Leaderboard</h1>
                 <div className="flex justify-center mb-6">
@@ -122,7 +122,7 @@ const Community: React.FC = () => {
                     </button>
                 </div>
 
-                <div className="bg-gray-800 bg-opacity-80 p-4 rounded-md shadow-md">
+                <div className="background-color text-color bg-opacity-80 p-4 rounded-md shadow-md">
                     <div className="grid grid-cols-3 gap-4 mb-4 text-center font-bold">
                         <div>Rank</div>
                         <div>Trainer</div>
