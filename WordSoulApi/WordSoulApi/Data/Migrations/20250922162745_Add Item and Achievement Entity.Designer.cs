@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WordSoulApi.Data;
 
@@ -11,9 +12,11 @@ using WordSoulApi.Data;
 namespace WordSoulApi.Migrations
 {
     [DbContext(typeof(WordSoulDbContext))]
-    partial class WordSoulDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250922162745_Add Item and Achievement Entity")]
+    partial class AddItemandAchievementEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WordSoulApi.Data;
 
@@ -11,9 +12,11 @@ using WordSoulApi.Data;
 namespace WordSoulApi.Migrations
 {
     [DbContext(typeof(WordSoulDbContext))]
-    partial class WordSoulDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250902084049_Remove QuizQuestion Table")]
+    partial class RemoveQuizQuestionTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,78 +24,6 @@ namespace WordSoulApi.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("WordSoulApi.Models.Entities.Achievement", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ConditionType")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ConditionValue")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("ItemId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("RewardItemId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ItemId");
-
-                    b.ToTable("Achievements");
-                });
-
-            modelBuilder.Entity("WordSoulApi.Models.Entities.ActivityLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Details")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Action");
-
-                    b.HasIndex("Timestamp");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("ActivityLogs");
-                });
 
             modelBuilder.Entity("WordSoulApi.Models.Entities.AnswerRecord", b =>
                 {
@@ -104,8 +35,7 @@ namespace WordSoulApi.Migrations
 
                     b.Property<string>("Answer")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("AttemptCount")
                         .HasColumnType("int");
@@ -122,47 +52,22 @@ namespace WordSoulApi.Migrations
                     b.Property<int>("QuestionType")
                         .HasColumnType("int");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
                     b.Property<int>("VocabularyId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("LearningSessionId");
+
                     b.HasIndex("VocabularyId");
 
-                    b.HasIndex("LearningSessionId", "VocabularyId", "QuestionType")
+                    b.HasIndex("UserId", "LearningSessionId", "VocabularyId")
                         .IsUnique();
 
                     b.ToTable("AnswerRecords");
-                });
-
-            modelBuilder.Entity("WordSoulApi.Models.Entities.Item", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ImageUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Items");
                 });
 
             modelBuilder.Entity("WordSoulApi.Models.Entities.LearningSession", b =>
@@ -173,17 +78,11 @@ namespace WordSoulApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<double?>("CatchRate")
-                        .HasColumnType("float");
-
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("bit");
-
-                    b.Property<int?>("PetId")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("datetime2");
@@ -194,53 +93,16 @@ namespace WordSoulApi.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("VocabularySetId")
+                    b.Property<int>("VocabularySetId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("PetId");
 
                     b.HasIndex("UserId");
 
                     b.HasIndex("VocabularySetId");
 
                     b.ToTable("LearningSessions");
-                });
-
-            modelBuilder.Entity("WordSoulApi.Models.Entities.Notification", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Message")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("WordSoulApi.Models.Entities.Pet", b =>
@@ -251,38 +113,23 @@ namespace WordSoulApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("BaseFormId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ImageUrl")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int?>("NextEvolutionId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("Order")
-                        .HasColumnType("int");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Rarity")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("RequiredLevel")
                         .HasColumnType("int");
 
                     b.Property<int>("Type")
@@ -300,12 +147,6 @@ namespace WordSoulApi.Migrations
 
                     b.Property<int>("VocabularyId")
                         .HasColumnType("int");
-
-                    b.Property<int>("CurrentLevel")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsCompleted")
-                        .HasColumnType("bit");
 
                     b.Property<int>("Order")
                         .HasColumnType("int");
@@ -348,11 +189,7 @@ namespace WordSoulApi.Migrations
 
                     b.HasKey("VocabularySetId", "VocabularyId");
 
-                    b.HasIndex("Order");
-
                     b.HasIndex("VocabularyId");
-
-                    b.HasIndex("VocabularySetId");
 
                     b.ToTable("SetVocabularies");
                 });
@@ -365,28 +202,22 @@ namespace WordSoulApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AP")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RefreshToken")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("RefreshTokenExpiryTime")
                         .HasColumnType("datetime2");
@@ -395,8 +226,8 @@ namespace WordSoulApi.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Username")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("XP")
                         .HasColumnType("int");
@@ -406,77 +237,16 @@ namespace WordSoulApi.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.Entities.UserAchievement", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AchievementId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsCompleted")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("ProgressValue")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AchievementId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserAchievements");
-                });
-
-            modelBuilder.Entity("WordSoulApi.Models.Entities.UserItem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ItemId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ItemId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserItems");
-                });
-
             modelBuilder.Entity("WordSoulApi.Models.Entities.UserOwnedPet", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<int>("PetId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("AcquiredAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("Experience")
-                        .HasColumnType("int");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -484,20 +254,9 @@ namespace WordSoulApi.Migrations
                     b.Property<bool>("IsFavorite")
                         .HasColumnType("bit");
 
-                    b.Property<int>("Level")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PetId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
+                    b.HasKey("UserId", "PetId");
 
                     b.HasIndex("PetId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("UserOwnedPets");
                 });
@@ -546,10 +305,7 @@ namespace WordSoulApi.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsCompleted")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("TotalCompletedSession")
+                    b.Property<int>("totalCompletedSession")
                         .HasColumnType("int");
 
                     b.HasKey("UserId", "VocabularySetId");
@@ -567,10 +323,11 @@ namespace WordSoulApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CEFRLevel")
+                    b.Property<int>("CEFRLevel")
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ExampleSentence")
@@ -580,9 +337,10 @@ namespace WordSoulApi.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Meaning")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("PartOfSpeech")
+                    b.Property<int>("PartOfSpeech")
                         .HasColumnType("int");
 
                     b.Property<string>("Pronunciation")
@@ -592,13 +350,10 @@ namespace WordSoulApi.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Word")
-                        .HasColumnType("nvarchar(450)");
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Word");
-
-                    b.HasIndex("PartOfSpeech", "CEFRLevel");
 
                     b.ToTable("Vocabularies");
                 });
@@ -614,24 +369,16 @@ namespace WordSoulApi.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedById")
-                        .HasColumnType("int");
-
                     b.Property<string>("Description")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("DifficultyLevel")
                         .HasColumnType("int");
 
                     b.Property<string>("ImageUrl")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsPublic")
                         .HasColumnType("bit");
 
                     b.Property<int>("Theme")
@@ -639,40 +386,11 @@ namespace WordSoulApi.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedById");
-
-                    b.HasIndex("IsPublic");
-
-                    b.HasIndex("Title");
-
-                    b.HasIndex("Theme", "DifficultyLevel", "CreatedAt");
-
                     b.ToTable("VocabularySets");
-                });
-
-            modelBuilder.Entity("WordSoulApi.Models.Entities.Achievement", b =>
-                {
-                    b.HasOne("WordSoulApi.Models.Entities.Item", "Item")
-                        .WithMany()
-                        .HasForeignKey("ItemId");
-
-                    b.Navigation("Item");
-                });
-
-            modelBuilder.Entity("WordSoulApi.Models.Entities.ActivityLog", b =>
-                {
-                    b.HasOne("WordSoulApi.Models.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("WordSoulApi.Models.Entities.AnswerRecord", b =>
@@ -683,6 +401,12 @@ namespace WordSoulApi.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("WordSoulApi.Models.Entities.User", "User")
+                        .WithMany("AnswerRecords")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("WordSoulApi.Models.Entities.Vocabulary", "Vocabulary")
                         .WithMany("AnswerRecords")
                         .HasForeignKey("VocabularyId")
@@ -691,15 +415,13 @@ namespace WordSoulApi.Migrations
 
                     b.Navigation("LearningSession");
 
+                    b.Navigation("User");
+
                     b.Navigation("Vocabulary");
                 });
 
             modelBuilder.Entity("WordSoulApi.Models.Entities.LearningSession", b =>
                 {
-                    b.HasOne("WordSoulApi.Models.Entities.Pet", "Pet")
-                        .WithMany()
-                        .HasForeignKey("PetId");
-
                     b.HasOne("WordSoulApi.Models.Entities.User", "User")
                         .WithMany("LearningSessions")
                         .HasForeignKey("UserId")
@@ -709,23 +431,12 @@ namespace WordSoulApi.Migrations
                     b.HasOne("WordSoulApi.Models.Entities.VocabularySet", "VocabularySet")
                         .WithMany("LearningSessions")
                         .HasForeignKey("VocabularySetId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.Navigation("Pet");
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.Navigation("User");
 
                     b.Navigation("VocabularySet");
-                });
-
-            modelBuilder.Entity("WordSoulApi.Models.Entities.Notification", b =>
-                {
-                    b.HasOne("WordSoulApi.Models.Entities.User", "User")
-                        .WithMany("Notifications")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("WordSoulApi.Models.Entities.SessionVocabulary", b =>
@@ -785,44 +496,6 @@ namespace WordSoulApi.Migrations
                     b.Navigation("VocabularySet");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.Entities.UserAchievement", b =>
-                {
-                    b.HasOne("WordSoulApi.Models.Entities.Achievement", "Achievement")
-                        .WithMany("UserAchievements")
-                        .HasForeignKey("AchievementId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("WordSoulApi.Models.Entities.User", "User")
-                        .WithMany("UserAchievements")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Achievement");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("WordSoulApi.Models.Entities.UserItem", b =>
-                {
-                    b.HasOne("WordSoulApi.Models.Entities.Item", "Item")
-                        .WithMany("UserItems")
-                        .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("WordSoulApi.Models.Entities.User", "User")
-                        .WithMany("UserItems")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Item");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("WordSoulApi.Models.Entities.UserOwnedPet", b =>
                 {
                     b.HasOne("WordSoulApi.Models.Entities.Pet", "Pet")
@@ -880,26 +553,6 @@ namespace WordSoulApi.Migrations
                     b.Navigation("VocabularySet");
                 });
 
-            modelBuilder.Entity("WordSoulApi.Models.Entities.VocabularySet", b =>
-                {
-                    b.HasOne("WordSoulApi.Models.Entities.User", "CreatedBy")
-                        .WithMany("CreatedVocabularySets")
-                        .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("CreatedBy");
-                });
-
-            modelBuilder.Entity("WordSoulApi.Models.Entities.Achievement", b =>
-                {
-                    b.Navigation("UserAchievements");
-                });
-
-            modelBuilder.Entity("WordSoulApi.Models.Entities.Item", b =>
-                {
-                    b.Navigation("UserItems");
-                });
-
             modelBuilder.Entity("WordSoulApi.Models.Entities.LearningSession", b =>
                 {
                     b.Navigation("AnswerRecords");
@@ -916,15 +569,9 @@ namespace WordSoulApi.Migrations
 
             modelBuilder.Entity("WordSoulApi.Models.Entities.User", b =>
                 {
-                    b.Navigation("CreatedVocabularySets");
+                    b.Navigation("AnswerRecords");
 
                     b.Navigation("LearningSessions");
-
-                    b.Navigation("Notifications");
-
-                    b.Navigation("UserAchievements");
-
-                    b.Navigation("UserItems");
 
                     b.Navigation("UserOwnedPets");
 
