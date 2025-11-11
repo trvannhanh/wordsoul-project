@@ -8,12 +8,6 @@ import { useAuth } from '../../hooks/Auth/useAuth';
 const ProfileCard: React.FC = () => {
   const { user } = useAuth();
 
-  // // Debug user changes
-  // useEffect(() => {
-  //   console.log('ProfileCard user updated:', user);
-  //   console.log('Total AP:', user?.totalAP);
-  // }, [user]);
-
   return (
     <motion.div
       className="background-color pixel-border rounded-xl p-6"

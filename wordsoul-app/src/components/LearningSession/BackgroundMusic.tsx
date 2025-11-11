@@ -30,7 +30,7 @@ const BackgroundMusic: React.FC<BackgroundMusicProps> = ({
     <>
       <button
         onClick={toggleMusic}
-        className="absolute top-2 sm:top-2 lg:top-10 right-6 bg-gray-800 p-2 rounded-full text-white font-pixel border-2 border-white hover:bg-gray-700"
+        className="absolute top-2 sm:top-2 lg:top-10 right-6 bg-gray-800 p-2 rounded-full text-white font-pixel border-2 border-white hover:bg-gray-700 z-10"
       >
         {isPlaying ? "🔇 Tắt nhạc" : "🔊 Bật nhạc"}
       </button>

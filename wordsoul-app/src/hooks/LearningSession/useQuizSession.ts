@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useState, useCallback } from "react";
-
 import {
   answerQuiz,
   completeLearningSession,
@@ -14,7 +13,9 @@ export const useQuizSession = (
   sessionId: number,
   mode: "learning" | "review",
   petId?: number,
-  initialCatchRate?: number
+  initialCatchRate?: number,
+  currentCorrectAnswered?: number,
+  setCurrentCorrectAnswered?: (value: number) => void
 ) => {
   const [questionsBatch, setQuestionsBatch] = useState<QuizQuestionDto[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -110,7 +111,8 @@ export const useQuizSession = (
   const handleAnswer = useCallback(async (
     question: QuizQuestionDto, 
     answer: string,
-    onAnswerProcessed: () => void // Callback để báo hiệu khi xử lý xong
+    onAnswerProcessed: () => void,
+    onResult?: (isCorrect: boolean) => void
   ): Promise<boolean> => {
     try {
       setLoading(true);
@@ -123,6 +125,13 @@ export const useQuizSession = (
         questionType: question.questionType,
         answer,
       });
+
+      // Update currentCorrectAnswered based on answer correctness
+      if (setCurrentCorrectAnswered) {
+        setCurrentCorrectAnswered(
+          Math.max(0, Math.min(25, (currentCorrectAnswered || 0) + (response.isCorrect ? 1 : -1)))
+        );
+      }
 
       if (response.isCorrect) {
         const nextLevelType = levelToType[response.newLevel] || QuestionTypeEnum.Listening;
@@ -145,21 +154,25 @@ export const useQuizSession = (
         setCatchRate((prev) => Math.max(0, prev - 0.05));
       }
 
+      // Notify result if callback provided
+      onResult?.(response.isCorrect);
+
       // Gọi callback để báo hiệu xử lý xong
       setTimeout(() => {
         setLevelFeedback(null);
-        onAnswerProcessed(); // Chuyển câu hỏi sau khi pop-up đóng
-      }, 3000); // Chờ 3 giây để đồng bộ với pop-up
+        onAnswerProcessed();
+      }, 3000);
 
       return response.isCorrect;
     } catch (err) {
       setError("Failed to process answer");
       console.error("Answer error:", err);
+      onResult?.(false);
       return false;
     } finally {
       setLoading(false);
     }
-  }, [sessionId, currentQuestionIndex, questionsBatch.length]);
+  }, [sessionId, currentQuestionIndex, questionsBatch.length, currentCorrectAnswered, setCurrentCorrectAnswered]);
 
   const handleCompleteSession = useCallback(async () => {
     try {
@@ -209,7 +222,7 @@ export const useQuizSession = (
     showRewardAnimation,
     captureComplete,
     setCaptureComplete,
-    loadNextQuestion, // Xuất hàm này để AnswerScreen gọi
+    loadNextQuestion,
     catchRate,
   };
 };

@@ -25,7 +25,9 @@ const UserDashboard: React.FC = () => {
     setLoading(true);
     try {
       const session = await createReviewSession();
-      navigate(`/learningSession/${session.id}?mode=review`);
+      navigate(`/learningSession/${session.id}?mode=review`, {
+        state: { currentCorrectAnswered : session.currentCorrectAnswered},
+      });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       setError(error?.response?.data?.message || 'Lỗi tạo phiên ôn tập');
