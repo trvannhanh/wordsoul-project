@@ -47,6 +47,8 @@ namespace WordSoulApi.Services.Implementations
             // Streak (tính chuỗi ngày liên tục có học)
             var sessionDates = await _userRepository.GetLearningSessionDatesAsync(userId);
             int streakDays = CalculateStreak(sessionDates);
+
+
             return new UserDetailDto
             {
                 Id = user.Id,
@@ -62,6 +64,7 @@ namespace WordSoulApi.Services.Implementations
                 PetCount = user.UserOwnedPets.Count,
                 //PetActive = user.UserOwnedPets.FirstOrDefault(p => p.IsActive)?.Pet.Name,
                 AvatarUrl = user.UserOwnedPets.FirstOrDefault(p => p.IsActive)?.Pet.ImageUrl,
+                PetActiveId = user.UserOwnedPets.FirstOrDefault(p => p.IsActive)?.PetId
             };
         }
 

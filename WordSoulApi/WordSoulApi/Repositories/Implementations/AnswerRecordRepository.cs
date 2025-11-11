@@ -57,6 +57,13 @@ namespace WordSoulApi.Repositories.Implementations
             return record;
         }
 
+        public async Task<int> GetCorrectAnswerRecordNumberFromSession(int sessionId)
+        {
+            var record = await _context.AnswerRecords
+                .Where(a => a.LearningSessionId == sessionId && a.IsCorrect).CountAsync();
+            return record;
+        }
+
 
         //------------------------------- UPDATE -----------------------------------
         // Cập nhật AnswerRecord

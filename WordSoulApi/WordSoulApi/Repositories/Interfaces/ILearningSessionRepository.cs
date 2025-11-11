@@ -21,5 +21,6 @@ namespace WordSoulApi.Repositories.Interfaces
         //-------------------------------------OTHER------------------------------------------
         // Kiểm tra LearningSession thuộc về User
         Task<bool> CheckUserLearningSessionExist(int userId, int sessionId);
+        Task<LearningSession?> GetExistingReviewSessionUnCompletedForUserAsync(int userId);
     }
 }

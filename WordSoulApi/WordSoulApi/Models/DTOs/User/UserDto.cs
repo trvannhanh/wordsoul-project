@@ -22,6 +22,7 @@ namespace WordSoulApi.Models.DTOs.User
         public int TotalAP { get; set; }
         public int StreakDays { get; set; }
         public int PetCount { get; set; }
+        public int? PetActiveId { get; set; }
         public string? AvatarUrl { get; set; }
     }
 

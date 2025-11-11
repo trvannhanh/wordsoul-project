@@ -93,6 +93,7 @@ appsettings.Staging.jso
 #########################
 # Others
 #########################
+Properties/
 *.swp
 *.swo
 *.bak

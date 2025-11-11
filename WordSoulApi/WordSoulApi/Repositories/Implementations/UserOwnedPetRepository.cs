@@ -43,6 +43,16 @@ namespace WordSoulApi.Repositories.Implementations
                 
         }
 
+        public async Task<Pet?> GetActivePetByUserIdAsync(int userId)
+        {
+            var userOwnedPets = await _context.UserOwnedPets
+                .Include(p => p.Pet)
+                .Where(p => p.UserId == userId && p.IsActive)
+                .FirstOrDefaultAsync();
+            var activePet = userOwnedPets?.Pet;
+            return activePet;
+        }
+
         public async Task<Pet?> GetRandomPetBySetIdAsync(int vocabularySetId)
         {
             var setPets = await _context.SetRewardPets

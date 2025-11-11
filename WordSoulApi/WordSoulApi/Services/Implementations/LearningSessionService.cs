@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System;
+using System.Net.WebSockets;
 using WordSoulApi.Models.DTOs.AnswerRecord;
 using WordSoulApi.Models.DTOs.LearningSession;
+using WordSoulApi.Models.DTOs.Pet;
 using WordSoulApi.Models.DTOs.QuizQuestion;
 using WordSoulApi.Models.Entities;
 using WordSoulApi.Repositories.Interfaces;
@@ -57,6 +59,7 @@ namespace WordSoulApi.Services.Implementations
         // Tạo một phiên học mới cho người dùng dựa trên bộ từ vựng đã chọn
         public async Task<LearningSessionDto> CreateLearningSessionAsync(int userId, int setId, int wordCount = 5)
         {
+
             if (userId <= 0)
                 throw new ArgumentException("UserId must be greater than zero.", nameof(userId));
             if (setId <= 0)
@@ -66,6 +69,8 @@ namespace WordSoulApi.Services.Implementations
             if (existingSession != null)
             {
                 _logger.LogInformation("User {UserId} already has an existing uncompleted learning session for set {SetId}", userId, setId);
+
+                var correctAnswerNumber = await _answerRecordRepository.GetCorrectAnswerRecordNumberFromSession(existingSession.Id);
                 return new LearningSessionDto
                 {
                     Id = existingSession.Id,
@@ -73,6 +78,7 @@ namespace WordSoulApi.Services.Implementations
                     VocabularyIds = existingSession.SessionVocabularies.Select(v => v.VocabularyId).ToList(),
                     PetId = existingSession.PetId,
                     CatchRate = existingSession.CatchRate,
+                    CurrentCorrectAnswered = correctAnswerNumber
                 };
             }
 
@@ -114,6 +120,23 @@ namespace WordSoulApi.Services.Implementations
             if (wordCount <= 0)
                 throw new ArgumentException("WordCount must be greater than zero.", nameof(wordCount));
 
+            var existingSession = await _sessionRepo.GetExistingReviewSessionUnCompletedForUserAsync(userId);
+            if (existingSession != null)
+            {
+                _logger.LogInformation("User {UserId} already has an existing uncompleted review session", userId);
+
+                var correctAnswerNumber = await _answerRecordRepository.GetCorrectAnswerRecordNumberFromSession(existingSession.Id);
+                return new LearningSessionDto
+                {
+                    Id = existingSession.Id,
+                    IsCompleted = existingSession.IsCompleted,
+                    VocabularyIds = existingSession.SessionVocabularies.Select(v => v.VocabularyId).ToList(),
+                    PetId = existingSession.PetId,
+                    CatchRate = existingSession.CatchRate,
+                    CurrentCorrectAnswered = correctAnswerNumber
+                };
+            }
+
             var vocabularies = await _setVocabularyRepository.GetUnreviewdVocabulariesFromSetAsync(userId, wordCount);
             if (!vocabularies.Any())
             {
@@ -153,7 +176,8 @@ namespace WordSoulApi.Services.Implementations
                 IsCompleted = savedSession.IsCompleted,
                 VocabularyIds = savedSession.SessionVocabularies.Select(v => v.VocabularyId).ToList(),
                 PetId = savedSession.PetId,
-                CatchRate = catchRate
+                CatchRate = catchRate,
+                CurrentCorrectAnswered = 0
             };
         }
 
@@ -291,13 +315,13 @@ namespace WordSoulApi.Services.Implementations
                 if (!session.VocabularySetId.HasValue)
                     throw new InvalidOperationException("VocabularySetId is required for learning session");
 
-                // Grant Pet ngay lập tức với catch rate 100% (nếu chưa sở hữu)
+                // Grant Pet với tỉ lệ
                 var (alreadyOwned, isSuccess, bonusXp) = await _userOwnedPetService.GrantPetAsync(userId, session.PetId.Value, session.CatchRate.Value);
                 isPetRewardGranted = isSuccess; // Chỉ true nếu grant mới
                 isPetAlreadyOwned = alreadyOwned;
                 if (alreadyOwned) xpEarned += bonusXp; // Thêm bonus XP nếu đã sở hữu
 
-                // Lấy thông tin Pet để trả về (giả sử có DbContext)
+                // Lấy thông tin Pet để trả về 
                 var pet = await _petRepository.GetPetByIdAsync(session.PetId.Value);
                 if (pet != null)
                 {
@@ -317,6 +341,15 @@ namespace WordSoulApi.Services.Implementations
 
             await _userRepository.UpdateUserXPAndAPAsync(userId, xpEarned, apEarned);
 
+            var activePet = await _userOwnedPetRepository.GetActivePetByUserIdAsync(userId);
+            var petUpgraded = new UpgradePetDto();
+            if (activePet != null)
+            {
+                petUpgraded = await _userOwnedPetService.UpgradePetForUserAsync(userId, activePet.Id);
+            }    
+
+            
+
             // Trả về DTO tương ứng
             if (sessionType == SessionType.Learning)
             {
@@ -327,11 +360,17 @@ namespace WordSoulApi.Services.Implementations
                     IsPetAlreadyOwned = isPetAlreadyOwned,
                     PetId = petId,
                     PetName = petName,
-                    Description = petDescription,
+                    Description = petDescription,   
                     ImageUrl = petImageUrl,
                     PetRarity = petRarity,
                     PetType = petType,
+                    UserPetId = petUpgraded.PetId,
+                    UserPetExperience = petUpgraded.Experience,
+                    UserPetLevel = petUpgraded.Level,
+                    UserPetIsLevelUp = petUpgraded.IsLevelUp,
+                    UserPetIsEvolved = petUpgraded.IsEvolved,
                     Message = isPetRewardGranted ? "Learning session completed! You caught a Pet!" : "Learning session completed! You earned XP!"
+
                 };
             }
             else
@@ -340,6 +379,11 @@ namespace WordSoulApi.Services.Implementations
                 {
                     XpEarned = xpEarned,
                     ApEarned = apEarned,
+                    UserPetId = petUpgraded.PetId,
+                    UserPetExperience = petUpgraded.Experience,
+                    UserPetLevel = petUpgraded.Level,
+                    UserPetIsLevelUp = petUpgraded.IsLevelUp,
+                    UserPetIsEvolved = petUpgraded.IsEvolved,
                     Message = "Reviewing session completed! You earned XP and AP!"
                 };
             }

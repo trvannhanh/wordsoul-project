@@ -12,6 +12,8 @@ namespace WordSoulApi.Repositories.Interfaces
         Task<AnswerRecord?> GetAnswerRecordByIdAsync(int id);
         // Lấy tất cả AnswerRecord cho một phiên học và từ vựng cụ thể
         Task<AnswerRecord?> GetAnswerRecordFromSession(int sessionId, int vocabId, QuestionType questionType);
+        Task<int> GetCorrectAnswerRecordNumberFromSession(int sessionId);
+
         // Lấy tất cả AnswerRecord cho một phiên học và từ vựng cụ thể
         Task<int> GetAttemptCountAsync(int sessionId, int vocabId, QuestionType questionType);
         //-------------------------------- UPDATE -----------------------------------

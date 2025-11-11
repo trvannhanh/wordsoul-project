@@ -96,6 +96,13 @@ namespace WordSoulApi.Services.Implementations
                 var random = new Random(Guid.NewGuid().GetHashCode());
                 var eligiblePets = new List<Pet>();
                 double roll = random.NextDouble(); // 0.0 -> 1.0
+
+                var activePet = _userOwnedPetRepository.GetActivePetByUserIdAsync(userId);
+                bool IsActive = true;
+                if (activePet != null)
+                {
+                    IsActive = false;
+                }
                 if (roll <= catchRate)
                 {
                     var newUserPet = new UserOwnedPet
@@ -104,7 +111,8 @@ namespace WordSoulApi.Services.Implementations
                         PetId = petId,
                         AcquiredAt = DateTime.UtcNow,
                         Experience = 0,
-                        Level = 1
+                        Level = 1,
+                        IsActive = IsActive,
                     };
                     await _userOwnedPetRepository.CreateUserOwnedPetAsync(newUserPet);
                     await _activityLogService.CreateActivityLogAsync(userId, "AssignPet", "User granted pet");
@@ -127,9 +135,6 @@ namespace WordSoulApi.Services.Implementations
             var user = await _userRepository.GetUserByIdAsync(userId);
             if (user == null)
                 throw new InvalidOperationException("Người dùng không tồn tại");
-
-            if (user.AP < experience)
-                throw new InvalidOperationException("Không đủ AP để nâng cấp thú cưng");
 
             // Thêm kinh nghiệm
             userOwnedPet.Experience += experience;
@@ -164,7 +169,6 @@ namespace WordSoulApi.Services.Implementations
             // Giới hạn kinh nghiệm để tránh giá trị âm
             if (userOwnedPet.Experience < 0) userOwnedPet.Experience = 0;
 
-            var updatedUser = await _userRepository.UpdateUserXPAndAPAsync(userId, 0, -experience);
             await _userOwnedPetRepository.UpdateUserOwnedPetAsync(userOwnedPet);
 
             return new UpgradePetDto
@@ -173,8 +177,7 @@ namespace WordSoulApi.Services.Implementations
                 Level = userOwnedPet.Level,
                 Experience = userOwnedPet.Experience,
                 IsLevelUp = isLevelUp,
-                IsEvolved = isEvolve,
-                AP = updatedUser.AP
+                IsEvolved = isEvolve
             };
         }
 

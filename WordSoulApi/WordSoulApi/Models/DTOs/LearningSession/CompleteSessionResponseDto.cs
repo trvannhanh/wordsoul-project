@@ -5,6 +5,11 @@
     {
         public int XpEarned { get; set; }
         public string? Message { get; set; }
+        public int UserPetId { get; set; }
+        public int UserPetExperience { get; set; }
+        public int UserPetLevel { get; set; }
+        public bool UserPetIsLevelUp { get; set; }
+        public bool UserPetIsEvolved { get; set; }
     }
 
     public class CompleteLearningSessionResponseDto : CompleteSessionResponseDto

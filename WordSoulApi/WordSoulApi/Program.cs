@@ -164,14 +164,14 @@ builder.Services.AddSingleton<Cloudinary>(sp =>
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<WordSoulDbContext>();
-    if (dbContext.Database.IsRelational() )
-    {
-        dbContext.Database.Migrate();
-    }    
-}    
+//using (var scope = app.Services.CreateScope())
+//{
+//    var dbContext = scope.ServiceProvider.GetRequiredService<WordSoulDbContext>();
+//    if (dbContext.Database.IsRelational() )
+//    {
+//        dbContext.Database.Migrate();
+//    }    
+//}    
 
 
 //Hub SignalR

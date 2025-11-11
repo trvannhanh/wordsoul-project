@@ -39,7 +39,15 @@ namespace WordSoulApi.Repositories.Implementations
         {
             return await _context.LearningSessions
                 .AsNoTracking()
-                .FirstOrDefaultAsync(ls => ls.UserId == userId && ls.VocabularySetId == vocabularySetId && !ls.IsCompleted);
+                .FirstOrDefaultAsync(ls => ls.UserId == userId && ls.VocabularySetId == vocabularySetId && !ls.IsCompleted && ls.Type == SessionType.Learning);
+        }
+
+        // Lấy ReviewSession chưa hoàn thành tồn tại của User với bộ từ vựng cụ thể
+        public async Task<LearningSession?> GetExistingReviewSessionUnCompletedForUserAsync(int userId)
+        {
+            return await _context.LearningSessions
+                .AsNoTracking()
+                .FirstOrDefaultAsync(ls => ls.UserId == userId && ls.Type == SessionType.Review && !ls.IsCompleted);
         }
 
         public async Task<LearningSession?> GetExistingLearningSessionForUserAsync(int userId, int sessionId)
