@@ -1,12 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
+﻿using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using WordSoulApi.Models.DTOs.ItemDto;
-using WordSoulApi.Models.DTOs.Pet;
-using WordSoulApi.Services.Implementations;
-using WordSoulApi.Services.Interfaces;
+using WordSoul.Application.DTOs.Item;
+using WordSoul.Application.Interfaces.Services;
 
-namespace WordSoulApi.Controllers
+namespace WordSoul.Api.Controllers
 {
     [Route("api/items")]
     [ApiController]

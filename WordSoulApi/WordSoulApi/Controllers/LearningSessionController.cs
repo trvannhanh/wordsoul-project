@@ -1,14 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using WordSoulApi.Extensions;
-using WordSoulApi.Models.DTOs.AnswerRecord;
-using WordSoulApi.Models.DTOs.LearningSession;
-using WordSoulApi.Models.DTOs.QuizQuestion;
-using WordSoulApi.Models.DTOs.UserVocabularyProgress;
-using WordSoulApi.Models.Entities;
-using WordSoulApi.Services.Interfaces;
+using WordSoul.Api.Extensions;
+using WordSoul.Application.DTOs.AnswerRecord;
+using WordSoul.Application.DTOs.LearningSession;
+using WordSoul.Application.DTOs.QuizQuestion;
+using WordSoul.Application.Interfaces.Services;
+using WordSoul.Domain.Enums;
 
 namespace WordSoulApi.Controllers
 {

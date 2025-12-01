@@ -1,16 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using WordSoulApi.Extensions;
-using WordSoulApi.Models.DTOs.Pet;
-using WordSoulApi.Models.DTOs.User;
-using WordSoulApi.Models.Entities;
-using WordSoulApi.Services.Implementations;
-using WordSoulApi.Services.Interfaces;
+using WordSoul.Api.Extensions;
+using WordSoul.Application.DTOs.Pet;
+using WordSoul.Application.DTOs.User;
+using WordSoul.Application.Interfaces.Services;
+using WordSoul.Domain.Enums;
 
-namespace WordSoulApi.Controllers
+namespace WordSoul.Api.Controllers
 {
     [Route("api/users")]
     [ApiController]

@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-namespace WordSoulApi.Extensions
+namespace WordSoul.Api.Extensions
 {
 
     // Phương thức mở rộng để lấy thông tin người dùng từ ClaimsPrincipal

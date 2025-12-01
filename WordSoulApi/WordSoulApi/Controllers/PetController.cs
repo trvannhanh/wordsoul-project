@@ -1,16 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using WordSoulApi.Extensions;
-using WordSoulApi.Filters;
-using WordSoulApi.Models.DTOs.Pet;
-using WordSoulApi.Models.Entities;
-using WordSoulApi.Services.Implementations;
-using WordSoulApi.Services.Interfaces;
+using WordSoul.Api.Extensions;
+using WordSoul.Application.DTOs.Pet;
+using WordSoul.Application.Interfaces.Services;
+using WordSoul.Domain.Enums;
+//using WordSoulApi.Filters;
 
-namespace WordSoulApi.Controllers
+namespace WordSoul.Api.Controllers
 {
     [Route("api/pets")]
     [ApiController]
@@ -103,33 +100,33 @@ namespace WordSoulApi.Controllers
 
         }
 
-        //------------------------------ GET -----------------------------------
-        // GET: api/pets : Lấy tất cả pet theo người dùng
-        [Authorize(Roles = "Admin,User")]
-        [HttpGet]
-        public async Task<IActionResult> GetAllPets(string? name, PetRarity? rarity, PetType? type,
-                                                                bool? isOwned, int? vocabularySetId, int pageNumber = 1, int pageSize = 20)
-        {
+        ////------------------------------ GET -----------------------------------
+        //// GET: api/pets : Lấy tất cả pet theo người dùng
+        //[Authorize(Roles = "Admin,User")]
+        //[HttpGet]
+        //public async Task<IActionResult> GetAllPets(string? name, PetRarity? rarity, PetType? type,
+        //                                                        bool? isOwned, int? vocabularySetId, int pageNumber = 1, int pageSize = 20)
+        //{
 
-            // Lấy userId từ token
-            var userId = User.GetUserId();
-            // Nếu userId không hợp lệ, trả về lỗi Unauthorized
-            if (userId == 0) return Unauthorized();
+        //    // Lấy userId từ token
+        //    var userId = User.GetUserId();
+        //    // Nếu userId không hợp lệ, trả về lỗi Unauthorized
+        //    if (userId == 0) return Unauthorized();
 
-            var filter = new PetFilter
-            {
-                Name = name,
-                VocabularySetId = vocabularySetId,
-                Rarity = rarity,
-                Type = type,
-                IsOwned = isOwned,
-                PageNumber = pageNumber,
-                PageSize = pageSize
-            };
+        //    var filter = new PetFilter
+        //    {
+        //        Name = name,
+        //        VocabularySetId = vocabularySetId,
+        //        Rarity = rarity,
+        //        Type = type,
+        //        IsOwned = isOwned,
+        //        PageNumber = pageNumber,
+        //        PageSize = pageSize
+        //    };
 
-            var pets = await _petService.GetAllPetsAsync(userId, filter);
-            return Ok(pets);
-        }
+        //    var pets = await _petService.GetAllPetsAsync(userId, filter);
+        //    return Ok(pets);
+        //}
 
         // GET: api/pets/{id} : Lấy pet theo ID
         [Authorize(Roles = "Admin,User")]

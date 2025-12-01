@@ -1,12 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using WordSoulApi.Extensions;
-using WordSoulApi.Models.DTOs.Notification;
-using WordSoulApi.Models.Entities;
-using WordSoulApi.Services.Interfaces;
+using WordSoul.Api.Extensions;
+using WordSoul.Application.DTOs.Notification;
+using WordSoul.Application.Interfaces.Services;
 
-namespace WordSoulApi.Controllers
+namespace WordSoul.Api.Controllers
 {
     [Route("api/notifications")]
     [ApiController]

@@ -1,9 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36202.13 d17.14
+VisualStudioVersion = 17.14.36202.13
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WordSoulApi", "WordSoulApi\WordSoulApi.csproj", "{D294C3C6-D827-4C53-9240-3C012B5D9552}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WordSoul.Api", "WordSoulApi\WordSoul.Api.csproj", "{D294C3C6-D827-4C53-9240-3C012B5D9552}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WordSoul.Domain", "WordSoul.Domain\WordSoul.Domain.csproj", "{B7D96742-0527-43CB-872E-B286A184FFDA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WordSoul.Application", "WordSoul.Application\WordSoul.Application.csproj", "{82292853-17E5-4481-981E-157EA6B2AEC9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WordSoul.Infrastructure", "WordSoul.Infrastructure\WordSoul.Infrastructure.csproj", "{EA755C08-2594-46FC-8E75-2F72866EF443}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +21,18 @@ Global
 		{D294C3C6-D827-4C53-9240-3C012B5D9552}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D294C3C6-D827-4C53-9240-3C012B5D9552}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D294C3C6-D827-4C53-9240-3C012B5D9552}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7D96742-0527-43CB-872E-B286A184FFDA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7D96742-0527-43CB-872E-B286A184FFDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7D96742-0527-43CB-872E-B286A184FFDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7D96742-0527-43CB-872E-B286A184FFDA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82292853-17E5-4481-981E-157EA6B2AEC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82292853-17E5-4481-981E-157EA6B2AEC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82292853-17E5-4481-981E-157EA6B2AEC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82292853-17E5-4481-981E-157EA6B2AEC9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA755C08-2594-46FC-8E75-2F72866EF443}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA755C08-2594-46FC-8E75-2F72866EF443}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA755C08-2594-46FC-8E75-2F72866EF443}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA755C08-2594-46FC-8E75-2F72866EF443}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

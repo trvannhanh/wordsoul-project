@@ -1,6 +1,6 @@
-﻿using WordSoulApi.Models.Entities;
+﻿using WordSoul.Domain.Enums;
 
-namespace WordSoulApi.Filters
+namespace WordSoul.Api.Filters
 {
     public class PetFilter
     {

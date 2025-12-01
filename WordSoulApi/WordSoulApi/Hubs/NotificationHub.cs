@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using WordSoulApi.Models.Entities;
+using WordSoul.Domain.Entities;
 
-namespace WordSoulApi.Hubs
+namespace WordSoul.Api.Hubs
 {
     // Hub để quản lý thông báo thời gian thực
     public class NotificationHub : Hub

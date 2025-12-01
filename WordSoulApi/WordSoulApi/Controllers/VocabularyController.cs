@@ -1,15 +1,11 @@
-﻿using CloudinaryDotNet.Actions;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using WordSoulApi.Models.DTOs.Vocabulary;
-using WordSoulApi.Models.DTOs.VocabularySet;
-using WordSoulApi.Models.Entities;
-using WordSoulApi.Services.Interfaces;
+using WordSoul.Application.DTOs.Vocabulary;
+using WordSoul.Application.Interfaces.Services;
+using WordSoul.Domain.Enums;
 
-namespace WordSoulApi.Controllers
+namespace WordSoul.Api.Controllers
 {
     [Route("api/vocabularies")]
     [ApiController]
