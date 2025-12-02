@@ -13,7 +13,7 @@ namespace WordSoul.Domain.Entities
         public ItemType Type { get; set; }
         public DateTime CreatedDate { get; set;} = DateTime.Now;
 
-        public List<UserItem> UserItems { get; set; } = new List<UserItem>();
+        public List<UserItem> UserItems { get; set; } = [];
     }
 
     

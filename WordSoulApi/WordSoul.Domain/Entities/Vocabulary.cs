@@ -17,10 +17,10 @@ namespace WordSoul.Domain.Entities
         public string? ImageUrl { get; set; } 
         public string? PronunciationUrl { get; set; }
 
-        public List<SetVocabulary> SetVocabularies { get; set; } = new List<SetVocabulary>(); // Collection of vocabulary sets associated with the vocabulary word
-        public List<SessionVocabulary> SessionVocabularies { get; set; } = new List<SessionVocabulary>(); // Collection of learning sessions associated with the vocabulary word
-        public List<AnswerRecord> AnswerRecords { get; set; } = new List<AnswerRecord>();
-        public List<UserVocabularyProgress> UserVocabularyProgresses { get; set; } = new List<UserVocabularyProgress>(); // Collection of user vocabulary progress records for the vocabulary word
+        public List<SetVocabulary> SetVocabularies { get; set; } = []; // Collection of vocabulary sets associated with the vocabulary word
+        public List<SessionVocabulary> SessionVocabularies { get; set; } = []; // Collection of learning sessions associated with the vocabulary word
+        public List<AnswerRecord> AnswerRecords { get; set; } = [];
+        public List<UserVocabularyProgress> UserVocabularyProgresses { get; set; } = []; // Collection of user vocabulary progress records for the vocabulary word
     }
     
 }

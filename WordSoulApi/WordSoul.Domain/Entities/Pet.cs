@@ -22,8 +22,8 @@ namespace WordSoul.Domain.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsActive { get; set; } = true;
 
-        public List<UserOwnedPet> UserOwnedPets { get; set; } = new List<UserOwnedPet>(); // Collection of user pets associated with the pet
-        public List<SetRewardPet> SetRewardPets { get; set; } = new List<SetRewardPet>(); // Collection of pet sets associated with the pet
+        public List<UserOwnedPet> UserOwnedPets { get; set; } = []; // Collection of user pets associated with the pet
+        public List<SetRewardPet> SetRewardPets { get; set; } = []; // Collection of pet sets associated with the pet
     }
 
 }

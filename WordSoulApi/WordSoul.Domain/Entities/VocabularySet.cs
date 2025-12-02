@@ -22,10 +22,10 @@ namespace WordSoul.Domain.Entities
 
         public bool IsPublic { get; set; } = true; // Indicates if the vocabulary set is public or private
 
-        public List<SetVocabulary> SetVocabularies { get; set; } = new List<SetVocabulary>(); // Collection of vocabulary words associated with the vocabulary set
-        public List<LearningSession> LearningSessions { get; set; } = new List<LearningSession>(); // Collection of learning sessions associated with the vocabulary set
-        public List<UserVocabularySet> UserVocabularySets { get; set; } = new List<UserVocabularySet>(); // Collection of user vocabulary sets associated with the vocabulary set
-        public List<SetRewardPet> SetRewardPets { get; set; } = new List<SetRewardPet>(); // Collection of pet sets associated with the vocabulary set
+        public List<SetVocabulary> SetVocabularies { get; set; } = []; // Collection of vocabulary words associated with the vocabulary set
+        public List<LearningSession> LearningSessions { get; set; } = []; // Collection of learning sessions associated with the vocabulary set
+        public List<UserVocabularySet> UserVocabularySets { get; set; } = []; // Collection of user vocabulary sets associated with the vocabulary set
+        public List<SetRewardPet> SetRewardPets { get; set; } = []; // Collection of pet sets associated with the vocabulary set
     }
 
 }

@@ -22,14 +22,14 @@ namespace WordSoul.Domain.Entities
         public DateTime? RefreshTokenExpiryTime { get; set; }
 
 
-        public List<VocabularySet> CreatedVocabularySets { get; set; } = new List<VocabularySet>();
-        public List<LearningSession> LearningSessions { get; set; } = new List<LearningSession>(); 
-        public List<UserVocabularySet> UserVocabularySets { get; set; } = new List<UserVocabularySet>(); 
-        public List<UserVocabularyProgress> UserVocabularyProgresses { get; set; } = new List<UserVocabularyProgress>();
-        public List<UserOwnedPet> UserOwnedPets { get; set; } = new List<UserOwnedPet>();
-        public List<Notification> Notifications { get; set; } = new List<Notification>();
-        public List<UserItem> UserItems { get; set; } = new List<UserItem>();
-        public List<UserAchievement> UserAchievements { get; set; } = new List<UserAchievement>();
+        public List<VocabularySet> CreatedVocabularySets { get; set; } = [];
+        public List<LearningSession> LearningSessions { get; set; } = []; 
+        public List<UserVocabularySet> UserVocabularySets { get; set; } = []; 
+        public List<UserVocabularyProgress> UserVocabularyProgresses { get; set; } = [];
+        public List<UserOwnedPet> UserOwnedPets { get; set; } = [];
+        public List<Notification> Notifications { get; set; } = [];
+        public List<UserItem> UserItems { get; set; } = [];
+        public List<UserAchievement> UserAchievements { get; set; } = [];
 
     }
 
