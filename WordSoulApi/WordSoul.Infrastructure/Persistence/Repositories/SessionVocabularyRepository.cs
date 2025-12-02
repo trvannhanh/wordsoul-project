@@ -15,28 +15,28 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
         }
 
         //-------------------------------------READ-----------------------------------------
-
         // Lấy tất cả SessionVocabulary theo session ID (với Vocabulary eager loaded)
-        public async Task<IEnumerable<SessionVocabulary>> GetSessionVocabulariesBySessionIdAsync(int sessionId)
+        public async Task<IEnumerable<SessionVocabulary>> GetSessionVocabulariesBySessionIdAsync(int sessionId, CancellationToken cancellationToken = default)
         {
             return await _context.SessionVocabularies
                 .AsNoTracking()
                 .Include(sv => sv.Vocabulary) // Eager load Vocabulary để tránh N+1 query
                 .Where(sv => sv.LearningSessionId == sessionId)
                 .OrderBy(sv => sv.Order) // Sort theo thứ tự trong session
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
 
-        // : Lấy một SessionVocabulary cụ thể theo sessionId và vocabularyId
-        public async Task<SessionVocabulary?> GetSessionVocabularyAsync(int sessionId, int vocabularyId)
+        // Lấy một SessionVocabulary cụ thể theo sessionId và vocabularyId
+        public async Task<SessionVocabulary?> GetSessionVocabularyAsync(int sessionId, int vocabularyId, CancellationToken cancellationToken = default)
         {
             return await _context.SessionVocabularies
                 .Include(sv => sv.Vocabulary) // Eager load để service không cần query thêm
-                .FirstOrDefaultAsync(sv => sv.LearningSessionId == sessionId && sv.VocabularyId == vocabularyId);
+                .FirstOrDefaultAsync(sv => sv.LearningSessionId == sessionId && sv.VocabularyId == vocabularyId, cancellationToken);
         }
 
-        // ✅ MỚI: Cập nhật SessionVocabulary (trả về entity đã update)
-        public async Task<SessionVocabulary?> UpdateSessionVocabularyAsync(SessionVocabulary sessionVocabulary)
+        //-------------------------------------UPDATE-----------------------------------------
+        // Cập nhật SessionVocabulary
+        public async Task<SessionVocabulary?> UpdateSessionVocabularyAsync(SessionVocabulary sessionVocabulary, CancellationToken cancellationToken = default)
         {
             if (sessionVocabulary == null)
                 return null;
@@ -45,20 +45,7 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
             _context.SessionVocabularies.Attach(sessionVocabulary);
             _context.Entry(sessionVocabulary).State = EntityState.Modified;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-                // Reload để đảm bảo data consistency
-                await _context.Entry(sessionVocabulary).ReloadAsync();
-                return sessionVocabulary;
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                // Handle concurrency nếu cần (optimistic locking)
-                await _context.Entry(sessionVocabulary).ReloadAsync();
-                return null;
-            }
+            return await Task.FromResult(sessionVocabulary);
         }
-
     }
 }

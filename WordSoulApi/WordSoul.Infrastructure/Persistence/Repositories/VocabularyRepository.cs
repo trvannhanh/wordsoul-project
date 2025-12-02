@@ -10,28 +10,24 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
     public class VocabularyRepository : IVocabularyRepository
     {
         private readonly WordSoulDbContext _context;
-        private readonly ILogger<VocabularyRepository> _logger;
-        public VocabularyRepository(WordSoulDbContext context, ILogger<VocabularyRepository> logger)
+
+        public VocabularyRepository(WordSoulDbContext context)
         {
             _context = context;
-            _logger = logger;
         }
 
         // -------------------------------------CREATE-----------------------------------------
-
         // Tạo từ vựng mới
-        public async Task<Vocabulary> CreateVocabularyAsync(Vocabulary vocabulary)
+        public Task<Vocabulary> CreateVocabularyAsync(Vocabulary vocabulary, CancellationToken cancellationToken = default)
         {
             _context.Vocabularies.Add(vocabulary);
-            await _context.SaveChangesAsync();
-            return vocabulary;
+            return Task.FromResult(vocabulary);
         }
 
         //-------------------------------------READ-------------------------------------------
         // Lấy tất cả các từ vựng
-        public async Task<List<Vocabulary>> GetAllVocabulariesAsync(string? word, string? meaning, PartOfSpeech? partOfSpeech, CEFRLevel? cEFRLevel, int pageNumber, int pageSize)
+        public async Task<List<Vocabulary>> GetAllVocabulariesAsync(string? word, string? meaning, PartOfSpeech? partOfSpeech, CEFRLevel? cEFRLevel, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
-
             var query = _context.Vocabularies
                 .AsNoTracking()
                 .OrderBy(v => v.Id)
@@ -52,24 +48,20 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
             return await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
-
-
 
         // Lấy từ vựng theo ID
-        public async Task<Vocabulary?> GetVocabularyByIdAsync(int id)
+        public async Task<Vocabulary?> GetVocabularyByIdAsync(int id, CancellationToken cancellationToken = default)
         {
-            return await _context.Vocabularies.FindAsync(id);
+            return await _context.Vocabularies.FindAsync(new object[] { id }, cancellationToken);
         }
 
-
         // Lấy các từ vựng theo danh sách từ
-        public async Task<List<Vocabulary>> GetVocabulariesByWordsAsync(List<string> words)
+        public async Task<List<Vocabulary>> GetVocabulariesByWordsAsync(List<string> words, CancellationToken cancellationToken = default)
         {
             if (words == null || !words.Any())
             {
-                _logger.LogWarning("Empty or null word list provided for search.");
                 return new List<Vocabulary>();
             }
 
@@ -77,36 +69,26 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
 
             return await _context.Vocabularies
                 .Where(v => nomalizedWords.Contains(v.Word.ToLower()))
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
-
-
-
-
 
         // -------------------------------------UPDATE-----------------------------------------
         // Cập nhật từ vựng
-        public async Task<Vocabulary> UpdateVocabularyAsync(Vocabulary vocabulary)
+        public Task<Vocabulary> UpdateVocabularyAsync(Vocabulary vocabulary, CancellationToken cancellationToken = default)
         {
             _context.Vocabularies.Update(vocabulary);
-            await _context.SaveChangesAsync();
-            return vocabulary;
+            return Task.FromResult(vocabulary);
         }
 
         //-------------------------------------DELETE-----------------------------------------
         // Xóa từ vựng theo ID
-        public async Task<bool> DeleteVocabularyAsync(int id)
+        public async Task<bool> DeleteVocabularyAsync(int id, CancellationToken cancellationToken = default)
         {
-            var vocabulary = await _context.Vocabularies.FindAsync(id);
+            var vocabulary = await _context.Vocabularies.FindAsync(new object[] { id }, cancellationToken);
             if (vocabulary == null) return false;
 
             _context.Vocabularies.Remove(vocabulary);
-            return await _context.SaveChangesAsync() > 0;
+            return true;
         }
-
-
-
-
-
     }
 }

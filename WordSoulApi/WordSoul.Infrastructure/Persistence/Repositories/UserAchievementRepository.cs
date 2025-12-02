@@ -12,16 +12,18 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
             _context = context;
         }
 
-        public async Task CreateUserAchievementAsync(UserAchievement userAchievement)
+        //-------------------------------------CREATE-------------------------------------------
+
+        // Tạo một UserAchievement
+        public async Task CreateUserAchievementAsync(UserAchievement userAchievement, CancellationToken cancellationToken = default)
         {
-            await _context.UserAchievements.AddAsync(userAchievement);
-            await _context.SaveChangesAsync();
+            await _context.UserAchievements.AddAsync(userAchievement, cancellationToken);
         }
 
-        public async Task BulkCreateUserAchievementAsync(IEnumerable<UserAchievement> userAchievements)
+        // Tạo nhiều UserAchievement cùng lúc
+        public async Task BulkCreateUserAchievementAsync(IEnumerable<UserAchievement> userAchievements, CancellationToken cancellationToken = default)
         {
-            await _context.UserAchievements.AddRangeAsync(userAchievements);
-            await _context.SaveChangesAsync();
+            await _context.UserAchievements.AddRangeAsync(userAchievements, cancellationToken);
         }
     }
 }

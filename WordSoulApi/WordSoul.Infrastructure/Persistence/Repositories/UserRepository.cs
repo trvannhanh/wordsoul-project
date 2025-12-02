@@ -8,6 +8,7 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
     public class UserRepository : IUserRepository
     {
         private readonly WordSoulDbContext _context;
+
         public UserRepository(WordSoulDbContext context)
         {
             _context = context;
@@ -15,15 +16,16 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
 
         //------------------------------- READ -----------------------------------
 
-        // Lấy tất cả người dùng
+        // Lấy tất cả người dùng với filter và pagination
         public async Task<IEnumerable<User>> GetAllUsersAsync(
             string? name,
             string? email,
-            UserRole? role,         
+            UserRole? role,
             bool? topXP,
             bool? topAP,
             int pageNumber,
-            int pageSize)
+            int pageSize,
+            CancellationToken cancellationToken = default)
         {
             var query = _context.Users
                 .Include(u => u.UserOwnedPets)
@@ -69,68 +71,71 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
             return await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
 
         // Lấy người dùng theo ID
-        public async Task<User?> GetUserByIdAsync(int id)
+        public async Task<User?> GetUserByIdAsync(int id, CancellationToken cancellationToken = default)
         {
-            return await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
+            return await _context.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
         }
 
         // Lấy người dùng theo ID kèm các quan hệ
-        public async Task<User?> GetUserWithRelationsAsync(int userId)
+        public async Task<User?> GetUserWithRelationsAsync(int userId, CancellationToken cancellationToken = default)
         {
             return await _context.Users
                 .Include(u => u.UserOwnedPets).ThenInclude(up => up.Pet)
                 .Include(u => u.UserVocabularyProgresses)
                 .AsSplitQuery() // Chia truy vấn thành nhiều truy vấn
-                .FirstOrDefaultAsync(u => u.Id == userId);
+                .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
         }
 
         // Lấy danh sách ngày có phiên học của người dùng
-        public async Task<List<DateTime>> GetLearningSessionDatesAsync(int userId)
+        public async Task<List<DateTime>> GetLearningSessionDatesAsync(int userId, CancellationToken cancellationToken = default)
         {
             return await _context.LearningSessions
                 .Where(s => s.UserId == userId)
                 .Select(s => s.EndTime.Date)
                 .Distinct()
                 .OrderByDescending(d => d)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
 
         //------------------------------- UPDATE -----------------------------------
 
         // Cập nhật thông tin người dùng
-        public async Task<User> UpdateUserAsync(User user)
+        public async Task<User> UpdateUserAsync(User user, CancellationToken cancellationToken = default)
         {
             _context.Users.Update(user);
-            await _context.SaveChangesAsync();
-            return user;
+            return await Task.FromResult(user);
         }
+
         // Cập nhật XP và AP của người dùng
-        public async Task<(int XP, int AP)> UpdateUserXPAndAPAsync(int userId, int xp, int ap)
+        public async Task<(int XP, int AP)> UpdateUserXPAndAPAsync(int userId, int xp, int ap, CancellationToken cancellationToken = default)
         {
-            var user = await _context.Users.FindAsync(userId);
+            var user = await _context.Users.FindAsync(new object[] { userId }, cancellationToken);
             if (user == null)
                 throw new InvalidOperationException("User not found");
+
             user.XP += xp;
             user.AP += ap;
 
             _context.Users.Update(user);
-            await _context.SaveChangesAsync();
             return (user.XP, user.AP);
         }
 
         //------------------------------- DELETE -----------------------------------
+
         // Xóa người dùng theo ID
-        public async Task<bool> DeleteUserAsync(int id)
+        public async Task<bool> DeleteUserAsync(int id, CancellationToken cancellationToken = default)
         {
-            var user = await GetUserByIdAsync(id);
+            var user = await GetUserByIdAsync(id, cancellationToken);
             if (user == null) return false;
+
             _context.Users.Remove(user);
-            return await _context.SaveChangesAsync() > 0;
+            return true;
         }
-       
     }
 }

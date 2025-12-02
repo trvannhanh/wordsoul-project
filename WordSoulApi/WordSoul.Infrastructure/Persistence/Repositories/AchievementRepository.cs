@@ -15,53 +15,58 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
         }
 
         //-----------------------CREATE-------------------
-        public async Task CreateAchievementAsync(Achievement achievement)
+        public async Task CreateAchievementAsync(Achievement achievement, CancellationToken cancellationToken = default)
         {
-            await _context.Achievements.AddAsync(achievement);
-            await _context.SaveChangesAsync();
+            await _context.Achievements.AddAsync(achievement, cancellationToken);
         }
 
         //-----------------------READ---------------------
-        public async Task<List<Achievement>> GetAchievementsAsync(ConditionType? conditionType, int pageNumber, int pageSize)
+        public async Task<List<Achievement>> GetAchievementsAsync(ConditionType? conditionType, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
             var query = _context.Achievements
                 .AsNoTracking()
                 .AsQueryable();
 
             if (conditionType.HasValue)
-                query = query.Where(a =>  a.ConditionType == conditionType);
+                query = query.Where(a => a.ConditionType == conditionType);
 
             return await query
                .Skip((pageNumber - 1) * pageSize)
                .Take(pageSize)
-               .ToListAsync();
+               .ToListAsync(cancellationToken);
         }
 
-        public async Task<Achievement?> GetAchievementByIdAsync(int achievementId)
+        public async Task<Achievement?> GetAchievementByIdAsync(int achievementId, CancellationToken cancellationToken = default)
         {
-            return await _context.Achievements.FindAsync(achievementId);
+            return await _context.Achievements.FindAsync([achievementId], cancellationToken);
         }
 
         //-----------------------UPDATE----------------------
-        public async Task<Achievement> UpdateAchievementAsync(Achievement achievement)
+        public async Task<Achievement?> UpdateAchievementAsync(Achievement achievement, CancellationToken cancellationToken = default)
         {
-            var existingAchievement = await _context.Achievements.FindAsync(achievement);
+            var existingAchievement = await _context.Achievements.FindAsync([achievement.Id], cancellationToken);
+
+            if (existingAchievement == null)
             {
-                _context.Achievements.Update(achievement);
-                await _context.SaveChangesAsync();
-                return achievement;
+                return null;
             }
+
+            _context.Achievements.Update(achievement);
+            return achievement;
         }
 
         //----------------------DELETE-----------------------
-        public async Task DeleteAchievementAsync(int achievementId)
+        public async Task<bool> DeleteAchievementAsync(int achievementId, CancellationToken cancellationToken = default)
         {
-            var achievement = await _context.Achievements.FindAsync(achievementId);
-            if (achievement != null)
+            var achievement = await _context.Achievements.FindAsync([achievementId], cancellationToken);
+
+            if (achievement == null)
             {
-                _context.Achievements.Remove(achievement);
-                await _context.SaveChangesAsync();
+                return false;
             }
+
+            _context.Achievements.Remove(achievement);
+            return true;
         }
     }
 }

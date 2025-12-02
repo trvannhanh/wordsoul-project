@@ -17,23 +17,22 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
         // -------------------------------------CREATE-----------------------------------------
 
         // Tạo bộ từ vựng mới
-        public async Task<VocabularySet> CreateVocabularySetAsync(VocabularySet vocabularySet)
+        public Task<VocabularySet> CreateVocabularySetAsync(VocabularySet vocabularySet, CancellationToken cancellationToken = default)
         {
             _context.VocabularySets.Add(vocabularySet);
-            await _context.SaveChangesAsync();
-            return vocabularySet;
+            return Task.FromResult(vocabularySet);
         }
 
         //-------------------------------------READ-------------------------------------------
 
         // Lấy bộ từ vựng theo ID, bao gồm các từ vựng liên quan
-        public async Task<VocabularySet?> GetVocabularySetByIdAsync(int id)
+        public async Task<VocabularySet?> GetVocabularySetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             return await _context.VocabularySets
                 .AsNoTracking()
                 .Include(vs => vs.SetVocabularies)
                 .ThenInclude(sv => sv.Vocabulary)
-                .FirstOrDefaultAsync(vs => vs.Id == id);
+                .FirstOrDefaultAsync(vs => vs.Id == id, cancellationToken);
         }
 
 
@@ -46,7 +45,8 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
         bool? isOwned,
         int? userId,
         int pageNumber,
-        int pageSize)
+        int pageSize,
+        CancellationToken cancellationToken = default)
         {
             var query = _context.VocabularySets
                 .AsNoTracking()
@@ -97,7 +97,7 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
             return await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
 
 
@@ -105,10 +105,10 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
         // ------------------------------------UPDATE-----------------------------------------
 
         // Cập nhật bộ từ vựng
-        public async Task<VocabularySet?> UpdateVocabularySetAsync(VocabularySet vocabularySet)
+        public async Task<VocabularySet?> UpdateVocabularySetAsync(VocabularySet vocabularySet, CancellationToken cancellationToken = default)
         {
             var existingVocabularySet = await _context.VocabularySets
-                .FirstOrDefaultAsync(vs => vs.Id == vocabularySet.Id);
+                .FirstOrDefaultAsync(vs => vs.Id == vocabularySet.Id, cancellationToken);
 
             if (existingVocabularySet == null)
             {
@@ -122,17 +122,16 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
             existingVocabularySet.IsActive = vocabularySet.IsActive;
 
             _context.VocabularySets.Update(existingVocabularySet);
-            await _context.SaveChangesAsync();
             return existingVocabularySet;
         }
 
         // -------------------------------------DELETE------------------------------------------
 
         // Xóa bộ từ vựng theo ID
-        public async Task<bool> DeleteVocabularySetAsync(int id)
+        public async Task<bool> DeleteVocabularySetAsync(int id, CancellationToken cancellationToken = default)
         {
             var vocabularySet = await _context.VocabularySets
-                .FirstOrDefaultAsync(vs => vs.Id == id);
+                .FirstOrDefaultAsync(vs => vs.Id == id, cancellationToken);
 
             if (vocabularySet == null)
             {
@@ -140,11 +139,7 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
             }
 
             _context.VocabularySets.Remove(vocabularySet);
-            return await _context.SaveChangesAsync() > 0;
+            return true;
         }
-
-
-
-
     }
 }

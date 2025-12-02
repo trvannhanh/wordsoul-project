@@ -14,68 +14,59 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
         }
 
         // -------------------------------------CREATE-----------------------------------------
-
         // Tạo mới thông báo
-        public async Task CreateNotificationAsync(Notification notification)
+        public async Task CreateNotificationAsync(Notification notification, CancellationToken cancellationToken = default)
         {
-            _context.Notifications.Add(notification);
-            await _context.SaveChangesAsync();
+            await _context.Notifications.AddAsync(notification, cancellationToken);
         }
 
         // -------------------------------------READ-------------------------------------------
-
         // Lấy tất cả thông báo của người dùng, sắp xếp theo thời gian tạo mới nhất
-        public async Task<List<Notification>> GetUserNotificationsAsync(int userId)
+        public async Task<List<Notification>> GetUserNotificationsAsync(int userId, CancellationToken cancellationToken = default)
         {
             return await _context.Notifications
                 .Where(x => x.UserId == userId)
                 .OrderByDescending(n => n.CreatedAt)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
 
         // Lấy thông báo theo Id
-        public async Task<Notification?> GetNotificationByIdAsync(int id)
+        public async Task<Notification?> GetNotificationByIdAsync(int id, CancellationToken cancellationToken = default)
         {
-            return await _context.Notifications.FindAsync(id);
+            return await _context.Notifications.FindAsync([id], cancellationToken);
         }
 
         // -------------------------------------UPDATE-----------------------------------------
-
         // Đánh dấu thông báo đã đọc
-        public async Task MarkAsReadNotificationAsync(int id)
+        public async Task MarkAsReadNotificationAsync(int id, CancellationToken cancellationToken = default)
         {
-            var notification = await _context.Notifications.FindAsync(id);
+            var notification = await _context.Notifications.FindAsync([id], cancellationToken);
             if (notification != null)
             {
                 notification.IsRead = true;
-                await _context.SaveChangesAsync();
             }
         }
 
-        public async Task MarkAllAsReadAsync(int userId)
+        public async Task MarkAllAsReadAsync(int userId, CancellationToken cancellationToken = default)
         {
             var notifications = await _context.Notifications
                 .Where(n => n.UserId == userId && !n.IsRead)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             foreach (var n in notifications)
             {
                 n.IsRead = true;
             }
-            await _context.SaveChangesAsync();
         }
 
         // -------------------------------------DELETE-----------------------------------------
-        public async Task DeleteNotificationAsync(int id)
+        public async Task DeleteNotificationAsync(int id, CancellationToken cancellationToken = default)
         {
-            var notification = await _context.Notifications.FindAsync(id);
+            var notification = await _context.Notifications.FindAsync([id], cancellationToken);
             if (notification != null)
             {
                 _context.Notifications.Remove(notification);
-                await _context.SaveChangesAsync();
             }
         }
-
-        
     }
 }

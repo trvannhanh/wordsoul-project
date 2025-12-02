@@ -7,38 +7,37 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
     public class UserVocabularyProgressRepository : IUserVocabularyProgressRepository
     {
         private readonly WordSoulDbContext _context;
+
         public UserVocabularyProgressRepository(WordSoulDbContext context)
         {
             _context = context;
         }
 
+        //-------------------------------------CREATE-------------------------------------------
+
         // Tạo mới tiến trình học từ vựng cho người dùng
-        public async Task<UserVocabularyProgress> CreateUserVocabularyProgressAsync(UserVocabularyProgress progress)
+        public async Task<UserVocabularyProgress> CreateUserVocabularyProgressAsync(UserVocabularyProgress progress, CancellationToken cancellationToken = default)
         {
-            _context.UserVocabularyProgresses.Add(progress);
-            await _context.SaveChangesAsync();
+            await _context.UserVocabularyProgresses.AddAsync(progress, cancellationToken);
             return progress;
         }
 
+        //-------------------------------------READ-------------------------------------------
 
         // Lấy tiến trình học từ vựng của người dùng theo userId và vocabularyId
-        public async Task<UserVocabularyProgress?> GetUserVocabularyProgressAsync(int userId, int vocabularyId)
+        public async Task<UserVocabularyProgress?> GetUserVocabularyProgressAsync(int userId, int vocabularyId, CancellationToken cancellationToken = default)
         {
-            // Sử dụng AsNoTracking để tối ưu hiệu suất khi chỉ đọc dữ liệu
             return await _context.UserVocabularyProgresses
-                 .FirstOrDefaultAsync(p => p.UserId == userId && p.VocabularyId == vocabularyId);
+                .FirstOrDefaultAsync(p => p.UserId == userId && p.VocabularyId == vocabularyId, cancellationToken);
         }
 
+        //-------------------------------------UPDATE-------------------------------------------
 
-        
         // Cập nhật tiến trình học từ vựng cho người dùng
-        public async Task<UserVocabularyProgress> UpdateUserVocabularyProgressAsync(UserVocabularyProgress progress)
+        public async Task<UserVocabularyProgress> UpdateUserVocabularyProgressAsync(UserVocabularyProgress progress, CancellationToken cancellationToken = default)
         {
             _context.UserVocabularyProgresses.Update(progress);
-            await _context.SaveChangesAsync();
-            return progress;
+            return await Task.FromResult(progress);
         }
-
-
     }
 }
