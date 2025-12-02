@@ -6,19 +6,29 @@ namespace WordSoul.Application.Interfaces.Repositories
 {
     public interface IActivityLogRepository
     {
-        //-------------------------------------CREATE-----------------------------------------
+        // CREATE
+        Task CreateActivityLogAsync(
+            ActivityLog activityLog,
+            CancellationToken cancellationToken = default);
 
-        // Tạo một bản ghi nhật ký hoạt động mới
-        Task CreateActivityLogAsync(ActivityLog activityLog);
+        // READ - lấy theo UserId có phân trang
+        Task<List<ActivityLog>> GetActivityLogsByUserIdAsync(
+            int userId,
+            int pageNumber = 1,
+            int pageSize = 10,
+            CancellationToken cancellationToken = default);
 
-        //-------------------------------------READ-------------------------------------------
+        // READ - lấy tất cả có lọc action + fromDate + phân trang
+        Task<List<ActivityLog>> GetAllActivityLogsAsync(
+            string? action = null,
+            DateTime? fromDate = null,
+            int pageNumber = 1,
+            int pageSize = 10,
+            CancellationToken cancellationToken = default);
 
-        // Lấy nhật ký hoạt động của người dùng theo userId với phân trang
-        Task<List<ActivityLog>> GetActivityLogsByUserIdAsync(int userId, int pageNumber = 1, int pageSize = 10);
-        // Lấy tất cả nhật ký hoạt động với tùy chọn lọc và phân trang
-        Task<List<ActivityLog>> GetAllActivityLogsAsync(string? action = null, DateTime? fromDate = null, int pageNumber = 1, int pageSize = 10);
-
-        // Lấy tổng số lượng nhật ký hoạt động của người dùng theo userId
-        Task<int> GetActivityLogsCountByUserIdAsync(int userId);
+        // COUNT - đếm số log theo userId
+        Task<int> GetActivityLogsCountByUserIdAsync(
+            int userId,
+            CancellationToken cancellationToken = default);
     }
 }

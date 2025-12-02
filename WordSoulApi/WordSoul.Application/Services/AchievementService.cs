@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using WordSoul.Application.DTOs.Achievement;
-using WordSoul.Application.Interfaces.Repositories;
+using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
 using WordSoul.Domain.Entities;
 using WordSoul.Domain.Enums;
@@ -10,17 +10,19 @@ namespace WordSoul.Application.Services
 {
     public class AchievementService : IAchievementService
     {
-        private readonly IAchievementRepository _achievementRepository;
+        private readonly IUnitOfWork _uow;
         private readonly ILogger<AchievementService> _logger;
 
-        public AchievementService(IAchievementRepository achievementRepository, ILogger<AchievementService> logger)
+        public AchievementService(IUnitOfWork uow, ILogger<AchievementService> logger)
         {
-            _achievementRepository = achievementRepository;
+            _uow = uow;
             _logger = logger;
         }
 
         //---------------------CREATE-------------------
-        public async Task<AchievementDto> CreatAchievementAsync(CreateAchievementDto createAchievementDto)
+        public async Task<AchievementDto> CreateAchievementAsync(
+            CreateAchievementDto createAchievementDto,
+            CancellationToken ct = default)
         {
             if (string.IsNullOrWhiteSpace(createAchievementDto.Name))
             {
@@ -41,7 +43,10 @@ namespace WordSoul.Application.Services
                     RewardItemId = createAchievementDto.ItemId
                 };
 
-                await _achievementRepository.CreateAchievementAsync(achievement);
+                await _uow.Achievement.CreateAchievementAsync(achievement, ct);
+
+                await _uow.SaveChangesAsync(ct);
+
                 _logger.LogInformation("Successfully created achievement {AchievementName}", achievement.Name);
 
                 return new AchievementDto
@@ -54,7 +59,6 @@ namespace WordSoul.Application.Services
                     ItemImageUrl = achievement?.Item?.ImageUrl,
                     ItemName = achievement?.Item?.Name,
                 };
-
             }
             catch (Exception ex)
             {
@@ -64,37 +68,43 @@ namespace WordSoul.Application.Services
         }
 
         //------------------------------READ------------------------------
-        public async Task<List<AchievementDto>> GetAchievemenstAsync(ConditionType? conditionType , int pageNumber = 1, int pageSize = 10)
+        public async Task<List<AchievementDto>> GetAchievementsAsync(
+            ConditionType? conditionType,
+            int pageNumber = 1,
+            int pageSize = 10,
+            CancellationToken ct = default)
         {
             if (pageNumber < 1 || pageSize < 1)
                 throw new ArgumentException("pageNumber and pageSize must be greater than 0.");
 
-            var achievements = await _achievementRepository.GetAchievementsAsync(conditionType, pageNumber, pageSize);
+            var achievements = await _uow.Achievement
+                .GetAchievementsAsync(conditionType, pageNumber, pageSize, ct);
 
-            var achiementDtos = achievements.
-                Select(a => new AchievementDto {
-                    Id = a.Id,
-                    Name = a.Name,
-                    Description = a.Description,
-                    ConditionType = a.ConditionType.ToString(),
-                    ConditionValue = a.ConditionValue,
-                    ItemName = a.Item?.Name,
-                    ItemImageUrl = a.Item?.ImageUrl,
-                }).ToList();
-
-            return achiementDtos;
+            return achievements.Select(a => new AchievementDto
+            {
+                Id = a.Id,
+                Name = a.Name,
+                Description = a.Description,
+                ConditionType = a.ConditionType.ToString(),
+                ConditionValue = a.ConditionValue,
+                ItemName = a.Item?.Name,
+                ItemImageUrl = a.Item?.ImageUrl,
+            }).ToList();
         }
 
-        public async Task<AchievementDto> GetAchievementByIdAsync(int achievementId)
+        public async Task<AchievementDto> GetAchievementByIdAsync(
+            int achievementId,
+            CancellationToken ct = default)
         {
-            var achievement = await _achievementRepository.GetAchievementByIdAsync(achievementId);
+            var achievement = await _uow.Achievement.GetAchievementByIdAsync(achievementId, ct);
+
             if (achievement == null)
             {
                 _logger.LogWarning("Achievement with ID: {AchievementId} not found", achievementId);
-                throw new NotFoundException("Achievement", achievement.Id);
+                throw new NotFoundException(nameof(Achievement), achievementId);
             }
 
-            var achievementDto = new AchievementDto
+            return new AchievementDto
             {
                 Id = achievement.Id,
                 Name = achievement.Name,
@@ -104,9 +114,6 @@ namespace WordSoul.Application.Services
                 ItemName = achievement.Item?.Name,
                 ItemImageUrl = achievement.Item?.ImageUrl,
             };
-
-            return achievementDto;
-
         }
     }
 }

@@ -31,8 +31,8 @@ namespace WordSoul.Application.DTOs.User
     {
         public int UserId { get; set; }
         public string UserName { get; set; } = string.Empty;
-        public int totalXP { get; set; }
-        public int totalAP { get; set; }
+        public int TotalXP { get; set; }
+        public int TotalAP { get; set; }
     }
 
 

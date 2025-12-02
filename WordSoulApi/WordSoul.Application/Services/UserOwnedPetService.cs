@@ -1,5 +1,6 @@
-﻿using WordSoul.Application.DTOs.Pet;
-using WordSoul.Application.Interfaces.Repositories;
+﻿using Microsoft.Extensions.Logging;
+using WordSoul.Application.DTOs.Pet;
+using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
 using WordSoul.Domain.Entities;
 
@@ -7,39 +8,47 @@ namespace WordSoul.Application.Services
 {
     public class UserOwnedPetService : IUserOwnedPetService
     {
-        private readonly ILearningSessionRepository _learningSessionRepository;
-        private readonly ISetRewardPetRepository _setRewardPetRepository;
-        private readonly IUserOwnedPetRepository _userOwnedPetRepository;
-        private readonly IUserVocabularySetRepository _userVocabularySetRepository;
-        private readonly IUserRepository _userRepository;
-        private readonly IPetRepository _petRepository;
+        private readonly IUnitOfWork _uow;
         private readonly IActivityLogService _activityLogService;
-        public UserOwnedPetService(ILearningSessionRepository learningSessionRepository, 
-                                    ISetRewardPetRepository setRewardPetRepository, 
-                                    IUserOwnedPetRepository userOwnedPetRepository, 
-                                    IUserRepository userRepository, IUserVocabularySetRepository userVocabularySetRepository, 
-                                    IActivityLogService activityLogService, IPetRepository petRepository)
-        {
-            _learningSessionRepository = learningSessionRepository;
-            _setRewardPetRepository = setRewardPetRepository;
-            _userOwnedPetRepository = userOwnedPetRepository;
+        private readonly ILogger<UserOwnedPetService> _logger;
 
-            _userRepository = userRepository;
-            _userVocabularySetRepository = userVocabularySetRepository;
+        public UserOwnedPetService(
+            IUnitOfWork uow,
+            IActivityLogService activityLogService,
+            ILogger<UserOwnedPetService> logger)
+        {
+            _uow = uow;
             _activityLogService = activityLogService;
-            _petRepository = petRepository;
+            _logger = logger;
         }
-        //-------------------------------------CREATE-----------------------------------------
-        // Gán Pet
-        public async Task<UserOwnedPetDto?> AssignPetToUserAsync(AssignPetDto assignDto)
-        {
-            var pet = await _petRepository.GetPetByIdAsync(assignDto.PetId);
-            var user = await _userRepository.GetUserByIdAsync(assignDto.UserId);
-            if (pet == null || user == null) return null;
 
-            // Kiểm tra đã gán chưa
-            var existing = await _userOwnedPetRepository.CheckPetOwnedByUserAsync(assignDto.UserId, assignDto.PetId);
-            if (existing) throw new ArgumentException("Pet đã được gán cho user này.");
+        // ============================================================================
+        // CREATE / GRANT
+        // ============================================================================
+
+        /// <summary>
+        /// Gán trực tiếp một pet cho người dùng (dùng cho admin hoặc reward chắc chắn).
+        /// </summary>
+        public async Task<UserOwnedPetDto?> AssignPetToUserAsync(
+            AssignPetDto assignDto,
+            CancellationToken cancellationToken = default)
+        {
+            _logger.LogInformation("Assigning pet {PetId} to user {UserId}", assignDto.PetId, assignDto.UserId);
+
+            var pet = await _uow.Pet.GetPetByIdAsync(assignDto.PetId, cancellationToken);
+            var user = await _uow.User.GetUserByIdAsync(assignDto.UserId, cancellationToken);
+
+            if (pet == null || user == null)
+            {
+                _logger.LogWarning("Pet or User not found when assigning PetId={PetId}, UserId={UserId}", assignDto.PetId, assignDto.UserId);
+                return null;
+            }
+
+
+
+            var alreadyOwned = await _uow.UserOwnedPet.CheckPetOwnedByUserAsync(assignDto.UserId, assignDto.PetId, cancellationToken);
+            if (alreadyOwned)
+                throw new ArgumentException("Pet đã được gán cho người dùng này rồi.");
 
             var userOwnedPet = new UserOwnedPet
             {
@@ -52,172 +61,215 @@ namespace WordSoul.Application.Services
                 AcquiredAt = DateTime.UtcNow
             };
 
+            await _uow.UserOwnedPet.CreateUserOwnedPetAsync(userOwnedPet, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
 
-
-            await _userOwnedPetRepository.CreateUserOwnedPetAsync(userOwnedPet);
-
-            await _activityLogService.CreateActivityLogAsync(assignDto.UserId, "AssignPet", "User granted pet");
+            await _activityLogService.CreateActivityLogAsync(
+                assignDto.UserId, "AssignPet", $"Admin granted pet {pet.Name}", cancellationToken);
 
             return new UserOwnedPetDto
             {
-                PetId = assignDto.PetId,
-                Level = assignDto.InitialLevel,
-                Experience = assignDto.InitialExperience,
                 UserId = assignDto.UserId,
-                IsFavorite = assignDto.IsFavorite,
-                IsActive = assignDto.IsActive,
-                AcquiredAt = DateTime.UtcNow
+                PetId = assignDto.PetId,
+                Level = userOwnedPet.Level,
+                Experience = userOwnedPet.Experience,
+                IsFavorite = userOwnedPet.IsFavorite,
+                IsActive = userOwnedPet.IsActive,
+                AcquiredAt = userOwnedPet.AcquiredAt
             };
         }
 
-        // Thử cấp pet
-        public async Task<(bool alreadyOwned, bool isSuccess, int bonusXp)> GrantPetAsync(int userId, int petId, double catchRate)
+        /// <summary>
+        /// Thử bắt/cấp pet ngẫu nhiên với tỷ lệ thành công (catchRate).
+        /// Nếu đã sở hữu → tặng bonus XP. Nếu chưa → thử bắt theo tỷ lệ.
+        /// </summary>
+        /// <returns>(alreadyOwned, isSuccess, bonusXp)</returns>
+        public async Task<(bool alreadyOwned, bool isSuccess, int bonusXp)> GrantPetAsync(
+            int userId,
+            int petId,
+            double catchRate,
+            CancellationToken cancellationToken = default)
         {
-            // Kiểm tra xem người dùng đã sở hữu pet này chưa
-            bool alreadyOwned = await _userOwnedPetRepository.CheckPetOwnedByUserAsync(userId, petId);
+            _logger.LogInformation("Attempting to grant pet {PetId} to user {UserId} with catch rate {Rate:P1}", petId, userId, catchRate);
 
-            // Nếu đã sở hữu, thưởng thêm XP, nếu chưa thì cấp pet mới
+            bool alreadyOwned = await _uow.UserOwnedPet.CheckPetOwnedByUserAsync(userId, petId, cancellationToken);
+
             if (alreadyOwned)
             {
                 const int bonusXp = 50;
-                var user = await _userRepository.GetUserByIdAsync(userId);
+                var user = await _uow.User.GetUserByIdAsync(userId, cancellationToken);
                 if (user != null)
                 {
                     user.XP += bonusXp;
-                    await _userRepository.UpdateUserAsync(user);
+                    await _uow.User.UpdateUserAsync(user, cancellationToken);
+                    await _uow.SaveChangesAsync(cancellationToken);
                 }
-                return (alreadyOwned, false,  bonusXp);
+
+                await _activityLogService.CreateActivityLogAsync(userId, "PetDuplicate", $"Received {bonusXp} XP (already owned pet)", cancellationToken);
+                return (true, false, bonusXp);
             }
-            else
+
+            // Chưa sở hữu → thử bắt
+            var random = new Random(Guid.NewGuid().GetHashCode());
+            bool success = random.NextDouble() <= catchRate;
+
+            if (!success)
             {
-
-                var random = new Random(Guid.NewGuid().GetHashCode());
-                var eligiblePets = new List<Pet>();
-                double roll = random.NextDouble(); // 0.0 -> 1.0
-
-                var activePet = _userOwnedPetRepository.GetActivePetByUserIdAsync(userId);
-                bool IsActive = true;
-                if (activePet != null)
-                {
-                    IsActive = false;
-                }
-                if (roll <= catchRate)
-                {
-                    var newUserPet = new UserOwnedPet
-                    {
-                        UserId = userId,
-                        PetId = petId,
-                        AcquiredAt = DateTime.UtcNow,
-                        Experience = 0,
-                        Level = 1,
-                        IsActive = IsActive,
-                    };
-                    await _userOwnedPetRepository.CreateUserOwnedPetAsync(newUserPet);
-                    await _activityLogService.CreateActivityLogAsync(userId, "AssignPet", "User granted pet");
-
-                    return (alreadyOwned, true , 0);
-                }
-                else
-                {
-                    return (alreadyOwned, false, 0);
-                }
+                _logger.LogInformation("Pet catch failed for user {UserId}", userId);
+                return (false, false, 0);
             }
+
+            // Thành công → tạo pet mới
+            bool shouldBeActive = await _uow.UserOwnedPet.GetActivePetByUserIdAsync(userId, cancellationToken) == null;
+
+            var newOwnedPet = new UserOwnedPet
+            {
+                UserId = userId,
+                PetId = petId,
+                Level = 1,
+                Experience = 0,
+                IsActive = shouldBeActive,
+                IsFavorite = false,
+                AcquiredAt = DateTime.UtcNow
+            };
+
+            await _uow.UserOwnedPet.CreateUserOwnedPetAsync(newOwnedPet, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
+
+            var pet = await _uow.Pet.GetPetByIdAsync(petId, cancellationToken);
+            await _activityLogService.CreateActivityLogAsync(
+                userId, "PetCaught", $"Caught pet {pet?.Name ?? petId.ToString()}", cancellationToken);
+
+            return (false, true, 0);
         }
 
-
-        public async Task<UpgradePetDto?> UpgradePetForUserAsync(int userId, int petId, int experience = 10)
+        /// <summary>
+        /// Tăng kinh nghiệm cho pet của người dùng, xử lý lên cấp và tiến hóa.
+        /// </summary>
+        public async Task<UpgradePetDto?> UpgradePetForUserAsync(
+            int userId,
+            int petId,
+            int experience = 10,
+            CancellationToken cancellationToken = default)
         {
-            var userOwnedPet = await _userOwnedPetRepository.GetUserOwnedPetByUserAndPetIdAsync(userId, petId);
-            if (userOwnedPet == null) return null;
+            var ownedPet = await _uow.UserOwnedPet.GetUserOwnedPetByUserAndPetIdAsync(userId, petId, cancellationToken)
+                ?? throw new KeyNotFoundException($"User {userId} does not own pet {petId}");
 
-            var user = await _userRepository.GetUserByIdAsync(userId);
-            if (user == null)
-                throw new InvalidOperationException("Người dùng không tồn tại");
+            ownedPet.Experience += experience;
 
-            // Thêm kinh nghiệm
-            userOwnedPet.Experience += experience;
+            bool isLevelUp = false;
+            bool isEvolve = false;
+            int? evolvedToPetId = null;
 
-            var isLevelUp = false;
-            var isEvolve = false;
-
-            // Xử lý nhiều lần tăng cấp nếu kinh nghiệm vượt quá 100
-            while (userOwnedPet.Experience >= 100)
+            while (ownedPet.Experience >= 100)
             {
-                userOwnedPet.Level++;
-                userOwnedPet.Experience -= 100;
+                ownedPet.Level++;
+                ownedPet.Experience -= 100;
                 isLevelUp = true;
 
-                var currentPet = await _petRepository.GetPetByIdAsync(userOwnedPet.PetId); // Làm mới dữ liệu thú cưng
-                if (currentPet == null) break; // Kiểm tra an toàn
+                // Lấy thông tin pet hiện tại để kiểm tra tiến hóa
+                var currentPet = await _uow.Pet.GetPetByIdAsync(ownedPet.PetId, cancellationToken);
+                if (currentPet?.NextEvolutionId == null ||
+                    currentPet.RequiredLevel == null ||
+                    ownedPet.Level < currentPet.RequiredLevel)
+                    continue;
 
-                // Kiểm tra tiến hóa
-                if (currentPet.RequiredLevel != null && userOwnedPet.Level >= currentPet.RequiredLevel && currentPet.NextEvolutionId.HasValue)
-                {
-                    var evolvedPet = await _petRepository.GetPetByIdAsync(currentPet.NextEvolutionId.Value);
-                    if (evolvedPet != null)
-                    {
-                        userOwnedPet.PetId = evolvedPet.Id; // Cập nhật sang thú cưng tiến hóa
-                        isEvolve = true;
-                        await _activityLogService.CreateActivityLogAsync(userId, "PetEvolved", $"Thú cưng {petId} đã tiến hóa thành {evolvedPet.Id}");
-                        break; // Dừng tăng cấp sau khi tiến hóa
-                    }
-                }
+                // Có thể tiến hóa
+                var evolvedPet = await _uow.Pet.GetPetByIdAsync(currentPet.NextEvolutionId.Value, cancellationToken);
+                if (evolvedPet == null) continue;
+
+                ownedPet.PetId = evolvedPet.Id;
+                evolvedToPetId = evolvedPet.Id;
+                isEvolve = true;
+
+                await _activityLogService.CreateActivityLogAsync(
+                    userId, "PetEvolved", $"Pet evolved from {currentPet.Name} → {evolvedPet.Name}", cancellationToken);
+
+                break; // Chỉ tiến hóa 1 lần mỗi lần gọi
             }
 
-            // Giới hạn kinh nghiệm để tránh giá trị âm
-            if (userOwnedPet.Experience < 0) userOwnedPet.Experience = 0;
-
-            await _userOwnedPetRepository.UpdateUserOwnedPetAsync(userOwnedPet);
+            await _uow.UserOwnedPet.UpdateUserOwnedPetAsync(ownedPet, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
 
             return new UpgradePetDto
             {
-                PetId = userOwnedPet.PetId,
-                Level = userOwnedPet.Level,
-                Experience = userOwnedPet.Experience,
+                PetId = ownedPet.PetId,
+                Level = ownedPet.Level,
+                Experience = ownedPet.Experience,
                 IsLevelUp = isLevelUp,
-                IsEvolved = isEvolve
+                IsEvolved = isEvolve,
+                //EvolvedToPetId = evolvedToPetId
             };
         }
 
-        //----------------------------UPDATE-------------------
-        public async Task<UserPetDetailDto?> ActivePetAsync(int userId, int petId)
+        // ============================================================================
+        // UPDATE
+        // ============================================================================
+
+        /// <summary>
+        /// Đặt một pet làm pet đang active (chỉ có 1 pet active tại một thời điểm).
+        /// </summary>
+        public async Task<UserPetDetailDto?> ActivePetAsync(
+            int userId,
+            int petId,
+            CancellationToken cancellationToken = default)
         {
-            var ownedPet = await _userOwnedPetRepository.GetUserOwnedPetByUserAndPetIdAsync(userId, petId);
-            if (ownedPet == null) throw new InvalidOperationException();
+            var targetPet = await _uow.UserOwnedPet.GetUserOwnedPetByUserAndPetIdAsync(userId, petId, cancellationToken)
+                ?? throw new InvalidOperationException("Người dùng không sở hữu pet này.");
 
-            var allOwnedPets = await _userOwnedPetRepository.GetAllUserOwnedPetByUserIdAsync(userId);
-
-            foreach (var op in allOwnedPets) {
-                op.IsActive = false;
-                await _userOwnedPetRepository.UpdateUserOwnedPetAsync(op);
+            // Tắt tất cả pet khác
+            var allPets = await _uow.UserOwnedPet.GetAllUserOwnedPetByUserIdAsync(userId, cancellationToken);
+            foreach (var pet in allPets)
+            {
+                if (pet.IsActive)
+                {
+                    pet.IsActive = false;
+                    await _uow.UserOwnedPet.UpdateUserOwnedPetAsync(pet, cancellationToken);
+                }
             }
 
-            ownedPet.IsActive = true;
+            // Bật pet được chọn
+            targetPet.IsActive = true;
+            await _uow.UserOwnedPet.UpdateUserOwnedPetAsync(targetPet, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
 
-            await _userOwnedPetRepository.UpdateUserOwnedPetAsync(ownedPet);
+            var petEntity = await _uow.Pet.GetPetByIdAsync(targetPet.PetId, cancellationToken);
+
             return new UserPetDetailDto
             {
-                Id = ownedPet.PetId,
-                Name = ownedPet.Pet.Name,
-                Description = ownedPet.Pet.Description,
-                ImageUrl = ownedPet.Pet.ImageUrl,
-                Level = ownedPet.Level,
-                Experience = ownedPet.Experience
+                Id = targetPet.PetId,
+                Name = petEntity?.Name ?? "Unknown",
+                Description = petEntity?.Description,
+                ImageUrl = petEntity?.ImageUrl,
+                Level = targetPet.Level,
+                Experience = targetPet.Experience,
+                IsFavorite = targetPet.IsFavorite,
+                IsActive = true,
+                AcquiredAt = targetPet.AcquiredAt
             };
-            
         }
 
-        //-----------------------------DELETE------------------
+        // ============================================================================
+        // DELETE
+        // ============================================================================
 
-        // Gỡ Pet khỏi User
-        public async Task<bool> RemovePetFromUserAsync(int userId, int petId)
+        /// <summary>
+        /// Gỡ pet khỏi người dùng (dùng cho admin hoặc hệ thống).
+        /// </summary>
+        public async Task<bool> RemovePetFromUserAsync(
+            int userId,
+            int petId,
+            CancellationToken cancellationToken = default)
         {
-            var userOwnedPet = await _userOwnedPetRepository.GetUserOwnedPetByUserAndPetIdAsync(userId, petId);
-            if (userOwnedPet == null) return false;
+            var ownedPet = await _uow.UserOwnedPet.GetUserOwnedPetByUserAndPetIdAsync(userId, petId, cancellationToken);
+            if (ownedPet == null)
+                return false;
 
-            await _userOwnedPetRepository.DeleteUserOwnedPetAsync(userOwnedPet);
+            await _uow.UserOwnedPet.DeleteUserOwnedPetAsync(ownedPet, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation("Pet {PetId} removed from user {UserId}", petId, userId);
             return true;
         }
-
     }
 }

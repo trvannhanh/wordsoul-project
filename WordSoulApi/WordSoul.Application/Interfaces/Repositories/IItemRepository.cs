@@ -4,7 +4,13 @@ namespace WordSoul.Application.Interfaces.Repositories
 {
     public interface IItemRepository
     {
-        Task CreateItemAsync(Item item);
-        Task<List<Item>> GetItemAsync();
+        // ----------------------------- CREATE -----------------------------
+        Task CreateItemAsync(
+            Item item,
+            CancellationToken cancellationToken = default);
+
+        // ----------------------------- READ -------------------------------
+        Task<List<Item>> GetItemAsync(
+            CancellationToken cancellationToken = default);
     }
 }

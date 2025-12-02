@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using WordSoul.Application.DTOs.Vocabulary;
-using WordSoul.Application.Interfaces.Repositories;
+using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
 using WordSoul.Domain.Entities;
 using WordSoul.Domain.Enums;
@@ -10,249 +10,302 @@ namespace WordSoul.Application.Services
 {
     public class VocabularyService : IVocabularyService
     {
-        private readonly IVocabularyRepository _vocabularyRepository;
+        private readonly IUnitOfWork _uow;
         private readonly IMemoryCache _cache;
-        private readonly ILogger<VocabularySetService> _logger;
+        private readonly ILogger<VocabularyService> _logger;
 
-        public VocabularyService(IVocabularyRepository vocabularyRepository, ILogger<VocabularySetService> logger, IMemoryCache cache)
+        // Thread-safe theo dõi key để có thể xóa cache theo prefix khi cần
+        private readonly HashSet<string> _cacheKeys = new();
+        private readonly object _cacheLock = new();
+
+        public VocabularyService(
+            IUnitOfWork uow,
+            ILogger<VocabularyService> logger,
+            IMemoryCache cache)
         {
-            _vocabularyRepository = vocabularyRepository;
+            _uow = uow;
             _logger = logger;
             _cache = cache;
         }
 
-        //------------------------------ CREATE -----------------------------------------
+        // ============================================================================
+        // CREATE
+        // ============================================================================
 
-        // Tạo từ vựng mới
-        public async Task<AdminVocabularyDto> CreateVocabularyAsync(CreateVocabularyDto vocabularyDto, string? imageUrl)
+        /// <summary>
+        /// Tạo từ vựng mới (dùng cho admin).
+        /// </summary>
+        public async Task<AdminVocabularyDto> CreateVocabularyAsync(
+            CreateVocabularyDto dto,
+            string? imageUrl,
+            CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation("Creating vocabulary with word: {Word}", vocabularyDto.Word);
+            if (string.IsNullOrWhiteSpace(dto.Word))
+                throw new ArgumentException("Word is required.", nameof(dto.Word));
 
-            if (string.IsNullOrWhiteSpace(vocabularyDto.Word))
-            {
-                _logger.LogError("Word is required for creating a vocabulary");
-                throw new ArgumentException("Title is required.", nameof(vocabularyDto.Word));
-            }
+            _logger.LogInformation("Creating new vocabulary: {Word}", dto.Word);
 
             var vocabulary = new Vocabulary
             {
-                Word = vocabularyDto.Word,
-                Meaning = vocabularyDto.Meaning,
-                Pronunciation = vocabularyDto.Pronunciation,
-                PartOfSpeech = vocabularyDto.PartOfSpeech,
-                CEFRLevel = vocabularyDto.CEFRLevel,
-                Description = vocabularyDto.Description,
-                ExampleSentence = vocabularyDto.ExampleSentence,
+                Word = dto.Word.Trim(),
+                Meaning = dto.Meaning?.Trim(),
+                Pronunciation = dto.Pronunciation?.Trim(),
+                PartOfSpeech = dto.PartOfSpeech,
+                CEFRLevel = dto.CEFRLevel,
+                Description = dto.Description?.Trim(),
+                ExampleSentence = dto.ExampleSentence?.Trim(),
                 ImageUrl = imageUrl,
-                PronunciationUrl = vocabularyDto.PronunciationUrl
+                PronunciationUrl = dto.PronunciationUrl?.Trim()
             };
 
-            try
-            {
-                var createdVocabulary = await _vocabularyRepository.CreateVocabularyAsync(vocabulary);
-                _logger.LogInformation("Vocabulary created with ID: {Id}", createdVocabulary.Id);
-                return new AdminVocabularyDto
-                {
-                    Id = createdVocabulary.Id,
-                    Word = createdVocabulary.Word,
-                    Meaning = createdVocabulary.Meaning,
-                    Pronunciation = createdVocabulary.Pronunciation,
-                    PartOfSpeech = createdVocabulary.PartOfSpeech.ToString(),
-                    CEFRLevel = createdVocabulary.CEFRLevel.ToString(),
-                    Description = createdVocabulary.Description,
-                    ExampleSentence = createdVocabulary.ExampleSentence,
-                    ImageUrl = createdVocabulary.ImageUrl,
-                    PronunciationUrl = createdVocabulary.PronunciationUrl
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to create vocabulary with word: {Word}", vocabularyDto.Word);
-                throw;
-            }
+            await _uow.Vocabulary.CreateVocabularyAsync(vocabulary, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation("Vocabulary created with ID {Id}", vocabulary.Id);
+
+            return MapToAdminDto(vocabulary);
         }
 
+        // ============================================================================
+        // READ
+        // ============================================================================
 
-
-        //------------------------------ READ -------------------------------------------
-
-        public async Task<IEnumerable<VocabularyDto>> GetAllVocabulariesAsync(string? word, string? meaning, PartOfSpeech? partOfSpeech, CEFRLevel? cEFRLevel, int pageNumber, int pageSize)
+        /// <summary>
+        /// Lấy danh sách từ vựng với bộ lọc và phân trang (có cache 15 phút).
+        /// </summary>
+        public async Task<IEnumerable<VocabularyDto>> GetAllVocabulariesAsync(
+            string? word = null,
+            string? meaning = null,
+            PartOfSpeech? partOfSpeech = null,
+            CEFRLevel? cefrLevel = null,
+            int pageNumber = 1,
+            int pageSize = 50,
+            CancellationToken cancellationToken = default)
         {
-            var cacheKey = $"Vocabularies_{word}_{partOfSpeech}_{cEFRLevel}_{pageNumber}_{pageSize}";
-            if (_cache.TryGetValue(cacheKey, out IEnumerable<VocabularyDto> cachedVocabularies))
+            var cacheKey = $"VocabList_{word}_{meaning}_{partOfSpeech}_{cefrLevel}_{pageNumber}_{pageSize}";
+
+            if (_cache.TryGetValue(cacheKey, out IEnumerable<VocabularyDto> cached))
             {
-                _logger.LogDebug("Cache hit for vocabularies with filter: {Key}", cacheKey);
-                return cachedVocabularies;
+                _logger.LogDebug("Cache HIT – {CacheKey}", cacheKey);
+                return cached;
             }
 
-            var vocabularies = await _vocabularyRepository.GetAllVocabulariesAsync(word, meaning, partOfSpeech, cEFRLevel, pageNumber, pageSize);
-            var vocabularyDtos = vocabularies.Select(v => new VocabularyDto
-            {
-                Id = v.Id,
-                Word = v.Word,
-                Meaning = v.Meaning,
-                PartOfSpeech = v.PartOfSpeech.ToString(),
-                CEFRLevel = v.CEFRLevel.ToString(),
-                Description = v.Description,
-                ExampleSentence = v.ExampleSentence,
-                ImageUrl = v.ImageUrl,
-                PronunciationUrl = v.PronunciationUrl
-            }).ToList();
+            var entities = await _uow.Vocabulary.GetAllVocabulariesAsync(
+                word, meaning, partOfSpeech, cefrLevel, pageNumber, pageSize, cancellationToken);
 
-            _cache.Set(cacheKey, vocabularyDtos, new MemoryCacheEntryOptions
+            var dtos = entities.Select(MapToDto).ToList();
+
+            var entryOptions = new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(TimeSpan.FromMinutes(15))
+                .SetSize(1); // đơn vị tùy dự án, chỉ để IMemoryCache biết kích thước
+
+            lock (_cacheLock)
             {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15),
-                Size = 1024 // Giới hạn kích thước (bytes)
-            });
-            _logger.LogDebug("Cache miss, stored vocabularies with filter: {Key}", cacheKey);
-            return vocabularyDtos;
+                _cache.Set(cacheKey, dtos, entryOptions);
+                _cacheKeys.Add(cacheKey);
+            }
+
+            _logger.LogDebug("Cache MISS & stored – {CacheKey}", cacheKey);
+            return dtos;
         }
 
-        // Lấy từ vựng theo ID
-        public async Task<VocabularyDto?> GetVocabularyByIdAsync(int id)
+        /// <summary>
+        /// Lấy chi tiết một từ vựng theo ID (có cache 30 phút).
+        /// </summary>
+        public async Task<VocabularyDto?> GetVocabularyByIdAsync(
+            int id,
+            CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation("Fetching vocabulary with ID: {Id}", id);
-            var cacheKey = $"Vocabulary_{id}";
-            if (_cache.TryGetValue(cacheKey, out VocabularyDto cachedVocabulary))
+            var cacheKey = $"Vocab_{id}";
+
+            if (_cache.TryGetValue(cacheKey, out VocabularyDto cached))
             {
-                _logger.LogDebug("Cache hit for vocabulary ID: {Id}", id);
-                return cachedVocabulary;
+                _logger.LogDebug("Cache HIT – {CacheKey}", cacheKey);
+                return cached;
             }
 
-            var vocabulary = await _vocabularyRepository.GetVocabularyByIdAsync(id);
-            if (vocabulary == null)
-            {
-                _logger.LogWarning("No vocabulary found with ID: {Id}", id);
+            var entity = await _uow.Vocabulary.GetVocabularyByIdAsync(id, cancellationToken);
+            if (entity == null)
                 return null;
+
+            var dto = MapToDto(entity);
+
+            var entryOptions = new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(TimeSpan.FromMinutes(30))
+                .SetSize(1);
+
+            lock (_cacheLock)
+            {
+                _cache.Set(cacheKey, dto, entryOptions);
+                _cacheKeys.Add(cacheKey);
             }
 
-            var vocabularyDto = new VocabularyDto
-            {
-                Id = vocabulary.Id,
-                Word = vocabulary.Word,
-                Meaning = vocabulary.Meaning,
-                PartOfSpeech = vocabulary.PartOfSpeech.ToString(),
-                CEFRLevel = vocabulary.CEFRLevel.ToString(),
-                Description = vocabulary.Description,
-                ExampleSentence = vocabulary.ExampleSentence,
-                ImageUrl = vocabulary.ImageUrl,
-                PronunciationUrl = vocabulary.PronunciationUrl
-            };
-            _cache.Set(cacheKey, vocabularyDto, new MemoryCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30),
-                Size = 1024
-            });
-            _logger.LogDebug("Cache miss, stored vocabulary ID: {Id}", id);
-            return vocabularyDto;
+            _logger.LogDebug("Cache MISS & stored – {CacheKey}", cacheKey);
+            return dto;
         }
 
-        // Lấy các từ vựng theo danh sách từ
-        public async Task<IEnumerable<VocabularyDto>> GetVocabulariesByWordsAsync(SearchVocabularyDto searchVocabularyDto)
+        /// <summary>
+        /// Lấy nhiều từ vựng theo danh sách từ (word list) – thường dùng khi tạo session học.
+        /// </summary>
+        public async Task<IEnumerable<VocabularyDto>> GetVocabulariesByWordsAsync(
+            SearchVocabularyDto dto,
+            CancellationToken cancellationToken = default)
         {
-            if (searchVocabularyDto == null || searchVocabularyDto.Words == null || !searchVocabularyDto.Words.Any())
-                return new List<VocabularyDto>();
+            if (dto?.Words == null || !dto.Words.Any())
+                return Enumerable.Empty<VocabularyDto>();
 
-            var cacheKey = $"VocabulariesByWords_{string.Join("_", searchVocabularyDto.Words.OrderBy(w => w))}";
-            if (_cache.TryGetValue(cacheKey, out IEnumerable<VocabularyDto> cachedVocabularies))
+            var orderedWords = dto.Words.OrderBy(w => w).ToList();
+            var cacheKey = $"VocabByWords_{string.Join("_", orderedWords)}";
+
+            if (_cache.TryGetValue(cacheKey, out IEnumerable<VocabularyDto> cached))
             {
-                _logger.LogDebug("Cache hit for vocabularies with words: {Key}", cacheKey);
-                return cachedVocabularies;
+                _logger.LogDebug("Cache HIT – {CacheKey}", cacheKey);
+                return cached;
             }
 
-            var vocabularies = await _vocabularyRepository.GetVocabulariesByWordsAsync(searchVocabularyDto.Words);
-            var vocabularyDtos = vocabularies.Select(v => new VocabularyDto
-            {
-                Id = v.Id,
-                Word = v.Word,
-                Meaning = v.Meaning,
-                PartOfSpeech = v.PartOfSpeech.ToString(),
-                CEFRLevel = v.CEFRLevel.ToString(),
-                Description = v.Description,
-                ExampleSentence = v.ExampleSentence,
-                ImageUrl = v.ImageUrl,
-                Pronunciation = v.Pronunciation,
-                PronunciationUrl = v.PronunciationUrl
-            }).ToList();
+            var entities = await _uow.Vocabulary.GetVocabulariesByWordsAsync(orderedWords, cancellationToken);
 
-            _cache.Set(cacheKey, vocabularyDtos, new MemoryCacheEntryOptions
+            var dtos = entities.Select(MapToDto).ToList();
+
+            var entryOptions = new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(TimeSpan.FromMinutes(20))
+                .SetSize(1);
+
+            lock (_cacheLock)
             {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15),
-                Size = 1024 // Giới hạn kích thước (bytes)
-            });
-            _logger.LogDebug("Cache miss, stored vocabularies with words: {Key}", cacheKey);
-            return vocabularyDtos;
+                _cache.Set(cacheKey, dtos, entryOptions);
+                _cacheKeys.Add(cacheKey);
+            }
+
+            _logger.LogDebug("Cache MISS & stored – {CacheKey}", cacheKey);
+            return dtos;
         }
 
+        // ============================================================================
+        // UPDATE
+        // ============================================================================
 
-        //------------------------------ UPDATE -----------------------------------------
-        // Cập nhật từ vựng
-        public async Task<AdminVocabularyDto> UpdateVocabularyAsync(int id, CreateVocabularyDto vocabularyDto, string? imageUrl)
+        /// <summary>
+        /// Cập nhật từ vựng (admin only).
+        /// </summary>
+        public async Task<AdminVocabularyDto?> UpdateVocabularyAsync(
+            int id,
+            CreateVocabularyDto dto,
+            string? imageUrl,
+            CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation("Updating vocabulary with ID: {Id}", id);
-            if (string.IsNullOrWhiteSpace(vocabularyDto.Word))
-            {
-                _logger.LogError("Title is required for updating a vocabulary set");
-                throw new ArgumentException("Title is required.", nameof(vocabularyDto.Word));
-            }
+            if (string.IsNullOrWhiteSpace(dto.Word))
+                throw new ArgumentException("Word is required.", nameof(dto.Word));
 
-            var existingVocabulary = await _vocabularyRepository.GetVocabularyByIdAsync(id);
-            if (existingVocabulary == null)
-            {
-                _logger.LogWarning("Vocabulary set with ID: {Id} not found", id);
-                return null;
-            }
+            _logger.LogInformation("Updating vocabulary ID {Id}", id);
 
-            existingVocabulary.Word = vocabularyDto.Word;
-            existingVocabulary.Meaning = vocabularyDto.Meaning;
-            existingVocabulary.Pronunciation = vocabularyDto.Pronunciation;
-            existingVocabulary.PartOfSpeech = vocabularyDto.PartOfSpeech;
-            existingVocabulary.CEFRLevel = vocabularyDto.CEFRLevel;
-            existingVocabulary.Description = vocabularyDto.Description;
-            existingVocabulary.ExampleSentence = vocabularyDto.ExampleSentence;
-            existingVocabulary.ImageUrl = imageUrl;
-            existingVocabulary.PronunciationUrl = vocabularyDto.PronunciationUrl;
+            var entity = await _uow.Vocabulary.GetVocabularyByIdAsync(id, cancellationToken)
+                ?? throw new KeyNotFoundException($"Vocabulary with ID {id} not found.");
 
-            var updatedVocabulary = await _vocabularyRepository.UpdateVocabularyAsync(existingVocabulary);
-            if (updatedVocabulary == null)
-            {
-                _logger.LogWarning("Failed to update vocabulary set with ID: {Id}", id);
-                return null;
-            }
+            // Cập nhật các field
+            entity.Word = dto.Word.Trim();
+            entity.Meaning = dto.Meaning?.Trim();
+            entity.Pronunciation = dto.Pronunciation?.Trim();
+            entity.PartOfSpeech = dto.PartOfSpeech;
+            entity.CEFRLevel = dto.CEFRLevel;
+            entity.Description = dto.Description?.Trim();
+            entity.ExampleSentence = dto.ExampleSentence?.Trim();
+            entity.ImageUrl = imageUrl ?? entity.ImageUrl; // giữ lại ảnh cũ nếu không upload mới
+            entity.PronunciationUrl = dto.PronunciationUrl?.Trim();
 
-            _cache.Remove($"Vocabulary_{id}"); // Xóa cache của từ vựng cụ thể
-            _logger.LogInformation("Cache invalidated for vocabulary ID: {Id}", id);
-            return new AdminVocabularyDto
-            {
-                Id = updatedVocabulary.Id,
-                Word = updatedVocabulary.Word,
-                Meaning = updatedVocabulary.Meaning,
-                Pronunciation = updatedVocabulary.Pronunciation,
-                PartOfSpeech = updatedVocabulary.PartOfSpeech.ToString(),
-                CEFRLevel = updatedVocabulary.CEFRLevel.ToString(),
-                Description = updatedVocabulary.Description,
-                ExampleSentence = updatedVocabulary.ExampleSentence,
-                ImageUrl = updatedVocabulary.ImageUrl,
-                PronunciationUrl = updatedVocabulary.PronunciationUrl
-            };
+            await _uow.Vocabulary.UpdateVocabularyAsync(entity, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
+
+            // Xóa cache liên quan
+            InvalidateCache($"Vocab_{id}");
+            InvalidateCachePrefix("VocabList_");
+            InvalidateCachePrefix("VocabByWords_");
+
+            _logger.LogInformation("Vocabulary ID {Id} updated and related caches invalidated", id);
+
+            return MapToAdminDto(entity);
         }
 
+        // ============================================================================
+        // DELETE
+        // ============================================================================
 
-        //------------------------------ DELETE -----------------------------------------
-        // Xóa từ vựng theo ID
-        public async Task<bool> DeleteVocabularyAsync(int id)
+        /// <summary>
+        /// Xóa từ vựng (admin only).
+        /// </summary>
+        public async Task<bool> DeleteVocabularyAsync(
+            int id,
+            CancellationToken cancellationToken = default)
         {
-            var result = await _vocabularyRepository.DeleteVocabularyAsync(id);
+            _logger.LogInformation("Deleting vocabulary ID {Id}", id);
+
+            var result = await _uow.Vocabulary.DeleteVocabularyAsync(id, cancellationToken);
             if (result)
             {
-                _cache.Remove($"Vocabulary_{id}");
-                _logger.LogInformation("Cache invalidated after deleting vocabulary ID: {Id}", id);
+                await _uow.SaveChangesAsync(cancellationToken);
+
+                InvalidateCache($"Vocab_{id}");
+                InvalidateCachePrefix("VocabList_");
+                InvalidateCachePrefix("VocabByWords_");
+
+                _logger.LogInformation("Vocabulary ID {Id} deleted and caches invalidated", id);
             }
+
             return result;
         }
 
+        // ============================================================================
+        // PRIVATE HELPERS
+        // ============================================================================
 
+        private static VocabularyDto MapToDto(Vocabulary v) => new()
+        {
+            Id = v.Id,
+            Word = v.Word,
+            Meaning = v.Meaning,
+            PartOfSpeech = v.PartOfSpeech.ToString(),
+            CEFRLevel = v.CEFRLevel.ToString(),
+            Description = v.Description,
+            ExampleSentence = v.ExampleSentence,
+            ImageUrl = v.ImageUrl,
+            Pronunciation = v.Pronunciation,
+            PronunciationUrl = v.PronunciationUrl
+        };
 
+        private static AdminVocabularyDto MapToAdminDto(Vocabulary v) => new()
+        {
+            Id = v.Id,
+            Word = v.Word,
+            Meaning = v.Meaning,
+            Pronunciation = v.Pronunciation,
+            PartOfSpeech = v.PartOfSpeech.ToString(),
+            CEFRLevel = v.CEFRLevel.ToString(),
+            Description = v.Description,
+            ExampleSentence = v.ExampleSentence,
+            ImageUrl = v.ImageUrl,
+            PronunciationUrl = v.PronunciationUrl
+        };
 
+        private void InvalidateCache(string key)
+        {
+            lock (_cacheLock)
+            {
+                _cache.Remove(key);
+                _cacheKeys.Remove(key);
+            }
+        }
+
+        private void InvalidateCachePrefix(string prefix)
+        {
+            lock (_cacheLock)
+            {
+                var keysToRemove = _cacheKeys.Where(k => k.StartsWith(prefix)).ToList();
+                foreach (var key in keysToRemove)
+                {
+                    _cache.Remove(key);
+                    _cacheKeys.Remove(key);
+                }
+            }
+        }
     }
 }

@@ -5,15 +5,46 @@ namespace WordSoul.Application.Interfaces.Services
 {
     public interface IVocabularySetService
     {
-        //Tạo mới bộ từ vựng
-        Task<VocabularySetDto> CreateVocabularySetAsync(CreateVocabularySetDto createDto, string? imageUrl, int userId);
-        //Xóa bộ từ vựng
-        Task<bool> DeleteVocabularySetAsync(int id);
-        //Lấy tất cả bộ từ vựng với tùy chọn lọc và phân trang
-        Task<IEnumerable<VocabularySetDto>> GetAllVocabularySetsAsync(string? title, VocabularySetTheme? theme, VocabularyDifficultyLevel? difficulty, DateTime? createdAfter, bool? isOwned, int? userId, int pageNumber, int pageSize);
-        //Lấy bộ từ vựng theo Id
-        Task<VocabularySetDetailDto?> GetVocabularySetByIdAsync(int id);
-        //Cập nhật bộ từ vựng
-        Task<VocabularySetDto?> UpdateVocabularySetAsync(int id, UpdateVocabularySetDto updateDto);
+        // ========================================================================
+        // CREATE
+        // ========================================================================
+        Task<VocabularySetDto> CreateVocabularySetAsync(
+            CreateVocabularySetDto dto,
+            string? imageUrl,
+            int userId,
+            CancellationToken cancellationToken = default);
+
+        // ========================================================================
+        // READ
+        // ========================================================================
+        Task<VocabularySetDetailDto?> GetVocabularySetByIdAsync(
+            int id,
+            CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<VocabularySetDto>> GetAllVocabularySetsAsync(
+            string? title = null,
+            VocabularySetTheme? theme = null,
+            VocabularyDifficultyLevel? difficulty = null,
+            DateTime? createdAfter = null,
+            bool? isOwned = null,
+            int? userId = null,
+            int pageNumber = 1,
+            int pageSize = 20,
+            CancellationToken cancellationToken = default);
+
+        // ========================================================================
+        // UPDATE
+        // ========================================================================
+        Task<VocabularySetDto?> UpdateVocabularySetAsync(
+            int id,
+            UpdateVocabularySetDto dto,
+            CancellationToken cancellationToken = default);
+
+        // ========================================================================
+        // DELETE
+        // ========================================================================
+        Task<bool> DeleteVocabularySetAsync(
+            int id,
+            CancellationToken cancellationToken = default);
     }
 }

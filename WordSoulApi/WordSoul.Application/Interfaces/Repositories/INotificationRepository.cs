@@ -4,22 +4,50 @@ namespace WordSoul.Application.Interfaces.Repositories
 {
     public interface INotificationRepository
     {
-        //-------------------------------------CREATE-----------------------------------------
-        // Tạo mới thông báo
-        Task CreateNotificationAsync(Notification notification);
-        //-------------------------------------READ-------------------------------------------
-        // Lấy tất cả thông báo của người dùng, sắp xếp theo thời gian tạo mới nhất
-        Task<Notification?> GetNotificationByIdAsync(int id);
-        // Lấy tất cả thông báo của người dùng, sắp xếp theo thời gian tạo mới nhất
-        Task<List<Notification>> GetUserNotificationsAsync(int userId);
-        //-------------------------------------UPDATE-----------------------------------------
-        // Đánh dấu tất cả thông báo của người dùng đã đọc
-        Task MarkAllAsReadAsync(int userId);
-        // Đánh dấu thông báo đã đọc
-        Task MarkAsReadNotificationAsync(int id);
-        //-------------------------------------DELETE-----------------------------------------
-        // Xóa thông báo
-        Task DeleteNotificationAsync(int id);
+        // ----------------------------- CREATE -----------------------------
+        /// <summary>
+        /// Tạo một thông báo mới.
+        /// </summary>
+        Task CreateNotificationAsync(
+            Notification notification,
+            CancellationToken cancellationToken = default);
 
+        // ----------------------------- READ -------------------------------
+        /// <summary>
+        /// Lấy tất cả thông báo của một người dùng, sắp xếp theo thời gian tạo mới nhất.
+        /// </summary>
+        Task<List<Notification>> GetUserNotificationsAsync(
+            int userId,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Lấy thông báo theo ID.
+        /// </summary>
+        Task<Notification?> GetNotificationByIdAsync(
+            int id,
+            CancellationToken cancellationToken = default);
+
+        // ----------------------------- UPDATE -----------------------------
+        /// <summary>
+        /// Đánh dấu một thông báo là đã đọc.
+        /// </summary>
+        Task MarkAsReadNotificationAsync(
+            int id,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Đánh dấu tất cả thông báo của người dùng là đã đọc.
+        /// </summary>
+        Task MarkAllAsReadAsync(
+            int userId,
+            CancellationToken cancellationToken = default);
+
+        // ----------------------------- DELETE -----------------------------
+        /// <summary>
+        /// Xóa một thông báo theo ID.
+        /// </summary>
+        Task DeleteNotificationAsync(
+            int id,
+            CancellationToken cancellationToken = default);
     }
 }

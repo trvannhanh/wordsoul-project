@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using WordSoul.Application.DTOs.Pet;
-using WordSoul.Application.Interfaces.Repositories;
+using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
 using WordSoul.Domain.Entities;
 
@@ -8,34 +8,33 @@ namespace WordSoul.Application.Services
 {
     public class PetService : IPetService
     {
-        private readonly IPetRepository _petRepository;
-        private readonly IUserOwnedPetRepository _userOwnedPetRepository;
-        private readonly IUserRepository _userRepository;
-        private readonly ILogger<VocabularySetService> _logger;
+        private readonly IUnitOfWork _uow;
+        private readonly ILogger<PetService> _logger;
         private readonly IUploadAssetsService _uploadAssetsService;
         private readonly IActivityLogService _activityLogService;
 
-        public PetService(IPetRepository petRepository, ILogger<VocabularySetService> logger, IUserOwnedPetRepository userOwnedPetRepository, IUploadAssetsService uploadAssetsService, IUserRepository userRepository, IActivityLogService activityLogService)
+        public PetService(
+            IUnitOfWork uow,
+            ILogger<PetService> logger,
+            IUploadAssetsService uploadAssetsService,
+            IActivityLogService activityLogService)
         {
-            _petRepository = petRepository;
-            _userOwnedPetRepository = userOwnedPetRepository;
+            _uow = uow;
             _logger = logger;
             _uploadAssetsService = uploadAssetsService;
-            _userRepository = userRepository;
             _activityLogService = activityLogService;
         }
 
-        //------------------------------ CREATE -----------------------------------
-        // Tạo pet mới
+        // ============================================================================
+        // CREATE
+        // ============================================================================
+
         public async Task<PetDto> CreatePetAsync(CreatePetDto petDto, string? imageUrl)
         {
-            _logger.LogInformation("Creating pet with title: {Name}", petDto.Name);
+            _logger.LogInformation("Creating pet: {Name}", petDto.Name);
 
             if (string.IsNullOrWhiteSpace(petDto.Name))
-            {
-                _logger.LogError("Title is required for creating a pet");
                 throw new ArgumentException("Name is required.", nameof(petDto.Name));
-            }
 
             var pet = new Pet
             {
@@ -46,129 +45,9 @@ namespace WordSoul.Application.Services
                 Type = petDto.Type
             };
 
-            var createdPet = await _petRepository.CreatePetAsync(pet);
-            return new AdminPetDto
-            {
-                Id = createdPet.Id,
-                Name = createdPet.Name,
-                Description = createdPet.Description,
-                ImageUrl = createdPet.ImageUrl,
-                Rarity = createdPet.Rarity.ToString(),
-                Type = createdPet.Type.ToString(),
-                CreatedAt = createdPet.CreatedAt,
-                IsActive = createdPet.IsActive
-            };
-        }
+            await _uow.Pet.CreatePetAsync(pet);
+            await _uow.SaveChangesAsync();
 
-        // Bulk create pets (tạo từng pet và upload image nếu có)
-        public async Task<List<PetDto>> CreatePetsBulkAsync(BulkCreatePetDto bulkDto)
-        {
-            var createdPets = new List<PetDto>();
-            foreach (var petDto in bulkDto.Pets)
-            {
-                string? imageUrl = null;
-                string? publicId = null;
-
-                Console.WriteLine($"ImageFile: {petDto.ImageFile?.FileName}, Length: {petDto.ImageFile?.Length}");
-                if (petDto.ImageFile != null && petDto.ImageFile.Length > 0)
-                {
-                    (imageUrl, publicId) = await _uploadAssetsService.UploadImageAsync(petDto.ImageFile, "pets");
-                }
-
-                var pet = new Pet
-                {
-                    Name = petDto.Name,
-                    Description = petDto.Description,
-                    ImageUrl = imageUrl,
-                    Rarity = petDto.Rarity,
-                    Type = petDto.Type,
-                    BaseFormId = petDto.BaseFormId,
-                    NextEvolutionId = petDto.NextEvolutionId,
-                    RequiredLevel = petDto.RequiredLevel,
-                    IsActive = true
-                };
-
-                var createdPet = await _petRepository.CreatePetAsync(pet);
-                createdPets.Add(new AdminPetDto
-                {
-                    Id = createdPet.Id,
-                    Name = createdPet.Name,
-                    Description = createdPet.Description,
-                    ImageUrl = createdPet.ImageUrl,
-                    Rarity = createdPet.Rarity.ToString(),
-                    Type = createdPet.Type.ToString(),
-                    BaseFormId = createdPet.BaseFormId,
-                    NextEvolutionId = createdPet.NextEvolutionId,
-                    RequiredLevel = createdPet.RequiredLevel,
-                    CreatedAt = createdPet.CreatedAt,
-                    IsActive = createdPet.IsActive
-                });
-            }
-
-            return createdPets;
-        }
-
-        
-
-
-        //------------------------------ GET -----------------------------------
-
-        // Lây tất cả pet
-        //public async Task<IEnumerable<UserPetDto>> GetAllPetsAsync(
-        //    int userId,
-        //    PetFilter filter)
-        //{
-        //    var pets = await _petRepository.GetAllPetsAsync(
-        //        userId, filter);
-
-        //    return pets.Select(p => new UserPetDto
-        //    {
-        //        Id = p.Pet.Id,
-        //        Name = p.Pet.Name,
-        //        Description = p.Pet.Description ?? "No description available",
-        //        ImageUrl = p.Pet.ImageUrl ?? "",
-        //        Rarity = p.Pet.Rarity.ToString(),
-        //        Type = p.Pet.Type.ToString(),
-        //        BaseFormId = p.Pet.BaseFormId,
-        //        NextEvolutionId = p.Pet.NextEvolutionId,
-        //        RequiredLevel = p.Pet.RequiredLevel,
-        //        Order = p.Pet.Order,
-        //        IsOwned = p.IsOwned
-        //    });
-        //}
-
-
-        // Lấy chi tiết pet theo user
-        public async Task<UserPetDetailDto?> GetPetDetailAsync(int userId, int petId)
-        {
-
-            var pet = await _petRepository.GetPetByIdAsync(petId);
-            if (pet == null) return null;
-
-            var userOwnedPet = await _userOwnedPetRepository.GetUserOwnedPetByUserAndPetIdAsync(userId, petId);
-
-            return new UserPetDetailDto
-            {
-                Id = pet.Id,
-                Name = pet.Name,
-                Description = pet.Description ?? "No description available",
-                ImageUrl = pet.ImageUrl ?? "",
-                Rarity = pet.Rarity.ToString(),
-                Type = pet.Type.ToString(),
-                Level = userOwnedPet != null ? userOwnedPet.Level : null, // null nếu không sở hữu
-                Experience = userOwnedPet != null ? userOwnedPet.Experience : null, // null nếu không sở hữu
-                IsFavorite = userOwnedPet != null ? userOwnedPet.IsFavorite : null, // null nếu không sở hữu
-                AcquiredAt = userOwnedPet?.AcquiredAt // null nếu không sở hữu
-            };
-        }
-
-
-        // Lấy pet theo ID
-        public async Task<PetDto?> GetPetByIdAsync(int id)
-        {
-            var pet = await _petRepository.GetPetByIdAsync(id);
-            if (pet == null) return null;
-            // cần thêm if role admin
             return new AdminPetDto
             {
                 Id = pet.Id,
@@ -182,111 +61,197 @@ namespace WordSoul.Application.Services
             };
         }
 
-
-        
-
-
-
-        //------------------------------ UPDATE -----------------------------------
-        //Cập nhật pet
-        public async Task<AdminPetDto> UpdatePetAsync(int id, UpdatePetDto petDto, string? imageUrl)
+        public async Task<List<PetDto>> CreatePetsBulkAsync(BulkCreatePetDto bulkDto)
         {
-            var existingPet = await _petRepository.GetPetByIdAsync(id);
-            if (existingPet == null)
+            var createdPets = new List<PetDto>();
+
+            foreach (var dto in bulkDto.Pets)
             {
-                throw new KeyNotFoundException($"Pet with ID {id} not found.");
+                string? imageUrl = null;
+                if (dto.ImageFile != null && dto.ImageFile.Length > 0)
+                {
+                    (imageUrl, _) = await _uploadAssetsService.UploadImageAsync(dto.ImageFile, "pets");
+                }
+
+                var pet = new Pet
+                {
+                    Name = dto.Name,
+                    Description = dto.Description,
+                    ImageUrl = imageUrl,
+                    Rarity = dto.Rarity,
+                    Type = dto.Type,
+                    BaseFormId = dto.BaseFormId,
+                    NextEvolutionId = dto.NextEvolutionId,
+                    RequiredLevel = dto.RequiredLevel,
+                    IsActive = true
+                };
+
+                await _uow.Pet.CreatePetAsync(pet);
+
+                createdPets.Add(new AdminPetDto
+                {
+                    Id = pet.Id,
+                    Name = pet.Name,
+                    Description = pet.Description,
+                    ImageUrl = pet.ImageUrl,
+                    Rarity = pet.Rarity.ToString(),
+                    Type = pet.Type.ToString(),
+                    BaseFormId = pet.BaseFormId,
+                    NextEvolutionId = pet.NextEvolutionId,
+                    RequiredLevel = pet.RequiredLevel,
+                    CreatedAt = pet.CreatedAt,
+                    IsActive = pet.IsActive
+                });
             }
 
-            existingPet.Name = petDto.Name;
-            existingPet.Description = petDto.Description;
-            existingPet.ImageUrl = imageUrl;
-            existingPet.Rarity = petDto.Rarity;
-            existingPet.Type = petDto.Type;
-            existingPet.IsActive = petDto.IsActive;
-            existingPet.CreatedAt = petDto.CreatedAt;
+            await _uow.SaveChangesAsync();
+            return createdPets;
+        }
 
-            var updatedPet = await _petRepository.UpdatePetAsync(existingPet);
-            return new AdminPetDto
+        // ============================================================================
+        // READ
+        // ============================================================================
+
+        public async Task<UserPetDetailDto?> GetPetDetailAsync(int userId, int petId)
+        {
+            var pet = await _uow.Pet.GetPetByIdAsync(petId);
+            if (pet == null) return null;
+
+            var owned = await _uow.UserOwnedPet.GetUserOwnedPetByUserAndPetIdAsync(userId, petId);
+
+            return new UserPetDetailDto
             {
-                Id = updatedPet.Id,
-                Name = updatedPet.Name,
-                Description = updatedPet.Description,
-                ImageUrl = updatedPet.ImageUrl,
-                Rarity = updatedPet.Rarity.ToString(),
-                Type = updatedPet.Type.ToString(),
-                CreatedAt = updatedPet.CreatedAt,
-                IsActive = updatedPet.IsActive
+                Id = pet.Id,
+                Name = pet.Name,
+                Description = pet.Description ?? "No description available",
+                ImageUrl = pet.ImageUrl ?? "",
+                Rarity = pet.Rarity.ToString(),
+                Type = pet.Type.ToString(),
+                Level = owned?.Level,
+                Experience = owned?.Experience,
+                IsFavorite = owned?.IsFavorite,
+                AcquiredAt = owned?.AcquiredAt
             };
         }
 
-        // Bulk update pets 
+        public async Task<PetDto?> GetPetByIdAsync(int id)
+        {
+            var pet = await _uow.Pet.GetPetByIdAsync(id);
+            if (pet == null) return null;
+
+            return new AdminPetDto
+            {
+                Id = pet.Id,
+                Name = pet.Name,
+                Description = pet.Description,
+                ImageUrl = pet.ImageUrl,
+                Rarity = pet.Rarity.ToString(),
+                Type = pet.Type.ToString(),
+                CreatedAt = pet.CreatedAt,
+                IsActive = pet.IsActive
+            };
+        }
+
+        // ============================================================================
+        // UPDATE
+        // ============================================================================
+
+        public async Task<AdminPetDto> UpdatePetAsync(int id, UpdatePetDto dto, string? imageUrl)
+        {
+            var pet = await _uow.Pet.GetPetByIdAsync(id);
+            if (pet == null)
+                throw new KeyNotFoundException($"Pet with ID {id} not found.");
+
+            pet.Name = dto.Name;
+            pet.Description = dto.Description;
+            pet.ImageUrl = imageUrl ?? pet.ImageUrl;
+            pet.Rarity = dto.Rarity;
+            pet.Type = dto.Type;
+            pet.IsActive = dto.IsActive;
+            pet.CreatedAt = dto.CreatedAt;
+
+            await _uow.Pet.UpdatePetAsync(pet);
+            await _uow.SaveChangesAsync();
+
+            return new AdminPetDto
+            {
+                Id = pet.Id,
+                Name = pet.Name,
+                Description = pet.Description,
+                ImageUrl = pet.ImageUrl,
+                Rarity = pet.Rarity.ToString(),
+                Type = pet.Type.ToString(),
+                CreatedAt = pet.CreatedAt,
+                IsActive = pet.IsActive
+            };
+        }
+
         public async Task<List<PetDto>> UpdatePetsBulkAsync(List<UpdatePetDto> pets)
         {
-            var updatedPets = new List<PetDto>();
-            foreach (var petDto in pets)
+            var updatedList = new List<PetDto>();
+
+            foreach (var dto in pets)
             {
-                var pet = await _petRepository.GetPetByIdAsync(petDto.Id);
-                if (pet == null) continue;  // Skip nếu không tồn tại
+                var pet = await _uow.Pet.GetPetByIdAsync(dto.Id);
+                if (pet == null) continue;
 
-                // Update fields
-                pet.Name = petDto.Name;
-                pet.Description = petDto.Description;
-                string? imageUrl = null;
-                string? publicId = null;
-
-                if (petDto.ImageFile != null && petDto.ImageFile.Length > 0)
+                if (dto.ImageFile != null && dto.ImageFile.Length > 0)
                 {
-                    (imageUrl, publicId) = await _uploadAssetsService.UploadImageAsync(petDto.ImageFile, "pets");
-                    pet.ImageUrl = imageUrl;
+                    (var url, _) = await _uploadAssetsService.UploadImageAsync(dto.ImageFile, "pets");
+                    pet.ImageUrl = url;
                 }
-                pet.Rarity = petDto.Rarity;
-                pet.Type = petDto.Type;
-                pet.BaseFormId = petDto.BaseFormId;
-                pet.NextEvolutionId = petDto.NextEvolutionId;
-                pet.RequiredLevel = petDto.RequiredLevel;
-                pet.IsActive = petDto.IsActive;
 
-                var updatedPet = await _petRepository.UpdatePetAsync(pet);
-                updatedPets.Add(new AdminPetDto
+                pet.Name = dto.Name;
+                pet.Description = dto.Description;
+                pet.Rarity = dto.Rarity;
+                pet.Type = dto.Type;
+                pet.BaseFormId = dto.BaseFormId;
+                pet.NextEvolutionId = dto.NextEvolutionId;
+                pet.RequiredLevel = dto.RequiredLevel;
+                pet.IsActive = dto.IsActive;
+
+                await _uow.Pet.UpdatePetAsync(pet);
+
+                updatedList.Add(new AdminPetDto
                 {
-                    Id = updatedPet.Id,
-                    Name = updatedPet.Name,
-                    Description = updatedPet.Description,
-                    ImageUrl = updatedPet.ImageUrl,
-                    Rarity = updatedPet.Rarity.ToString(),
-                    Type = updatedPet.Type.ToString(),
-                    BaseFormId = updatedPet.BaseFormId,
-                    NextEvolutionId = updatedPet.NextEvolutionId,
-                    RequiredLevel = updatedPet.RequiredLevel,
-                    CreatedAt = updatedPet.CreatedAt,
-                    IsActive = updatedPet.IsActive
+                    Id = pet.Id,
+                    Name = pet.Name,
+                    Description = pet.Description,
+                    ImageUrl = pet.ImageUrl,
+                    Rarity = pet.Rarity.ToString(),
+                    Type = pet.Type.ToString(),
+                    BaseFormId = pet.BaseFormId,
+                    NextEvolutionId = pet.NextEvolutionId,
+                    RequiredLevel = pet.RequiredLevel,
+                    CreatedAt = pet.CreatedAt,
+                    IsActive = pet.IsActive
                 });
             }
-            return updatedPets;
+
+            await _uow.SaveChangesAsync();
+            return updatedList;
         }
 
-        //------------------------------ DELETE -----------------------------------
-        // Xóa pet theo ID
+        // ============================================================================
+        // DELETE
+        // ============================================================================
+
         public async Task<bool> DeletePetAsync(int id)
         {
-            return await _petRepository.DeletePetAsync(id);
+            await _uow.Pet.DeletePetAsync(id);
+            await _uow.SaveChangesAsync();
+            return true;
         }
 
-       
-
-        // Bulk delete pets
         public async Task<bool> DeletePetsBulkAsync(List<int> petIds)
         {
             foreach (var id in petIds)
             {
-                var pet = await _petRepository.GetPetByIdAsync(id);
-                if (pet != null)
-                {
-                    await _petRepository.DeletePetAsync(pet.Id);
-                }
+                await _uow.Pet.DeletePetAsync(id);
             }
+
+            await _uow.SaveChangesAsync();
             return true;
         }
-        
     }
 }

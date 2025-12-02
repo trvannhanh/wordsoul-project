@@ -4,23 +4,39 @@ namespace WordSoul.Application.Interfaces.Repositories
 {
     public interface ILearningSessionRepository
     {
-        //-------------------------------------CREATE-----------------------------------------
+        // ----------------------------- CREATE -----------------------------
+        Task<LearningSession> CreateLearningSessionAsync(
+            LearningSession learningSession,
+            CancellationToken cancellationToken = default);
 
-        // Tạo một LearningSession mới
-        Task<LearningSession> CreateLearningSessionAsync(LearningSession learningSession);
-        //-------------------------------------READ-------------------------------------------
-        // Lấy LearningSession chưa hoàn thành tồn tại của User với bộ từ vựng cụ thể
-        Task<LearningSession?> GetExistingLearningSessionUnCompletedForUserAsync(int userId, int vocabularySetId);
-        Task<LearningSession?> GetExistingLearningSessionForUserAsync(int userId, int sessionId);
-        // Lấy LearningSession theo ID
-        Task<LearningSession?> GetLearningSessionByIdAsync(int sessionId);
-        //-------------------------------------UPDATE-----------------------------------------
-        // Cập nhật một LearningSession hiện có
-        Task<LearningSession> UpdateLearningSessionAsync(LearningSession learningSession);
+        // ----------------------------- READ -------------------------------
+        Task<LearningSession?> GetLearningSessionByIdAsync(
+            int sessionId,
+            CancellationToken cancellationToken = default);
 
-        //-------------------------------------OTHER------------------------------------------
-        // Kiểm tra LearningSession thuộc về User
-        Task<bool> CheckUserLearningSessionExist(int userId, int sessionId);
-        Task<LearningSession?> GetExistingReviewSessionUnCompletedForUserAsync(int userId);
+        Task<LearningSession?> GetExistingLearningSessionUnCompletedForUserAsync(
+            int userId,
+            int vocabularySetId,
+            CancellationToken cancellationToken = default);
+
+        Task<LearningSession?> GetExistingReviewSessionUnCompletedForUserAsync(
+            int userId,
+            CancellationToken cancellationToken = default);
+
+        Task<LearningSession?> GetExistingLearningSessionForUserAsync(
+            int userId,
+            int sessionId,
+            CancellationToken cancellationToken = default);
+
+        // ----------------------------- UPDATE -----------------------------
+        Task<LearningSession> UpdateLearningSessionAsync(
+            LearningSession learningSession,
+            CancellationToken cancellationToken = default);
+
+        // ----------------------------- OTHER -------------------------------
+        Task<bool> CheckUserLearningSessionExist(
+            int userId,
+            int sessionId,
+            CancellationToken cancellationToken = default);
     }
 }

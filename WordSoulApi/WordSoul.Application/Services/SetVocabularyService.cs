@@ -1,9 +1,10 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using CloudinaryDotNet.Actions;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using WordSoul.Application.DTOs;
 using WordSoul.Application.DTOs.Vocabulary;
 using WordSoul.Application.DTOs.VocabularySet;
-using WordSoul.Application.Interfaces.Repositories;
+using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
 using WordSoul.Domain.Entities;
 
@@ -11,51 +12,56 @@ namespace WordSoul.Application.Services
 {
     public class SetVocabularyService : ISetVocabularyService
     {
-
-        private readonly ISetVocabularyRepository _setVocabularyRepository;
-        private readonly IVocabularySetRepository _vocabularySetRepository;
-        private readonly IVocabularyRepository _vocabularyRepository;
+        private readonly IUnitOfWork _uow;
         private readonly ILogger<SetVocabularyService> _logger;
-
         private readonly IMemoryCache _cache;
-        private readonly HashSet<string> _cacheKeys = []; // Theo dõi key cache
 
-        private readonly object _lockObject = new object(); // Đảm bảo thread-safe
+        // Theo dõi các key cache để xóa theo prefix (thread-safe)
+        private readonly HashSet<string> _cacheKeys = new();
+        private readonly object _lockObject = new();
 
-        public SetVocabularyService(ISetVocabularyRepository setVocabularyRepository, 
-                                    ILogger<SetVocabularyService> logger, 
-                                    IVocabularySetRepository vocabularySetRepository, 
-                                    IVocabularyRepository vocabularyRepository, 
-                                    IMemoryCache cache)
+        public SetVocabularyService(
+            IUnitOfWork uow,
+            ILogger<SetVocabularyService> logger,
+            IMemoryCache cache)
         {
-            _setVocabularyRepository = setVocabularyRepository;
+            _uow = uow;
             _logger = logger;
-            _vocabularySetRepository = vocabularySetRepository;
-            _vocabularyRepository = vocabularyRepository;
             _cache = cache;
         }
 
+        // ============================================================================
+        // CREATE
+        // ============================================================================
 
-        // -------------------------------------CREATE-------------------------------------------
-        // Thêm từ vựng mới vào bộ từ vựng
-        public async Task<AdminVocabularyDto?> AddVocabularyToSetAsync(int setId, CreateVocabularyInSetDto vocabularyDto, string? imageUrl)
+        /// <summary>
+        /// Thêm một từ vựng mới vào bộ từ vựng. Nếu từ đã tồn tại trong bộ thì ném lỗi.
+        /// </summary>
+        /// <param name="setId">ID của bộ từ vựng.</param>
+        /// <param name="vocabularyDto">Dữ liệu từ vựng cần thêm.</param>
+        /// <param name="imageUrl">URL hình ảnh đã upload (nếu có).</param>
+        /// <param name="cancellationToken">Token hủy thao tác.</param>
+        /// <returns>AdminVocabularyDto của từ vừa được tạo.</returns>
+        /// <exception cref="KeyNotFoundException">Khi bộ từ vựng không tồn tại.</exception>
+        /// <exception cref="ArgumentException">Khi từ vựng đã tồn tại trong bộ.</exception>
+        public async Task<AdminVocabularyDto?> AddVocabularyToSetAsync(
+            int setId,
+            CreateVocabularyInSetDto vocabularyDto,
+            string? imageUrl,
+            CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation("Adding vocabulary to set ID: {SetId}, Word: {Word}", setId, vocabularyDto.Word);
+            _logger.LogInformation("Adding vocabulary '{Word}' to set ID {SetId}", vocabularyDto.Word, setId);
 
-            var vocabularySet = await _vocabularySetRepository.GetVocabularySetByIdAsync(setId);
-            if (vocabularySet == null)
-            {
-                _logger.LogWarning("Vocabulary set with ID: {SetId} not found", setId);
-                throw new KeyNotFoundException("Bộ từ vựng không tồn tại.");
-            }
+            // Kiểm tra bộ từ vựng có tồn tại không
+            var vocabularySet = await _uow.VocabularySet.GetVocabularySetByIdAsync(setId, cancellationToken)
+                ?? throw new KeyNotFoundException("Bộ từ vựng không tồn tại.");
 
-            var existingLink = await _setVocabularyRepository.CheckVocabularyExistFromSetAsync(vocabularyDto.Word, setId);
-            if (existingLink)
-            {
-                _logger.LogWarning("Vocabulary {Word} already exists in set ID: {SetId}", vocabularyDto.Word, setId);
+            // Kiểm tra từ đã tồn tại trong bộ chưa
+            var exists = await _uow.SetVocabulary.CheckVocabularyExistFromSetAsync(vocabularyDto.Word, setId, cancellationToken);
+            if (exists)
                 throw new ArgumentException("Từ vựng đã tồn tại trong bộ này.");
-            }
 
+            // Tạo từ vựng mới
             var vocabulary = new Vocabulary
             {
                 Word = vocabularyDto.Word,
@@ -69,26 +75,25 @@ namespace WordSoul.Application.Services
                 PronunciationUrl = vocabularyDto.PronunciationUrl
             };
 
-            _logger.LogDebug("Creating new vocabulary for word: {Word}", vocabularyDto.Word);
-            await _vocabularyRepository.CreateVocabularyAsync(vocabulary);
+            await _uow.Vocabulary.CreateVocabularyAsync(vocabulary, cancellationToken);
 
-            var maxOrderValue = await _setVocabularyRepository.GetVocabularyOrderMaxAsync(setId);
-            var newOrder = maxOrderValue + 1;
-
+            // Tạo liên kết SetVocabulary với thứ tự tăng dần
+            var maxOrder = await _uow.SetVocabulary.GetVocabularyOrderMaxAsync(setId, cancellationToken);
             var setVocabulary = new SetVocabulary
             {
                 VocabularySetId = setId,
                 VocabularyId = vocabulary.Id,
-                Order = newOrder
+                Order = maxOrder + 1
             };
 
-            _logger.LogDebug("Creating link for vocabulary ID: {VocabId} in set ID: {SetId}", vocabulary.Id, setId);
-            await _setVocabularyRepository.CreateSetVocabularyAsync(setVocabulary);
+            await _uow.SetVocabulary.CreateSetVocabularyAsync(setVocabulary, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
 
-            // Xóa cache liên quan đến setId
-            RemoveCacheByPrefix($"VocabulariesInSet_{setId}_");
-            RemoveCacheByPrefix($"VocabularySetFull_{setId}_");
-            _logger.LogInformation("Successfully added vocabulary ID: {VocabId} to set ID: {SetId}", vocabulary.Id, setId);
+            // Xóa cache liên quan
+            InvalidateCacheByPrefix($"VocabulariesInSet_{setId}_");
+            InvalidateCacheByPrefix($"VocabularySetFull_{setId}_");
+
+            _logger.LogInformation("Successfully added vocabulary ID {VocabId} to set ID {SetId}", vocabulary.Id, setId);
 
             return new AdminVocabularyDto
             {
@@ -105,26 +110,37 @@ namespace WordSoul.Application.Services
             };
         }
 
-        //-------------------------------------READ-------------------------------------------
-        // Lấy danh sách từ vựng trong bộ với phân trang
-        public async Task<PagedResult<VocabularyDto>> GetVocabulariesInSetAsync(int setId, int pageNumber = 1, int pageSize = 10)
+        // ============================================================================
+        // READ
+        // ============================================================================
+
+        /// <summary>
+        /// Lấy danh sách từ vựng trong một bộ với phân trang (có cache 15 phút).
+        /// </summary>
+        public async Task<PagedResult<VocabularyDto>> GetVocabulariesInSetAsync(
+            int setId,
+            int pageNumber = 1,
+            int pageSize = 10,
+            CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation("Retrieving vocabularies for set ID: {SetId}, Page: {Page}, PageSize: {PageSize}", setId, pageNumber, pageSize);
+            _logger.LogInformation("Get vocabularies in set {SetId} - Page {Page}/{PageSize}", setId, pageNumber, pageSize);
+
             var cacheKey = $"VocabulariesInSet_{setId}_{pageNumber}_{pageSize}";
 
-            if (_cache.TryGetValue(cacheKey, out PagedResult<VocabularyDto> cachedResult))
+            if (_cache.TryGetValue(cacheKey, out PagedResult<VocabularyDto> cached))
             {
-                _logger.LogDebug("Cache hit for vocabularies in set ID: {SetId}, Page: {Page}", setId, pageNumber);
-                return cachedResult;
+                _logger.LogDebug("Cache HIT: {CacheKey}", cacheKey);
+                return cached;
             }
 
-            var vocabularySet = await _vocabularySetRepository.GetVocabularySetByIdAsync(setId);
-            if (vocabularySet == null)
-                throw new KeyNotFoundException("Bộ từ vựng không tồn tại.");
+            // Kiểm tra bộ có tồn tại
+            var setExists = await _uow.VocabularySet.GetVocabularySetByIdAsync(setId, cancellationToken)
+                ?? throw new KeyNotFoundException("Bộ từ vựng không tồn tại.");
 
-            var (vocabularies, totalCount) = await _setVocabularyRepository.GetVocabulariesFromSetAsync(setId, pageNumber, pageSize);
+            var (vocabularies, totalCount) = await _uow.SetVocabulary.GetVocabulariesFromSetAsync(
+                setId, pageNumber, pageSize, cancellationToken);
 
-            var vocabularyDtos = vocabularies.Select(v => new VocabularyDto
+            var dtos = vocabularies.Select(v => new VocabularyDto
             {
                 Id = v.Id,
                 Word = v.Word,
@@ -139,84 +155,48 @@ namespace WordSoul.Application.Services
 
             var result = new PagedResult<VocabularyDto>
             {
-                Items = vocabularyDtos,
+                Items = dtos,
                 TotalCount = totalCount,
                 PageNumber = pageNumber,
                 PageSize = pageSize,
-                TotalPages = (int)Math.Ceiling((double)totalCount / pageSize)
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
             };
 
+            //Cache kết quả
             lock (_lockObject)
             {
                 _cache.Set(cacheKey, result, TimeSpan.FromMinutes(15));
                 _cacheKeys.Add(cacheKey);
             }
-            _logger.LogDebug("Cache miss, stored vocabularies for set ID: {SetId}, Page: {Page}", setId, pageNumber);
+
+            _logger.LogDebug("Cache MISS & STORED: {CacheKey}", cacheKey);
             return result;
         }
 
-        // Lấy bộ từ vựng theo ID kèm chi tiết các từ vựng bên trong với phân trang
-        public async Task<VocabularySetFullDetailDto?> GetVocabularySetFullDetailsAsync(int id, int page, int pageSize)
+        /// <summary>
+        /// Lấy thông tin chi tiết đầy đủ của bộ từ vựng kèm danh sách từ (có phân trang + cache).
+        /// </summary>
+        public async Task<VocabularySetFullDetailDto?> GetVocabularySetFullDetailsAsync(
+            int id,
+            int page = 1,
+            int pageSize = 10,
+            CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation("Retrieving full details for vocabulary set with ID: {Id}, Page: {Page}, PageSize: {PageSize}", id, page, pageSize);
             var cacheKey = $"VocabularySetFull_{id}_{page}_{pageSize}";
 
-            if (_cache.TryGetValue(cacheKey, out VocabularySetFullDetailDto cachedResult))
+            if (_cache.TryGetValue(cacheKey, out VocabularySetFullDetailDto cached))
             {
-                _logger.LogDebug("Cache hit for full details of set ID: {Id}, Page: {Page}", id, page);
-                return cachedResult;
+                _logger.LogDebug("Cache HIT: {CacheKey}", cacheKey);
+                return cached;
             }
 
-            var vocabularySet = await _setVocabularyRepository.GetVocabularySetFullDetailsAsync(id, page, pageSize);
+            var vocabularySet = await _uow.SetVocabulary.GetVocabularySetFullDetailsAsync(id, page, pageSize, cancellationToken);
             if (vocabularySet == null)
-            {
-                _logger.LogWarning("Vocabulary set with ID: {Id} not found", id);
                 return null;
-            }
 
-            var result = await MapToFullDetailDtoAsync(vocabularySet, page, pageSize);
+            var totalVocabularies = await _uow.SetVocabulary.CountVocabulariesInSetAsync(id, cancellationToken);
 
-            lock (_lockObject)
-            {
-                _cache.Set(cacheKey, result, TimeSpan.FromMinutes(15));
-                _cacheKeys.Add(cacheKey);
-            }
-            _logger.LogDebug("Cache miss, stored full details for set ID: {Id}, Page: {Page}", id, page);
-            return result;
-        }
-
-        //-------------------------------------DELETE-------------------------------------------
-        // Xóa liên kết từ vựng khỏi bộ
-        public async Task<bool> RemoveVocabularyFromSetAsync(int setId, int vocabId)
-        {
-            _logger.LogInformation("Removing vocabulary ID: {VocabId} from set ID: {SetId}", vocabId, setId);
-
-            var setVocabulary = await _setVocabularyRepository.GetSetVocabularyAsync(vocabId, setId);
-            if (setVocabulary == null)
-            {
-                _logger.LogWarning("Link not found for vocabulary ID: {VocabId} in set ID: {SetId}", vocabId, setId);
-                return false;
-            }
-
-            var result = await _setVocabularyRepository.DeleteSetVocabularyAsync(setVocabulary);
-            if (result)
-            {
-                // Xóa cache liên quan đến setId
-                RemoveCacheByPrefix($"VocabulariesInSet_{setId}_");
-                RemoveCacheByPrefix($"VocabularySetFull_{setId}_");
-                _logger.LogInformation("Successfully removed vocabulary ID: {VocabId} from set ID: {SetId}", vocabId, setId);
-            }
-            return result;
-        }
-
-
-
-
-        // Helper method to map VocabularySet to VocabularySetFullDetailDto
-        private async Task<VocabularySetFullDetailDto> MapToFullDetailDtoAsync(VocabularySet vocabularySet, int page, int pageSize)
-        {
-            var totalVocabularies = await _setVocabularyRepository.CountVocabulariesInSetAsync(vocabularySet.Id);
-            return new VocabularySetFullDetailDto
+            var result = new VocabularySetFullDetailDto
             {
                 Id = vocabularySet.Id,
                 Title = vocabularySet.Title,
@@ -226,6 +206,9 @@ namespace WordSoul.Application.Services
                 DifficultyLevel = vocabularySet.DifficultyLevel.ToString(),
                 IsActive = vocabularySet.IsActive,
                 CreatedAt = vocabularySet.CreatedAt,
+                TotalVocabularies = totalVocabularies,
+                CurrentPage = page,
+                PageSize = pageSize,
                 Vocabularies = vocabularySet.SetVocabularies.Select(sv => new VocabularyDetailDto
                 {
                     Id = sv.VocabularyId,
@@ -234,16 +217,64 @@ namespace WordSoul.Application.Services
                     ImageUrl = sv.Vocabulary.ImageUrl,
                     Pronunciation = sv.Vocabulary.Pronunciation,
                     PartOfSpeech = sv.Vocabulary.PartOfSpeech.ToString()
-                }).ToList(),
-                TotalVocabularies = totalVocabularies,
-                CurrentPage = page,
-                PageSize = pageSize
+                }).ToList()
             };
+
+            lock (_lockObject)
+            {
+                _cache.Set(cacheKey, result, TimeSpan.FromMinutes(15));
+                _cacheKeys.Add(cacheKey);
+            }
+
+            _logger.LogDebug("Cache MISS & STORED: {CacheKey}", cacheKey);
+            return result;
         }
 
+        // ============================================================================
+        // DELETE
+        // ============================================================================
 
-        // Phương thức xóa cache theo tiền tố
-        private void RemoveCacheByPrefix(string prefix)
+        /// <summary>
+        /// Xóa liên kết từ vựng khỏi bộ từ vựng (không xóa từ vựng thật).
+        /// </summary>
+        /// <returns>true nếu xóa thành công, false nếu không tìm thấy liên kết.</returns>
+        public async Task<bool> RemoveVocabularyFromSetAsync(
+            int setId,
+            int vocabId,
+            CancellationToken cancellationToken = default)
+        {
+            _logger.LogInformation("Removing vocabulary {VocabId} from set {SetId}", vocabId, setId);
+
+            var link = await _uow.SetVocabulary.GetSetVocabularyAsync(vocabId, setId, cancellationToken);
+            if (link == null)
+            {
+                _logger.LogWarning("Link not found: Vocab {VocabId} in Set {SetId}", vocabId, setId);
+                return false;
+            }
+
+            var success = await _uow.SetVocabulary.DeleteSetVocabularyAsync(link, cancellationToken);
+            if (success)
+            {
+                await _uow.SaveChangesAsync(cancellationToken);
+
+                // Xóa cache liên quan
+                InvalidateCacheByPrefix($"VocabulariesInSet_{setId}_");
+                InvalidateCacheByPrefix($"VocabularySetFull_{setId}_");
+
+                _logger.LogInformation("Successfully removed vocabulary {VocabId} from set {SetId}", vocabId, setId);
+            }
+
+            return success;
+        }
+
+        // ============================================================================
+        // PRIVATE HELPERS
+        // ============================================================================
+
+        /// <summary>
+        /// Xóa tất cả các key cache có tiền tố nhất định (thread-safe).
+        /// </summary>
+        private void InvalidateCacheByPrefix(string prefix)
         {
             lock (_lockObject)
             {
@@ -252,7 +283,7 @@ namespace WordSoul.Application.Services
                 {
                     _cache.Remove(key);
                     _cacheKeys.Remove(key);
-                    _logger.LogDebug("Removed cache key: {Key}", key);
+                    _logger.LogDebug("Invalidated cache key: {Key}", key);
                 }
             }
         }

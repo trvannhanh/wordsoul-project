@@ -7,10 +7,28 @@ namespace WordSoul.Application.Interfaces.Repositories
 {
     public interface IAchievementRepository
     {
-        Task CreateAchievementAsync(Achievement achievement);
-        Task DeleteAchievementAsync(int achievementId);
-        Task<Achievement?> GetAchievementByIdAsync(int achievementId);
-        Task<List<Achievement>> GetAchievementsAsync(ConditionType? conditionType, int pageNumber, int pageSize);
-        Task<Achievement> UpdateAchievementAsync(Achievement achievement);
+        // CREATE
+        Task CreateAchievementAsync(Achievement achievement, CancellationToken cancellationToken = default);
+
+        // READ
+        Task<List<Achievement>> GetAchievementsAsync(
+            ConditionType? conditionType,
+            int pageNumber,
+            int pageSize,
+            CancellationToken cancellationToken = default);
+
+        Task<Achievement?> GetAchievementByIdAsync(
+            int achievementId,
+            CancellationToken cancellationToken = default);
+
+        // UPDATE
+        Task<Achievement?> UpdateAchievementAsync(
+            Achievement achievement,
+            CancellationToken cancellationToken = default);
+
+        // DELETE
+        Task<bool> DeleteAchievementAsync(
+            int achievementId,
+            CancellationToken cancellationToken = default);
     }
 }

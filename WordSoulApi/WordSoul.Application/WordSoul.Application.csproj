@@ -14,6 +14,7 @@
     <PackageReference Include="CloudinaryDotNet" Version="1.27.9" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.2.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.8" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="9.0.8" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="2.3.0" />

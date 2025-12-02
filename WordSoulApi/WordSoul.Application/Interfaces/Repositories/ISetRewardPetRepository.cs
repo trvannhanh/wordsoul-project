@@ -4,7 +4,13 @@ namespace WordSoul.Application.Interfaces.Repositories
 {
     public interface ISetRewardPetRepository
     {
-        // Lấy danh sách pet theo VocabularySetId
-        Task<IEnumerable<SetRewardPet>> GetPetsByVocabularySetIdAsync(int vocabularySetId);
+        /// <summary>
+        /// Lấy danh sách pet thưởng theo VocabularySetId.
+        /// Bao gồm thông tin Pet (Eager Loaded).
+        /// </summary>
+        Task<IEnumerable<SetRewardPet>> GetPetsByVocabularySetIdAsync(
+            int vocabularySetId,
+            CancellationToken cancellationToken = default
+        );
     }
 }

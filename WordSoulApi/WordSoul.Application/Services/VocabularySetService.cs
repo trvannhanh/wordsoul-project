@@ -1,7 +1,8 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using WordSoul.Application.DTOs.VocabularySet;
-using WordSoul.Application.Interfaces.Repositories;
+using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
 using WordSoul.Domain.Entities;
 using WordSoul.Domain.Enums;
@@ -10,348 +11,323 @@ namespace WordSoul.Application.Services
 {
     public class VocabularySetService : IVocabularySetService
     {
-        private readonly IVocabularySetRepository _vocabularySetRepository;
-        private readonly IVocabularyRepository _vocabularyRepository;
-        public readonly IUserVocabularySetRepository _userVocabularySetRepository;
-        public readonly IUserRepository _userRepository;
-        public readonly IPetRepository _petRepository;
+        private readonly IUnitOfWork _uow;
         private readonly ILogger<VocabularySetService> _logger;
         private readonly IMemoryCache _cache;
-        private readonly HashSet<string> _cacheKeys = new HashSet<string>(); // Theo dõi key cache
 
-        private readonly object _lockObject = new object(); // Đảm bảo thread-safe
+        // Thread-safe cache key tracking
+        private readonly HashSet<string> _cacheKeys = [];
+        private readonly object _cacheLock = new();
 
         public VocabularySetService(
-            IVocabularySetRepository vocabularySetRepository,
-            IVocabularyRepository vocabularyRepository,
+            IUnitOfWork uow,
             ILogger<VocabularySetService> logger,
-            IUserVocabularySetRepository userVocabularySetRepository,
-            IUserRepository userRepository,
-            IPetRepository petRepository, 
             IMemoryCache cache)
         {
-            _vocabularySetRepository = vocabularySetRepository;
-            _vocabularyRepository = vocabularyRepository;
+            _uow = uow;
             _logger = logger;
-            _userVocabularySetRepository = userVocabularySetRepository;
-            _userRepository = userRepository;
-            _petRepository = petRepository;
             _cache = cache;
         }
-        //------------------------------ CREATE -----------------------------------------
 
-        // Tạo bộ từ vựng mới
-        public async Task<VocabularySetDto> CreateVocabularySetAsync(CreateVocabularySetDto createDto, string? imageUrl, int userId)
+        // ============================================================================
+        // CREATE
+        // ============================================================================
+
+        /// <summary>
+        /// Tạo bộ từ vựng mới (admin hoặc người dùng tạo set riêng).
+        /// Tự động gán reward pet theo rarity và thêm set vào thư viện của người tạo.
+        /// </summary>
+        public async Task<VocabularySetDto> CreateVocabularySetAsync(
+            CreateVocabularySetDto dto,
+            string? imageUrl,
+            int userId,
+            CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation("Creating vocabulary set with title: {Title} by user ID: {UserId}", createDto.Title, userId);
+            if (string.IsNullOrWhiteSpace(dto.Title))
+                throw new ArgumentException("Title is required.", nameof(dto.Title));
 
-            var user = await _userRepository.GetUserByIdAsync(userId);
-            if (user == null)
-            {
-                _logger.LogError("User with ID: {UserId} not found", userId);
-                throw new KeyNotFoundException($"User with ID {userId} not found.");
-            }
+            _logger.LogInformation("User {UserId} is creating vocabulary set: {Title}", userId, dto.Title);
 
-            if (string.IsNullOrWhiteSpace(createDto.Title))
-            {
-                _logger.LogError("Title is required for creating a vocabulary set");
-                throw new ArgumentException("Title is required.", nameof(createDto.Title));
-            }
+            var user = await _uow.User.GetUserByIdAsync(userId, cancellationToken)
+                ?? throw new KeyNotFoundException($"User {userId} not found.");
 
-            var uniqueVocabIds = createDto.VocabularyIds.Distinct().ToList();
-            if (uniqueVocabIds.Count != createDto.VocabularyIds.Count)
-            {
-                _logger.LogWarning("Duplicate VocabularyIds detected for user {UserId}", userId);
+            var uniqueVocabIds = dto.VocabularyIds.Distinct().ToList();
+            if (uniqueVocabIds.Count != dto.VocabularyIds.Count)
                 throw new ArgumentException("Vocabulary IDs must be unique.");
-            }
-            if (uniqueVocabIds.Count > 50)
-            {
-                _logger.LogWarning("Too many VocabularyIds ({Count}) for user {UserId}", uniqueVocabIds.Count, userId);
-                throw new ArgumentException("Maximum 50 vocabularies per set.");
-            }
 
+            if (uniqueVocabIds.Count > 50)
+                throw new ArgumentException("Maximum 50 vocabularies per set.");
+
+            // Validate all vocabularies exist
             foreach (var vocabId in uniqueVocabIds)
             {
-                var vocabulary = await _vocabularyRepository.GetVocabularyByIdAsync(vocabId);
-                if (vocabulary == null)
-                {
-                    _logger.LogError("Vocabulary with ID: {VocabularyId} not found", vocabId);
-                    throw new KeyNotFoundException($"Vocabulary with ID {vocabId} not found.");
-                }
+                var exists = await _uow.Vocabulary.GetVocabularyByIdAsync(vocabId, cancellationToken) ?? throw new KeyNotFoundException($"Vocabulary ID {vocabId} not found.");
             }
 
             var vocabularySet = new VocabularySet
             {
-                Title = createDto.Title,
-                Theme = createDto.Theme,
+                Title = dto.Title.Trim(),
+                Theme = dto.Theme,
                 ImageUrl = imageUrl,
-                Description = createDto.Description,
-                DifficultyLevel = createDto.DifficultyLevel,
-                IsActive = createDto.IsActive,
-                IsPublic = createDto.IsPublic,
+                Description = dto.Description?.Trim(),
+                DifficultyLevel = dto.DifficultyLevel,
+                IsActive = dto.IsActive,
+                IsPublic = dto.IsPublic,
                 CreatedById = userId,
-                SetVocabularies = uniqueVocabIds.Select((vocabId, index) => new SetVocabulary
-                {
-                    VocabularyId = vocabId,
-                    Order = index + 1
-                }).ToList(),
-                SetRewardPets = new List<SetRewardPet>()
+                CreatedAt = DateTime.UtcNow,
+                SetVocabularies = uniqueVocabIds
+                    .Select((id, idx) => new SetVocabulary { VocabularyId = id, Order = idx + 1 })
+                    .ToList()
             };
 
+            // Auto-assign reward pets by rarity
             var petDistribution = new Dictionary<PetRarity, (int Count, double DropRate)>
-    {
-                { PetRarity.Common, (10, 0.4) },
-                { PetRarity.Uncommon, (5, 0.25) },
-                { PetRarity.Rare, (3, 0.15) },
-                { PetRarity.Epic, (2, 0.05) },
-                { PetRarity.Legendary, (1, 0.01) }
-    };
+            {
+                { PetRarity.Common,     (10, 0.40) },
+                { PetRarity.Uncommon,   (5,  0.25) },
+                { PetRarity.Rare,       (3,  0.15) },
+                { PetRarity.Epic,       (2,  0.05) },
+                { PetRarity.Legendary,  (1,  0.01) }
+            };
 
             foreach (var (rarity, (count, dropRate)) in petDistribution)
             {
-                var pets = await _petRepository.GetRandomPetsByRarityAsync(rarity, count);
+                var pets = await _uow.Pet.GetRandomPetsByRarityAsync(rarity, count, cancellationToken);
                 if (pets.Count < count)
-                {
-                    _logger.LogError("Not enough pets with rarity {Rarity}. Requested: {Count}, Found: {Found}", rarity, count, pets.Count);
-                    throw new InvalidOperationException($"Not enough pets with rarity {rarity}. Required: {count}, Found: {pets.Count}");
-                }
+                    throw new InvalidOperationException($"Not enough {rarity} pets. Need {count}, found {pets.Count}.");
 
-                vocabularySet.SetRewardPets.AddRange(pets.Select(pet => new SetRewardPet
+                vocabularySet.SetRewardPets.AddRange(pets.Select(p => new SetRewardPet
                 {
-                    PetId = pet.Id,
+                    PetId = p.Id,
                     DropRate = dropRate
                 }));
             }
 
-            try
-            {
-                var createdVocabularySet = await _vocabularySetRepository.CreateVocabularySetAsync(vocabularySet);
+            await _uow.VocabularySet.CreateVocabularySetAsync(vocabularySet, cancellationToken);
 
-                var userVocabularySet = new UserVocabularySet
-                {
-                    UserId = userId,
-                    VocabularySetId = createdVocabularySet.Id,
-                    CreatedAt = DateTime.UtcNow,
-                    IsActive = true
-                };
-                await _userVocabularySetRepository.AddVocabularySetToUserAsync(userVocabularySet);
-
-                // Xóa cache danh sách sau khi tạo
-                RemoveCacheByPrefix("VocabularySets_");
-                _logger.LogInformation("Vocabulary set created with ID: {Id}", createdVocabularySet.Id);
-                return MapToDto(createdVocabularySet);
-            }
-            catch (Exception ex)
+            // Auto-add to creator's library
+            var userSetLink = new UserVocabularySet
             {
-                _logger.LogError(ex, "Failed to create vocabulary set for user {UserId}", userId);
-                throw;
-            }
+                UserId = userId,
+                VocabularySetId = vocabularySet.Id,
+                CreatedAt = DateTime.UtcNow,
+                IsActive = true
+            };
+            await _uow.UserVocabularySet.AddVocabularySetToUserAsync(userSetLink, cancellationToken);
+
+            await _uow.SaveChangesAsync(cancellationToken);
+
+            InvalidateCachePrefix("VocabularySets_");
+            InvalidateCachePrefix($"VocabularySet_{vocabularySet.Id}");
+
+            _logger.LogInformation("Vocabulary set created: ID {SetId} by User {UserId}", vocabularySet.Id, userId);
+
+            return MapToDto(vocabularySet, userId);
         }
 
+        // ============================================================================
+        // READ
+        // ============================================================================
 
-        //------------------------------ READ -------------------------------------------
-        // Lấy bộ từ vựng theo ID
-        public async Task<VocabularySetDetailDto?> GetVocabularySetByIdAsync(int id)
+        /// <summary>
+        /// Lấy chi tiết một bộ từ vựng theo ID (có cache 30 phút).
+        /// </summary>
+        public async Task<VocabularySetDetailDto?> GetVocabularySetByIdAsync(
+            int id,
+            CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation("Retrieving vocabulary set with ID: {Id}", id);
             var cacheKey = $"VocabularySet_{id}";
 
-            if (_cache.TryGetValue(cacheKey, out VocabularySetDetailDto cachedResult))
+            if (_cache.TryGetValue(cacheKey, out VocabularySetDetailDto cached))
             {
-                _logger.LogDebug("Cache hit for vocabulary set ID: {Id}", id);
-                return cachedResult;
+                _logger.LogDebug("Cache HIT: {CacheKey}", cacheKey);
+                return cached;
             }
 
-            var vocabularySet = await _vocabularySetRepository.GetVocabularySetByIdAsync(id);
-            if (vocabularySet == null)
-            {
-                _logger.LogWarning("Vocabulary set with ID: {Id} not found", id);
-                return null;
-            }
+            var set = await _uow.VocabularySet.GetVocabularySetByIdAsync(id, cancellationToken);
+            if (set == null) return null;
 
-            var result = MapToDetailDto(vocabularySet);
-            lock (_lockObject)
+            var dto = new VocabularySetDetailDto
             {
-                _cache.Set(cacheKey, result, TimeSpan.FromMinutes(30));
-                _cacheKeys.Add(cacheKey); // Theo dõi key
-            }
-            _logger.LogDebug("Cache miss, stored vocabulary set ID: {Id}", id);
-            return result;
+                Id = set.Id,
+                Title = set.Title,
+                Theme = set.Theme,
+                ImageUrl = set.ImageUrl,
+                Description = set.Description,
+                DifficultyLevel = set.DifficultyLevel,
+                IsActive = set.IsActive,
+                CreatedAt = set.CreatedAt,
+                //IsPublic = set.IsPublic,
+                //CreatedById = set.CreatedById,
+                //CreatedByUsername = set.CreatedBy?.Username,
+                VocabularyIds = set.SetVocabularies.OrderBy(sv => sv.Order).Select(sv => sv.VocabularyId).ToList(),
+                //TotalVocabularies = set.SetVocabularies.Count
+            };
+
+            CacheResult(cacheKey, dto, TimeSpan.FromMinutes(30));
+            return dto;
         }
 
+        /// <summary>
+        /// Lấy danh sách bộ từ vựng với bộ lọc nâng cao và phân trang (có cache 15 phút).
+        /// </summary>
         public async Task<IEnumerable<VocabularySetDto>> GetAllVocabularySetsAsync(
-        string? title, VocabularySetTheme? theme, VocabularyDifficultyLevel? difficulty, DateTime? createdAfter,
-        bool? isOwned, int? userId, int pageNumber, int pageSize)
+            string? title = null,
+            VocabularySetTheme? theme = null,
+            VocabularyDifficultyLevel? difficulty = null,
+            DateTime? createdAfter = null,
+            bool? isOwned = null,
+            int? userId = null,
+            int pageNumber = 1,
+            int pageSize = 20,
+            CancellationToken cancellationToken = default)
         {
-            var cacheKey = $"VocabularySets_{title ?? "null"}_{theme ?? null}_{difficulty ?? null}_{createdAfter ?? DateTime.MinValue}_{isOwned ?? false}_{userId ?? 0}_{pageNumber}_{pageSize}";
-            _logger.LogInformation("Retrieving vocabulary sets with key: {Key}", cacheKey);
+            var cacheKey = $"VocabularySets_{title ?? "∅"}_{theme}_{difficulty}_{createdAfter:yyyyMMdd}_{isOwned}_{userId ?? 0}_{pageNumber}_{pageSize}";
 
-            if (_cache.TryGetValue(cacheKey, out IEnumerable<VocabularySetDto> cachedResult))
+            if (_cache.TryGetValue(cacheKey, out IEnumerable<VocabularySetDto> cached))
             {
-                _logger.LogDebug("Cache hit for vocabulary sets with key: {Key}", cacheKey);
-                return cachedResult;
+                _logger.LogDebug("Cache HIT: {CacheKey}", cacheKey);
+                return cached;
             }
 
-            var sets = await _vocabularySetRepository.GetAllVocabularySetsAsync(title, theme, difficulty, createdAfter, isOwned, userId, pageNumber, pageSize);
-            var vocabularySetDtos = sets.Select(vs => MapToDto(vs, userId)).ToList();
+            var sets = await _uow.VocabularySet.GetAllVocabularySetsAsync(
+                title, theme, difficulty, createdAfter, isOwned, userId, pageNumber, pageSize, cancellationToken);
 
-            lock (_lockObject)
-            {
-                _cache.Set(cacheKey, vocabularySetDtos, TimeSpan.FromMinutes(15));
-                _cacheKeys.Add(cacheKey); // Theo dõi key
-            }
-            _logger.LogDebug("Cache miss, stored vocabulary sets with key: {Key}", cacheKey);
-            return vocabularySetDtos;
+            var dtos = sets.Select(s => MapToDto(s, userId)).ToList();
+
+            CacheResult(cacheKey, dtos, TimeSpan.FromMinutes(15));
+            return dtos;
         }
 
-        // ------------------------------- UPDATE -------------------------------------------
+        // ============================================================================
+        // UPDATE
+        // ============================================================================
 
-        // Cập nhật bộ từ vựng
-        public async Task<VocabularySetDto?> UpdateVocabularySetAsync(int id, UpdateVocabularySetDto updateDto)
+        /// <summary>
+        /// Cập nhật bộ từ vựng (chỉ chủ sở hữu hoặc admin).
+        /// </summary>
+        public async Task<VocabularySetDto?> UpdateVocabularySetAsync(
+            int id,
+            UpdateVocabularySetDto dto,
+            CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation("Updating vocabulary set with ID: {Id}", id);
+            if (string.IsNullOrWhiteSpace(dto.Title))
+                throw new ArgumentException("Title is required.", nameof(dto.Title));
 
-            if (string.IsNullOrWhiteSpace(updateDto.Title))
+            _logger.LogInformation("Updating vocabulary set ID {SetId}", id);
+
+            var set = await _uow.VocabularySet.GetVocabularySetByIdAsync(id, cancellationToken)
+                ?? throw new KeyNotFoundException($"Vocabulary set {id} not found.");
+
+            // Validate vocabularies
+            var uniqueIds = dto.VocabularyIds.Distinct().ToList();
+            foreach (var vid in uniqueIds)
             {
-                _logger.LogError("Title is required for updating a vocabulary set");
-                throw new ArgumentException("Title is required.", nameof(updateDto.Title));
+                if (await _uow.Vocabulary.GetVocabularyByIdAsync(vid, cancellationToken) == null)
+                    throw new KeyNotFoundException($"Vocabulary ID {vid} not found.");
             }
 
-            foreach (var vocabId in updateDto.VocabularyIds)
-            {
-                var vocabulary = await _vocabularyRepository.GetVocabularyByIdAsync(vocabId);
-                if (vocabulary == null)
+            // Update fields
+            set.Title = dto.Title.Trim();
+            set.Theme = dto.Theme;
+            set.Description = dto.Description?.Trim();
+            set.DifficultyLevel = dto.DifficultyLevel;
+            set.IsActive = dto.IsActive;
+
+            // Replace vocabularies
+            set.SetVocabularies = uniqueIds
+                .Select((vid, idx) => new SetVocabulary
                 {
-                    _logger.LogError("Vocabulary with ID: {VocabularyId} not found", vocabId);
-                    throw new KeyNotFoundException($"Vocabulary with ID {vocabId} not found.");
-                }
-            }
+                    VocabularySetId = id,
+                    VocabularyId = vid,
+                    Order = idx + 1
+                })
+                .ToList();
 
-            var existingVocabularySet = await _vocabularySetRepository.GetVocabularySetByIdAsync(id);
-            if (existingVocabularySet == null)
-            {
-                _logger.LogWarning("Vocabulary set with ID: {Id} not found", id);
-                return null;
-            }
+            await _uow.VocabularySet.UpdateVocabularySetAsync(set, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
 
-            existingVocabularySet.Title = updateDto.Title;
-            existingVocabularySet.Theme = updateDto.Theme;
-            existingVocabularySet.Description = updateDto.Description;
-            existingVocabularySet.DifficultyLevel = updateDto.DifficultyLevel;
-            existingVocabularySet.IsActive = updateDto.IsActive;
-            existingVocabularySet.SetVocabularies = updateDto.VocabularyIds.Select((vocabId, index) => new SetVocabulary
-            {
-                VocabularySetId = id,
-                VocabularyId = vocabId,
-                Order = index + 1
-            }).ToList();
+            InvalidateCachePrefix($"VocabularySet_{id}");
+            InvalidateCachePrefix("VocabularySets_");
 
-            var updatedVocabularySet = await _vocabularySetRepository.UpdateVocabularySetAsync(existingVocabularySet);
-            if (updatedVocabularySet == null)
-            {
-                _logger.LogWarning("Failed to update vocabulary set with ID: {Id}", id);
-                return null;
-            }
-
-            // Xóa cache chi tiết và danh sách
-            RemoveCacheByPrefix($"VocabularySet_{id}");
-            RemoveCacheByPrefix("VocabularySets_");
-            _logger.LogInformation("Vocabulary set updated with ID: {Id}", updatedVocabularySet.Id);
-            return MapToDto(updatedVocabularySet);
+            _logger.LogInformation("Vocabulary set {SetId} updated successfully", id);
+            return MapToDto(set);
         }
 
-        //------------------------------ DELETE -----------------------------------------
-        // Xóa bộ từ vựng theo ID
-        public async Task<bool> DeleteVocabularySetAsync(int id)
+        // ============================================================================
+        // DELETE
+        // ============================================================================
+
+        /// <summary>
+        /// Xóa bộ từ vựng (chỉ chủ sở hữu hoặc admin).
+        /// </summary>
+        public async Task<bool> DeleteVocabularySetAsync(
+            int id,
+            CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation("Deleting vocabulary set with ID: {Id}", id);
-            var result = await _vocabularySetRepository.DeleteVocabularySetAsync(id);
-            if (!result)
+            _logger.LogInformation("Deleting vocabulary set ID {SetId}", id);
+
+            var success = await _uow.VocabularySet.DeleteVocabularySetAsync(id, cancellationToken);
+            if (success)
             {
-                _logger.LogWarning("Vocabulary set with ID: {Id} not found", id);
+                await _uow.SaveChangesAsync(cancellationToken);
+                InvalidateCachePrefix($"VocabularySet_{id}");
+                InvalidateCachePrefix("VocabularySets_");
+                _logger.LogInformation("Vocabulary set {SetId} deleted", id);
             }
-            else
+
+            return success;
+        }
+
+        // ============================================================================
+        // PRIVATE HELPERS
+        // ============================================================================
+
+        private VocabularySetDto MapToDto(VocabularySet set, int? currentUserId = null) => new()
+        {
+            Id = set.Id,
+            Title = set.Title,
+            Theme = set.Theme.ToString(),
+            Description = set.Description,
+            ImageUrl = set.ImageUrl,
+            DifficultyLevel = set.DifficultyLevel.ToString(),
+            CreatedAt = set.CreatedAt,
+            IsActive = set.IsActive,
+            IsPublic = set.IsPublic,
+            CreatedById = set.CreatedById,
+            CreatedByUsername = set.CreatedBy?.Username,
+            IsOwned = currentUserId.HasValue &&
+                     set.UserVocabularySets.Any(uvs => uvs.UserId == currentUserId.Value && uvs.IsActive),
+            VocabularyIds = set.SetVocabularies.OrderBy(sv => sv.Order).Select(sv => sv.VocabularyId).ToList(),
+            //TotalVocabularies = set.SetVocabularies.Count
+        };
+
+        private void CacheResult<T>(string key, T value, TimeSpan expiration)
+        {
+            var options = new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(expiration)
+                .SetSize(1);
+
+            lock (_cacheLock)
             {
-                // Xóa cache chi tiết và danh sách
-                RemoveCacheByPrefix($"VocabularySet_{id}");
-                RemoveCacheByPrefix("VocabularySets_");
-                _logger.LogInformation("Vocabulary set with ID: {Id} deleted", id);
+                _cache.Set(key, value, options);
+                _cacheKeys.Add(key);
             }
-            return result;
         }
 
-
-        //------------------------------ MAPPING -----------------------------------------
-        private VocabularySetDto MapToDto(VocabularySet vocabularySet)
+        private void InvalidateCachePrefix(string prefix)
         {
-            return new VocabularySetDto
+            lock (_cacheLock)
             {
-                Id = vocabularySet.Id,
-                Title = vocabularySet.Title,
-                Theme = vocabularySet.Theme.ToString(),
-                Description = vocabularySet.Description,
-                ImageUrl = vocabularySet.ImageUrl,
-                DifficultyLevel = vocabularySet.DifficultyLevel.ToString(),
-                CreatedAt = vocabularySet.CreatedAt,
-                IsActive = vocabularySet.IsActive,
-                CreatedById = vocabularySet.CreatedById,
-                CreatedByUsername = vocabularySet.CreatedBy?.Username, // Lấy username nếu có
-                IsPublic = vocabularySet.IsPublic,
-                VocabularyIds = vocabularySet.SetVocabularies.Select(sv => sv.VocabularyId).ToList()
-            };
-        }
-
-        private VocabularySetDetailDto MapToDetailDto(VocabularySet vocabularySet)
-        {
-            return new VocabularySetDetailDto
-            {
-                Id = vocabularySet.Id,
-                Title = vocabularySet.Title,
-                Theme = vocabularySet.Theme,
-                ImageUrl = vocabularySet.ImageUrl,
-                Description = vocabularySet.Description,
-                DifficultyLevel = vocabularySet.DifficultyLevel,
-                IsActive = vocabularySet.IsActive,
-                CreatedAt = vocabularySet.CreatedAt,
-                VocabularyIds = vocabularySet.SetVocabularies.Select(sv => sv.VocabularyId).ToList()
-            };
-        }
-
-
-        private VocabularySetDto MapToDto(VocabularySet vocabularySet, int? userId)
-        {
-            return new VocabularySetDto
-            {
-                Id = vocabularySet.Id,
-                Title = vocabularySet.Title,
-                Theme = vocabularySet.Theme.ToString(),
-                Description = vocabularySet.Description,
-                ImageUrl = vocabularySet.ImageUrl,
-                DifficultyLevel = vocabularySet.DifficultyLevel.ToString(),
-                CreatedAt = vocabularySet.CreatedAt,
-                IsActive = vocabularySet.IsActive,
-                CreatedById = vocabularySet.CreatedById,
-                CreatedByUsername = vocabularySet.CreatedBy?.Username,
-                IsPublic = vocabularySet.IsPublic,
-                IsOwned = userId.HasValue && vocabularySet.UserVocabularySets.Any(uvs => uvs.UserId == userId.Value && uvs.IsActive), // Mới: false nếu chưa đăng nhập
-                VocabularyIds = vocabularySet.SetVocabularies.Select(sv => sv.VocabularyId).ToList()
-            };
-        }
-
-        // Phương thức xóa cache theo tiền tố
-        private void RemoveCacheByPrefix(string prefix)
-        {
-            lock (_lockObject)
-            {
-                var keysToRemove = _cacheKeys.Where(k => k.StartsWith(prefix)).ToList();
-                foreach (var key in keysToRemove)
+                var keys = _cacheKeys.Where(k => k.StartsWith(prefix)).ToList();
+                foreach (var key in keys)
                 {
                     _cache.Remove(key);
                     _cacheKeys.Remove(key);
-                    _logger.LogDebug("Removed cache key: {Key}", key);
                 }
+                if (keys.Any())
+                    _logger.LogDebug("Invalidated {Count} cache keys with prefix {Prefix}", keys.Count, prefix);
             }
         }
-
     }
 }

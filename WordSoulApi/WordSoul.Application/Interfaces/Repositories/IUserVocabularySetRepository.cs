@@ -4,14 +4,37 @@ namespace WordSoul.Application.Interfaces.Repositories
 {
     public interface IUserVocabularySetRepository
     {
-        // Thêm sự sở hữu một bộ từ vựng cho người dùng
-        Task AddVocabularySetToUserAsync(UserVocabularySet userVocabularySet);
-        // Kiểm tra người dùng có sở hữu bộ từ vựng này chưa
-        Task<bool> CheckUserVocabularyExist(int userId, int vocabId);
-        // Lấy bộ từ vựng của người dùng theo userId và vocabularySetId
+        // ----------------------------- CREATE -----------------------------
+        /// <summary>
+        /// Thêm một bộ từ vựng vào danh sách sở hữu của người dùng (mở khóa bộ từ vựng).
+        /// </summary>
+        Task AddVocabularySetToUserAsync(
+            UserVocabularySet userVocabularySet,
+            CancellationToken cancellationToken = default);
 
-        Task<UserVocabularySet?> GetUserVocabularySetAsync(int userId, int vocabularySetId);
-        // Cập nhật người dùng sở hữu bộ từ vựng
-        Task UpdateUserVocabularySetAsync(UserVocabularySet userVocabularySet);
+        // ----------------------------- READ -------------------------------
+        /// <summary>
+        /// Lấy thông tin sở hữu bộ từ vựng của người dùng theo UserId và VocabularySetId.
+        /// </summary>
+        Task<UserVocabularySet?> GetUserVocabularySetAsync(
+            int userId,
+            int vocabularySetId,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Kiểm tra xem người dùng đã sở hữu (đã mở khóa) bộ từ vựng này chưa.
+        /// </summary>
+        Task<bool> CheckUserHasVocabularySetAsync(
+            int userId,
+            int vocabId,
+            CancellationToken cancellationToken = default);
+
+        // ----------------------------- UPDATE -----------------------------
+        /// <summary>
+        /// Cập nhật thông tin sở hữu bộ từ vựng (ví dụ: cập nhật tiến độ học, thời gian hoàn thành...).
+        /// </summary>
+        Task UpdateUserVocabularySetAsync(
+            UserVocabularySet userVocabularySet,
+            CancellationToken cancellationToken = default);
     }
 }

@@ -1,37 +1,60 @@
 ﻿using Microsoft.Extensions.Logging;
 using WordSoul.Application.DTOs.Item;
-using WordSoul.Application.Interfaces.Repositories;
+using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
 using WordSoul.Domain.Entities;
 
 namespace WordSoul.Application.Services
 {
+    /// <summary>
+    /// Cung cấp các chức năng xử lý Item như tạo mới, cập nhật, xoá và truy vấn dữ liệu Item.
+    /// </summary>
     public class ItemService : IItemService
     {
-
-        private readonly IItemRepository _itemRepository;
+        private readonly IUnitOfWork _uow;
         private readonly ILogger<ItemService> _logger;
 
-        public ItemService(ILogger<ItemService> logger, IItemRepository itemRepository)
+        /// <summary>
+        /// Khởi tạo <see cref="ItemService"/> với UnitOfWork và Logger.
+        /// </summary>
+        /// <param name="uow">Đối tượng UnitOfWork cho phép thao tác repository và commit transaction.</param>
+        /// <param name="logger">Logger phục vụ ghi log.</param>
+        public ItemService(IUnitOfWork uow, ILogger<ItemService> logger)
         {
-            _itemRepository = itemRepository;
+            _uow = uow;
             _logger = logger;
         }
 
-        //---------------------CREATE-------------------
-        public async Task<ItemDto> CreateItemAsync(CreateItemDto createItemDto, string? imageUrl)
-        {
-            _logger.LogInformation("Creating item with Name: {Name}", createItemDto.Name);
+        // ---------------------------------------------------------------------
+        // CREATE
+        // ---------------------------------------------------------------------
 
+        /// <summary>
+        /// Tạo mới một Item và lưu vào cơ sở dữ liệu thông qua UnitOfWork.
+        /// </summary>
+        /// <param name="createItemDto">Thông tin dùng để tạo Item.</param>
+        /// <param name="imageUrl">Đường dẫn ảnh của Item, có thể null.</param>
+        /// <param name="ct">Token hỗ trợ huỷ thao tác bất đồng bộ.</param>
+        /// <returns>
+        /// Trả về <see cref="ItemDto"/> chứa thông tin Item vừa tạo.
+        /// </returns>
+        /// <exception cref="ArgumentException">
+        /// Ném ra khi Name không hợp lệ hoặc thiếu.
+        /// </exception>
+        /// <exception cref="Exception">
+        /// Ném ra khi xảy ra lỗi trong quá trình tạo Item.
+        /// </exception>
+        public async Task<ItemDto> CreateItemAsync(
+            CreateItemDto createItemDto,
+            string? imageUrl,
+            CancellationToken ct = default)
+        {
             if (string.IsNullOrWhiteSpace(createItemDto.Name))
-            {
-                _logger.LogError("Item Name is required for creating Item");
                 throw new ArgumentException("Name is required.", nameof(createItemDto.Name));
-            }
 
             try
             {
-                _logger.LogInformation("Creating Item {ItemName}", createItemDto.Name);
+                _logger.LogInformation("Creating item: {Name}", createItemDto.Name);
 
                 var item = new Item
                 {
@@ -39,11 +62,13 @@ namespace WordSoul.Application.Services
                     Description = createItemDto.Description,
                     ImageUrl = imageUrl,
                     Type = createItemDto.Type
-
                 };
 
-                await _itemRepository.CreateItemAsync(item);
-                _logger.LogInformation("Successfully created item {ItemName}", item.Name);
+                await _uow.Item.CreateItemAsync(item, ct);
+
+                await _uow.SaveChangesAsync(ct);
+
+                _logger.LogInformation("Successfully created item {Name}", item.Name);
 
                 return new ItemDto
                 {
@@ -53,12 +78,11 @@ namespace WordSoul.Application.Services
                     ImageUrl = item.ImageUrl,
                     Type = item.Type.ToString()
                 };
-
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating item");
-                throw new Exception($"Error creating item : {ex.Message}", ex);
+                _logger.LogError(ex, "Error creating item: {Name}", createItemDto.Name);
+                throw new Exception($"Error creating item: {ex.Message}", ex);
             }
         }
     }

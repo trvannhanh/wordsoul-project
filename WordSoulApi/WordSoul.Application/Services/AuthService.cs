@@ -1,148 +1,184 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using WordSoul.Application.DTOs.User;
-using WordSoul.Application.Interfaces.Repositories;
+using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
 using WordSoul.Domain.Entities;
 
 namespace WordSoul.Application.Services
 {
+    /// <summary>
+    /// Cung cấp các chức năng xác thực và quản lý Token của người dùng.
+    /// Bao gồm đăng nhập, đăng ký, làm mới Token và quản lý RefreshToken.
+    /// </summary>
     public class AuthService : IAuthService
     {
-        // Tiêm các phụ thuộc cần thiết
-        private readonly IAuthRepository _authRepository;
+        private readonly IUnitOfWork _uow;
         private readonly IConfiguration _configuration;
         private readonly IActivityLogService _activityLogService;
-        private readonly IUserAchievementRepository _userAchievementRepository;
-        private readonly IAchievementRepository _achievementRepository;
+        private readonly ILogger<AuthService> _logger;
 
-        public AuthService(IAuthRepository authRepository, IConfiguration configuration, 
-                            IActivityLogService activityLogService, IAchievementRepository achievementRepository,
-                            IUserAchievementRepository userAchievementRepository)
+        public AuthService(
+            IUnitOfWork uow,
+            IConfiguration configuration,
+            IActivityLogService activityLogService,
+            ILogger<AuthService> logger)
         {
-            _authRepository = authRepository;
+            _uow = uow;
             _configuration = configuration;
             _activityLogService = activityLogService;
-            _userAchievementRepository = userAchievementRepository;
-            _achievementRepository = achievementRepository;
+            _logger = logger;
         }
 
-        // Đăng nhập người dùng và trả về TokenResponseDto nếu thành công, ngược lại trả về null
-        public async Task<TokenResponseDto?> LoginAsync(LoginDto loginDto)
+        /// <summary>
+        /// Xác thực người dùng bằng Username & Password.
+        /// Trả về TokenResponseDto nếu đăng nhập thành công, ngược lại null.
+        /// </summary>
+        public async Task<TokenResponseDto?> LoginAsync(LoginDto loginDto, CancellationToken ct = default)
         {
-            var user = await _authRepository.LoginUserAsync(loginDto.Username);
-            if (user == null || new PasswordHasher<User>().VerifyHashedPassword(user, user.PasswordHash, loginDto.Password)
+            var user = await _uow.Auth.LoginUserAsync(loginDto.Username, ct);
+
+            if (user == null ||
+                new PasswordHasher<User>().VerifyHashedPassword(user, user.PasswordHash, loginDto.Password)
                 == PasswordVerificationResult.Failed)
             {
-                return null!;
+                return null;
             }
 
-            await _activityLogService.CreateActivityLogAsync(user.Id, "Login", "User logged in");
+            await _activityLogService.CreateActivityLogAsync(
+                user.Id,
+                "Login",
+                "User logged in",
+                ct);
 
-            return await CreateTokenResponse(user);
-
+            return await CreateTokenResponse(user, ct);
         }
 
-        // Tạo phản hồi token bao gồm AccessToken và RefreshToken
-        private async Task<TokenResponseDto> CreateTokenResponse(User user)
+        /// <summary>
+        /// Đăng ký tài khoản mới. Trả về UserDto nếu thành công, ngược lại null.
+        /// </summary>
+        public async Task<UserDto?> RegisterAsync(RegisterDto registerDto, CancellationToken ct = default)
         {
-            return new TokenResponseDto
-            {
-                AccessToken = CreateToken(user),
-                RefreshToken = await GenerateAndSaveRefreshTokenAsync(user)
-            };
-        }
+            if (await _uow.Auth.UserExistsAsync(registerDto.Username, ct))
+                return null;
 
-        // Đăng ký người dùng mới và trả về User nếu thành công, ngược lại trả về null
-        public async Task<UserDto> RegisterAsync(RegisterDto registerDto)
-        {
-            if (await _authRepository.UserExistsAsync(registerDto.Username))
-            {
-                return null!; // Trả về null thay vì ném exception
-            }
-            if (await _authRepository.EmailExistsAsync(registerDto.Email))
-            {
-                return null!;
-            }
-            var user = new User
+            if (await _uow.Auth.EmailExistsAsync(registerDto.Email, ct))
+                return null;
+
+            var newUser = new User
             {
                 Username = registerDto.Username,
                 Email = registerDto.Email,
                 PasswordHash = new PasswordHasher<User>().HashPassword(null!, registerDto.Password)
             };
 
-            var registeredUser = await _authRepository.RegisterUserAsync(user);
+            var user = await _uow.Auth.RegisterUserAsync(newUser, ct);
 
-            var allAchievements = await _achievementRepository.GetAchievementsAsync(null, 1, 10);
-            var userAchievements = allAchievements.Select(a => new UserAchievement
-            {
-                UserId = registeredUser.Id,
-                AchievementId = a.Id,
-                ProgressValue = 0,
-                IsCompleted = false,
-                CompletedAt = null
-            }).ToList();
+            // Gán achievement mặc định cho user
+            var achievements = await _uow.Achievement.GetAchievementsAsync(null, 1, 10, ct);
 
-            await _userAchievementRepository.BulkCreateUserAchievementAsync(userAchievements);
+            var userAchievements = achievements
+                .Select(a => new UserAchievement
+                {
+                    UserId = user.Id,
+                    AchievementId = a.Id,
+                    ProgressValue = 0,
+                    IsCompleted = false
+                })
+                .ToList();
+
+            await _uow.UserAchievement.BulkCreateUserAchievementAsync(userAchievements, ct);
+            await _uow.SaveChangesAsync(ct);
 
             return new UserDto
             {
-                Id = registeredUser.Id,
-                Username = registeredUser.Username,
-                Email = registeredUser.Email,
-                Role = registeredUser.Role.ToString(),
-                CreatedAt = registeredUser.CreatedAt,
-                IsActive = registeredUser.IsActive
+                Id = user.Id,
+                Username = user.Username,
+                Email = user.Email,
+                Role = user.Role.ToString(),
+                CreatedAt = user.CreatedAt,
+                IsActive = user.IsActive
             };
         }
 
-        // Làm mới token sử dụng RefreshToken và trả về TokenResponseDto nếu thành công, ngược lại trả về null
-        public async Task<TokenResponseDto?> RefreshTokenAsync(RefreshTokenRequestDto request)
+        /// <summary>
+        /// Tạo mới AccessToken và RefreshToken thông qua RefreshToken hiện tại.
+        /// </summary>
+        public async Task<TokenResponseDto?> RefreshTokenAsync(RefreshTokenRequestDto request, CancellationToken ct = default)
         {
-            var user = await ValidateRefreshTokenAsync(request.Id, request.RefreshToken);
+            var user = await ValidateRefreshTokenAsync(request.Id, request.RefreshToken, ct);
+
             if (user is null)
                 return null;
 
-            return await CreateTokenResponse(user);
+            return await CreateTokenResponse(user, ct);
         }
 
-        // Xác thực RefreshToken
-        private async Task<User?> ValidateRefreshTokenAsync(int userId, string refreshToken)
+        /// <summary>
+        /// Xác thực RefreshToken của người dùng.
+        /// Trả về User nếu hợp lệ, ngược lại null.
+        /// </summary>
+        private async Task<User?> ValidateRefreshTokenAsync(int userId, string refreshToken, CancellationToken ct)
         {
-            var user = await _authRepository.GetUserByIdAsync(userId);
-            if(user is null || user.RefreshToken != refreshToken
-                || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            var user = await _uow.Auth.GetUserByIdAsync(userId, ct);
+
+            if (user is null ||
+                user.RefreshToken != refreshToken ||
+                user.RefreshTokenExpiryTime <= DateTime.UtcNow)
             {
                 return null;
             }
 
             return user;
         }
-        // Tạo mã làm mới token
-        private string GenerateRefreshToken()
+
+        /// <summary>
+        /// Tạo TokenResponse (AccessToken + RefreshToken).
+        /// </summary>
+        private async Task<TokenResponseDto> CreateTokenResponse(User user, CancellationToken ct)
         {
-            var randomNumber = new byte[32];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(randomNumber);
-            return Convert.ToBase64String(randomNumber);
+            return new TokenResponseDto
+            {
+                AccessToken = CreateToken(user),
+                RefreshToken = await GenerateAndSaveRefreshTokenAsync(user, ct)
+            };
         }
 
-        // Tạo và lưu mã làm mới token vào cơ sở dữ liệu
-        private async Task<string> GenerateAndSaveRefreshTokenAsync(User user)
+        /// <summary>
+        /// Sinh một RefreshToken ngẫu nhiên (32 bytes).
+        /// </summary>
+        private string GenerateRefreshToken()
+        {
+            var randomBytes = new byte[32];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomBytes);
+            return Convert.ToBase64String(randomBytes);
+        }
+
+        /// <summary>
+        /// Tạo và lưu RefreshToken mới vào DB.
+        /// </summary>
+        private async Task<string> GenerateAndSaveRefreshTokenAsync(User user, CancellationToken ct)
         {
             var refreshToken = GenerateRefreshToken();
             user.RefreshToken = refreshToken;
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
-            await _authRepository.UpdateUserAsync(user);
+
+            await _uow.Auth.UpdateUserAsync(user, ct);
+            await _uow.SaveChangesAsync(ct);
+
             return refreshToken;
         }
 
-        // Tạo JWT token dựa trên thông tin người dùng
+        /// <summary>
+        /// Tạo JWT Token cho người dùng dựa vào Claim.
+        /// </summary>
         private string CreateToken(User user)
         {
             var claims = new List<Claim>
@@ -157,16 +193,14 @@ namespace WordSoul.Application.Services
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
 
-            var tokenDescriptor = new JwtSecurityToken(
+            var jwt = new JwtSecurityToken(
                 issuer: _configuration["AppSettings:Issuer"],
                 audience: _configuration["AppSettings:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddDays(1),
-                signingCredentials: creds
-            );
+                expires: DateTime.UtcNow.AddDays(1),
+                signingCredentials: creds);
 
-            return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
-
+            return new JwtSecurityTokenHandler().WriteToken(jwt);
         }
     }
 }

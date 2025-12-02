@@ -5,25 +5,59 @@ namespace WordSoul.Application.Interfaces.Repositories
 {
     public interface IPetRepository
     {
-        //-------------------------------- CREATE -----------------------------------
-        // Tạo pet mới
-        Task<Pet> CreatePetAsync(Pet pet);
+        // ----------------------------- CREATE -----------------------------
+        /// <summary>
+        /// Tạo mới một Pet.
+        /// </summary>
+        Task<Pet> CreatePetAsync(
+            Pet pet,
+            CancellationToken cancellationToken = default);
 
-        //-------------------------------- READ -----------------------------------
-        // Lấy tất cả pet
-        //Task<IEnumerable<(Pet Pet, bool IsOwned)>> GetAllPetsAsync(int userId, PetFilter filter);
+        // ----------------------------- READ --------------------------------
+        /// <summary>
+        /// Lấy danh sách Pet, kèm trạng thái người dùng đã sở hữu hay chưa.
+        /// Hỗ trợ filter theo tên, độ hiếm, loại, sở hữu, vocabularySetId và phân trang.
+        /// </summary>
+        Task<IEnumerable<(Pet Pet, bool IsOwned)>> GetAllPetsAsync(
+            int userId,
+            string? name = null,
+            PetRarity? rarity = null,
+            PetType? type = null,
+            bool? isOwned = null,
+            int? vocabularySetId = null,
+            int pageNumber = 1,
+            int pageSize = 10,
+            CancellationToken cancellationToken = default);
 
-        // Lấy pet theo ID
-        Task<Pet?> GetPetByIdAsync(int id);
-        Task<List<Pet>> GetRandomPetsByRarityAsync(PetRarity rarity, int count);
+        /// <summary>
+        /// Lấy Pet theo ID.
+        /// </summary>
+        Task<Pet?> GetPetByIdAsync(
+            int id,
+            CancellationToken cancellationToken = default);
 
-        //-------------------------------- UPDATE -----------------------------------
-        // Cập nhật pet
-        Task<Pet> UpdatePetAsync(Pet pet);
+        /// <summary>
+        /// Lấy danh sách Pet ngẫu nhiên theo độ hiếm (rarity).
+        /// </summary>
+        Task<List<Pet>> GetRandomPetsByRarityAsync(
+            PetRarity rarity,
+            int count,
+            CancellationToken cancellationToken = default);
 
-        //------------------------------- DELETE -----------------------------------
-        // Xóa pet theo ID
-        Task<bool> DeletePetAsync(int id);
+        // ----------------------------- UPDATE ------------------------------
+        /// <summary>
+        /// Cập nhật thông tin Pet.
+        /// </summary>
+        Task<Pet> UpdatePetAsync(
+            Pet pet,
+            CancellationToken cancellationToken = default);
 
+        // ----------------------------- DELETE ------------------------------
+        /// <summary>
+        /// Xóa Pet theo ID. Trả về true nếu xóa thành công.
+        /// </summary>
+        Task<bool> DeletePetAsync(
+            int id,
+            CancellationToken cancellationToken = default);
     }
 }

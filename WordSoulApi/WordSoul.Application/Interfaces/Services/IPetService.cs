@@ -1,31 +1,53 @@
-﻿using WordSoul.Application.DTOs.Pet;
+﻿using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using WordSoul.Application.DTOs.Pet;
 
 namespace WordSoul.Application.Interfaces.Services
 {
+    /// <summary>
+    /// Giao diện dịch vụ xử lý Pet.
+    /// </summary>
     public interface IPetService
     {
-
-        // Tạo một con pet mới
+        /// <summary>
+        /// Tạo một Pet mới.
+        /// </summary>
         Task<PetDto> CreatePetAsync(CreatePetDto petDto, string? imageUrl);
-        // Tạo nhiều con pet mới
+
+        /// <summary>
+        /// Tạo nhiều Pet cùng lúc.
+        /// </summary>
         Task<List<PetDto>> CreatePetsBulkAsync(BulkCreatePetDto bulkDto);
 
-        // Xóa con pet theo ID
-        Task<bool> DeletePetAsync(int id);
-        // Xóa nhiều con pet theo ID
-        Task<bool> DeletePetsBulkAsync(List<int> petIds);
-
-        // Lấy tất cả các con pet
-        //Task<IEnumerable<UserPetDto>> GetAllPetsAsync(int userId, PetFilter filter);
-
-        // Lấy con pet theo ID
-        Task<PetDto?> GetPetByIdAsync(int id);
-        // Lấy chi tiết con pet của người dùng theo ID
+        /// <summary>
+        /// Lấy chi tiết Pet của người dùng.
+        /// </summary>
         Task<UserPetDetailDto?> GetPetDetailAsync(int userId, int petId);
 
-        // Cập nhật con pet
-        Task<AdminPetDto> UpdatePetAsync(int id, UpdatePetDto petDto, string? imageUrl);
-        // Cập nhật nhiều con pet
+        /// <summary>
+        /// Lấy Pet theo ID.
+        /// </summary>
+        Task<PetDto?> GetPetByIdAsync(int id);
+
+        /// <summary>
+        /// Cập nhật thông tin Pet.
+        /// </summary>
+        Task<AdminPetDto> UpdatePetAsync(int id, UpdatePetDto dto, string? imageUrl);
+
+        /// <summary>
+        /// Cập nhật nhiều Pet cùng lúc.
+        /// </summary>
         Task<List<PetDto>> UpdatePetsBulkAsync(List<UpdatePetDto> pets);
+
+        /// <summary>
+        /// Xoá một Pet theo ID.
+        /// </summary>
+        Task<bool> DeletePetAsync(int id);
+
+        /// <summary>
+        /// Xoá nhiều Pet theo danh sách ID.
+        /// </summary>
+        Task<bool> DeletePetsBulkAsync(List<int> petIds);
     }
 }
