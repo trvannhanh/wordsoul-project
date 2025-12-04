@@ -6,9 +6,13 @@ using Scalar.AspNetCore;
 using Serilog;
 using System.Text;
 using WordSoul.Api.Hubs;
+using WordSoul.Api.Services;
+using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Repositories;
 using WordSoul.Application.Interfaces.Services;
 using WordSoul.Application.Services;
+using WordSoul.Infrastructure.BackgroundServices;
+
 //using WordSoul.Infrastructure.BackgroundServices;
 using WordSoul.Infrastructure.Persistence;
 using WordSoul.Infrastructure.Persistence.Repositories;
@@ -123,7 +127,7 @@ builder.Services.AddScoped<IUserVocabularySetRepository, UserVocabularySetReposi
 builder.Services.AddScoped<IUserVocabularySetService, UserVocabularySetService>();
 // Notification
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
-//builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 // ActivityLog
 builder.Services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
 builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
@@ -146,7 +150,11 @@ builder.Services.AddScoped<IUserAchievementRepository, UserAchievementRepository
 builder.Services.AddScoped<IUploadAssetsService, UploadAssetsService>();
 
 //Background Service
-//builder.Services.AddHostedService<NotificationBackgroundService>();
+builder.Services.AddHostedService<NotificationBackgroundService>();
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+builder.Services.AddScoped<IRealtimeNotificationService, SignalRNotificationService>();
 
 
 

@@ -124,10 +124,10 @@ namespace WordSoul.Api.Controllers
         // PUT: api/users/{id} : Cập nhật người dùng theo ID
         [Authorize(Roles = "Admin,User")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id, UserDto userDto)
+        public async Task<IActionResult> UpdateUser(int id, UpdateUserDto userDto, CancellationToken cancellationToken = default)
         {
             if (userDto == null) return BadRequest("User data is required.");
-            var updatedUser = await _userService.UpdateUserAsync(id, userDto);
+            var updatedUser = await _userService.UpdateUserAsync(id, userDto, cancellationToken);
             if (updatedUser == null) return NotFound();
             return Ok(updatedUser);
         }

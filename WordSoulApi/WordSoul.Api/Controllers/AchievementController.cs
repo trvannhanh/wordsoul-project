@@ -20,9 +20,9 @@ namespace WordSoul.Api.Controllers
 
         // POST: api/achievement : Tạo thành tựu mới
         [HttpPost]
-        public async Task<ActionResult<CreateAchievementDto>> CreateAchievement(CreateAchievementDto createAchievementDto)
+        public async Task<ActionResult<CreateAchievementDto>> CreateAchievement(CreateAchievementDto createAchievementDto, CancellationToken cancellationToken = default)
         {
-            var achievement = await _achievementService.CreatAchievementAsync(createAchievementDto);
+            var achievement = await _achievementService.CreateAchievementAsync(createAchievementDto, cancellationToken);
             if (achievement == null)
             {
                 return BadRequest("User creating achievement failed.");
@@ -30,7 +30,7 @@ namespace WordSoul.Api.Controllers
             return Ok(achievement);
         }
 
-        
+            
 
     }
 }

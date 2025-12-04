@@ -5,7 +5,6 @@ using WordSoul.Api.Extensions;
 using WordSoul.Application.DTOs.Pet;
 using WordSoul.Application.Interfaces.Services;
 using WordSoul.Domain.Enums;
-//using WordSoulApi.Filters;
 
 namespace WordSoul.Api.Controllers
 {
