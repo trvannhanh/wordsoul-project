@@ -2,6 +2,8 @@
 using System.Threading;
 using System.Threading.Tasks;
 using WordSoul.Application.DTOs.Pet;
+using WordSoul.Domain.Entities;
+using WordSoul.Domain.Enums;
 
 namespace WordSoul.Application.Interfaces.Services
 {
@@ -24,6 +26,22 @@ namespace WordSoul.Application.Interfaces.Services
         /// Lấy chi tiết Pet của người dùng.
         /// </summary>
         Task<UserPetDetailDto?> GetPetDetailAsync(int userId, int petId);
+
+
+        /// <summary>
+        /// Lấy danh sách Pet, kèm trạng thái người dùng đã sở hữu hay chưa.
+        /// Hỗ trợ filter theo tên, độ hiếm, loại, sở hữu, vocabularySetId và phân trang.
+        /// </summary>
+        Task<IEnumerable<UserPetDto>> GetAllPetsAsync(
+            int userId,
+            string? name = null,
+            PetRarity? rarity = null,
+            PetType? type = null,
+            bool? isOwned = null,
+            int? vocabularySetId = null,
+            int pageNumber = 1,
+            int pageSize = 10,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Lấy Pet theo ID.

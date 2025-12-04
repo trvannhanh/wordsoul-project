@@ -101,32 +101,35 @@ namespace WordSoul.Api.Controllers
         }
 
         ////------------------------------ GET -----------------------------------
-        //// GET: api/pets : Lấy tất cả pet theo người dùng
-        //[Authorize(Roles = "Admin,User")]
-        //[HttpGet]
-        //public async Task<IActionResult> GetAllPets(string? name, PetRarity? rarity, PetType? type,
-        //                                                        bool? isOwned, int? vocabularySetId, int pageNumber = 1, int pageSize = 20)
-        //{
+        // GET: api/pets : Lấy tất cả pet theo người dùng
+        [Authorize(Roles = "Admin,User")]
+        [HttpGet]
+        public async Task<IActionResult> GetAllPets(
+            string? name,
+            PetRarity? rarity,
+            PetType? type,
+            bool? isOwned,
+            int? vocabularySetId,
+            int pageNumber = 1,
+            int pageSize = 20,
+            CancellationToken cancellationToken = default)
+        {
+            var userId = User.GetUserId();
+            if (userId == 0) return Unauthorized();
 
-        //    // Lấy userId từ token
-        //    var userId = User.GetUserId();
-        //    // Nếu userId không hợp lệ, trả về lỗi Unauthorized
-        //    if (userId == 0) return Unauthorized();
+            var pets = await _petService.GetAllPetsAsync(
+                userId,
+                name,
+                rarity,
+                type,
+                isOwned,
+                vocabularySetId,
+                pageNumber,
+                pageSize,
+                cancellationToken);
 
-        //    var filter = new PetFilter
-        //    {
-        //        Name = name,
-        //        VocabularySetId = vocabularySetId,
-        //        Rarity = rarity,
-        //        Type = type,
-        //        IsOwned = isOwned,
-        //        PageNumber = pageNumber,
-        //        PageSize = pageSize
-        //    };
-
-        //    var pets = await _petService.GetAllPetsAsync(userId, filter);
-        //    return Ok(pets);
-        //}
+            return Ok(pets);
+        }
 
         // GET: api/pets/{id} : Lấy pet theo ID
         [Authorize(Roles = "Admin,User")]

@@ -3,6 +3,7 @@ using WordSoul.Application.DTOs.Pet;
 using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
 using WordSoul.Domain.Entities;
+using WordSoul.Domain.Enums;
 
 namespace WordSoul.Application.Services
 {
@@ -111,6 +112,46 @@ namespace WordSoul.Application.Services
         // ============================================================================
         // READ
         // ============================================================================
+
+        public async Task<IEnumerable<UserPetDto>> GetAllPetsAsync(
+            int userId,
+            string? name = null,
+            PetRarity? rarity = null,
+            PetType? type = null,
+            bool? isOwned = null,
+            int? vocabularySetId = null,
+            int pageNumber = 1,
+            int pageSize = 10,
+            CancellationToken cancellationToken = default)
+        {
+            var pets = await _uow.Pet.GetAllPetsAsync(
+                userId,
+                name,
+                rarity,
+                type,
+                isOwned,
+                vocabularySetId,
+                pageNumber,
+                pageSize,
+                cancellationToken);
+
+            var result = pets.Select(x => new UserPetDto
+            {
+                Id = x.Pet.Id,
+                Name = x.Pet.Name,
+                Description = x.Pet.Description ?? "",
+                ImageUrl = x.Pet.ImageUrl ?? "",
+                Rarity = x.Pet.Rarity.ToString(),
+                Type = x.Pet.Type.ToString(),
+                BaseFormId = x.Pet.BaseFormId,
+                NextEvolutionId = x.Pet.NextEvolutionId,
+                RequiredLevel = x.Pet.RequiredLevel,
+                Order = x.Pet.Order,
+                IsOwned = x.IsOwned
+            });
+
+            return result;
+        }
 
         public async Task<UserPetDetailDto?> GetPetDetailAsync(int userId, int petId)
         {
@@ -253,5 +294,7 @@ namespace WordSoul.Application.Services
             await _uow.SaveChangesAsync();
             return true;
         }
+
+
     }
 }
