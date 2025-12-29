@@ -11,6 +11,16 @@
         public int ProficiencyLevel { get; set; } = 0; // Proficiency level for the vocabulary, can be used to track learning progress
         public DateTime LastUpdated { get; set; } = DateTime.UtcNow; // Timestamp of the last update to the progress
         public DateTime NextReviewTime { get; set; }
+
+
+        // SRS parameters
+        public double EasinessFactor { get; set; } = 2.5; // SM-2 default
+        public int Interval { get; set; } = 1; // Days until next review
+        public int Repetition { get; set; } = 0; // Successful reviews in a row
+        public int LastGrade { get; set; } = 0; // Last answer quality (0-5)
+
+        // Computed property (not mapped to DB)
+        public bool IsDue => NextReviewTime <= DateTime.UtcNow;
     }
 
 }
