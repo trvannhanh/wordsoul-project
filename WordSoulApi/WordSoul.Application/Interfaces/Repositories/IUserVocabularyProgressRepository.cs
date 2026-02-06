@@ -22,13 +22,15 @@ namespace WordSoul.Application.Interfaces.Repositories
             int vocabularyId,
             CancellationToken cancellationToken = default);
 
+        /// <summary>
+        /// Lấy danh sách từ vựng đến hạn ôn tập của người dùng.
+        /// </summary>
+        Task<List<UserVocabularyProgress>> GetDueVocabulariesAsync(int userId, DateTime asOf, CancellationToken cancellationToken = default);
+
         // ----------------------------- UPDATE -----------------------------
         /// <summary>
-        /// Cập nhật tiến trình học từ vựng (ví dụ: tăng Strength, cập nhật NextReviewTime, EFactor...).
+        /// Cập nhật các tham số SRS của tiến trình học từ vựng.
         /// </summary>
-        /// <returns>Đối tượng UserVocabularyProgress sau khi cập nhật.</returns>
-        Task<UserVocabularyProgress> UpdateUserVocabularyProgressAsync(
-            UserVocabularyProgress progress,
-            CancellationToken cancellationToken = default);
+        Task<UserVocabularyProgress> UpdateSrsParametersAsync(UserVocabularyProgress progress, CancellationToken cancellationToken = default);
     }
 }

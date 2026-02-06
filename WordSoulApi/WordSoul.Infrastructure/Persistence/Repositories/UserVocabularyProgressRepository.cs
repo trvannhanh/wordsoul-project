@@ -31,10 +31,18 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
                 .FirstOrDefaultAsync(p => p.UserId == userId && p.VocabularyId == vocabularyId, cancellationToken);
         }
 
+        // Lấy danh sách từ vựng đến hạn ôn tập cho người dùng
+        public async Task<List<UserVocabularyProgress>> GetDueVocabulariesAsync(int userId, DateTime asOf, CancellationToken cancellationToken = default)
+        {
+            return await _context.UserVocabularyProgresses
+                .Where(p => p.UserId == userId && p.NextReviewTime <= asOf)
+                .ToListAsync();
+        }
+
         //-------------------------------------UPDATE-------------------------------------------
 
-        // Cập nhật tiến trình học từ vựng cho người dùng
-        public async Task<UserVocabularyProgress> UpdateUserVocabularyProgressAsync(UserVocabularyProgress progress, CancellationToken cancellationToken = default)
+        // Cập nhật thông số SRS cho tiến trình học từ vựng
+        public async Task<UserVocabularyProgress> UpdateSrsParametersAsync(UserVocabularyProgress progress, CancellationToken cancellationToken = default)
         {
             _context.UserVocabularyProgresses.Update(progress);
             return await Task.FromResult(progress);

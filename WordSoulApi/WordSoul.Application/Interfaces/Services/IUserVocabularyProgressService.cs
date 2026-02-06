@@ -26,5 +26,11 @@ namespace WordSoul.Application.Interfaces.Services
         Task<UserProgressDto> GetUserProgressAsync(
             int userId,
             CancellationToken cancellationToken = default);
+
+        Task UpdateProgressAfterReviewAsync(
+            int userId,
+            int vocabularyId,
+            int grade,
+            CancellationToken cancellationToken = default);
     }
 }

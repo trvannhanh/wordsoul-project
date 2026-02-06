@@ -89,5 +89,85 @@ namespace WordSoul.Application.Services
 
             return result;
         }
+
+        public async Task UpdateProgressAfterReviewAsync(
+            int userId,
+            int vocabularyId,
+            int grade,
+            CancellationToken cancellationToken = default)
+        {
+            grade = NormalizeGrade(grade);
+
+            var progress = await _uow.UserVocabularyProgress
+                .GetUserVocabularyProgressAsync(userId, vocabularyId);
+
+            if (progress == null) return;
+
+            if (grade >= 3)
+            {
+                progress.Interval = CalculateNextInterval(
+                    progress.Repetition,
+                    progress.Interval,
+                    progress.EasinessFactor);
+
+                progress.Repetition++;
+            }
+            else
+            {
+                progress.Repetition = 0;
+                progress.Interval = 1;
+            }
+
+            progress.EasinessFactor =
+                UpdateEasinessFactor(progress.EasinessFactor, grade);
+
+            progress.ProficiencyLevel =
+                CalculateProficiencyLevel(progress.Repetition);
+
+            progress.LastGrade = grade;
+            progress.LastUpdated = DateTime.UtcNow;
+            progress.NextReviewTime =
+                DateTime.UtcNow.AddDays(progress.Interval);
+
+            await _uow.UserVocabularyProgress.UpdateSrsParametersAsync(progress);
+            await _uow.SaveChangesAsync();
+        }
+
+
+        private static int NormalizeGrade(int grade)
+        {
+            return Math.Clamp(grade, 0, 5);
+        }
+
+        private static int CalculateNextInterval(
+            int repetition,
+            int currentInterval,
+            double easinessFactor)
+        {
+            // SM-2 original logic:
+            // n=1 -> 1 day
+            // n=2 -> 6 days
+            // n>=3 -> previous interval * EF
+            return repetition switch
+            {
+                0 => 1,
+                1 => 6,
+                _ => (int)Math.Round(currentInterval * easinessFactor)
+            };
+        }
+
+        private static int CalculateProficiencyLevel(int repetition)
+        {
+            if (repetition == 0) return 0; // Mới / quên
+            if (repetition <= 2) return 1; // Đang học
+            if (repetition <= 4) return 2; // Tạm ổn
+            return 3;                      // Thành thạo
+        }
+
+        private static double UpdateEasinessFactor(double ef, int grade)
+        {
+            var newEf = ef + (0.1 - (5 - grade) * (0.08 + (5 - grade) * 0.02));
+            return Math.Max(1.3, newEf);
+        }
     }
 }
