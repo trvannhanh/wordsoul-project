@@ -120,10 +120,6 @@ namespace WordSoul.Application.Services
 
             progress.EasinessFactor =
                 UpdateEasinessFactor(progress.EasinessFactor, grade);
-
-            progress.ProficiencyLevel =
-                CalculateProficiencyLevel(progress.Repetition);
-
             progress.LastGrade = grade;
             progress.LastUpdated = DateTime.UtcNow;
             progress.NextReviewTime =
@@ -154,14 +150,6 @@ namespace WordSoul.Application.Services
                 1 => 6,
                 _ => (int)Math.Round(currentInterval * easinessFactor)
             };
-        }
-
-        private static int CalculateProficiencyLevel(int repetition)
-        {
-            if (repetition == 0) return 0; // Mới / quên
-            if (repetition <= 2) return 1; // Đang học
-            if (repetition <= 4) return 2; // Tạm ổn
-            return 3;                      // Thành thạo
         }
 
         private static double UpdateEasinessFactor(double ef, int grade)

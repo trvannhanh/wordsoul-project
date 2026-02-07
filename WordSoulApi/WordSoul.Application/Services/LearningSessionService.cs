@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using System;
 using WordSoul.Application.DTOs.AnswerRecord;
 using WordSoul.Application.DTOs.LearningSession;
 using WordSoul.Application.DTOs.Pet;
@@ -19,6 +20,7 @@ namespace WordSoul.Application.Services
         private readonly IUnitOfWork _uow;
         private readonly ILogger<LearningSessionService> _logger;
         private readonly IUserOwnedPetService _userOwnedPetService;
+        private readonly IUserVocabularyProgressService _userVocabularyProgressService;
         private readonly IActivityLogService _activityLogService;
         private readonly ISetRewardPetService _setRewardPetService;
 
@@ -29,12 +31,14 @@ namespace WordSoul.Application.Services
             IUnitOfWork uow,
             ILogger<LearningSessionService> logger,
             IUserOwnedPetService userOwnedPetService,
+            IUserVocabularyProgressService userVocabularyProgressService,
             IActivityLogService activityLogService,
             ISetRewardPetService setRewardPetService)
         {
             _uow = uow;
             _logger = logger;
             _userOwnedPetService = userOwnedPetService;
+            _userVocabularyProgressService = userVocabularyProgressService;
             _activityLogService = activityLogService;
             _setRewardPetService = setRewardPetService;
         }
@@ -390,137 +394,81 @@ namespace WordSoul.Application.Services
             SubmitAnswerRequestDto request,
             CancellationToken ct = default)
         {
-            if (request == null || request.VocabularyId <= 0 || string.IsNullOrWhiteSpace(request.Answer))
+            if (request == null || request.VocabularyId <= 0)
                 throw new ArgumentException("Invalid request data");
 
-            var userSessionExist = await _uow.LearningSession.GetExistingLearningSessionForUserAsync(userId, sessionId, ct);
-            if (userSessionExist == null) throw new UnauthorizedAccessException("User does not have access to this session");
+            var session = await _uow.LearningSession
+                .GetExistingLearningSessionForUserAsync(userId, sessionId, ct)
+                ?? throw new UnauthorizedAccessException();
 
-            var sessionVocab = await _uow.SessionVocabulary.GetSessionVocabularyAsync(sessionId, request.VocabularyId, ct);
-            if (sessionVocab == null) throw new KeyNotFoundException("Vocabulary not found in session");
+            var sessionVocab = await _uow.SessionVocabulary
+                .GetSessionVocabularyAsync(sessionId, request.VocabularyId, ct)
+                ?? throw new KeyNotFoundException();
 
-            var vocab = sessionVocab.Vocabulary;
-            if (vocab == null) throw new KeyNotFoundException("Vocabulary not found");
+            var vocab = sessionVocab.Vocabulary
+                ?? throw new KeyNotFoundException();
 
-            var levelToType = new Dictionary<int, QuestionType>
+            var isCorrect = CheckAnswer(request, vocab);
+
+            var progress = await _uow.UserVocabularyProgress
+            .GetUserVocabularyProgressAsync(userId, vocab.Id, ct);
+
+            if (progress != null)
             {
-                {0, QuestionType.Flashcard},
-                {1, QuestionType.FillInBlank},
-                {2, QuestionType.MultipleChoice},
-                {3, QuestionType.Listening}
-            };
-            var currentType = levelToType[sessionVocab.CurrentLevel];
-            if (request.QuestionType != currentType) throw new ArgumentException("Question type does not match current level");
+                progress.TotalAttempt++;
 
-            var attemptCount = await _uow.AnswerRecord.GetAttemptCountAsync(sessionId, request.VocabularyId, request.QuestionType, ct);
-
-            bool isCorrect = request.QuestionType switch
-            {
-                QuestionType.FillInBlank or QuestionType.Listening =>
-                    string.Equals(request.Answer.Trim(), vocab.Word.Trim(), StringComparison.OrdinalIgnoreCase),
-
-                QuestionType.MultipleChoice =>
-                    request.Answer.Trim() == vocab.Word,
-
-                QuestionType.Flashcard =>
-                    true,
-
-                _ => false
-            };
-
-            var existingAnswerRecord = await _uow.AnswerRecord.GetAnswerRecordFromSession(sessionId, vocab.Id, request.QuestionType, ct);
-            if (existingAnswerRecord == null)
-            {
-                var record = new AnswerRecord
-                {
-                    LearningSessionId = sessionId,
-                    VocabularyId = vocab.Id,
-                    QuestionType = request.QuestionType,
-                    Answer = request.Answer,
-                    AttemptCount = attemptCount + 1,
-                    IsCorrect = isCorrect,
-                    CreatedAt = DateTime.UtcNow
-                };
-
-                await _uow.AnswerRecord.CreateAnswerRecordAsync(record, ct);
-            }
-            else
-            {
-                existingAnswerRecord.Answer = request.Answer;
-                existingAnswerRecord.AttemptCount = attemptCount + 1;
-                existingAnswerRecord.IsCorrect = isCorrect;
-                existingAnswerRecord.CreatedAt = DateTime.UtcNow;
-                await _uow.AnswerRecord.UpdateAnswerRecordAsync(existingAnswerRecord, ct);
+                if (isCorrect)
+                    progress.CorrectAttempt++;
             }
 
-            // Update level & potentially user progress/catch rate
+            await SaveAnswerRecordAsync(sessionId, vocab.Id, request, isCorrect, ct);
+
+            // Update session vocabulary (gameplay)
             if (isCorrect)
             {
-                sessionVocab.CurrentLevel = Math.Min(4, sessionVocab.CurrentLevel + 1);
-                sessionVocab.IsCompleted = sessionVocab.CurrentLevel == 4;
-                if (sessionVocab.IsCompleted)
-                {
-                    await UpdateUserVocabularyProgressAsync(userId, vocab, true, ct);
-                }
+                sessionVocab.CurrentLevel++;
+                sessionVocab.IsCompleted = sessionVocab.CurrentLevel >= 4;
             }
             else
             {
                 sessionVocab.CurrentLevel = Math.Max(0, sessionVocab.CurrentLevel - 1);
                 sessionVocab.IsCompleted = false;
-                if (userSessionExist.CatchRate != null)
-                {
-                    userSessionExist.CatchRate -= 0.05;
-                    await _uow.LearningSession.UpdateLearningSessionAsync(userSessionExist, ct);
-                }
+
+                if (session.CatchRate.HasValue)
+                    session.CatchRate -= 0.05;
             }
 
             await _uow.SessionVocabulary.UpdateSessionVocabularyAsync(sessionVocab, ct);
 
-            // Commit changes
+            await EnsureUserVocabularyProgressAsync(userId, vocab.Id, ct);
+
+            // 🔥 SRS CHỈ CHẠY Ở REVIEW SESSION + KHI TỪ ĐÃ HOÀN THÀNH
+            if (
+                session.Type == SessionType.Review &&
+                sessionVocab.CurrentLevel >= 2 &&
+                !sessionVocab.IsSrsEvaluated
+)
+            {
+                var stats = await _uow.AnswerRecord
+                    .GetAnswerRecordFromSession(sessionId, vocab.Id, request.QuestionType, ct);
+
+                int grade = MapToSm2Grade(stats);
+
+                await _userVocabularyProgressService
+                    .UpdateProgressAfterReviewAsync(userId, vocab.Id, grade, ct);
+
+                sessionVocab.IsSrsEvaluated = true;
+            }
+
             await _uow.SaveChangesAsync(ct);
 
             return new SubmitAnswerResponseDto
             {
                 IsCorrect = isCorrect,
                 CorrectAnswer = vocab.Word,
-                AttemptNumber = attemptCount + 1,
                 NewLevel = sessionVocab.CurrentLevel,
                 IsVocabularyCompleted = sessionVocab.IsCompleted
             };
-        }
-
-        private async Task UpdateUserVocabularyProgressAsync(int userId, Vocabulary vocab, bool isCorrect, CancellationToken ct)
-        {
-            var progress = await _uow.UserVocabularyProgress.GetUserVocabularyProgressAsync(userId, vocab.Id, ct);
-            if (progress == null)
-            {
-                progress = new UserVocabularyProgress
-                {
-                    UserId = userId,
-                    VocabularyId = vocab.Id,
-                    CorrectAttempt = 0,
-                    TotalAttempt = 0,
-                    ProficiencyLevel = 0
-                };
-                await _uow.UserVocabularyProgress.CreateUserVocabularyProgressAsync(progress, ct);
-            }
-
-            progress.CorrectAttempt += isCorrect ? 1 : 0;
-            progress.TotalAttempt++;
-            progress.ProficiencyLevel = Math.Min(5, 1 + (int)Math.Floor(Math.Log(Math.Max(1, progress.CorrectAttempt), 1.5)));
-            progress.LastUpdated = DateTime.UtcNow;
-
-            int daysToAdd = progress.ProficiencyLevel switch
-            {
-                1 => 1,
-                2 => 2,
-                3 => 4,
-                4 => 16,
-                _ => 256
-            };
-            progress.NextReviewTime = DateTime.UtcNow.AddDays(daysToAdd);
-
-            await _uow.UserVocabularyProgress.UpdateUserVocabularyProgressAsync(progress, ct);
         }
 
         private static double GetPetCatchRate(PetRarity level)
@@ -534,6 +482,102 @@ namespace WordSoul.Application.Services
                 PetRarity.Legendary => 0.2,
                 _ => 1.0
             };
+        }
+
+        private static int MapToSm2Grade(AnswerRecord stats)
+        {
+            if (!stats.IsCorrect)
+                return 0; // forgot
+
+            //if (stats.FirstRecallAttempt == 1 && stats.TimeSpentSeconds <= 3)
+            //    return 5;
+
+            //if (stats.FirstRecallAttempt == 1)
+            //    return 4;
+
+            return stats.AttemptCount switch
+            {
+                1 => 5, // đúng ngay
+                2 => 4, // sửa 1 lần
+                3 => 3, // sửa nhiều
+                _ => 2
+            };
+
+        }
+
+        private static bool CheckAnswer(
+            SubmitAnswerRequestDto request,
+            Vocabulary vocab)
+        {
+            return request.QuestionType switch
+            {
+                QuestionType.FillInBlank or QuestionType.Listening =>
+                    string.Equals(request.Answer.Trim(), vocab.Word.Trim(), StringComparison.OrdinalIgnoreCase),
+
+                QuestionType.MultipleChoice =>
+                    request.Answer.Trim() == vocab.Word,
+
+                QuestionType.Flashcard => true,
+                _ => false
+            };
+        }
+
+        private async Task EnsureUserVocabularyProgressAsync(
+            int userId,
+            int vocabId,
+            CancellationToken ct)
+        {
+            var progress = await _uow.UserVocabularyProgress
+                .GetUserVocabularyProgressAsync(userId, vocabId, ct);
+
+            if (progress != null) return;
+
+            progress = new UserVocabularyProgress
+            {
+                UserId = userId,
+                VocabularyId = vocabId,
+                EasinessFactor = 2.5,
+                Interval = 1,
+                Repetition = 0,
+                NextReviewTime = DateTime.UtcNow.AddDays(1)
+            };
+
+            await _uow.UserVocabularyProgress
+                .CreateUserVocabularyProgressAsync(progress, ct);
+        }
+
+        private async Task SaveAnswerRecordAsync(
+            int sessionId,
+            int vocabId,
+            SubmitAnswerRequestDto request,
+            bool isCorrect,
+            CancellationToken ct)
+        {
+            var attempt = await _uow.AnswerRecord
+                .GetAttemptCountAsync(sessionId, vocabId, request.QuestionType, ct);
+
+            var record = await _uow.AnswerRecord
+                .GetAnswerRecordFromSession(sessionId, vocabId, request.QuestionType, ct);
+
+            if (record == null)
+            {
+                record = new AnswerRecord
+                {
+                    LearningSessionId = sessionId,
+                    VocabularyId = vocabId,
+                    QuestionType = request.QuestionType,
+                    Answer = string.Empty
+                };
+
+                await _uow.AnswerRecord.CreateAnswerRecordAsync(record, ct);
+            }
+
+            record.Answer = request.Answer;
+            record.AttemptCount = attempt + 1;
+            record.IsCorrect = isCorrect;
+            record.CreatedAt = DateTime.UtcNow;
+
+            await _uow.AnswerRecord.UpdateAnswerRecordAsync(record, ct);
         }
     }
 }
