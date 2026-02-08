@@ -77,5 +77,10 @@ namespace WordSoul.Application.Interfaces.Services
         Task<AchievementDto> GetAchievementByIdAsync(
             int achievementId,
             CancellationToken ct = default);
+
+
+        Task InitializeUserAchievementsAsync(
+            int userId,
+            CancellationToken ct = default);
     }
 }

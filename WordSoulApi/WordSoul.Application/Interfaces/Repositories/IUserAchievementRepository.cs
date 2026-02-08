@@ -4,6 +4,17 @@ namespace WordSoul.Application.Interfaces.Repositories
 {
     public interface IUserAchievementRepository
     {
+
+        Task<UserAchievement?> GetUserAchievementAsync(
+        int userId,
+        int achievementId,
+        CancellationToken ct = default);
+
+        Task<List<UserAchievement>> GetUserAchievementByUserAsync(
+            int userId,
+            CancellationToken ct = default);
+
+
         // ----------------------------- CREATE -----------------------------
         /// <summary>
         /// Tạo một bản ghi thành tựu mới cho người dùng.
@@ -18,5 +29,9 @@ namespace WordSoul.Application.Interfaces.Repositories
         Task BulkCreateUserAchievementAsync(
             IEnumerable<UserAchievement> userAchievements,
             CancellationToken cancellationToken = default);
+
+        Task UpdateUserAchievementAsync(
+            UserAchievement userAchievement,
+            CancellationToken ct = default);
     }
 }

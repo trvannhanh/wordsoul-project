@@ -115,5 +115,35 @@ namespace WordSoul.Application.Services
                 ItemImageUrl = achievement.Item?.ImageUrl,
             };
         }
+
+        public async Task InitializeUserAchievementsAsync(
+            int userId,
+            CancellationToken ct = default)
+        {
+            var achievements = await _uow.Achievement
+                .GetAchievementsAsync(null, 1, int.MaxValue, ct);
+
+            var existing = await _uow.UserAchievement
+                .GetUserAchievementByUserAsync(userId, ct);
+
+            var existingIds = existing
+                .Select(x => x.AchievementId)
+                .ToHashSet();
+
+            var toCreate = achievements
+                .Where(a => !existingIds.Contains(a.Id))
+                .Select(a => new UserAchievement
+                {
+                    UserId = userId,
+                    AchievementId = a.Id,
+                    ProgressValue = 0,
+                    IsCompleted = false
+                });
+
+            foreach (var ua in toCreate)
+                await _uow.UserAchievement.CreateUserAchievementAsync(ua, ct);
+
+            await _uow.SaveChangesAsync(ct);
+        }
     }
 }
