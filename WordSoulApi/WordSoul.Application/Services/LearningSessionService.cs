@@ -460,6 +460,22 @@ namespace WordSoul.Application.Services
                 sessionVocab.IsSrsEvaluated = true;
             }
 
+            // Log review history
+            var reviewHistory = new VocabularyReviewHistory
+            {
+                UserId = userId,
+                VocabularyId = sessionVocab.VocabularyId,
+                ReviewTime = DateTime.UtcNow,
+                IsCorrect = isCorrect,
+                ResponseTimeSeconds = request.ResponseTimeSeconds,
+                HintCount = request.HintCount,
+                QuestionType = request.QuestionType.ToString(),
+                Grade = InferGrade(isCorrect, request.ResponseTimeSeconds, request.HintCount, request.QuestionType),
+                Notes = isCorrect ? null : "User struggled with this question."
+            };
+
+            await _uow.VocabularyReviewHistory.CreateReviewHistoryAsync(reviewHistory, ct);
+
             await _uow.SaveChangesAsync(ct);
 
             return new SubmitAnswerResponseDto
@@ -578,6 +594,17 @@ namespace WordSoul.Application.Services
             record.CreatedAt = DateTime.UtcNow;
 
             await _uow.AnswerRecord.UpdateAnswerRecordAsync(record, ct);
+        }
+
+        private static int InferGrade(bool isCorrect, double responseTimeSeconds, int hintCount, QuestionType questionType)
+        {
+            if (!isCorrect) return 0;
+
+            if (responseTimeSeconds <= 3 && hintCount == 0) return 5;
+            if (responseTimeSeconds <= 5 && hintCount <= 1) return 4;
+            if (responseTimeSeconds <= 10) return 3;
+
+            return 2;
         }
     }
 }

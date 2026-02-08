@@ -7,5 +7,6 @@
         public int AttemptNumber { get; set; }
         public int NewLevel { get; set; }
         public bool IsVocabularyCompleted { get; set; }
+       
     }
 }
