@@ -30,7 +30,7 @@ namespace WordSoul.Domain.Entities
         public List<Notification> Notifications { get; set; } = [];
         public List<UserItem> UserItems { get; set; } = [];
         public List<UserAchievement> UserAchievements { get; set; } = [];
-
+        public List<UserDailyQuest> UserDailyQuests { get; set; } = new();
     }
 
 }

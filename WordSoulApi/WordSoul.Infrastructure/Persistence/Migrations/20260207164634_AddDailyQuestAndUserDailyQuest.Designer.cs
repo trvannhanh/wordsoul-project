@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WordSoul.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using WordSoul.Infrastructure.Persistence;
 namespace WordSoul.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(WordSoulDbContext))]
-    partial class WordSoulDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260207164634_AddDailyQuestAndUserDailyQuest")]
+    partial class AddDailyQuestAndUserDailyQuest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -175,45 +178,6 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("DailyQuests");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 34, 45, 595, DateTimeKind.Utc).AddTicks(6644),
-                            Description = "Complete learning 10 new vocabulary words today.",
-                            IsActive = true,
-                            QuestType = 0,
-                            RewardType = 0,
-                            RewardValue = 50,
-                            TargetValue = 10,
-                            Title = "Learn 10 new words"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 34, 45, 595, DateTimeKind.Utc).AddTicks(6753),
-                            Description = "Review 15 vocabulary words using SRS.",
-                            IsActive = true,
-                            QuestType = 1,
-                            RewardType = 1,
-                            RewardValue = 30,
-                            TargetValue = 15,
-                            Title = "Review 15 words"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 34, 45, 595, DateTimeKind.Utc).AddTicks(6756),
-                            Description = "Finish one learning session today.",
-                            IsActive = true,
-                            QuestType = 3,
-                            RewardReferenceId = 101,
-                            RewardType = 2,
-                            RewardValue = 1,
-                            TargetValue = 1,
-                            Title = "Complete a learning session"
-                        });
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.Item", b =>

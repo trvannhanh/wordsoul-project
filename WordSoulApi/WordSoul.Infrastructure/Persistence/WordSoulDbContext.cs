@@ -23,6 +23,10 @@ namespace WordSoul.Infrastructure.Persistence
         public DbSet<UserItem> UserItems { get; set; }
         public DbSet<Achievement> Achievements { get; set; }
         public DbSet<UserAchievement> UserAchievements { get; set; }
+        public DbSet<VocabularyReviewHistory> VocabularyReviewHistories { get; set; }
+        public DbSet<DailyQuest> DailyQuests { get; set; }
+        public DbSet<UserDailyQuest> UserDailyQuests { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -227,6 +231,18 @@ namespace WordSoul.Infrastructure.Persistence
                 .HasForeignKey(sv => sv.VocabularyId)
                 .OnDelete(DeleteBehavior.Restrict); // Restrict delete if vocabulary is deleted, to prevent accidental loss of session vocabularies
 
+            // Configure VocabularyReviewHistory relationships
+            modelBuilder.Entity<VocabularyReviewHistory>()
+                .HasOne(vrh => vrh.User)
+                .WithMany()
+                .HasForeignKey(vrh => vrh.UserId)
+                .OnDelete(DeleteBehavior.Cascade); // Cascade delete if user is deleted
+
+            modelBuilder.Entity<VocabularyReviewHistory>()
+                .HasOne(vrh => vrh.Vocabulary)
+                .WithMany()
+                .HasForeignKey(vrh => vrh.VocabularyId)
+                .OnDelete(DeleteBehavior.Restrict); // Prevent accidental deletion of vocabulary
 
             // Indexes for ActivityLog to optimize common queries
             modelBuilder.Entity<ActivityLog>()
@@ -255,6 +271,32 @@ namespace WordSoul.Infrastructure.Persistence
                 .HasIndex(sv => sv.VocabularySetId);
             modelBuilder.Entity<SetVocabulary>()
                 .HasIndex(sv => sv.Order);
+
+            // Configure DailyQuest
+            modelBuilder.Entity<DailyQuest>()
+                .Property(dq => dq.Title)
+                .HasMaxLength(100);
+
+            modelBuilder.Entity<DailyQuest>()
+                .Property(dq => dq.Description)
+                .HasMaxLength(300);
+
+            // Configure UserDailyQuest relationships
+            modelBuilder.Entity<UserDailyQuest>()
+                .HasOne(udq => udq.User)
+                .WithMany(u => u.UserDailyQuests)
+                .HasForeignKey(udq => udq.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserDailyQuest>()
+                .HasOne(udq => udq.DailyQuest)
+                .WithMany()
+                .HasForeignKey(udq => udq.DailyQuestId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<UserDailyQuest>()
+                .HasIndex(udq => new { udq.UserId, udq.DailyQuestId, udq.QuestDate })
+                .IsUnique();
         }
     }
 
