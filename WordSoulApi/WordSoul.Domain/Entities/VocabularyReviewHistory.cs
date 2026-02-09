@@ -1,4 +1,4 @@
-
+﻿
 
 namespace WordSoul.Domain.Entities
 {
@@ -25,5 +25,12 @@ namespace WordSoul.Domain.Entities
         public int Grade { get; set; } = 0; // Grade inferred from the review (0-5, based on SM-2)
 
         public string? Notes { get; set; } // Optional notes for additional context (e.g., "User struggled with synonyms")
+
+        public int EaseFactorBefore { get; set; }   // EF trước khi review
+        public int EaseFactorAfter { get; set; }    // EF sau khi review
+        public int IntervalBefore { get; set; }     // Interval cũ
+        public int IntervalAfter { get; set; }      // Interval mới
+        public DateTime? NextReviewBefore { get; set; }
+        public DateTime? NextReviewAfter { get; set; }
     }
 }

@@ -39,6 +39,14 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
                 .ToListAsync();
         }
 
+        // Lấy tất cả tiến trình học từ vựng của người dùng
+        public async Task<List<UserVocabularyProgress>> GetAllUserVocabularyProgressByUserAsync(int userId, CancellationToken ct = default)
+        {
+            return await _context.UserVocabularyProgresses
+                .Where(p => p.UserId == userId)
+                .ToListAsync(ct);
+        }
+
         //-------------------------------------UPDATE-------------------------------------------
 
         // Cập nhật thông số SRS cho tiến trình học từ vựng

@@ -11,6 +11,7 @@ using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Repositories;
 using WordSoul.Application.Interfaces.Services;
 using WordSoul.Application.Services;
+using WordSoul.Application.Services.SRS;
 using WordSoul.Infrastructure.BackgroundServices;
 
 //using WordSoul.Infrastructure.BackgroundServices;
@@ -149,6 +150,10 @@ builder.Services.AddScoped<IUserAchievementRepository, UserAchievementRepository
 // Upload Assests
 builder.Services.AddScoped<IUploadAssetsService, UploadAssetsService>();
 
+// SRS
+builder.Services.AddScoped<ISRSService, SRSService>();
+builder.Services.AddScoped<IVocabularyReviewHistoryRepository, VocabularyReviewHistoryRepository>();
+
 //Background Service
 builder.Services.AddHostedService<NotificationBackgroundService>();
 
@@ -156,7 +161,8 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddScoped<IRealtimeNotificationService, SignalRNotificationService>();
 
-
+// Register SRSAlgorithm
+builder.Services.AddScoped<SRSAlgorithm>();
 
 // Configure Cloudinary
 builder.Services.AddSingleton<Cloudinary>(sp =>

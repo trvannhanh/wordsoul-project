@@ -23,6 +23,7 @@ namespace WordSoul.Application.Services
         private readonly IUserVocabularyProgressService _userVocabularyProgressService;
         private readonly IActivityLogService _activityLogService;
         private readonly ISetRewardPetService _setRewardPetService;
+        private readonly ISRSService _srsService;
 
         /// <summary>
         /// Khởi tạo LearningSessionService.
@@ -33,7 +34,8 @@ namespace WordSoul.Application.Services
             IUserOwnedPetService userOwnedPetService,
             IUserVocabularyProgressService userVocabularyProgressService,
             IActivityLogService activityLogService,
-            ISetRewardPetService setRewardPetService)
+            ISetRewardPetService setRewardPetService,
+            ISRSService srsService)
         {
             _uow = uow;
             _logger = logger;
@@ -41,6 +43,7 @@ namespace WordSoul.Application.Services
             _userVocabularyProgressService = userVocabularyProgressService;
             _activityLogService = activityLogService;
             _setRewardPetService = setRewardPetService;
+            _srsService = srsService;
         }
 
         // ------------------------------------CREATE-----------------------------------------
@@ -394,6 +397,7 @@ namespace WordSoul.Application.Services
             SubmitAnswerRequestDto request,
             CancellationToken ct = default)
         {
+            //Validation
             if (request == null || request.VocabularyId <= 0)
                 throw new ArgumentException("Invalid request data");
 
@@ -408,6 +412,7 @@ namespace WordSoul.Application.Services
             var vocab = sessionVocab.Vocabulary
                 ?? throw new KeyNotFoundException();
 
+            // Kiểm tra câu trả lời
             var isCorrect = CheckAnswer(request, vocab);
 
             var progress = await _uow.UserVocabularyProgress
@@ -443,21 +448,26 @@ namespace WordSoul.Application.Services
             await EnsureUserVocabularyProgressAsync(userId, vocab.Id, ct);
 
             // 🔥 SRS CHỈ CHẠY Ở REVIEW SESSION + KHI TỪ ĐÃ HOÀN THÀNH
-            if (
-                session.Type == SessionType.Review &&
-                sessionVocab.CurrentLevel >= 2 &&
-                !sessionVocab.IsSrsEvaluated
-)
+            if (session.Type == SessionType.Review && sessionVocab.IsCompleted)
             {
-                var stats = await _uow.AnswerRecord
-                    .GetAnswerRecordFromSession(sessionId, vocab.Id, request.QuestionType, ct);
+                // Calculate final grade for this vocabulary
+                var allAttempts = await _uow.AnswerRecord
+                    .GetAllAnswerRecordAttemptsForVocabInSession(sessionId, vocab.Id, ct);
 
-                int grade = MapToSm2Grade(stats);
+                int grade = CalculateSm2Grade(
+                    isCorrect: sessionVocab.IsCompleted,
+                    attemptCount: allAttempts.Count,
+                    avgResponseTime: allAttempts.Average(a => a.ResponseTimeSeconds),
+                    totalHints: allAttempts.Sum(a => a.HintCount)
+                );
 
-                await _userVocabularyProgressService
-                    .UpdateProgressAfterReviewAsync(userId, vocab.Id, grade, ct);
+                // Update SRS
+                var srsResult = await _srsService.UpdateAfterReviewAsync(
+                    userId, vocab.Id, grade, ct);
 
-                sessionVocab.IsSrsEvaluated = true;
+                _logger.LogInformation(
+                    "Updated SRS for User {UserId}, Vocab {VocabId}: Grade={Grade}, NextReview={NextReview}",
+                    userId, vocab.Id, grade, srsResult.NextReviewDate);
             }
 
             // Log review history
@@ -500,25 +510,30 @@ namespace WordSoul.Application.Services
             };
         }
 
-        private static int MapToSm2Grade(AnswerRecord stats)
+        private static int CalculateSm2Grade(
+            bool isCorrect,
+            int attemptCount,
+            double avgResponseTime,
+            int totalHints)
         {
-            if (!stats.IsCorrect)
-                return 0; // forgot
-
-            //if (stats.FirstRecallAttempt == 1 && stats.TimeSpentSeconds <= 3)
-            //    return 5;
-
-            //if (stats.FirstRecallAttempt == 1)
-            //    return 4;
-
-            return stats.AttemptCount switch
+            if (!isCorrect)
             {
-                1 => 5, // đúng ngay
-                2 => 4, // sửa 1 lần
-                3 => 3, // sửa nhiều
-                _ => 2
-            };
+                return totalHints > 0 ? 1 : 0;
+            }
 
+            if (attemptCount == 1 && avgResponseTime <= 3 && totalHints == 0)
+                return 5;
+
+            if (attemptCount == 1 && avgResponseTime <= 8)
+                return 4;
+
+            if (attemptCount == 1)
+                return 3;
+
+            if (attemptCount == 2)
+                return 2;
+
+            return 1;
         }
 
         private static bool CheckAnswer(

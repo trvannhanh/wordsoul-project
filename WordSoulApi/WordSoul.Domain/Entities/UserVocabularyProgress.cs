@@ -19,6 +19,15 @@
         public int Repetition { get; set; } = 0; // Số lần nhớ đúng liên tiếp, nếu quên reset về 0, là yếu tố quyết định khoảng cách ôn và mức độ thành thạo
         public int LastGrade { get; set; } = 0; // Điểm chất lượng lần ôn tập trước (0-5), là input trực tiếp cho SM-2
 
+
+        public int CorrectCount { get; set; } = 0;         // Số lần đúng (toàn bộ)
+        public int WrongCount { get; set; } = 0;           // Số lần sai
+        public decimal RetentionScore { get; set; } = 0;   // % ghi nhớ (0-100)
+        public string MemoryState { get; set; } = "New";   // New/Learning/Review/Mastered
+        public DateTime? FirstLearnedAt { get; set; }      // Lần đầu học
+        public DateTime? MasteredAt { get; set; }          // Khi nào thuộc
+
+
         // Computed property for ProficiencyLevel
         public int ProficiencyLevel => Repetition switch
         {

@@ -27,6 +27,11 @@ namespace WordSoul.Application.Interfaces.Repositories
         /// </summary>
         Task<List<UserVocabularyProgress>> GetDueVocabulariesAsync(int userId, DateTime asOf, CancellationToken cancellationToken = default);
 
+        /// <summary>
+        /// Lấy tất cả tiến trình học từ vựng của người dùng.
+        /// </summary>
+        Task<List<UserVocabularyProgress>> GetAllUserVocabularyProgressByUserAsync(int userId, CancellationToken ct = default);
+
         // ----------------------------- UPDATE -----------------------------
         /// <summary>
         /// Cập nhật các tham số SRS của tiến trình học từ vựng.

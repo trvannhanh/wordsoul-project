@@ -231,6 +231,10 @@ namespace WordSoul.Infrastructure.Persistence
                 .HasForeignKey(sv => sv.VocabularyId)
                 .OnDelete(DeleteBehavior.Restrict); // Restrict delete if vocabulary is deleted, to prevent accidental loss of session vocabularies
 
+            modelBuilder.Entity<UserVocabularyProgress>()
+                .Property(x => x.RetentionScore)
+                .HasPrecision(5, 4);
+
             // Configure VocabularyReviewHistory relationships
             modelBuilder.Entity<VocabularyReviewHistory>()
                 .HasOne(vrh => vrh.User)

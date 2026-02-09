@@ -61,6 +61,14 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
             return record;
         }
 
+        public async Task<List<AnswerRecord>> GetAllAnswerRecordAttemptsForVocabInSession(
+            int sessionId, int vocabularyId, CancellationToken ct = default)
+        {
+            return await _context.AnswerRecords
+                .Where(a => a.LearningSessionId == sessionId && a.VocabularyId == vocabularyId)
+                .ToListAsync(ct);
+        }
+
         //------------------------------- UPDATE -----------------------------------
         // Cập nhật AnswerRecord
         public async Task<AnswerRecord> UpdateAnswerRecordAsync(AnswerRecord answerRecord, CancellationToken cancellationToken = default)
