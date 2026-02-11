@@ -4,6 +4,7 @@ using WordSoul.Application.DTOs.AnswerRecord;
 using WordSoul.Application.DTOs.LearningSession;
 using WordSoul.Application.DTOs.Pet;
 using WordSoul.Application.DTOs.QuizQuestion;
+using WordSoul.Application.DTOs.SRS;
 using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
 using WordSoul.Domain.Entities;
@@ -111,20 +112,24 @@ namespace WordSoul.Application.Services
         /// Tạo một phiên học ôn tập mới cho user.
         /// </summary>
         public async Task<LearningSessionDto> CreateReviewingSessionAsync(
-            int userId,
-            int wordCount = 5,
+            int userId, // Id người dùng
+            int wordCount = 5, // Số từ trong phiên ôn tập
             CancellationToken ct = default)
         {
+            // Validation
             if (userId <= 0) throw new ArgumentException("UserId must be greater than zero.", nameof(userId));
             if (wordCount <= 0) throw new ArgumentException("WordCount must be greater than zero.", nameof(wordCount));
 
+            // Kiểm tra session ôn tập chưa hoàn thành hiện có
             var existingSession = await _uow.LearningSession
                 .GetExistingReviewSessionUnCompletedForUserAsync(userId, ct);
 
+            // Nếu có session chưa hoàn thành, trả về session đó
             if (existingSession != null)
             {
                 _logger.LogInformation("User {UserId} already has an existing uncompleted review session", userId);
 
+                // Trả về session hiện tại
                 var correctAnswerNumber = await _uow.AnswerRecord.GetCorrectAnswerRecordNumberFromSession(existingSession.Id, ct);
                 return new LearningSessionDto
                 {
@@ -137,6 +142,9 @@ namespace WordSoul.Application.Services
                 };
             }
 
+            // có thêm biến đầu vào setID để lấy từ vựng từ bộ cụ thể...
+
+            // Lấy từ vựng chưa ôn tập 
             var vocabularies = await _uow.SetVocabulary.GetUnreviewdVocabulariesFromSetAsync(userId, wordCount, ct);
             if (!vocabularies.Any())
             {
@@ -151,14 +159,15 @@ namespace WordSoul.Application.Services
         /// Helper: tạo session và persist qua UnitOfWork.
         /// </summary>
         private async Task<LearningSessionDto> CreateSessionAsync(
-            int userId,
-            int? setId,
-            SessionType type,
-            IEnumerable<Vocabulary> vocabularies,
-            int? petId,
-            double? catchRate,
+            int userId, // Id người dùng
+            int? setId, // Id bộ từ vựng (nếu có)
+            SessionType type, // Loại session (Learning/Review)
+            IEnumerable<Vocabulary> vocabularies, // Danh sách từ vựng trong session
+            int? petId, // Id pet (nếu có)
+            double? catchRate, // Tỷ lệ bắt pet (nếu có)
             CancellationToken ct)
         {
+            // Tạo đối tượng LearningSession mới
             var session = new LearningSession
             {
                 UserId = userId,
@@ -199,20 +208,27 @@ namespace WordSoul.Application.Services
         /// </summary>
         public async Task<IEnumerable<QuizQuestionDto>> GetSessionQuestionsAsync(int sessionId, CancellationToken ct = default)
         {
+            // Validation
             var session = await _uow.LearningSession.GetLearningSessionByIdAsync(sessionId, ct);
             if (session?.IsCompleted == true) return Enumerable.Empty<QuizQuestionDto>();
 
+            // Lấy tất cả từ vựng trong session
             var sessionVocabs = await _uow.SessionVocabulary.GetSessionVocabulariesBySessionIdAsync(sessionId, ct);
+            // Lọc từ vựng chưa hoàn thành
             var incompleteVocabs = sessionVocabs.Where(sv => !sv.IsCompleted).ToList();
+            // Nếu tất cả từ vựng đã hoàn thành, trả về rỗng
             if (!incompleteVocabs.Any())
             {
                 _logger.LogInformation("All vocabularies completed for session {SessionId}", sessionId);
                 return Enumerable.Empty<QuizQuestionDto>();
             }
 
+            // Tạo danh sách câu hỏi quiz từ từ vựng chưa hoàn thành
             var allWords = sessionVocabs.Select(sv => sv.Vocabulary!.Word).ToList();
 
             var questions = new List<QuizQuestionDto>();
+
+            // Map level to question type
             var levelToType = new Dictionary<int, QuestionType>
             {
                 {0, QuestionType.Flashcard},
@@ -221,6 +237,7 @@ namespace WordSoul.Application.Services
                 {3, QuestionType.Listening}
             };
 
+            // Tạo câu hỏi cho từng từ vựng chưa hoàn thành
             foreach (var sv in incompleteVocabs)
             {
                 var vocab = sv.Vocabulary;
@@ -233,6 +250,7 @@ namespace WordSoul.Application.Services
             return questions.OrderBy(q => sessionVocabs.First(sv => sv.VocabularyId == q.VocabularyId).Order);
         }
 
+        // Helper: tạo QuizQuestionDto từ Vocabulary và QuestionType
         private QuizQuestionDto CreateQuizQuestionDto(Vocabulary vocab, QuestionType type, List<string> allWords, bool isRetry)
         {
             return new QuizQuestionDto
@@ -426,9 +444,10 @@ namespace WordSoul.Application.Services
                     progress.CorrectAttempt++;
             }
 
+            // Lưu AnswerRecord
             await SaveAnswerRecordAsync(sessionId, vocab.Id, request, isCorrect, ct);
 
-            // Update session vocabulary (gameplay)
+            // Cập nhật SessionVocabulary
             if (isCorrect)
             {
                 sessionVocab.CurrentLevel++;
@@ -445,15 +464,17 @@ namespace WordSoul.Application.Services
 
             await _uow.SessionVocabulary.UpdateSessionVocabularyAsync(sessionVocab, ct);
 
+            // Đảm bảo UserVocabularyProgress tồn tại
             await EnsureUserVocabularyProgressAsync(userId, vocab.Id, ct);
 
-            // 🔥 SRS CHỈ CHẠY Ở REVIEW SESSION + KHI TỪ ĐÃ HOÀN THÀNH
+            // Cập nhật SRS và lưu lịch sử ôn tập nếu là session ôn tập và từ đã hoàn thành
             if (session.Type == SessionType.Review && sessionVocab.IsCompleted)
             {
-                // Calculate final grade for this vocabulary
+                // Lấy tất cả các lần thử của từ này trong session
                 var allAttempts = await _uow.AnswerRecord
                     .GetAllAnswerRecordAttemptsForVocabInSession(sessionId, vocab.Id, ct);
 
+                // Tính toán grade SM-2
                 int grade = CalculateSm2Grade(
                     isCorrect: sessionVocab.IsCompleted,
                     attemptCount: allAttempts.Count,
@@ -461,30 +482,37 @@ namespace WordSoul.Application.Services
                     totalHints: allAttempts.Sum(a => a.HintCount)
                 );
 
-                // Update SRS
+                // Cập nhật SRS
                 var srsResult = await _srsService.UpdateAfterReviewAsync(
                     userId, vocab.Id, grade, ct);
 
                 _logger.LogInformation(
                     "Updated SRS for User {UserId}, Vocab {VocabId}: Grade={Grade}, NextReview={NextReview}",
                     userId, vocab.Id, grade, srsResult.NextReviewDate);
+
+
+                // Lưu lịch sử ôn tập
+                var reviewHistory = new VocabularyReviewHistory
+                {
+                    UserId = userId,
+                    VocabularyId = sessionVocab.VocabularyId,
+                    ReviewTime = DateTime.UtcNow,
+                    IsCorrect = isCorrect,
+                    ResponseTimeSeconds = request.ResponseTimeSeconds,
+                    HintCount = request.HintCount,
+                    QuestionType = request.QuestionType.ToString(),
+                    Grade = grade,
+                    EaseFactorBefore = srsResult.OldEaseFactor,
+                    EaseFactorAfter = srsResult.NewEaseFactor,
+                    IntervalBefore = srsResult.OldInterval,
+                    IntervalAfter = srsResult.NewInterval,
+                    NextReviewBefore = srsResult.OldNextReviewDate,
+                    NextReviewAfter = srsResult.NextReviewDate,
+                };
+
+                await _uow.VocabularyReviewHistory.CreateReviewHistoryAsync(reviewHistory, ct);
             }
 
-            // Log review history
-            var reviewHistory = new VocabularyReviewHistory
-            {
-                UserId = userId,
-                VocabularyId = sessionVocab.VocabularyId,
-                ReviewTime = DateTime.UtcNow,
-                IsCorrect = isCorrect,
-                ResponseTimeSeconds = request.ResponseTimeSeconds,
-                HintCount = request.HintCount,
-                QuestionType = request.QuestionType.ToString(),
-                Grade = InferGrade(isCorrect, request.ResponseTimeSeconds, request.HintCount, request.QuestionType),
-                Notes = isCorrect ? null : "User struggled with this question."
-            };
-
-            await _uow.VocabularyReviewHistory.CreateReviewHistoryAsync(reviewHistory, ct);
 
             await _uow.SaveChangesAsync(ct);
 
@@ -497,6 +525,7 @@ namespace WordSoul.Application.Services
             };
         }
 
+        // Helper: lấy catch rate theo rarity
         private static double GetPetCatchRate(PetRarity level)
         {
             return level switch
@@ -510,32 +539,45 @@ namespace WordSoul.Application.Services
             };
         }
 
+        // Helper: tính grade SM-2 dựa trên độ chính xác, số lần thử, thời gian phản hồi trung bình và tổng số gợi ý đã dùng
         private static int CalculateSm2Grade(
             bool isCorrect,
             int attemptCount,
             double avgResponseTime,
             int totalHints)
         {
+            // Failed - grade 0 or 1
             if (!isCorrect)
             {
                 return totalHints > 0 ? 1 : 0;
             }
 
+            // Correct - calculate grade based on speed and attempts
+            // Handle invalid avgResponseTime
+            if (double.IsNaN(avgResponseTime) || avgResponseTime < 0)
+                avgResponseTime = 10; // Default to slow
+
+            // Perfect recall: 1 attempt, fast, no hints
             if (attemptCount == 1 && avgResponseTime <= 3 && totalHints == 0)
                 return 5;
 
+            // Easy recall: 1 attempt, moderate speed
             if (attemptCount == 1 && avgResponseTime <= 8)
                 return 4;
 
+            // Good recall: 1 attempt but slow, or used hints
             if (attemptCount == 1)
                 return 3;
 
+            // Hard recall: needed 2 attempts
             if (attemptCount == 2)
                 return 2;
 
+            // Barely passed: 3+ attempts
             return 1;
         }
 
+        // Helper: kiểm tra câu trả lời đúng sai dựa trên loại câu hỏi
         private static bool CheckAnswer(
             SubmitAnswerRequestDto request,
             Vocabulary vocab)
@@ -553,6 +595,7 @@ namespace WordSoul.Application.Services
             };
         }
 
+        // Helper: đảm bảo UserVocabularyProgress tồn tại cho user và vocab
         private async Task EnsureUserVocabularyProgressAsync(
             int userId,
             int vocabId,
@@ -577,6 +620,7 @@ namespace WordSoul.Application.Services
                 .CreateUserVocabularyProgressAsync(progress, ct);
         }
 
+        // Helper: lưu AnswerRecord cho câu trả lời
         private async Task SaveAnswerRecordAsync(
             int sessionId,
             int vocabId,
@@ -611,15 +655,5 @@ namespace WordSoul.Application.Services
             await _uow.AnswerRecord.UpdateAnswerRecordAsync(record, ct);
         }
 
-        private static int InferGrade(bool isCorrect, double responseTimeSeconds, int hintCount, QuestionType questionType)
-        {
-            if (!isCorrect) return 0;
-
-            if (responseTimeSeconds <= 3 && hintCount == 0) return 5;
-            if (responseTimeSeconds <= 5 && hintCount <= 1) return 4;
-            if (responseTimeSeconds <= 10) return 3;
-
-            return 2;
-        }
     }
 }

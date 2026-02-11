@@ -144,6 +144,11 @@ namespace WordSoul.Application.Services.SRS
             // Combined score (capped at 100)
             return Math.Min(accuracy + repetitionBonus, 100);
         }
+
+        public string GetMemoryState(int repetition, int interval)
+        {
+            return DetermineMemoryState(repetition, interval);
+        }
     }
 
     

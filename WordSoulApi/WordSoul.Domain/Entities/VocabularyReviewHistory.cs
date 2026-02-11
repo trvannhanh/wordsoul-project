@@ -26,8 +26,8 @@ namespace WordSoul.Domain.Entities
 
         public string? Notes { get; set; } // Optional notes for additional context (e.g., "User struggled with synonyms")
 
-        public int EaseFactorBefore { get; set; }   // EF trước khi review
-        public int EaseFactorAfter { get; set; }    // EF sau khi review
+        public double EaseFactorBefore { get; set; }   // EF trước khi review
+        public double EaseFactorAfter { get; set; }    // EF sau khi review
         public int IntervalBefore { get; set; }     // Interval cũ
         public int IntervalAfter { get; set; }      // Interval mới
         public DateTime? NextReviewBefore { get; set; }

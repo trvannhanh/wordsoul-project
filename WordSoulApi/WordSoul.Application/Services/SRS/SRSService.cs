@@ -32,11 +32,17 @@ namespace WordSoul.Application.Services.SRS
             var progress = await _uow.UserVocabularyProgress
                 .GetUserVocabularyProgressAsync(userId, vocabularyId, ct);
 
+
             if (progress == null)
             {
                 throw new KeyNotFoundException(
                     $"Progress not found for User {userId}, Vocab {vocabularyId}");
             }
+
+            var oldEF = progress.EasinessFactor;
+            var oldInterval = progress.Interval;
+            var oldRep = progress.Repetition;
+            var oldNextReview = progress.NextReviewTime;
 
             // 2. Save state before update (for history)
             var stateBefore = new
@@ -63,6 +69,7 @@ namespace WordSoul.Application.Services.SRS
             progress.LastGrade = grade;
             progress.LastUpdated = DateTime.UtcNow;
 
+
             // Update counts
             if (grade >= 3)
             {
@@ -81,6 +88,9 @@ namespace WordSoul.Application.Services.SRS
                 progress.Repetition
             );
 
+            progress.RetentionScore = retentionScore;
+
+
             // Check if just mastered
             if (srsResult.MemoryState == "Mastered" && progress.MasteredAt == null)
             {
@@ -92,6 +102,8 @@ namespace WordSoul.Application.Services.SRS
                 // TODO: Trigger achievement "Master 10 words"
             }
 
+            progress.MemoryState = srsResult.MemoryState;
+
             // Set first learned date if not set
             if (progress.FirstLearnedAt == null)
             {
@@ -101,30 +113,6 @@ namespace WordSoul.Application.Services.SRS
             // 5. Save to database
             await _uow.UserVocabularyProgress.UpdateSrsParametersAsync(progress, ct);
 
-            // 6. Log to review history (with before/after snapshot)
-            var history = new VocabularyReviewHistory
-            {
-                UserId = userId,
-                VocabularyId = vocabularyId,
-                ReviewTime = DateTime.UtcNow,
-                Grade = grade,
-                IsCorrect = grade >= 3,
-
-                // Store snapshot for analysis
-                Notes = System.Text.Json.JsonSerializer.Serialize(new
-                {
-                    before = stateBefore,
-                    after = new
-                    {
-                        EF = srsResult.NewEaseFactor,
-                        Interval = srsResult.NewInterval,
-                        Repetition = srsResult.NewRepetition,
-                        NextReview = srsResult.NextReviewDate
-                    }
-                })
-            };
-
-            await _uow.VocabularyReviewHistory.CreateReviewHistoryAsync(history, ct);
 
             // 7. Commit transaction
             await _uow.SaveChangesAsync(ct);
@@ -138,7 +126,12 @@ namespace WordSoul.Application.Services.SRS
                 NextReviewDate = srsResult.NextReviewDate,
                 MemoryState = srsResult.MemoryState,
                 RetentionScore = retentionScore,
-                Message = GetEncouragingMessage(grade, srsResult.MemoryState)
+                Message = GetEncouragingMessage(grade, srsResult.MemoryState),
+
+                OldEaseFactor = oldEF,
+                OldInterval = oldInterval,
+                OldRepetition = oldRep,
+                OldNextReviewDate = oldNextReview,
             };
         }
 

@@ -62,11 +62,15 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
         }
 
         public async Task<List<AnswerRecord>> GetAllAnswerRecordAttemptsForVocabInSession(
-            int sessionId, int vocabularyId, CancellationToken ct = default)
+            int sessionId,
+            int vocabularyId,
+            CancellationToken cancellationToken = default)
         {
             return await _context.AnswerRecords
-                .Where(a => a.LearningSessionId == sessionId && a.VocabularyId == vocabularyId)
-                .ToListAsync(ct);
+                .Where(ar => ar.LearningSessionId == sessionId
+                          && ar.VocabularyId == vocabularyId)
+                .OrderBy(ar => ar.CreatedAt)
+                .ToListAsync(cancellationToken);
         }
 
         //------------------------------- UPDATE -----------------------------------
