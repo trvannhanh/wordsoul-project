@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using WordSoul.Application.Common;
 using WordSoul.Application.DTOs.SRS;
 using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
@@ -11,15 +12,18 @@ namespace WordSoul.Application.Services.SRS
         private readonly IUnitOfWork _uow;
         private readonly SRSAlgorithm _algorithm;
         private readonly ILogger<SRSService> _logger;
+        private readonly ITimeProvider _timeProvider;
 
         public SRSService(
             IUnitOfWork uow,
             SRSAlgorithm algorithm,
-            ILogger<SRSService> logger)
+            ILogger<SRSService> logger,
+            ITimeProvider timeProvider)
         {
             _uow = uow;
             _algorithm = algorithm;
             _logger = logger;
+            _timeProvider = timeProvider;
         }
 
         public async Task<SRSUpdateResult> UpdateAfterReviewAsync(
@@ -67,7 +71,7 @@ namespace WordSoul.Application.Services.SRS
             progress.Repetition = srsResult.NewRepetition;
             progress.NextReviewTime = srsResult.NextReviewDate;
             progress.LastGrade = grade;
-            progress.LastUpdated = DateTime.UtcNow;
+            progress.LastUpdated = _timeProvider.UtcNow;
 
 
             // Update counts
@@ -94,7 +98,7 @@ namespace WordSoul.Application.Services.SRS
             // Check if just mastered
             if (srsResult.MemoryState == "Mastered" && progress.MasteredAt == null)
             {
-                progress.MasteredAt = DateTime.UtcNow;
+                progress.MasteredAt = _timeProvider.UtcNow;
                 _logger.LogInformation(
                     "User {UserId} mastered vocabulary {VocabId}",
                     userId, vocabularyId);
@@ -107,7 +111,7 @@ namespace WordSoul.Application.Services.SRS
             // Set first learned date if not set
             if (progress.FirstLearnedAt == null)
             {
-                progress.FirstLearnedAt = DateTime.UtcNow;
+                progress.FirstLearnedAt = _timeProvider.UtcNow;
             }
 
             // 5. Save to database
@@ -140,7 +144,7 @@ namespace WordSoul.Application.Services.SRS
             int limit = 20,
             CancellationToken ct = default)
         {
-            var now = DateTime.UtcNow;
+            var now = _timeProvider.UtcNow;
 
             var dueProgresses = await _uow.UserVocabularyProgress
                 .GetDueVocabulariesAsync(userId, now, ct);

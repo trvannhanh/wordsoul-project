@@ -43,6 +43,10 @@ namespace WordSoul.Application.Interfaces.Repositories
             List<string> words,
             CancellationToken cancellationToken = default);
 
+        Task<List<Vocabulary>> GetVocabulariesByIdsAsync(
+            List<int> ids,
+            CancellationToken ct = default);
+
         // ----------------------------- UPDATE -----------------------------
         /// <summary>
         /// Cập nhật thông tin từ vựng.

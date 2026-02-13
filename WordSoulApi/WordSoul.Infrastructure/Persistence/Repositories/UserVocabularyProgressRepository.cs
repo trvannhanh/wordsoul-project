@@ -35,8 +35,10 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
         public async Task<List<UserVocabularyProgress>> GetDueVocabulariesAsync(int userId, DateTime asOf, CancellationToken cancellationToken = default)
         {
             return await _context.UserVocabularyProgresses
-                .Where(p => p.UserId == userId && p.NextReviewTime <= asOf)
-                .ToListAsync();
+                        .Include(p => p.Vocabulary)
+                        .Where(p => p.UserId == userId
+                                 && p.NextReviewTime <= asOf)
+                        .ToListAsync(cancellationToken: cancellationToken);
         }
 
         // Lấy tất cả tiến trình học từ vựng của người dùng
@@ -44,6 +46,15 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
         {
             return await _context.UserVocabularyProgresses
                 .Where(p => p.UserId == userId)
+                .ToListAsync(ct);
+        }
+
+        public async Task<List<UserVocabularyProgress>> GetDueProgressesAsync(int userId, DateTime now, CancellationToken ct = default)
+        {
+            return await _context.UserVocabularyProgresses
+                .Include(x => x.Vocabulary)
+                .Where(x => x.UserId == userId
+                         && x.NextReviewTime <= now)
                 .ToListAsync(ct);
         }
 

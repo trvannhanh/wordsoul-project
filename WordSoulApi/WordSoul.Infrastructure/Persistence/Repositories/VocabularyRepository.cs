@@ -72,6 +72,15 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
                 .ToListAsync(cancellationToken);
         }
 
+        public async Task<List<Vocabulary>> GetVocabulariesByIdsAsync(
+                                            List<int> ids,
+                                            CancellationToken ct = default)
+        {
+            return await _context.Vocabularies
+                .Where(v => ids.Contains(v.Id))
+                .ToListAsync(ct);
+        }
+
         // -------------------------------------UPDATE-----------------------------------------
         // Cập nhật từ vựng
         public Task<Vocabulary> UpdateVocabularyAsync(Vocabulary vocabulary, CancellationToken cancellationToken = default)

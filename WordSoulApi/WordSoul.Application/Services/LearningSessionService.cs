@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
+using WordSoul.Application.Common;
 using WordSoul.Application.DTOs.AnswerRecord;
 using WordSoul.Application.DTOs.LearningSession;
 using WordSoul.Application.DTOs.Pet;
@@ -25,6 +26,7 @@ namespace WordSoul.Application.Services
         private readonly IActivityLogService _activityLogService;
         private readonly ISetRewardPetService _setRewardPetService;
         private readonly ISRSService _srsService;
+        private readonly ITimeProvider _timeProvider;
 
         /// <summary>
         /// Khởi tạo LearningSessionService.
@@ -36,7 +38,8 @@ namespace WordSoul.Application.Services
             IUserVocabularyProgressService userVocabularyProgressService,
             IActivityLogService activityLogService,
             ISetRewardPetService setRewardPetService,
-            ISRSService srsService)
+            ISRSService srsService,
+            ITimeProvider timeProvider)
         {
             _uow = uow;
             _logger = logger;
@@ -45,6 +48,7 @@ namespace WordSoul.Application.Services
             _activityLogService = activityLogService;
             _setRewardPetService = setRewardPetService;
             _srsService = srsService;
+            _timeProvider = timeProvider;
         }
 
         // ------------------------------------CREATE-----------------------------------------
@@ -144,13 +148,19 @@ namespace WordSoul.Application.Services
 
             // có thêm biến đầu vào setID để lấy từ vựng từ bộ cụ thể...
 
-            // Lấy từ vựng chưa ôn tập 
-            var vocabularies = await _uow.SetVocabulary.GetUnreviewdVocabulariesFromSetAsync(userId, wordCount, ct);
-            if (!vocabularies.Any())
+            var dueDtos = await _srsService.GetDueVocabulariesAsync(userId, wordCount, ct);
+
+            if (!dueDtos.Any())
             {
-                _logger.LogInformation("No unreviewed vocabularies for user {UserId}", userId);
-                throw new InvalidOperationException("No unreviewed vocabularies available");
+                _logger.LogInformation("No due vocabularies for user {UserId}", userId);
+                throw new InvalidOperationException("No vocabularies due for review");
             }
+
+            // Lấy Vocabulary entities từ DB
+            var vocabIds = dueDtos.Select(d => d.VocabularyId).ToList();
+
+            var vocabularies = await _uow.Vocabulary
+                .GetVocabulariesByIdsAsync(vocabIds, ct);
 
             return await CreateSessionAsync(userId, null, SessionType.Review, vocabularies, null, null, ct);
         }
@@ -173,7 +183,7 @@ namespace WordSoul.Application.Services
                 UserId = userId,
                 VocabularySetId = setId,
                 Type = type,
-                StartTime = DateTime.UtcNow,
+                StartTime = _timeProvider.UtcNow,
                 IsCompleted = false,
                 SessionVocabularies = vocabularies.Select((v, index) => new SessionVocabulary
                 {
@@ -296,7 +306,7 @@ namespace WordSoul.Application.Services
 
             // Update session
             session.IsCompleted = true;
-            session.EndTime = DateTime.UtcNow;
+            session.EndTime = _timeProvider.UtcNow;
             await _uow.LearningSession.UpdateLearningSessionAsync(session, ct);
 
             await _activityLogService.CreateActivityLogAsync(userId, "SessionCompletion", "User completed session", ct);
@@ -464,8 +474,13 @@ namespace WordSoul.Application.Services
 
             await _uow.SessionVocabulary.UpdateSessionVocabularyAsync(sessionVocab, ct);
 
+            
+
             // Đảm bảo UserVocabularyProgress tồn tại
             await EnsureUserVocabularyProgressAsync(userId, vocab.Id, ct);
+
+            await _uow.SaveChangesAsync(ct);
+
 
             // Cập nhật SRS và lưu lịch sử ôn tập nếu là session ôn tập và từ đã hoàn thành
             if (session.Type == SessionType.Review && sessionVocab.IsCompleted)
@@ -496,7 +511,7 @@ namespace WordSoul.Application.Services
                 {
                     UserId = userId,
                     VocabularyId = sessionVocab.VocabularyId,
-                    ReviewTime = DateTime.UtcNow,
+                    ReviewTime = _timeProvider.UtcNow,
                     IsCorrect = isCorrect,
                     ResponseTimeSeconds = request.ResponseTimeSeconds,
                     HintCount = request.HintCount,
@@ -511,10 +526,8 @@ namespace WordSoul.Application.Services
                 };
 
                 await _uow.VocabularyReviewHistory.CreateReviewHistoryAsync(reviewHistory, ct);
+                await _uow.SaveChangesAsync(ct);
             }
-
-
-            await _uow.SaveChangesAsync(ct);
 
             return new SubmitAnswerResponseDto
             {
@@ -613,7 +626,7 @@ namespace WordSoul.Application.Services
                 EasinessFactor = 2.5,
                 Interval = 1,
                 Repetition = 0,
-                NextReviewTime = DateTime.UtcNow.AddDays(1)
+                NextReviewTime = _timeProvider.UtcNow.AddDays(1)
             };
 
             await _uow.UserVocabularyProgress
@@ -631,28 +644,20 @@ namespace WordSoul.Application.Services
             var attempt = await _uow.AnswerRecord
                 .GetAttemptCountAsync(sessionId, vocabId, request.QuestionType, ct);
 
-            var record = await _uow.AnswerRecord
-                .GetAnswerRecordFromSession(sessionId, vocabId, request.QuestionType, ct);
-
-            if (record == null)
+            var record = new AnswerRecord
             {
-                record = new AnswerRecord
-                {
-                    LearningSessionId = sessionId,
-                    VocabularyId = vocabId,
-                    QuestionType = request.QuestionType,
-                    Answer = string.Empty
-                };
+                LearningSessionId = sessionId,
+                VocabularyId = vocabId,
+                QuestionType = request.QuestionType,
+                Answer = request.Answer,
+                AttemptCount = attempt + 1,
+                IsCorrect = isCorrect,
+                HintCount = request.HintCount,
+                ResponseTimeSeconds = request.ResponseTimeSeconds,
+                CreatedAt = _timeProvider.UtcNow
+            };
 
-                await _uow.AnswerRecord.CreateAnswerRecordAsync(record, ct);
-            }
-
-            record.Answer = request.Answer;
-            record.AttemptCount = attempt + 1;
-            record.IsCorrect = isCorrect;
-            record.CreatedAt = DateTime.UtcNow;
-
-            await _uow.AnswerRecord.UpdateAnswerRecordAsync(record, ct);
+            await _uow.AnswerRecord.CreateAnswerRecordAsync(record, ct);
         }
 
     }
