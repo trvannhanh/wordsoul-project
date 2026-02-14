@@ -51,11 +51,7 @@ namespace WordSoul.Application.Services
                 return null;
             }
 
-            await _activityLogService.CreateActivityLogAsync(
-                user.Id,
-                "Login",
-                "User logged in",
-                ct);
+            await _activityLogService.TrackUserLoginAsync(user.Id, ct);
 
             return await CreateTokenResponse(user, ct);
         }
@@ -95,6 +91,9 @@ namespace WordSoul.Application.Services
 
             await _uow.UserAchievement.BulkCreateUserAchievementAsync(userAchievements, ct);
             await _uow.SaveChangesAsync(ct);
+
+
+            await _activityLogService.TrackUserRegisterAsync(user.Id, ct);
 
             return new UserDto
             {

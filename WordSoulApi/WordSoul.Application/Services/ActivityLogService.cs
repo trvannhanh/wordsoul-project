@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using WordSoul.Application.Common.Constants;
 using WordSoul.Application.DTOs;
 using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
@@ -30,41 +31,189 @@ namespace WordSoul.Application.Services
         {
             if (userId <= 0)
                 throw new ArgumentException("userId must be greater than 0.");
-            if (string.IsNullOrEmpty(action))
+
+            if (string.IsNullOrWhiteSpace(action))
                 throw new ArgumentException("action cannot be null or empty.");
 
-            try
-            {
-                _logger.LogInformation(
-                    "Creating activity log for user {UserId}, action: {Action}",
-                    userId, action);
+            const int maxRetry = 3;
+            int attempt = 0;
 
-                var activityLog = new ActivityLog
+            while (true)
+            {
+                try
                 {
-                    UserId = userId,
-                    Action = action,
-                    Details = details,
-                    Timestamp = DateTime.UtcNow
-                };
+                    attempt++;
 
-                await _uow.ActivityLog.CreateActivityLogAsync(activityLog, ct);
-                await _uow.SaveChangesAsync(ct);
+                    _logger.LogInformation(
+                        "Tracking event {Action} for User {UserId} (Attempt {Attempt})",
+                        action, userId, attempt);
 
-                _logger.LogInformation("Successfully created activity log for user {UserId}", userId);
+                    var activityLog = new ActivityLog
+                    {
+                        UserId = userId,
+                        Action = action,
+                        Details = details,
+                        Timestamp = DateTime.UtcNow
+                    };
 
-                _cache.Remove($"ActivityLogs_User_{userId}_1_10");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex,
-                    "Error creating activity log for user {UserId}, action: {Action}",
-                    userId, action);
+                    await _uow.ActivityLog.CreateActivityLogAsync(activityLog, ct);
+                    await _uow.SaveChangesAsync(ct);
 
-                throw new Exception(
-                    $"Error creating activity log for user {userId}: {ex.Message}",
-                    ex);
+                    _logger.LogInformation(
+                        "Event {Action} for User {UserId} saved successfully",
+                        action, userId);
+
+                    _cache.Remove($"ActivityLogs_User_{userId}_1_10");
+
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex,
+                        "Failed to save event {Action} for User {UserId}, Attempt {Attempt}",
+                        action, userId, attempt);
+
+                    if (attempt >= maxRetry)
+                    {
+                        _logger.LogError(ex,
+                            "Event tracking permanently failed for User {UserId}, Action {Action}",
+                            userId, action);
+
+                        // Không throw để tránh làm crash luồng chính
+                        return;
+                    }
+
+                    await Task.Delay(200 * attempt, ct);
+                }
             }
         }
+
+        public Task TrackUserLoginAsync(int userId, CancellationToken ct = default)
+        {
+            return CreateActivityLogAsync(
+                userId,
+                ActivityActions.UserLogin,
+                "User logged in",
+                ct);
+        }
+
+        public Task TrackUserLogoutAsync(int userId, CancellationToken ct = default)
+        {
+            return CreateActivityLogAsync(
+                userId,
+                ActivityActions.UserLogout,
+                "User logged out",
+                ct);
+        }
+
+        public Task TrackUserRegisterAsync(int userId, CancellationToken ct = default)
+        {
+            return CreateActivityLogAsync(
+                userId,
+                ActivityActions.UserRegister,
+                "User registered an account",
+                ct);
+        }
+
+        public Task TrackStartLearningSessionAsync(int userId, int sessionId, CancellationToken ct = default)
+        {
+            return CreateActivityLogAsync(
+                userId,
+                ActivityActions.StartLearningSession,
+                $"Started session {sessionId}",
+                ct);
+        }
+
+        public Task TrackFinishLearningSessionAsync(int userId, int sessionId, CancellationToken ct = default)
+        {
+            return CreateActivityLogAsync(
+                userId,
+                ActivityActions.FinishLearningSession,
+                $"Finished session {sessionId}",
+                ct);
+        }
+
+        public Task TrackAnswerQuestionAsync(int userId, int vocabularyId, bool isCorrect, CancellationToken ct = default)
+        {
+            return CreateActivityLogAsync(
+                userId,
+                ActivityActions.AnswerQuestion,
+                $"VocabularyId={vocabularyId}, Correct={isCorrect}",
+                ct);
+        }
+
+
+        public Task TrackVocabularyReviewedAsync(int userId, int vocabularyId, CancellationToken ct = default)
+        {
+            return CreateActivityLogAsync(
+                userId,
+                ActivityActions.VocabularyReviewed,
+                $"VocabularyId={vocabularyId}", ct);
+        }
+
+        public Task TrackPetUnlockedAsync(int userId, int petId, CancellationToken ct = default)
+        {
+            return CreateActivityLogAsync(
+                userId,
+                ActivityActions.PetUnlocked,
+                $"PetId={petId}",
+                ct);
+        }
+
+        public Task TrackPetUpgradedAsync(int userId, int petId, CancellationToken ct = default)
+        {
+            return CreateActivityLogAsync(
+                userId,
+                ActivityActions.PetUpgraded,
+                $"PetId={petId}",
+                ct);
+        }
+
+        public Task TrackRewardClaimedAsync(int userId, int rewardId, CancellationToken ct = default)
+        {
+            return CreateActivityLogAsync(
+                userId,
+                ActivityActions.RewardClaimed,
+                $"RewardId={rewardId}",
+                ct);
+        }
+
+        public Task TrackQuestClaimedAsync(int userId, int questId, CancellationToken ct = default)
+        {
+            return CreateActivityLogAsync(
+                userId,
+                ActivityActions.QuestClaimed,
+                $"QuestId={questId}",
+                ct);
+        }
+
+        public Task TrackAchievementUnlockedAsync(int userId, int achievementId, CancellationToken ct = default)
+        {
+            return CreateActivityLogAsync(
+                userId,
+                ActivityActions.AchievementUnlocked,
+                $"AchievementId={achievementId}",
+                ct);
+        }
+
+        public Task TrackDailyStreakIncreasedAsync(int userId, int newStreakCount, CancellationToken ct = default)
+        {
+            return CreateActivityLogAsync(
+                userId,
+                ActivityActions.DailyStreakIncreased,
+                $"NewStreakCount={newStreakCount}",
+                ct);
+        }
+
+        public Task TrackDailyStreakBrokenAsync(int userId, int previousStreakCount, CancellationToken ct = default)
+        {
+            return CreateActivityLogAsync(
+                userId,
+                ActivityActions.DailyStreakBroken,
+                $"PreviousStreakCount={previousStreakCount}",
+                ct);
+        }
+
 
         // -------------------------------------READ-------------------------------------------
 

@@ -75,6 +75,7 @@ namespace WordSoul.Application.Services
                 _logger.LogInformation("User {UserId} already has an existing uncompleted learning session for set {SetId}", userId, setId);
 
                 var correctAnswerNumber = await _uow.AnswerRecord.GetCorrectAnswerRecordNumberFromSession(existingSession.Id, ct);
+
                 return new LearningSessionDto
                 {
                     Id = existingSession.Id,
@@ -108,6 +109,7 @@ namespace WordSoul.Application.Services
             }
 
             var petCatchRate = GetPetCatchRate(randomPet.Rarity);
+
 
             return await CreateSessionAsync(userId, setId, SessionType.Learning, vocabularies, randomPet.Id, petCatchRate, ct);
         }
@@ -198,6 +200,8 @@ namespace WordSoul.Application.Services
 
             var savedSession = await _uow.LearningSession.CreateLearningSessionAsync(session, ct);
             await _uow.SaveChangesAsync(ct);
+
+            await _activityLogService.TrackStartLearningSessionAsync(userId, savedSession.Id, ct);
 
             return new LearningSessionDto
             {
@@ -309,7 +313,7 @@ namespace WordSoul.Application.Services
             session.EndTime = _timeProvider.UtcNow;
             await _uow.LearningSession.UpdateLearningSessionAsync(session, ct);
 
-            await _activityLogService.CreateActivityLogAsync(userId, "SessionCompletion", "User completed session", ct);
+            await _activityLogService.TrackFinishLearningSessionAsync(userId, sessionId, ct);
 
             int xpEarned = sessionType == SessionType.Learning ? 10 : 5;
             int apEarned = sessionType == SessionType.Review ? 3 : 0;
@@ -527,7 +531,12 @@ namespace WordSoul.Application.Services
 
                 await _uow.VocabularyReviewHistory.CreateReviewHistoryAsync(reviewHistory, ct);
                 await _uow.SaveChangesAsync(ct);
+
+                await _activityLogService.TrackVocabularyReviewedAsync(userId, vocab.Id, ct);
             }
+
+
+            await _activityLogService.TrackAnswerQuestionAsync(userId, vocab.Id, isCorrect);
 
             return new SubmitAnswerResponseDto
             {
