@@ -26,7 +26,9 @@ namespace WordSoul.Application.Interfaces
         IUserVocabularySetRepository UserVocabularySet { get; }
         IUserOwnedPetRepository UserOwnedPet { get; }
         IVocabularyReviewHistoryRepository VocabularyReviewHistory { get; }
-        
+        IUserDailyQuestRepository UserDailyQuest { get; }
+        IDailyQuestRepository DailyQuest { get; }
+
 
         Task<int> SaveChangesAsync(CancellationToken ct = default);
         Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken ct = default);

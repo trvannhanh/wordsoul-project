@@ -7,12 +7,15 @@ using Serilog;
 using System.Text;
 using WordSoul.Api.Hubs;
 using WordSoul.Api.Services;
+using WordSoul.Application.Common;
 using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Repositories;
 using WordSoul.Application.Interfaces.Services;
 using WordSoul.Application.Services;
 using WordSoul.Application.Services.SRS;
 using WordSoul.Infrastructure.BackgroundServices;
+using WordSoul.Infrastructure.Common;
+
 
 //using WordSoul.Infrastructure.BackgroundServices;
 using WordSoul.Infrastructure.Persistence;
@@ -164,6 +167,9 @@ builder.Services.AddScoped<IRealtimeNotificationService, SignalRNotificationServ
 // Register SRSAlgorithm
 builder.Services.AddScoped<SRSAlgorithm>();
 
+builder.Services.AddScoped<ITimeProvider, SystemTimeProvider>();
+builder.Services.AddScoped<IDailyQuestService, DailyQuestService>();
+
 // Configure Cloudinary
 builder.Services.AddSingleton<Cloudinary>(sp =>
 {
@@ -175,6 +181,7 @@ builder.Services.AddSingleton<Cloudinary>(sp =>
         cloudinarySettings["ApiSecret"]);
     return new Cloudinary(account);
 });
+
 
 
 var app = builder.Build();

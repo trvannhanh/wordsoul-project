@@ -22,17 +22,20 @@ namespace WordSoul.Application.Services
         private readonly IUnitOfWork _uow;
         private readonly IConfiguration _configuration;
         private readonly IActivityLogService _activityLogService;
+        private readonly IDailyQuestService _dailyQuestService;
         private readonly ILogger<AuthService> _logger;
 
         public AuthService(
             IUnitOfWork uow,
             IConfiguration configuration,
             IActivityLogService activityLogService,
+            IDailyQuestService dailyQuestService,
             ILogger<AuthService> logger)
         {
             _uow = uow;
             _configuration = configuration;
             _activityLogService = activityLogService;
+            _dailyQuestService = dailyQuestService;
             _logger = logger;
         }
 
@@ -52,6 +55,7 @@ namespace WordSoul.Application.Services
             }
 
             await _activityLogService.TrackUserLoginAsync(user.Id, ct);
+            await _dailyQuestService.GenerateDailyQuestsForUserAsync(user.Id);
 
             return await CreateTokenResponse(user, ct);
         }

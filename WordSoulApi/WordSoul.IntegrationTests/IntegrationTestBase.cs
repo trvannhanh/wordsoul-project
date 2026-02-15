@@ -103,6 +103,8 @@ namespace WordSoul.IntegrationTests
         public IAuthRepository Auth { get; }
         public IActivityLogRepository ActivityLog { get; }
         public IAchievementRepository Achievement { get; }
+        public IDailyQuestRepository DailyQuest { get; }
+        public IUserDailyQuestRepository UserDailyQuest { get; }    
         // ... other repositories
 
         public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

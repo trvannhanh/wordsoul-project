@@ -28,6 +28,8 @@ namespace WordSoul.Infrastructure.Persistence
         private IVocabularyRepository? _vocabulary;
         private IVocabularySetRepository? _vocabularySet;
         private IVocabularyReviewHistoryRepository? _vocabularyReviewHistory;
+        private IUserDailyQuestRepository? _userDailyQuest;
+        private IDailyQuestRepository? _dailyQuest;
 
         public UnitOfWork(WordSoulDbContext context)
         {
@@ -73,6 +75,12 @@ namespace WordSoul.Infrastructure.Persistence
             _userOwnedPet ??= new UserOwnedPetRepository(_context);
         public IVocabularyReviewHistoryRepository VocabularyReviewHistory =>
             _vocabularyReviewHistory ??= new VocabularyReviewHistoryRepository(_context);
+
+        public IUserDailyQuestRepository UserDailyQuest => 
+            _userDailyQuest ??= new UserDailyQuestRepository(_context);
+
+        public IDailyQuestRepository DailyQuest => 
+            _dailyQuest ??= new DailyQuestRepository(_context);
 
         public async Task<int> SaveChangesAsync(CancellationToken ct = default)
         {

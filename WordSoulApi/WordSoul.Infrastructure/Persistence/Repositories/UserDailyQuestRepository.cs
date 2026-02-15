@@ -32,10 +32,14 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
             DateTime questDate,
             CancellationToken cancellationToken = default)
         {
+            var start = questDate.Date;
+            var end = start.AddDays(1);
+
             return await _context.UserDailyQuests
                 .Include(x => x.DailyQuest)
                 .Where(x => x.UserId == userId
-                         && x.QuestDate == questDate.Date)
+                         && x.QuestDate >= start
+                         && x.QuestDate < end)
                 .ToListAsync(cancellationToken);
         }
 
