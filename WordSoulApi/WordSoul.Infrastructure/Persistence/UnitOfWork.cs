@@ -30,6 +30,7 @@ namespace WordSoul.Infrastructure.Persistence
         private IVocabularyReviewHistoryRepository? _vocabularyReviewHistory;
         private IUserDailyQuestRepository? _userDailyQuest;
         private IDailyQuestRepository? _dailyQuest;
+        private IUserItemRepository? _userItem;
 
         public UnitOfWork(WordSoulDbContext context)
         {
@@ -81,6 +82,9 @@ namespace WordSoul.Infrastructure.Persistence
 
         public IDailyQuestRepository DailyQuest => 
             _dailyQuest ??= new DailyQuestRepository(_context);
+
+        public IUserItemRepository UserItem => 
+            _userItem ??= new UserItemRepository(_context);
 
         public async Task<int> SaveChangesAsync(CancellationToken ct = default)
         {

@@ -144,6 +144,7 @@ namespace WordSoul.Infrastructure.Persistence
             modelBuilder.Entity<UserItem>()
                .HasKey(ui => ui.Id); // Đặt Id là khóa chính
 
+
             modelBuilder.Entity<UserItem>()
                 .Property(ui => ui.Id)
                 .ValueGeneratedOnAdd(); // Tự động tăng
