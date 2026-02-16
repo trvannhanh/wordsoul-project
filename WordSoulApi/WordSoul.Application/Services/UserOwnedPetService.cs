@@ -3,6 +3,7 @@ using WordSoul.Application.DTOs.Pet;
 using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
 using WordSoul.Domain.Entities;
+using WordSoul.Domain.Enums;
 
 namespace WordSoul.Application.Services
 {
@@ -10,15 +11,18 @@ namespace WordSoul.Application.Services
     {
         private readonly IUnitOfWork _uow;
         private readonly IActivityLogService _activityLogService;
+        private readonly IDailyQuestService _dailyQuestService;
         private readonly ILogger<UserOwnedPetService> _logger;
 
         public UserOwnedPetService(
             IUnitOfWork uow,
             IActivityLogService activityLogService,
+            IDailyQuestService dailyQuestService,
             ILogger<UserOwnedPetService> logger)
         {
             _uow = uow;
             _activityLogService = activityLogService;
+            _dailyQuestService = dailyQuestService;
             _logger = logger;
         }
 
@@ -135,6 +139,16 @@ namespace WordSoul.Application.Services
 
             await _uow.UserOwnedPet.CreateUserOwnedPetAsync(newOwnedPet, cancellationToken);
             await _uow.SaveChangesAsync(cancellationToken);
+
+            if (success)
+            {
+                await _dailyQuestService.UpdateQuestProgressAsync(
+                    userId,
+                    QuestType.Catch,
+                    1,
+                    null,
+                    cancellationToken);
+            }
 
             var pet = await _uow.Pet.GetPetByIdAsync(petId, cancellationToken);
             await _activityLogService.CreateActivityLogAsync(

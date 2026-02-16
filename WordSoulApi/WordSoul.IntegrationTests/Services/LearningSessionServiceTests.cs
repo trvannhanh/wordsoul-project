@@ -37,6 +37,7 @@ namespace WordSoul.IntegrationTests.Services
                 new FakeActivityLogService(),
                 new FakeSetRewardPetService(),
                 srsService,
+                new FakeDailyQuestService(),
                 _timeProvider
             );
         }

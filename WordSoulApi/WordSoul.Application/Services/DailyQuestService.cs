@@ -2,12 +2,14 @@
 using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
 using WordSoul.Domain.Entities;
+using WordSoul.Domain.Enums;
 
 namespace WordSoul.Application.Services
 {
     public class DailyQuestService : IDailyQuestService
     {
         private readonly IUnitOfWork _uow;
+        private static readonly Dictionary<int, SemaphoreSlim> _userLocks = new();
 
         public DailyQuestService(IUnitOfWork uow)
         {
@@ -60,6 +62,68 @@ namespace WordSoul.Application.Services
         {
             return await _uow.UserDailyQuest
                 .GetUserDailyQuestsByUserAndDateAsync(userId, date.Date, ct);
+        }
+
+        public async Task UpdateQuestProgressAsync(
+            int userId,
+            QuestType questType,
+            int increment = 1,
+            double? accuracy = null,
+            CancellationToken ct = default)
+        {
+            var today = DateTime.UtcNow.Date;
+            var userLock = GetLock(userId);
+
+            await userLock.WaitAsync(ct);
+            try
+            {
+                var quests = await _uow.UserDailyQuest
+                    .GetUserDailyQuestsByUserAndDateAsync(userId, today, ct);
+
+                var targetQuest = quests
+                    .FirstOrDefault(q => q.DailyQuest!.QuestType == questType);
+
+                if (targetQuest == null || targetQuest.IsCompleted)
+                    return;
+
+                switch (questType)
+                {
+                    case QuestType.Learn:
+                    case QuestType.Review:
+                    case QuestType.Catch:
+                        targetQuest.Progress += increment;
+                        break;
+
+                    case QuestType.Accuracy:
+                        if (accuracy.HasValue && accuracy.Value >= 0.8)
+                            targetQuest.Progress += 1;
+                        break;
+                }
+
+                if (targetQuest.Progress >= targetQuest.DailyQuest!.TargetValue)
+                {
+                    targetQuest.Progress = targetQuest.DailyQuest.TargetValue;
+                    targetQuest.IsCompleted = true;
+                }
+
+                await _uow.UserDailyQuest.UpdateUserDailyQuestAsync(targetQuest, ct);
+                await _uow.SaveChangesAsync(ct);
+            }
+            finally
+            {
+                userLock.Release();
+            }
+        }
+
+        private SemaphoreSlim GetLock(int userId)
+        {
+            lock (_userLocks)
+            {
+                if (!_userLocks.ContainsKey(userId))
+                    _userLocks[userId] = new SemaphoreSlim(1, 1);
+
+                return _userLocks[userId];
+            }
         }
     }
 }

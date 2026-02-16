@@ -26,6 +26,7 @@ namespace WordSoul.Application.Services
         private readonly IActivityLogService _activityLogService;
         private readonly ISetRewardPetService _setRewardPetService;
         private readonly ISRSService _srsService;
+        private readonly IDailyQuestService _dailyQuestService;
         private readonly ITimeProvider _timeProvider;
 
         /// <summary>
@@ -39,6 +40,7 @@ namespace WordSoul.Application.Services
             IActivityLogService activityLogService,
             ISetRewardPetService setRewardPetService,
             ISRSService srsService,
+            IDailyQuestService dailyQuestService,
             ITimeProvider timeProvider)
         {
             _uow = uow;
@@ -48,6 +50,7 @@ namespace WordSoul.Application.Services
             _activityLogService = activityLogService;
             _setRewardPetService = setRewardPetService;
             _srsService = srsService;
+            _dailyQuestService = dailyQuestService;
             _timeProvider = timeProvider;
         }
 
@@ -381,6 +384,25 @@ namespace WordSoul.Application.Services
             // Commit all changes done so far
             await _uow.SaveChangesAsync(ct);
 
+            if (sessionType == SessionType.Learning)
+            {
+                await _dailyQuestService.UpdateQuestProgressAsync(
+                    userId,
+                    QuestType.Learn,
+                    1,
+                    null,
+                    ct);
+            }
+            else
+            {
+                await _dailyQuestService.UpdateQuestProgressAsync(
+                    userId,
+                    QuestType.Review,
+                    1,
+                    null,
+                    ct);
+            }
+
             // Return DTO
             if (sessionType == SessionType.Learning)
             {
@@ -500,6 +522,16 @@ namespace WordSoul.Application.Services
                     avgResponseTime: allAttempts.Average(a => a.ResponseTimeSeconds),
                     totalHints: allAttempts.Sum(a => a.HintCount)
                 );
+
+                //cần xem lại phần tính accuracy, có thể chỉ tính cho lần thử cuối cùng hoặc tính theo công thức khác để phản ánh đúng hơn mức độ ghi nhớ của người dùng
+                double accuracy = allAttempts.Count(a => a.IsCorrect) / (double)allAttempts.Count;
+
+                await _dailyQuestService.UpdateQuestProgressAsync(
+                    userId,
+                    QuestType.Accuracy,
+                    1,
+                    accuracy,
+                    ct);
 
                 // Cập nhật SRS
                 var srsResult = await _srsService.UpdateAfterReviewAsync(

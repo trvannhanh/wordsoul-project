@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WordSoul.Application.Services;
 using WordSoul.Domain.Entities;
+using WordSoul.Domain.Enums;
 using WordSoul.Infrastructure.Persistence;
 
 namespace WordSoul.Tests.Services
@@ -102,12 +103,96 @@ namespace WordSoul.Tests.Services
 
             await context.SaveChangesAsync();
 
-            await context.SaveChangesAsync();
 
             var result = await service.GetUserDailyQuestsAsync(1, today);
 
             Assert.Single(result);
             Assert.Equal(today, result[0].QuestDate);
+        }
+
+
+        [Fact]
+        public async Task UpdateQuestProgress_ShouldBeThreadSafe()
+        {
+            // Arrange
+            var (service, context) = CreateService(nameof(UpdateQuestProgress_ShouldBeThreadSafe));
+
+            var today = DateTime.UtcNow.Date;
+
+            var template = new DailyQuest
+            {
+                Id = 1,
+                Title = "Learn 10",
+                QuestType = QuestType.Learn,
+                TargetValue = 10,
+                IsActive = true
+            };
+
+            context.DailyQuests.Add(template);
+
+            context.UserDailyQuests.Add(new UserDailyQuest
+            {
+                UserId = 1,
+                DailyQuestId = 1,
+                DailyQuest = template,
+                Progress = 0,
+                IsCompleted = false,
+                QuestDate = today
+            });
+
+            await context.SaveChangesAsync();
+
+            // Act
+            var tasks = Enumerable.Range(0, 50)
+                .Select(_ => service.UpdateQuestProgressAsync(1, QuestType.Learn));
+
+            await Task.WhenAll(tasks);
+
+            var result = await context.UserDailyQuests.FirstAsync();
+
+            // Assert
+            Assert.Equal(10, result.Progress);
+            Assert.True(result.IsCompleted);
+        }
+
+        [Fact]
+        public async Task UpdateQuestProgress_ShouldNotLoseIncrements()
+        {
+            var (service, context) = CreateService(nameof(UpdateQuestProgress_ShouldNotLoseIncrements));
+
+            var today = DateTime.UtcNow.Date;
+
+            var template = new DailyQuest
+            {
+                Id = 1,
+                Title = "Learn 10",
+                QuestType = QuestType.Learn,
+                TargetValue = 100,
+                IsActive = true
+            };
+
+            context.DailyQuests.Add(template);
+
+            context.UserDailyQuests.Add(new UserDailyQuest
+            {
+                UserId = 1,
+                DailyQuestId = 1,
+                DailyQuest = template,
+                Progress = 0,
+                IsCompleted = false,
+                QuestDate = today
+            });
+
+            await context.SaveChangesAsync();
+
+            var tasks = Enumerable.Range(0, 50)
+                .Select(_ => service.UpdateQuestProgressAsync(1, QuestType.Learn));
+
+            await Task.WhenAll(tasks);
+
+            var result = await context.UserDailyQuests.FirstAsync();
+
+            Assert.Equal(50, result.Progress);
         }
     }
 }

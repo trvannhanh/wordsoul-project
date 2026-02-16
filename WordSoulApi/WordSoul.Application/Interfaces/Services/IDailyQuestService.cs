@@ -1,5 +1,6 @@
 ﻿
 using WordSoul.Domain.Entities;
+using WordSoul.Domain.Enums;
 
 namespace WordSoul.Application.Interfaces.Services
 {
@@ -12,6 +13,13 @@ namespace WordSoul.Application.Interfaces.Services
         Task<List<UserDailyQuest>> GetUserDailyQuestsAsync(
             int userId,
             DateTime date,
+            CancellationToken ct = default);
+
+        Task UpdateQuestProgressAsync(
+            int userId,
+            QuestType questType,
+            int increment = 1,
+            double? accuracy = null,
             CancellationToken ct = default);
     }
 }
