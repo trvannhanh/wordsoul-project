@@ -11,6 +11,10 @@
         public bool IsCompleted { get; set; } // Whether the achievement is completed
         public DateTime? CompletedAt { get; set; } // When the achievement was completed
 
+        public bool IsClaimed { get; set; } = false;
+        public DateTime? ClaimedAt { get; set; }
+
+
         // Helper methods to calculate progress dynamically
         public int GetRemaining(int target) => Math.Max(0, target - ProgressValue);
 

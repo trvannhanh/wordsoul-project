@@ -28,6 +28,7 @@ namespace WordSoul.Application.Interfaces
         IVocabularyReviewHistoryRepository VocabularyReviewHistory { get; }
         IUserDailyQuestRepository UserDailyQuest { get; }
         IDailyQuestRepository DailyQuest { get; }
+        IUserItemRepository UserItem { get; }
 
 
         Task<int> SaveChangesAsync(CancellationToken ct = default);

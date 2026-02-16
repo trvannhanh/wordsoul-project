@@ -6,6 +6,7 @@ namespace WordSoul.Domain.Enums
     {
         MasterWords,
         DailyStreak,
-        CompletedSet
+        CompletedSet,
+        CatchedPets
     }
 }

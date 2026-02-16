@@ -1,17 +1,22 @@
 ﻿using WordSoul.Application.DTOs.User;
 using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
+using WordSoul.Domain.Entities;
 using WordSoul.Domain.Enums;
+using WordSoul.Domain.Exceptions;
 
 namespace WordSoul.Application.Services
 {
     public class UserAchievementService : IUserAchievementService
     {
         private readonly IUnitOfWork _uow;
+        private readonly IUserInventoryService _inventoryService;
+        private static readonly Dictionary<int, SemaphoreSlim> _userLocks = new();
 
-        public UserAchievementService(IUnitOfWork uow)
+        public UserAchievementService(IUnitOfWork uow, IUserInventoryService userInventoryService)
         {
             _uow = uow;
+            _inventoryService = userInventoryService;
         }
 
 
@@ -46,32 +51,112 @@ namespace WordSoul.Application.Services
             int increment,
             CancellationToken ct = default)
         {
-            var achievements = await _uow.Achievement
+            var userLock = GetLock(userId);
+
+            await userLock.WaitAsync(ct);
+            try
+            {
+                var achievements = await _uow.Achievement
                 .GetAchievementsAsync(conditionType, 1, int.MaxValue, ct);
 
-            foreach (var achievement in achievements)
-            {
-                var userAchievement = await _uow.UserAchievement
-                    .GetUserAchievementAsync(userId, achievement.Id, ct);
+                foreach (var achievement in achievements)
+                {
+                    var userAchievement = await _uow.UserAchievement
+                        .GetUserAchievementAsync(userId, achievement.Id, ct);
 
-                if (userAchievement == null || userAchievement.IsCompleted)
+                    if (userAchievement == null || userAchievement.IsCompleted)
+                        continue;
+
+                    userAchievement.ProgressValue = Math.Min(
+                        userAchievement.ProgressValue + increment,
+                        achievement.ConditionValue
+                    );
+
+                    if (userAchievement.ProgressValue >= achievement.ConditionValue)
+                    {
+                        userAchievement.IsCompleted = true;
+                        userAchievement.CompletedAt = DateTime.UtcNow;
+                    }
+
+                    await _uow.UserAchievement.UpdateUserAchievementAsync(userAchievement, ct);
+
+                    await _uow.SaveChangesAsync(ct);
+
+                    await CheckAndUnlockAchievementsAsync(userId, ct);
+                }
+            }
+            finally
+            {
+                userLock.Release();
+            }
+            
+
+           
+        }
+
+        public async Task CheckAndUnlockAchievementsAsync(
+            int userId,
+            CancellationToken ct = default)
+        {
+            var userAchievements = await _uow.UserAchievement
+                .GetUserAchievementByUserAsync(userId, ct);
+
+            foreach (var ua in userAchievements)
+            {
+                if (ua.IsCompleted)
                     continue;
 
-                userAchievement.ProgressValue = Math.Min(
-                    userAchievement.ProgressValue + increment,
-                    achievement.ConditionValue
-                );
+                var target = ua.Achievement!.ConditionValue;
 
-                if (userAchievement.ProgressValue >= achievement.ConditionValue)
+                if (ua.ProgressValue >= target)
                 {
-                    userAchievement.IsCompleted = true;
-                    userAchievement.CompletedAt = DateTime.UtcNow;
-                }
+                    ua.IsCompleted = true;
+                    ua.CompletedAt = DateTime.UtcNow;
 
-                await _uow.UserAchievement.UpdateUserAchievementAsync(userAchievement, ct);
+                    await _uow.UserAchievement.UpdateUserAchievementAsync(ua, ct);
+                }
             }
 
             await _uow.SaveChangesAsync(ct);
+        }
+
+        public async Task ClaimAchievementRewardAsync(
+            int userId,
+            int achievementId,
+            CancellationToken ct = default)
+        {
+            var ua = await _uow.UserAchievement
+                .GetUserAchievementAsync(userId, achievementId, ct);
+
+            if (ua == null)
+                throw new NotFoundException(nameof(UserAchievement), achievementId);
+
+            if (!ua.IsCompleted)
+                throw new InvalidOperationException("Achievement not completed.");
+
+            if (ua.IsClaimed)
+                throw new InvalidOperationException("Reward already claimed.");
+
+            var rewardItemId = ua.Achievement!.RewardItemId;
+
+            await _inventoryService.AddItemToUserAsync(userId, rewardItemId, 1, ct);
+
+            ua.IsClaimed = true;
+            ua.ClaimedAt = DateTime.UtcNow;
+
+            await _uow.UserAchievement.UpdateUserAchievementAsync(ua, ct);
+            await _uow.SaveChangesAsync(ct);
+        }
+
+        private SemaphoreSlim GetLock(int userId)
+        {
+            lock (_userLocks)
+            {
+                if (!_userLocks.ContainsKey(userId))
+                    _userLocks[userId] = new SemaphoreSlim(1, 1);
+
+                return _userLocks[userId];
+            }
         }
     }
 }

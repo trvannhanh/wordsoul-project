@@ -19,5 +19,13 @@ namespace WordSoul.Application.Interfaces.Services
             ConditionType conditionType,
             int increment,
             CancellationToken ct = default);
+
+        Task CheckAndUnlockAchievementsAsync(
+            int userId,
+            CancellationToken ct = default);
+        Task ClaimAchievementRewardAsync(
+            int userId,
+            int achievementId,
+            CancellationToken ct = default);
     }
 }

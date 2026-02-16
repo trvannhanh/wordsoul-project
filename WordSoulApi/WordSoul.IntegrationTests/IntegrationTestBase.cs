@@ -81,6 +81,7 @@ namespace WordSoul.IntegrationTests
             Auth = new AuthRepository(_context);
             ActivityLog = new ActivityLogRepository(_context);
             Achievement = new AchievementRepository(_context);
+            UserItem = new UserItemRepository(_context);
             // ... add other repositories as needed
         }
 
@@ -104,7 +105,8 @@ namespace WordSoul.IntegrationTests
         public IActivityLogRepository ActivityLog { get; }
         public IAchievementRepository Achievement { get; }
         public IDailyQuestRepository DailyQuest { get; }
-        public IUserDailyQuestRepository UserDailyQuest { get; }    
+        public IUserDailyQuestRepository UserDailyQuest { get; }  
+        public IUserItemRepository UserItem { get; }
         // ... other repositories
 
         public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
