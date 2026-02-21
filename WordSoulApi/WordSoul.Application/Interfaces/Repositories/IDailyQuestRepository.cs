@@ -11,5 +11,8 @@ namespace WordSoul.Application.Interfaces.Repositories
         Task<DailyQuest?> GetByIdAsync(
             int questId,
             CancellationToken cancellationToken = default);
+
+        Task CreateQuestAsync(DailyQuest quest, CancellationToken ct = default);
+        Task UpdateQuestAsync(DailyQuest quest, CancellationToken ct = default);
     }
 }

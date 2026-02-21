@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using WordSoul.Application.DTOs.User;
+using WordSoul.Application.DTOs.Achievement;
 using WordSoul.Domain.Enums;
 
 namespace WordSoul.Application.Interfaces.Services

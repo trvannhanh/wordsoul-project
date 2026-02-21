@@ -1,4 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Moq;
+using WordSoul.Application.Interfaces.Services;
 using WordSoul.Application.Services;
 using WordSoul.Domain.Entities;
 using WordSoul.Domain.Enums;
@@ -9,7 +12,7 @@ namespace WordSoul.Tests.Services
     public class DailyQuestServiceTests
     {
         private (DailyQuestService service, WordSoulDbContext context)
-            CreateService(string dbName)
+    CreateService(string dbName)
         {
             var options = new DbContextOptionsBuilder<WordSoulDbContext>()
                 .UseInMemoryDatabase(dbName)
@@ -17,7 +20,15 @@ namespace WordSoul.Tests.Services
 
             var context = new WordSoulDbContext(options);
             var uow = new UnitOfWork(context);
-            var service = new DailyQuestService(uow);
+
+            var inventoryMock = new Mock<IUserInventoryService>();
+            var loggerMock = new Mock<ILogger<DailyQuestService>>();
+
+            var service = new DailyQuestService(
+                uow,
+                inventoryMock.Object,
+                loggerMock.Object
+            );
 
             return (service, context);
         }

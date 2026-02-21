@@ -18,6 +18,6 @@ namespace WordSoul.Domain.Entities
 
         public bool IsClaimed { get; set; } = false; // Whether the reward has been claimed
 
-        public DateTime QuestDate { get; set; } = DateTime.UtcNow.Date; // The date for which this quest is assigned (only date part is relevant)
+        public DateTime QuestDate { get; set; }
     }
 }

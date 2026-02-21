@@ -34,7 +34,47 @@ builder.Configuration
 builder.Services.AddControllers();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        document.Info.Title = "WordSoul API";
+        document.Info.Version = "v1";
+        document.Info.Description = "Hệ thống API hỗ trợ học từ vựng và quản lý thú ảo.";
+
+        // Cấu hình bảo mật
+        var scheme = new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+        {
+            Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+            Name = "Authorization",
+            In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+            Scheme = "Bearer",
+            BearerFormat = "JWT",
+            Description = "Nhập Token JWT (chỉ phần chuỗi, không bao gồm 'Bearer ')."
+        };
+
+        document.Components ??= new Microsoft.OpenApi.Models.OpenApiComponents();
+        document.Components.SecuritySchemes.Add("Bearer", scheme);
+
+        // Áp dụng Security Requirement cho tất cả các endpoint (Yêu cầu ổ khóa xuất hiện)
+        document.SecurityRequirements.Add(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+        {
+            {
+                new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                {
+                    Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                    {
+                        Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                Array.Empty<string>()
+            }
+        });
+
+        return Task.CompletedTask;
+    });
+});
 
 // Cấu hình Serilog
 builder.Host.UseSerilog((context, configuration) =>
@@ -169,6 +209,7 @@ builder.Services.AddScoped<SRSAlgorithm>();
 
 builder.Services.AddScoped<ITimeProvider, SystemTimeProvider>();
 builder.Services.AddScoped<IDailyQuestService, DailyQuestService>();
+builder.Services.AddScoped<IUserInventoryService, UserInventoryService>();
 
 // Configure Cloudinary
 builder.Services.AddSingleton<Cloudinary>(sp =>
@@ -205,6 +246,7 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
     app.MapOpenApi();
 }
+
 
 // Thêm middleware Serilog để ghi log các yêu cầu HTTP
 app.UseSerilogRequestLogging();

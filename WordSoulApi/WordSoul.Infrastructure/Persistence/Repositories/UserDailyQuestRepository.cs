@@ -58,5 +58,12 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
             _context.UserDailyQuests.Update(userDailyQuest);
             return Task.CompletedTask;
         }
+
+        public async Task<UserDailyQuest?> GetByIdAsync(int id, CancellationToken ct = default)
+        {
+            return await _context.UserDailyQuests
+                .Include(x => x.DailyQuest)
+                .FirstOrDefaultAsync(x => x.Id == id, ct);
+        }
     }
 }

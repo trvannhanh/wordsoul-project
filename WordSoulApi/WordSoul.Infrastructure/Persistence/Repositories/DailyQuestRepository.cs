@@ -27,9 +27,20 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
             int questId,
             CancellationToken cancellationToken = default)
         {
-            return await _context.DailyQuests.FindAsync(
-                new object[] { questId },
+            return await _context.DailyQuests.FindAsync(questId,
                 cancellationToken);
+        }
+
+        public Task CreateQuestAsync(DailyQuest quest, CancellationToken ct = default)
+        {
+            _context.DailyQuests.Add(quest);
+            return Task.CompletedTask;
+        }
+
+        public Task UpdateQuestAsync(DailyQuest quest, CancellationToken ct = default)
+        {
+            _context.DailyQuests.Update(quest);
+            return Task.CompletedTask;
         }
     }
 }

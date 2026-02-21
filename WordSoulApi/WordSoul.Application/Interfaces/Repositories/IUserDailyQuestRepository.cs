@@ -11,6 +11,8 @@ namespace WordSoul.Application.Interfaces.Repositories
             DateTime questDate,
             CancellationToken cancellationToken = default);
 
+        Task<UserDailyQuest?> GetByIdAsync(int id, CancellationToken ct = default);
+
         Task<List<UserDailyQuest>> GetUserDailyQuestsByUserAndDateAsync(
             int userId,
             DateTime questDate,
