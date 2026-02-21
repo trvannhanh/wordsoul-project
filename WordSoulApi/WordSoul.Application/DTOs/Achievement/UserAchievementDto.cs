@@ -1,4 +1,4 @@
-﻿namespace WordSoul.Application.DTOs.User
+﻿namespace WordSoul.Application.DTOs.Achievement
 {
     public class UserAchievementDto
     {

@@ -1,4 +1,4 @@
-﻿using WordSoul.Application.DTOs.User;
+﻿using WordSoul.Application.DTOs.Achievement;
 using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
 using WordSoul.Domain.Entities;
@@ -11,7 +11,6 @@ namespace WordSoul.Application.Services
     {
         private readonly IUnitOfWork _uow;
         private readonly IUserInventoryService _inventoryService;
-        private static readonly Dictionary<int, SemaphoreSlim> _userLocks = new();
 
         public UserAchievementService(IUnitOfWork uow, IUserInventoryService userInventoryService)
         {
@@ -51,9 +50,7 @@ namespace WordSoul.Application.Services
             int increment,
             CancellationToken ct = default)
         {
-            var userLock = GetLock(userId);
-
-            await userLock.WaitAsync(ct);
+            await using var transaction = await _uow.BeginTransactionAsync(ct);
             try
             {
                 var achievements = await _uow.Achievement
@@ -80,14 +77,17 @@ namespace WordSoul.Application.Services
 
                     await _uow.UserAchievement.UpdateUserAchievementAsync(userAchievement, ct);
 
-                    await _uow.SaveChangesAsync(ct);
-
-                    await CheckAndUnlockAchievementsAsync(userId, ct);
+                    
                 }
+
+                await CheckAndUnlockAchievementsAsync(userId, ct);
+                await _uow.SaveChangesAsync(ct);
+                await transaction.CommitAsync(ct);
             }
-            finally
+            catch
             {
-                userLock.Release();
+                await transaction.RollbackAsync(ct);
+                throw;
             }
             
 
@@ -148,15 +148,5 @@ namespace WordSoul.Application.Services
             await _uow.SaveChangesAsync(ct);
         }
 
-        private SemaphoreSlim GetLock(int userId)
-        {
-            lock (_userLocks)
-            {
-                if (!_userLocks.ContainsKey(userId))
-                    _userLocks[userId] = new SemaphoreSlim(1, 1);
-
-                return _userLocks[userId];
-            }
-        }
     }
 }

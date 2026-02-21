@@ -10,7 +10,7 @@ namespace WordSoul.Domain.Entities
         public int ConditionValue { get; set; }
         public int RewardItemId { get; set; }
         public Item? Item { get; set; } = null;
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public List<UserAchievement> UserAchievements { get; set; } = [];
     }

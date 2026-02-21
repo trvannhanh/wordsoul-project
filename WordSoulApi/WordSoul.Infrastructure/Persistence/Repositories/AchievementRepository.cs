@@ -25,6 +25,7 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
         {
             var query = _context.Achievements
                 .AsNoTracking()
+                .Include(a => a.Item)
                 .AsQueryable();
 
             if (conditionType.HasValue)
@@ -38,7 +39,9 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
 
         public async Task<Achievement?> GetAchievementByIdAsync(int achievementId, CancellationToken cancellationToken = default)
         {
-            return await _context.Achievements.FindAsync([achievementId], cancellationToken);
+            return await _context.Achievements
+             .Include(a => a.Item)
+             .FirstOrDefaultAsync(a => a.Id == achievementId, cancellationToken);
         }
 
         //-----------------------UPDATE----------------------

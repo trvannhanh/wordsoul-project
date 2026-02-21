@@ -1,5 +1,6 @@
 ﻿
 
+using System.ComponentModel.DataAnnotations;
 using WordSoul.Domain.Enums;
 
 namespace WordSoul.Application.DTOs.Achievement
@@ -18,11 +19,18 @@ namespace WordSoul.Application.DTOs.Achievement
 
     public class CreateAchievementDto
     {
-        public int Id { get; set; }
-        public string? Name { get; set; }
+        [Required, MaxLength(200)]
+        public string Name { get; set; } = string.Empty;
+
+        [MaxLength(500)]
         public string? Description { get; set; }
+
         public ConditionType ConditionType { get; set; }
+
+        [Range(1, int.MaxValue)]
         public int ConditionValue { get; set; }
+
+        [Range(1, int.MaxValue)]
         public int ItemId { get; set; }
     }
 }
