@@ -54,7 +54,11 @@ export const endpoints = {
   markReadAllNotification: '/notifications/read-all', // Đánh dấu tất cả thông báo đã đọc
   markReadNotification: (notificationId: number) => `/notifications/${notificationId}/read`, // Đánh dấu thông báo chỉ định đã đọc
   deleteNotification: (notificationId: number) => `/notifications/${notificationId}`, // Xóa thông báo chỉ định
-  notificationHub: '/notificationHub'
+  notificationHub: '/notificationHub',
+
+  // Daily Quest
+  todayQuests: '/daily-quests/today', // Lấy danh sách quest hôm nay
+  claimQuestReward: (questId: number) => `/daily-quests/${questId}/claim`, // Nhận phần thưởng quest
 };
 
 // ---- Helpers ----

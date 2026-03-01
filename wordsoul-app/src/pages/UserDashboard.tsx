@@ -7,6 +7,7 @@ import { getUserProgress } from '../services/user';
 import ReviewBox from '../components/UserDashboard/ReviewBox';
 import StatsChart from '../components/UserDashboard/StatsChart';
 import ProfileCard from '../components/UserProfile/ProfileCard';
+import QuestList from '../components/DailyQuest/QuestList';
 import type { UserProgressDto } from '../types/UserDto';
 
 const UserDashboard: React.FC = () => {
@@ -26,9 +27,9 @@ const UserDashboard: React.FC = () => {
     try {
       const session = await createReviewSession();
       navigate(`/learningSession/${session.id}?mode=review`, {
-        state: { currentCorrectAnswered : session.currentCorrectAnswered},
+        state: { currentCorrectAnswered: session.currentCorrectAnswered },
       });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       setError(error?.response?.data?.message || 'Lỗi tạo phiên ôn tập');
     } finally {
@@ -46,7 +47,7 @@ const UserDashboard: React.FC = () => {
           return { level, count: found ? found.count : 0 };
         });
         setDashboard({ ...data, vocabularyStats: filledStats });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (err) {
         setError('Không thể tải dữ liệu tiến trình');
       } finally {
@@ -101,6 +102,7 @@ const UserDashboard: React.FC = () => {
         </div>
         <div className="w-full sm:w-5/12">
           <ProfileCard />
+          <QuestList />
         </div>
       </div>
     </div>
