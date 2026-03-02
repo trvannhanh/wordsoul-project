@@ -59,6 +59,10 @@ export const endpoints = {
   // Daily Quest
   todayQuests: '/daily-quests/today', // Lấy danh sách quest hôm nay
   claimQuestReward: (questId: number) => `/daily-quests/${questId}/claim`, // Nhận phần thưởng quest
+
+  // Achievement
+  myAchievements: '/achievements/me', // Danh sách thành tựu của user
+  claimAchievement: (achievementId: number) => `/achievements/${achievementId}/claim`, // Nhận phần thưởng thành tựu
 };
 
 // ---- Helpers ----

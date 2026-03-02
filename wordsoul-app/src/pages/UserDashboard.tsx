@@ -8,6 +8,7 @@ import ReviewBox from '../components/UserDashboard/ReviewBox';
 import StatsChart from '../components/UserDashboard/StatsChart';
 import ProfileCard from '../components/UserProfile/ProfileCard';
 import QuestList from '../components/DailyQuest/QuestList';
+import AchievementGrid from '../components/Achievement/AchievementGrid';
 import type { UserProgressDto } from '../types/UserDto';
 
 const UserDashboard: React.FC = () => {
@@ -99,6 +100,7 @@ const UserDashboard: React.FC = () => {
             onCreateReviewSession={handleCreateReviewSession}
           />
           <StatsChart progress={dashboard} />
+          <AchievementGrid />
         </div>
         <div className="w-full sm:w-5/12">
           <ProfileCard />
