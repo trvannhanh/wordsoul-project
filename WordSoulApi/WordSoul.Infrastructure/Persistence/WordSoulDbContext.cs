@@ -40,8 +40,7 @@ namespace WordSoul.Infrastructure.Persistence
 
             // Đảm bảo unique constraint trên ( LearningSessionId, QuizQuestionId, QuestionType)
             modelBuilder.Entity<AnswerRecord>()
-                .HasIndex(ar => new { ar.LearningSessionId, ar.VocabularyId, ar.QuestionType })
-                .IsUnique();
+                .HasIndex(ar => new { ar.LearningSessionId, ar.VocabularyId, ar.QuestionType });
 
 
             //Vocabulary 1 - N AnserRecord relationship
