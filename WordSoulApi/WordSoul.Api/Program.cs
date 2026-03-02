@@ -24,7 +24,6 @@ using WordSoul.Infrastructure.Persistence.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 builder.Configuration
     .AddJsonFile("Appsettings/appsettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile($"Appsettings/appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
@@ -32,6 +31,7 @@ builder.Configuration
 
 // Add services to the container.
 builder.Services.AddControllers();
+// builder.Services.AddOpenApi();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi(options =>
@@ -80,28 +80,31 @@ builder.Services.AddOpenApi(options =>
 builder.Host.UseSerilog((context, configuration) =>
 {
     configuration
-        .MinimumLevel.Information() // Ghi log từ mức Information trở lên
-        .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning) // Giảm log từ Microsoft
-        .WriteTo.Console() // Ghi log ra console
+        .MinimumLevel.Information()
+        .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
+        .WriteTo.Console()
         .WriteTo.File(
-            path: "logs/log-.txt", // Lưu log vào file, tạo file mới mỗi ngày
+            path: "logs/log-.txt",
             rollingInterval: RollingInterval.Day,
-            outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}"); // Định dạng log
+            outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}");
 });
 
 builder.Services.AddDbContext<WordSoulDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+   options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Thêm dịch vụ CORS
+var frontendUrl = Environment.GetEnvironmentVariable("FrontendUrl") ?? "http://localhost:5173";
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowLocalhost", builder =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        builder.WithOrigins("http://localhost:5173", "http://localhost:3000", "https://wordsoul-frontend-cqb5awdca4c7cceg.southeastasia-01.azurewebsites.net")
-               .AllowAnyMethod()
-               .AllowAnyHeader()
-               .AllowCredentials();
+        policy.WithOrigins(
+                "http://localhost:5173",
+                "http://localhost:3000",
+                "https://wordsoul-frontend-cqb5awdca4c7cceg.southeastasia-01.azurewebsites.net")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
     });
 });
 
@@ -132,63 +135,41 @@ builder.Services.AddSignalR(options =>
 
 // Add in-memory caching service
 builder.Services.AddMemoryCache();
-
-// Add logging service
 builder.Services.AddLogging();
 
-// Register repository and service
-// Vocabulary
+// Register repository and service (giữ nguyên như code bạn gửi)
 builder.Services.AddScoped<IVocabularyRepository, VocabularyRepository>();
 builder.Services.AddScoped<IVocabularyService, VocabularyService>();
-// Auth & User
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-// Pet 
 builder.Services.AddScoped<IPetService, PetService>();
 builder.Services.AddScoped<IPetRepository, PetRepository>();
-
-// Vocabulary Set
 builder.Services.AddScoped<IVocabularySetService, VocabularySetService>();
 builder.Services.AddScoped<IVocabularySetRepository, VocabularySetRepository>();
-// Learning Session
 builder.Services.AddScoped<ILearningSessionService, LearningSessionService>();
 builder.Services.AddScoped<ILearningSessionRepository, LearningSessionRepository>();
-// Answer Record 
 builder.Services.AddScoped<IAnswerRecordRepository, AnswerRecordRepository>();
-// User Vocabulary Progress
 builder.Services.AddScoped<IUserVocabularyProgressRepository, UserVocabularyProgressRepository>();
 builder.Services.AddScoped<IUserVocabularyProgressService, UserVocabularyProgressService>();
-// Set Reward Pet
 builder.Services.AddScoped<ISetRewardPetRepository, SetRewardPetRepository>();
 builder.Services.AddScoped<ISetRewardPetService, SetRewardPetService>();
-// User Owned Pet
 builder.Services.AddScoped<IUserOwnedPetRepository, UserOwnedPetRepository>();
 builder.Services.AddScoped<IUserOwnedPetService, UserOwnedPetService>();
-// User Vocabulary Set
 builder.Services.AddScoped<IUserVocabularySetRepository, UserVocabularySetRepository>();
 builder.Services.AddScoped<IUserVocabularySetService, UserVocabularySetService>();
-// Notification
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
-// ActivityLog
 builder.Services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
 builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
-// SetVocabulary 
 builder.Services.AddScoped<ISetVocabularyRepository, SetVocabularyRepository>();
 builder.Services.AddScoped<ISetVocabularyService, SetVocabularyService>();
-// SessionVocabulary
 builder.Services.AddScoped<ISessionVocabularyRepository, SessionVocabularyRepository>();
-// Item
 builder.Services.AddScoped<IItemRepository, ItemRepository>();
 builder.Services.AddScoped<IItemService, ItemService>();
-
-
-// Achievement
 builder.Services.AddScoped<IAchievementRepository, AchievementRepository>();
 builder.Services.AddScoped<IAchievementService, AchievementService>();
-// UserAchievement
 builder.Services.AddScoped<IUserAchievementRepository, UserAchievementRepository>();
 builder.Services.AddScoped<IUserAchievementService, UserAchievementService>();
 // Upload Assests
@@ -225,7 +206,6 @@ builder.Services.AddSingleton<Cloudinary>(sp =>
 });
 
 
-
 var app = builder.Build();
 
 //using (var scope = app.Services.CreateScope())
@@ -238,6 +218,7 @@ var app = builder.Build();
 //}    
 
 
+
 //Hub SignalR
 app.MapHub<NotificationHub>("/notificationHub");
 
@@ -245,21 +226,29 @@ app.MapHub<NotificationHub>("/notificationHub");
 if (app.Environment.IsDevelopment())
 {
     app.MapScalarApiReference();
-    app.MapOpenApi();
+    // app.MapOpenApi();
 }
 
 
 // Thêm middleware Serilog để ghi log các yêu cầu HTTP
 app.UseSerilogRequestLogging();
 
-// Sử dụng CORS trước các middleware khác
-app.UseCors("AllowLocalhost");
+// 🚀 Dùng CORS
+app.UseCors("AllowFrontend");
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication();    
-app.UseAuthorization();
+app.UseAuthentication();
 
+app.UseAuthorization();
 app.MapControllers();
+
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<WordSoulDbContext>();
+    db.Database.Migrate();
+}
+
 
 app.Run();
