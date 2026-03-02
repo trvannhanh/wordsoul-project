@@ -2,9 +2,12 @@ name: Deploy Backend to Azure App Service
 
 on:
   push:
-    branches: [ main ]        # ← đổi thành nhánh của bạn nếu khác
+    branches: [ main ]
     paths:
-      - 'WordSoulApi/**'      # ← chỉ trigger khi có thay đổi trong folder backend
+      - 'WordSoulApi/**'
+
+env:
+  API_PROJECT: './WordSoulApi/WordSoul.Api/WordSoul.Api.csproj'
 
 jobs:
   build-and-deploy:
@@ -20,25 +23,28 @@ jobs:
         dotnet-version: '9.0.x'
 
     - name: Restore
-      run: dotnet restore ./WordSoulApi/WordSoulApi.csproj   # ← đổi tên .csproj cho đúng
+      run: dotnet restore ${{ env.API_PROJECT }}
 
     - name: Build
-      run: dotnet build ./WordSoulApi/WordSoulApi.csproj --configuration Release --no-restore
+      run: dotnet build ${{ env.API_PROJECT }} --configuration Release --no-restore
 
     - name: Run EF Migrations
       run: |
         dotnet tool install --global dotnet-ef
         export PATH="$PATH:$HOME/.dotnet/tools"
-        dotnet ef database update --project ./WordSoulApi/WordSoulApi.csproj --configuration Release
+        dotnet ef database update \
+          --project ./WordSoulApi/WordSoul.Infrastructure/WordSoul.Infrastructure.csproj \
+          --startup-project ${{ env.API_PROJECT }} \
+          --configuration Release
       env:
         ConnectionStrings__DefaultConnection: ${{ secrets.DB_CONNECTION_STRING }}
 
     - name: Publish
-      run: dotnet publish ./WordSoulApi/WordSoulApi.csproj --configuration Release --output ./publish
+      run: dotnet publish ${{ env.API_PROJECT }} --configuration Release --output ./publish
 
     - name: Deploy to Azure App Service
       uses: azure/webapps-deploy@v2
       with:
-        app-name: 'wordsoul-api-dev'        # ← đổi thành tên App Service của bạn
+        app-name: 'myapp-backend'
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
         package: ./publish
