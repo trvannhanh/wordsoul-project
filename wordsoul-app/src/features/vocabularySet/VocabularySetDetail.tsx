@@ -43,7 +43,7 @@ const VocabularySetDetail: React.FC = () => {
     try {
       const session = await createLearningSession(Number(id));
       navigate(`/learningSession/${session.id}?mode=learning`, {
-        state: { petId: session.petId, catchRate: session.catchRate },
+        state: { petId: session.petId, catchRate: session.catchRate , currentCorrectAnswered : session.currentCorrectAnswered},
       });
     } catch (err: any) {
       setError(err?.response?.data?.message || "Lỗi tạo phiên học");
@@ -192,11 +192,11 @@ const VocabularySetDetail: React.FC = () => {
 
         {showPetsModal && (
           <div className="fixed inset-0 bg-opacity-50 flex justify-center items-center z-50">
-            <div className="background-color rounded-lg p-6 w-full max-w-3xl max-h-[80vh] overflow-auto">
+            <div className="background-color rounded-lg p-6 w-full max-w-[80vw] max-h-[80vh] overflow-auto">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-color">Danh sách Pet</h2>
                 <button
-                  className="text-color hover:text-gray-700"
+                  className="text-color hover:text-gray-700 custom-cursor"
                   onClick={() => setShowPetsModal(false)}
                 >
                   <svg
@@ -219,7 +219,7 @@ const VocabularySetDetail: React.FC = () => {
               {pets.length === 0 && !petsLoading && !petsError && (
                 <div className="text-center text-black">Không có pet nào.</div>
               )}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-8 gap-4">
                 {pets.map((pet) => (
                   <PetCard key={pet.id} pet={pet} />
                 ))}

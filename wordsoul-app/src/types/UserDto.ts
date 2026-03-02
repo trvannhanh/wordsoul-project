@@ -33,6 +33,7 @@ export interface UserDto {
   streakDays: number;
   avatarUrl?: string;
   petCount?: number;
+  petActiveId?: number;
 }
 
 export interface LevelStatDto {

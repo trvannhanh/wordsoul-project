@@ -4,6 +4,7 @@ export interface LearningSessionDto {
   isCompleted: boolean;
   petId?: number;
   catchRate?: number;
+  currentCorrectAnswered?: number;
 }
 
 export interface QuizQuestionDto {

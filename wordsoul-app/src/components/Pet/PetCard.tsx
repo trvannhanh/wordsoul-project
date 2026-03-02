@@ -21,7 +21,7 @@ const PetCard: React.FC<PetCardProps> = ({ pet }) => {
   if (!pet.isOwned) {
     return (
       <div
-        className={`${backgroundClass} ${borderClass} border-8 border-solid bg-no-repeat bg-cover bg-center p-4 rounded-md shadow-md text-black h-50 relative`}
+        className={`${backgroundClass} ${borderClass} custom-cursor border-8 border-solid bg-no-repeat bg-cover bg-center p-4 rounded-md shadow-md text-black h-50 relative`}
         onClick={handleClick}
       >
         <img

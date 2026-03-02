@@ -181,7 +181,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
               return (
                 <button
                   onClick={() => handleSubmitAnswer("viewed")}
-                  className="bg-emerald-600 w-3/4 h-2/4 border-2 border-white rounded-lg font-pixel text-white hover:bg-emerald-700 disabled:opacity-50"
+                  className="bg-emerald-600 w-3/4 h-2/4 border-2 border-white rounded-lg font-pixel text-white custom-cursor hover:bg-emerald-700 disabled:opacity-50"
                   disabled={showFeedback}
                 >
                   Đã Xem
@@ -214,7 +214,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
                     <motion.button
                       key={opt}
                       onClick={() => handleSubmitAnswer(opt)}
-                      className="bg-emerald-600 p-5 rounded-lg font-pixel text-white text-2xl hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                      className="bg-emerald-600 p-5 rounded-lg font-pixel text-white text-2xl hover:bg-emerald-700 disabled:opacity-50 transition-colors custom-cursor"
                       disabled={showFeedback}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}

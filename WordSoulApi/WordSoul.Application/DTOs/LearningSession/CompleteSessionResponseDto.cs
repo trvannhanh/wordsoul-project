@@ -1,0 +1,33 @@
+﻿namespace WordSoul.Application.DTOs.LearningSession
+{
+
+    public class CompleteSessionResponseDto
+    {
+        public int XpEarned { get; set; }
+        public string? Message { get; set; }
+        public int UserPetId { get; set; }
+        public int UserPetExperience { get; set; }
+        public int UserPetLevel { get; set; }
+        public bool UserPetIsLevelUp { get; set; }
+        public bool UserPetIsEvolved { get; set; }
+    }
+
+    public class CompleteLearningSessionResponseDto : CompleteSessionResponseDto
+    {
+        public bool IsPetRewardGranted { get; set; }
+        public bool IsPetAlreadyOwned { get; set; }
+        public int? PetId { get; set; } // Pet được cấp nếu có
+        public string? PetName { get; set; }
+        public string? Description { get; set; }
+        public string? ImageUrl { get; set; }
+        public string? PetRarity { get; set; }
+        public string? PetType { get; set; }
+    }
+
+
+    public class CompleteReviewingSessionResponseDto : CompleteSessionResponseDto
+    {
+        public int ApEarned { get; set; }
+    }
+}
+    

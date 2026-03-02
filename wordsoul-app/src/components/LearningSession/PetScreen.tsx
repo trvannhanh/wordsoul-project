@@ -1,17 +1,19 @@
-import { motion, AnimatePresence } from "framer-motion";
-import type { CompleteLearningSessionResponseDto, CompleteReviewSessionResponseDto, QuizQuestionDto } from "../../types/LearningSessionDto";
+import { motion, AnimatePresence, easeInOut, easeOut } from "framer-motion";
+import type { CompleteLearningSessionResponseDto, CompleteReviewSessionResponseDto } from "../../types/LearningSessionDto";
 
 interface PetScreenProps {
   showRewardAnimation: boolean;
   captureComplete: boolean;
   setCaptureComplete: (value: boolean) => void;
   encounteredPet: { id: number; name: string; imageUrl: string } | null;
+  userPet: { id: number; name: string; imageUrl: string } | null;
   sessionData: CompleteLearningSessionResponseDto | CompleteReviewSessionResponseDto | null;
   mode: "learning" | "review";
   petId?: number;
   handleCloseReward: () => void;
-  currentQuestion?: QuizQuestionDto | null;
   catchRate: number;
+  showBattleAnimation: boolean;
+  isAnswerCorrect: boolean | null;
 }
 
 const PetScreen: React.FC<PetScreenProps> = ({
@@ -19,11 +21,14 @@ const PetScreen: React.FC<PetScreenProps> = ({
   captureComplete,
   setCaptureComplete,
   encounteredPet,
+  userPet,
   sessionData,
   mode,
   petId,
   handleCloseReward,
   catchRate,
+  showBattleAnimation,
+  isAnswerCorrect,
 }) => {
   // Placeholder pet khi chưa có sessionData
   const getPlaceholderPet = () => {
@@ -60,11 +65,56 @@ const PetScreen: React.FC<PetScreenProps> = ({
     return sessionData?.message || "Hoàn thành phiên học!";
   };
 
+  // Variants for User Pet
+  const userPetVariants = {
+    rest: { x: 0, scale: 1, rotate: 0 },
+    attack: {
+      x: [0, 40, 0],
+      scale: [1, 1.2, 1],
+      rotate: 0,
+      transition: { duration: 0.8, ease: easeInOut },
+    },
+    damage: {
+      rotate: [-5, 5, -3, 3, 0],
+      scale: [1, 0.9, 1.1, 0.95, 1],
+      x: 0,
+      transition: { duration: 0.6, ease: easeOut },
+    },
+  };
+
+  // Variants for Wild Pet
+  const wildPetVariants = {
+    rest: { x: 0, scale: 1, rotate: 0 },
+    attack: {
+      x: [0, -40, 0],
+      scale: [1, 1.2, 1],
+      rotate: 0,
+      transition: { duration: 0.8, ease: easeInOut },
+    },
+    damage: {
+      rotate: [-5, 5, -3, 3, 0],
+      scale: [1, 0.9, 1.1, 0.95, 1],
+      x: 0,
+      transition: { duration: 0.6, ease: easeOut },
+    },
+  };
+
+  // Determine variant for user and wild pet
+  const getUserVariant = () => {
+    if (!showBattleAnimation) return "rest";
+    return isAnswerCorrect ? "attack" : "damage";
+  };
+
+  const getWildVariant = () => {
+    if (!showBattleAnimation) return "rest";
+    return !isAnswerCorrect ? "attack" : "damage";
+  };
+
   return (
     <div
-      className="w-full sm:w-2/12 lg:w-1/2 h-2/4 sm:h-2/4 lg:h-full bg-gray-700 border-4 border-black rounded-lg flex flex-col items-center justify-center overflow-hidden p-4"
+      className="w-full sm:w-2/12 lg:w-1/2 h-2/4 sm:h-2/4 lg:h-full bg-gray-700 border-4 border-black rounded-lg flex flex-col items-center justify-center overflow-hidden p-4 relative"
       style={{
-        backgroundImage: `url('https://res.cloudinary.com/dqpkxxzaf/image/upload/v1756297202/vocabulary_sets/banner4_duprqr.gif')`,
+        backgroundImage: `url("../src/assets/battle-background.png")`,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
@@ -91,7 +141,7 @@ const PetScreen: React.FC<PetScreenProps> = ({
                 }}
                 transition={{
                   duration: 2,
-                  ease: "easeInOut",
+                  ease: easeInOut,
                 }}
                 onAnimationComplete={() => setCaptureComplete(true)}
               >
@@ -156,7 +206,7 @@ const PetScreen: React.FC<PetScreenProps> = ({
                 }}
                 transition={{
                   duration: 2,
-                  ease: "easeInOut",
+                  ease: easeInOut,
                 }}
                 onAnimationComplete={() => setCaptureComplete(true)}
               >
@@ -215,35 +265,6 @@ const PetScreen: React.FC<PetScreenProps> = ({
                   )}
                 </div>
 
-                {/* Pet Reward Display (chỉ cho mode learning khi bắt thành công) */}
-                {mode === "learning" &&
-                  "isPetRewardGranted" in sessionData &&
-                  sessionData.petId &&
-                  sessionData.isPetRewardGranted && (
-                    <motion.div
-                      className="flex flex-col items-center space-y-2 mb-6 p-4 bg-yellow-900 bg-opacity-80 rounded-lg"
-                      initial={{ scale: 0, rotate: 180 }}
-                      animate={{ scale: 1, rotate: 0 }}
-                      transition={{ delay: 0.5, type: "spring" }}
-                    >
-                      <img
-                        src={`https://img.pokemondb.net/sprites/black-white/anim/normal/${encounteredPet?.name.toLowerCase()}.gif`}
-                        alt={sessionData.petName}
-                        className="w-50 h-50 object-contain pixel-art rounded-lg border-2 border-yellow-400"
-                        onError={(e) => {
-                          e.currentTarget.src = encounteredPet?.imageUrl ?? placeholderPet?.imageUrl ?? "";
-                        }}
-                      />
-                      <h3 className="text-yellow-300 font-pixel text-lg">
-                        {sessionData.petName}
-                      </h3>
-                      <div className="text-xs text-yellow-200 space-y-1">
-                        <p>Type: {sessionData.petType}</p>
-                        <p>Rarity: {sessionData.petRarity}</p>
-                      </div>
-                    </motion.div>
-                  )}
-
                 <motion.button
                   onClick={handleCloseReward}
                   className="bg-emerald-600 px-6 py-3 rounded-lg text-white font-pixel border-2 border-white hover:bg-emerald-700 transition-colors"
@@ -258,78 +279,121 @@ const PetScreen: React.FC<PetScreenProps> = ({
               </div>
             )}
           </motion.div>
-        ) :
-          // Session đang diễn ra - Hiển thị pet preview hoặc placeholder
-          (encounteredPet || placeholderPet) ? (
-            <motion.div
-              className="flex flex-col items-center justify-center w-full h-full"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-            >
-              {/* Pet Image */}
-              <motion.img
-                src={`https://img.pokemondb.net/sprites/black-white/anim/normal/${encounteredPet?.name.toLowerCase()}.gif`}
-                alt={encounteredPet?.name || placeholderPet?.name}
-                className="w-40 h-40 sm:w-40 sm:h-40 lg:w-100 lg:h-100 object-contain pixel-art rounded-lg mb-3"
-                initial={{ scale: 0.8, rotate: 180 }}
-                animate={{ scale: 1, rotate: 0 }}
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                transition={{ type: "spring", stiffness: 300 }}
-                onError={(e) => {
-                  e.currentTarget.src = encounteredPet?.imageUrl ?? placeholderPet?.imageUrl ?? "";
-                }}
-              />
-
-              {/* Pet Info */}
+        ) : (
+          // Session đang diễn ra - Hiển thị pet preview hoặc battle animation
+          <>
+            {mode === "learning" && !showBattleAnimation && (
               <motion.div
-                className="text-center space-y-2"
+                className="text-center space-y-2 absolute top-10"
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.2 }}
               >
-                <h3 className="text-white font-pixel text-lg">
-                  {encounteredPet?.name || placeholderPet?.name}
-                </h3>
-                <p className="text-gray-300 font-pixel text-sm bg-black bg-opacity-50 px-2 py-1 rounded">
-                  {mode === "learning"
-                    ? "Một sinh vật hoang dã xuất hiện"
-                    : "Vị thần bảo hộ trong truyền thuyết đã xuất hiện"}
+                <p className="text-yellow-300 font-pixel text-s bg-black bg-opacity-50 px-2 py-1 rounded">
+                  Tỉ lệ bắt: {(catchRate * 100).toFixed(0)}%
                 </p>
-                {mode === "learning" && (
-                  <p className="text-yellow-300 font-pixel text-sm bg-black bg-opacity-50 px-2 py-1 rounded">
-                    Tỉ lệ bắt: {(catchRate * 100).toFixed(0)}%
-                  </p>
-                )}
               </motion.div>
-            </motion.div>
-          ) : (
-            // No pet - Placeholder
-            <motion.div
-              className="flex flex-col items-center justify-center text-center w-full h-full"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              <div className="w-24 h-24 bg-gray-600 rounded-full flex items-center justify-center mb-4">
-                <span className="text-gray-400 font-pixel text-2xl">?</span>
-              </div>
-              <motion.p
-                className="text-white font-pixel mb-2"
-                initial={{ y: 10 }}
-                animate={{ y: 0 }}
+            )}
+
+            {/* Persistent User Pet (Bottom Left) */}
+            {(encounteredPet || placeholderPet) && userPet && (
+              <motion.div
+                className="flex flex-col items-center justify-center w-80 h-80 absolute bottom-25 -left-25"
+                variants={userPetVariants}
+                initial="rest"
+                animate={getUserVariant()}
+                whileHover={showBattleAnimation ? undefined : { scale: 1.1, rotate: 5 }}
               >
-                {mode === "learning" ? "Learning Pet" : "Review Pet"}
-              </motion.p>
-              <motion.p
-                className="text-gray-400 font-pixel text-sm"
-                initial={{ y: 10 }}
-                animate={{ y: 0 }}
-                transition={{ delay: 0.2 }}
+                <motion.img
+                  src={`https://img.pokemondb.net/sprites/black-white/anim/back-normal/${userPet.name.toLowerCase()}.gif`}
+                  alt={userPet.name}
+                  className="w-40 h-40 sm:w-40 sm:h-40 lg:w-100 lg:h-100 object-contain pixel-art rounded-lg mb-3"
+                  style={{
+                    filter: showBattleAnimation && !isAnswerCorrect ? "brightness(0.7) sepia(1) saturate(3) hue-rotate(300deg)" : "none",
+                  }}
+                  onError={(e) => {
+                    e.currentTarget.src = userPet.imageUrl;
+                  }}
+                />
+                <p className={`text-white font-pixel text-xs ${showBattleAnimation && !isAnswerCorrect ? "text-red-400" : ""}`}>
+                  {userPet.name}
+                </p>
+              </motion.div>
+            )}
+
+            {/* Persistent Wild Pet (Top Right) */}
+            {(encounteredPet || placeholderPet) && (
+              <motion.div
+                className="flex flex-col items-center justify-center w-60 h-60 absolute top-40 right-5"
+                variants={wildPetVariants}
+                initial="rest"
+                animate={getWildVariant()}
+                whileHover={showBattleAnimation ? undefined : { scale: 1.1, rotate: 5 }}
               >
-                Complete session to meet your companion!
-              </motion.p>
-            </motion.div>
-          )}
+                {/* Wild Pet Info */}
+                <motion.div
+                  className="text-center space-y-2 mb-3"
+                >
+                  <h3 className={`text-white font-pixel text-lg ${showBattleAnimation && isAnswerCorrect ? "text-red-400" : ""}`}>
+                    {encounteredPet?.name || placeholderPet?.name}
+                  </h3>
+                </motion.div>
+
+                <motion.img
+                  src={`https://img.pokemondb.net/sprites/black-white/anim/normal/${encounteredPet?.name.toLowerCase() || placeholderPet?.name.toLowerCase()}.gif`}
+                  alt={encounteredPet?.name || placeholderPet?.name}
+                  className="w-40 h-40 sm:w-40 sm:h-40 lg:w-100 lg:h-100 object-contain pixel-art rounded-lg"
+                  style={{
+                    filter: showBattleAnimation && isAnswerCorrect ? "brightness(0.7) sepia(1) saturate(3) hue-rotate(300deg)" : "none",
+                  }}
+                  onError={(e) => {
+                    e.currentTarget.src = encounteredPet?.imageUrl ?? placeholderPet?.imageUrl ?? "";
+                  }}
+                />
+              </motion.div>
+            )}
+
+            {/* No pet - Placeholder */}
+            {!showBattleAnimation && !(encounteredPet || placeholderPet) && (
+              <motion.div
+                className="flex flex-col items-center justify-center text-center w-full h-full"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                <div className="w-24 h-24 bg-gray-600 rounded-full flex items-center justify-center mb-4">
+                  <span className="text-gray-400 font-pixel text-2xl">?</span>
+                </div>
+                <motion.p
+                  className="text-white font-pixel mb-2"
+                  initial={{ y: 10 }}
+                  animate={{ y: 0 }}
+                >
+                  {mode === "learning" ? "Learning Pet" : "Review Pet"}
+                </motion.p>
+                <motion.p
+                  className="text-gray-400 font-pixel text-sm"
+                  initial={{ y: 10 }}
+                  animate={{ y: 0 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  Complete session to meet your companion!
+                </motion.p>
+              </motion.div>
+            )}
+
+            {/* Audio triggers during battle */}
+            {showBattleAnimation && (
+              <>
+                {isAnswerCorrect && (
+                  <audio autoPlay src="https://res.cloudinary.com/dqpkxxzaf/video/upload/v1758225103/pokemon-red_blue_yellow-battle-sound-effect-1_jw1t0t.mp3" />
+                )}
+                {!isAnswerCorrect && (
+                  <audio autoPlay src="https://res.cloudinary.com/dqpkxxzaf/video/upload/v1758225103/pokemon-red_blue_yellow-battle-sound-effect-1_jw1t0t.mp3" />
+                )}
+              </>
+            )}
+          </>
+        )}
       </AnimatePresence>
     </div>
   );
