@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-export const BASE_URL = 'https://localhost:7272/api';
+export const BASE_URL = import.meta.env.VITE_API_URL || 'https://localhost:7272/api';
 
 // ---- Endpoints ----
 export const endpoints = {
