@@ -2,7 +2,7 @@ name: Deploy Backend to Azure App Service
 
 on:
   push:
-    branches: [ deploy ]        # ← đổi thành nhánh của bạn nếu khác
+    branches: [ main ]        # ← đổi thành nhánh của bạn nếu khác
     paths:
       - 'WordSoulApi/**'      # ← chỉ trigger khi có thay đổi trong folder backend
 
