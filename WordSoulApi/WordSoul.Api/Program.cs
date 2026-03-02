@@ -93,20 +93,21 @@ builder.Services.AddDbContext<WordSoulDbContext>(options =>
    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Thêm dịch vụ CORS
-var frontendUrl = Environment.GetEnvironmentVariable("FrontendUrl") ?? "http://localhost:5173";
+var allowedOrigins = builder.Configuration["AllowedOrigins"]?
+    .Split(",", StringSplitOptions.RemoveEmptyEntries)
+    ?? ["http://localhost:5173"];
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins(
-                "http://localhost:5173",
-                "http://localhost:3000",
-                "https://wordsoul-frontend-cqb5awdca4c7cceg.southeastasia-01.azurewebsites.net")
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();
     });
 });
+
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -223,11 +224,12 @@ var app = builder.Build();
 app.MapHub<NotificationHub>("/notificationHub");
 
 //Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.MapOpenApi();
+app.MapScalarApiReference(options =>
 {
-    app.MapScalarApiReference();
-    // app.MapOpenApi();
-}
+    options.WithTitle("WordSoul API");
+    options.WithTheme(ScalarTheme.Purple);
+});
 
 
 // Thêm middleware Serilog để ghi log các yêu cầu HTTP
@@ -247,7 +249,18 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<WordSoulDbContext>();
-    db.Database.Migrate();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        logger.LogInformation("Đang chạy database migration...");
+        db.Database.Migrate();
+        logger.LogInformation("Migration hoàn thành.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Lỗi khi chạy migration.");
+        throw; // Dừng app nếu migrate thất bại
+    }
 }
 
 
