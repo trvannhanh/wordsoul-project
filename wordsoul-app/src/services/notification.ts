@@ -1,10 +1,10 @@
 
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import type { NotificationDto } from "../types/NotificationDto";
-import { authApi, endpoints } from "./api";
+import { authApi, BASE_URL, endpoints } from "./api";
 
 
-export const fetchNotifications = async () : Promise<NotificationDto[]> => {
+export const fetchNotifications = async (): Promise<NotificationDto[]> => {
   const response = await authApi.get<NotificationDto[]>(endpoints.notification);
   return response.data;
 };
@@ -25,8 +25,10 @@ export const markReadNotifications = async (notificationId: number) => {
 };
 
 export const createHubConnection = () => {
+  // Lấy base URL (bỏ phần /api ở cuối nếu có) để tạo SignalR hub URL
+  const hubBaseUrl = BASE_URL.replace(/\/api$/, "");
   return new HubConnectionBuilder()
-    .withUrl(`https://localhost:7272/notificationHub`, {
+    .withUrl(`${hubBaseUrl}/notificationHub`, {
       accessTokenFactory: () => localStorage.getItem("accessToken") || "",
     })
     .configureLogging(LogLevel.Information)
