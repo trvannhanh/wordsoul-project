@@ -21,17 +21,14 @@ jobs:
           submodules: true
           lfs: false
 
-      # ← Tự build thủ công, không dùng Oryx
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'        # dùng Node 20 LTS thay vì 22
+          node-version: '20'
 
       - name: Install dependencies
         working-directory: ./wordsoul-app
-        run: |
-          rm -f package-lock.json
-          npm install
+        run: npm install
 
       - name: Build
         working-directory: ./wordsoul-app
@@ -45,10 +42,10 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WONDERFUL_ROCK_05CE45A00 }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "./wordsoul-app"
+          app_location: "./wordsoul-app/dist"  # trỏ thẳng vào thư mục đã build
           api_location: ""
-          output_location: "dist"
-          skip_app_build: true      # ← quan trọng: bỏ qua Oryx build vì đã build ở trên
+          output_location: ""                  # trống vì app_location đã là dist rồi
+          skip_app_build: true
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
@@ -60,4 +57,3 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WONDERFUL_ROCK_05CE45A00 }}
           action: "close"
-
