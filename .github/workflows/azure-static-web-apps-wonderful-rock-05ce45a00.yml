@@ -28,7 +28,9 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./wordsoul-app
-        run: npm install
+        run: |
+          rm -f package-lock.json
+          npm install
 
       - name: Build
         working-directory: ./wordsoul-app
