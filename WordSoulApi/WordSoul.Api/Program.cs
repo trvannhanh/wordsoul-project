@@ -209,21 +209,7 @@ builder.Services.AddSingleton<Cloudinary>(sp =>
 
 var app = builder.Build();
 
-//using (var scope = app.Services.CreateScope())
-//{
-//    var dbContext = scope.ServiceProvider.GetRequiredService<WordSoulDbContext>();
-//    if (dbContext.Database.IsRelational() )
-//    {
-//        dbContext.Database.Migrate();
-//    }    
-//}    
-
-
-
-//Hub SignalR
-app.MapHub<NotificationHub>("/notificationHub");
-
-//Configure the HTTP request pipeline.
+// 1. OpenAPI/Scalar (không cần CORS)
 app.MapOpenApi();
 app.MapScalarApiReference(options =>
 {
@@ -231,23 +217,24 @@ app.MapScalarApiReference(options =>
     options.WithTheme(ScalarTheme.Purple);
 });
 
-
-// Thêm middleware Serilog để ghi log các yêu cầu HTTP
+// 2. Serilog logging
 app.UseSerilogRequestLogging();
 
-app.UseHttpsRedirection();
-
-// 🚀 Dùng CORS
+// 3. CORS phải là middleware ĐẦU TIÊN — trước cả HTTPS redirect
 app.UseCors("AllowFrontend");
 
+// 4. HTTPS redirect sau CORS
+app.UseHttpsRedirection();
 
-
+// 5. Auth
 app.UseAuthentication();
-
 app.UseAuthorization();
+
+// 6. Controllers và Hubs
 app.MapControllers();
+app.MapHub<NotificationHub>("/notificationHub");
 
-
+// 7. Migration
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<WordSoulDbContext>();
@@ -261,9 +248,8 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         logger.LogError(ex, "Lỗi khi chạy migration.");
-        throw; // Dừng app nếu migrate thất bại
+        throw;
     }
 }
-
 
 app.Run();
