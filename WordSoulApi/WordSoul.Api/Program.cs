@@ -209,6 +209,7 @@ builder.Services.AddSingleton<Cloudinary>(sp =>
 
 var app = builder.Build();
 
+//Configure the HTTP request pipeline.
 // 1. OpenAPI/Scalar (không cần CORS)
 app.MapOpenApi();
 app.MapScalarApiReference(options =>
@@ -217,10 +218,12 @@ app.MapScalarApiReference(options =>
     options.WithTheme(ScalarTheme.Purple);
 });
 
-// 2. Serilog logging
+// Thêm middleware Serilog để ghi log các yêu cầu HTTP
 app.UseSerilogRequestLogging();
 
-// 3. CORS phải là middleware ĐẦU TIÊN — trước cả HTTPS redirect
+// 🚀 CORS phải đứng TRƯỚC UseHttpsRedirection
+// Trên Azure App Service, HTTPS được terminate ở load balancer,
+// nên UseHttpsRedirection redirect OPTIONS preflight trước khi CORS kịp xử lý
 app.UseCors("AllowFrontend");
 
 // 4. HTTPS redirect sau CORS
@@ -232,7 +235,9 @@ app.UseAuthorization();
 
 // 6. Controllers và Hubs
 app.MapControllers();
-app.MapHub<NotificationHub>("/notificationHub");
+
+// Hub SignalR - đặt sau UseCors để policy được áp dụng
+app.MapHub<NotificationHub>("/notificationHub").RequireCors("AllowFrontend");
 
 // 7. Migration
 using (var scope = app.Services.CreateScope())
