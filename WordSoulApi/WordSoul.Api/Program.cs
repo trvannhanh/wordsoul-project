@@ -235,10 +235,12 @@ app.MapScalarApiReference(options =>
 // Thêm middleware Serilog để ghi log các yêu cầu HTTP
 app.UseSerilogRequestLogging();
 
+app.UseHttpsRedirection();
+
 // 🚀 Dùng CORS
 app.UseCors("AllowFrontend");
 
-app.UseHttpsRedirection();
+
 
 app.UseAuthentication();
 
