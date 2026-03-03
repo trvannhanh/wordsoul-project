@@ -101,6 +101,8 @@ Properties/
 *.DS_Store
 Thumbs.db
 ehthumbs.db
+.env
+.env.*
 
 # MSBuild Binary and Structured Log
 *.binlog
