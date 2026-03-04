@@ -80,7 +80,9 @@ namespace WordSoul.Application.Services
                     .ToList()
             };
 
-            // Auto-assign reward pets by rarity
+            // Auto-assign reward pets by rarity, ưu tiên type khớp với Theme
+            var themePetTypes = ThemeToPetTypesMap.GetValueOrDefault(vocabularySet.Theme);
+
             var petDistribution = new Dictionary<PetRarity, (int Count, double DropRate)>
             {
                 { PetRarity.Common,     (10, 0.40) },
@@ -92,7 +94,7 @@ namespace WordSoul.Application.Services
 
             foreach (var (rarity, (count, dropRate)) in petDistribution)
             {
-                var pets = await _uow.Pet.GetRandomPetsByRarityAsync(rarity, count, cancellationToken);
+                var pets = await _uow.Pet.GetRandomPetsByRarityAsync(rarity, count, themePetTypes, cancellationToken);
                 if (pets.Count < count)
                     throw new InvalidOperationException($"Not enough {rarity} pets. Need {count}, found {pets.Count}.");
 
@@ -282,6 +284,31 @@ namespace WordSoul.Application.Services
         // ============================================================================
         // PRIVATE HELPERS
         // ============================================================================
+
+        /// <summary>
+        /// Mapping từ VocabularySetTheme → danh sách PetType ưu tiên.
+        /// Khi tạo set, hệ thống sẽ ưu tiên chọn pet có type khớp với theme.
+        /// Nếu không đủ pet của type đó, tự động fallback về random rarity thường.
+        /// </summary>
+        private static readonly Dictionary<VocabularySetTheme, IEnumerable<PetType>> ThemeToPetTypesMap = new()
+        {
+            { VocabularySetTheme.DailyLife,   [PetType.Normal] },
+            { VocabularySetTheme.Nature,      [PetType.Grass,    PetType.Bug] },
+            { VocabularySetTheme.Weather,     [PetType.Ice,      PetType.Flying] },
+            { VocabularySetTheme.Food,        [PetType.Water,    PetType.Fairy] },
+            { VocabularySetTheme.Technology,  [PetType.Electric] },
+            { VocabularySetTheme.Travel,      [PetType.Flying,   PetType.Normal] },
+            { VocabularySetTheme.Health,      [PetType.Fairy,    PetType.Psychic] },
+            { VocabularySetTheme.Sports,      [PetType.Fighting] },
+            { VocabularySetTheme.Business,    [PetType.Steel] },
+            { VocabularySetTheme.Science,     [PetType.Psychic,  PetType.Electric] },
+            { VocabularySetTheme.Art,         [PetType.Dragon,   PetType.Psychic] },
+            { VocabularySetTheme.Mystery,     [PetType.Ghost] },
+            { VocabularySetTheme.Dark,        [PetType.Dark] },
+            { VocabularySetTheme.Custom,      [PetType.Fire] },
+            { VocabularySetTheme.Challenge,   [PetType.Rock] },
+            { VocabularySetTheme.Poison,      [PetType.Poison] },
+        };
 
         private VocabularySetDto MapToDto(VocabularySet set, int? currentUserId = null) => new()
         {
