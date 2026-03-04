@@ -107,6 +107,9 @@ namespace WordSoul.Application.Services
 
             await _uow.VocabularySet.CreateVocabularySetAsync(vocabularySet, cancellationToken);
 
+            await _uow.SaveChangesAsync(cancellationToken);
+
+            
             // Auto-add to creator's library
             var userSetLink = new UserVocabularySet
             {
