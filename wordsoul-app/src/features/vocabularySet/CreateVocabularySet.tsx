@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { createVocabularySet } from '../../services/vocabularySet';
 import { searchVocabularies } from '../../services/vocabulary';
 import { VocabularySetThemeEnum as themeValues } from '../../types/VocabularySetDto';
-import {  VocabularyDifficultyLevelEnum as difficultyValues } from '../../types/VocabularyDto';
+import { VocabularyDifficultyLevelEnum as difficultyValues } from '../../types/VocabularyDto';
 import type { SearchVocabularyDto, VocabularyDifficultyLevelEnum, VocabularyDto } from '../../types/VocabularyDto';
 import type { VocabularySetThemeEnum } from '../../types/VocabularySetDto';
 
@@ -16,7 +16,7 @@ const CreateVocabularySet: React.FC = () => {
   const [selectedVocabularyIds, setSelectedVocabularyIds] = useState<number[]>([]);
   const [title, setTitle] = useState<string>('');
   const [description, setDescription] = useState<string>('');
-  const [theme, setTheme] = useState<VocabularySetThemeEnum>(themeValues.DailyLearning);
+  const [theme, setTheme] = useState<VocabularySetThemeEnum>(themeValues.Custom);
   const [difficultyLevel, setDifficultyLevel] = useState<VocabularyDifficultyLevelEnum>(difficultyValues.Beginner);
   const [isPublic, setIsPublic] = useState<boolean>(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -41,7 +41,7 @@ const CreateVocabularySet: React.FC = () => {
       setVocabularies(results);
       setSelectedVocabularyIds(results.map((vocab) => vocab.id));
       setStep(2);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || 'Lỗi khi tìm kiếm từ vựng');
       console.error('Search error:', err);
@@ -97,7 +97,7 @@ const CreateVocabularySet: React.FC = () => {
       } else {
         throw new Error('Tạo bộ từ vựng thất bại, không nhận được ID');
       }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || 'Lỗi khi tạo bộ từ vựng');
       console.error('Create error:', err);
@@ -206,8 +206,9 @@ const CreateVocabularySet: React.FC = () => {
                   onChange={(e) => setTheme(Number(e.target.value) as VocabularySetThemeEnum)}
                   className="w-full p-2 border rounded-md bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value={themeValues.DailyLearning}>{themeValues.DailyLearning}</option>
-                  <option value={themeValues.AdvancedTopics}>{themeValues.AdvancedTopics}</option>
+                  {Object.entries(themeValues).map(([key, value]) => (
+                    <option key={key} value={value}>{key}</option>
+                  ))}
                 </select>
               </div>
               <div>
