@@ -5,13 +5,48 @@ import Card from '../../components/Card';
 import Skeleton from '../../components/Skeleton';
 import { useNavigate } from 'react-router-dom';
 import type { VocabularySetDto } from '../../types/VocabularySetDto';
+import { VocabularySetThemeEnum } from '../../types/VocabularySetDto';
 import { useAuth } from '../../hooks/Auth/useAuth';
+
+// Theme tier groupings — keys match VocabularySetThemeEnum exactly
+const THEME_TIERS = [
+    {
+        label: 'Daily & Beginner',
+        themes: new Set<number>([
+            VocabularySetThemeEnum.DailyLife,
+            VocabularySetThemeEnum.Nature,
+            VocabularySetThemeEnum.Weather,
+            VocabularySetThemeEnum.Food,
+        ]),
+    },
+    {
+        label: 'Intermediate',
+        themes: new Set<number>([
+            VocabularySetThemeEnum.Technology,
+            VocabularySetThemeEnum.Travel,
+            VocabularySetThemeEnum.Health,
+            VocabularySetThemeEnum.Sports,
+        ]),
+    },
+    {
+        label: 'Advanced & Specialized',
+        themes: new Set<number>([
+            VocabularySetThemeEnum.Business,
+            VocabularySetThemeEnum.Science,
+            VocabularySetThemeEnum.Art,
+            VocabularySetThemeEnum.Mystery,
+            VocabularySetThemeEnum.Dark,
+            VocabularySetThemeEnum.Custom,
+            VocabularySetThemeEnum.Challenge,
+            VocabularySetThemeEnum.Poison,
+        ]),
+    },
+];
 
 const VocabularySetsPage = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
-    const [dailyLearningSets, setDailyLearningSets] = useState<VocabularySetDto[]>([]);
-    const [advancedTopicsSets, setAdvancedTopicsSets] = useState<VocabularySetDto[]>([]);
+    const [allPublicSets, setAllPublicSets] = useState<VocabularySetDto[]>([]);
     const [mySets, setMySets] = useState<VocabularySetDto[]>([]);
     const [searchTitle, setSearchTitle] = useState<string>('');
     const [debouncedSearchTitle] = useDebounce(searchTitle, 500);
@@ -24,21 +59,17 @@ const VocabularySetsPage = () => {
         const loadData = async () => {
             setIsSearching(true);
             try {
-                const dailyData = await fetchVocabularySets(
+                // Fetch all public sets in one request; group client-side
+                const publicData = await fetchVocabularySets(
                     debouncedSearchTitle,
-                    'DailyLearning',
                     undefined,
-                    undefined
-                );
-                setDailyLearningSets(dailyData);
-
-                const advancedData = await fetchVocabularySets(
-                    debouncedSearchTitle,
-                    'AdvancedTopics',
                     undefined,
-                    undefined
+                    undefined,
+                    undefined,
+                    1,
+                    100   // fetch enough to cover all themes
                 );
-                setAdvancedTopicsSets(advancedData);
+                setAllPublicSets(publicData);
 
                 if (user) {
                     const mySetsData = await fetchUserVocabularySets(
@@ -72,7 +103,6 @@ const VocabularySetsPage = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // Hàm cuộn lên đầu trang
     const scrollToTop = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
@@ -85,45 +115,47 @@ const VocabularySetsPage = () => {
         navigate('/vocabulary-sets/create');
     };
 
-    if (loading && !dailyLearningSets.length && !advancedTopicsSets.length && !mySets.length) {
+    // Filter public sets into a tier bucket by matching the numeric theme value
+    const getSetsForTier = (tier: typeof THEME_TIERS[number]) =>
+        allPublicSets.filter((s) => {
+            const themeNum = typeof s.theme === 'number' ? s.theme : Number(s.theme);
+            return tier.themes.has(themeNum);
+        });
+
+    const SearchBar = () => (
+        <div className="relative flex-grow mb-8">
+            <input
+                type="text"
+                value={searchTitle}
+                onChange={handleSearchChange}
+                placeholder="Tìm kiếm bộ từ vựng theo tiêu đề..."
+                className="w-full p-2 sm:p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {isSearching && (
+                <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                    <svg
+                        className="animate-spin h-5 w-5 sm:h-6 sm:w-6 text-blue-500"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                    >
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                    </svg>
+                </div>
+            )}
+        </div>
+    );
+
+    if (loading && !allPublicSets.length && !mySets.length) {
         return (
             <div className='background-color pt-13 text-color min-h-screen overflow-auto'>
                 <div className="container mx-auto p-4 sm:p-6 lg:p-8 w-full sm:w-10/12 lg:w-7/12">
-                    <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:space-x-4">
-                        <div className="relative flex-grow">
-                            <input
-                                type="text"
-                                value={searchTitle}
-                                onChange={handleSearchChange}
-                                placeholder="Tìm kiếm bộ từ vựng theo tiêu đề..."
-                                className="w-full p-2 sm:p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                            {isSearching && (
-                                <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-                                    <svg
-                                        className="animate-spin h-5 w-5 sm:h-6 sm:w-6 text-blue-500"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <circle
-                                            className="opacity-25"
-                                            cx="12"
-                                            cy="12"
-                                            r="10"
-                                            stroke="currentColor"
-                                            strokeWidth="4"
-                                        ></circle>
-                                        <path
-                                            className="opacity-75"
-                                            fill="currentColor"
-                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                        ></path>
-                                    </svg>
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                    <SearchBar />
                     <Skeleton type="cards" />
                 </div>
             </div>
@@ -135,8 +167,8 @@ const VocabularySetsPage = () => {
             <div className='background-color pt-13 text-white min-h-screen overflow-auto'>
                 <div className="container mx-auto p-4 sm:p-6 lg:p-8 w-full sm:w-10/12 lg:w-7/12 text-center py-8">
                     <p className="text-base sm:text-lg text-red-500">{error}</p>
-                    <button 
-                        onClick={() => window.location.reload()} 
+                    <button
+                        onClick={() => window.location.reload()}
                         className="mt-2 text-blue-500 hover:text-blue-400"
                     >
                         Retry
@@ -149,65 +181,60 @@ const VocabularySetsPage = () => {
     return (
         <div className='review-box-background bg-fixed pt-13 text-color min-h-screen overflow-auto'>
             <div className="container mx-auto p-4 sm:p-6 lg:p-8 w-full sm:w-10/12 lg:w-7/12">
-                <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:space-x-4">
-                    <div className="relative flex-grow">
-                        <input
-                            type="text"
-                            value={searchTitle}
-                            onChange={handleSearchChange}
-                            placeholder="Tìm kiếm bộ từ vựng theo tiêu đề..."
-                            className="w-full p-2 sm:p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                        {isSearching && (
-                            <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-                                <svg
-                                    className="animate-spin h-5 w-5 sm:h-6 sm:w-6 text-blue-500"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <circle
-                                        className="opacity-25"
-                                        cx="12"
-                                        cy="12"
-                                        r="10"
-                                        stroke="currentColor"
-                                        strokeWidth="4"
-                                    ></circle>
-                                    <path
-                                        className="opacity-75"
-                                        fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                        ></path>
-                                    </svg>
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                <SearchBar />
 
-                    {/* Section My Vocabulary Sets */}
-                    {user && (
-                        <section className="mb-12">
-                            <h2 className="text-xl sm:text-2xl font-bold mb-4">Bộ từ vựng của tôi</h2>
-                            {mySets.length === 0 ? (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-                                    <div
-                                        onClick={handleCreateSet}
-                                        className="w-full border border-gray-300 rounded-md p-4 bg-transparent flex items-center justify-center cursor-pointer hover:border-blue-500 transition-colors"
-                                    >
-                                        <span className="text-3xl sm:text-4xl ">+</span>
-                                    </div>
-                                    <p className="text-sm sm:text-base text-gray-500 col-span-full">Bạn chưa sở hữu bộ từ vựng nào.</p>
+                {/* Section: My Vocabulary Sets */}
+                {user && (
+                    <section className="mb-12">
+                        <h2 className="text-xl sm:text-2xl font-bold mb-4">Bộ từ vựng của tôi</h2>
+                        {mySets.length === 0 ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+                                <div
+                                    onClick={handleCreateSet}
+                                    className="w-full border border-gray-300 rounded-md p-4 bg-transparent flex items-center justify-center cursor-pointer hover:border-blue-500 transition-colors"
+                                >
+                                    <span className="text-3xl sm:text-4xl">+</span>
                                 </div>
+                                <p className="text-sm sm:text-base text-gray-500 col-span-full">Bạn chưa sở hữu bộ từ vựng nào.</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+                                <div
+                                    onClick={handleCreateSet}
+                                    className="w-full border border-gray-300 rounded-md p-4 bg-transparent flex items-center justify-center custom-cursor overflow-hidden hover:scale-105 transition-transform duration-300"
+                                >
+                                    <span className="text-3xl sm:text-4xl">+</span>
+                                </div>
+                                {mySets.map((item) => (
+                                    <Card
+                                        key={item.id}
+                                        title={item.title}
+                                        description={item.description || 'Không có mô tả'}
+                                        theme={item.theme}
+                                        difficultyLevel={item.difficultyLevel}
+                                        image={item.imageUrl || ''}
+                                        vocabularySetid={item.id}
+                                        isPublic={item.isPublic}
+                                        isOwned={item.isOwned}
+                                        createdByUsername={item.createdByUsername || 'Unknown'}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </section>
+                )}
+
+                {/* Sections: one per tier — auto-generated from THEME_TIERS */}
+                {THEME_TIERS.map((tier) => {
+                    const sets = getSetsForTier(tier);
+                    return (
+                        <section key={tier.label} className="mb-12">
+                            <h2 className="text-xl sm:text-2xl font-bold mb-4">{tier.label}</h2>
+                            {sets.length === 0 ? (
+                                <p className="text-sm sm:text-base text-gray-500">Không tìm thấy bộ từ vựng.</p>
                             ) : (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-                                    <div
-                                        onClick={handleCreateSet}
-                                        className="w-full border border-gray-300 rounded-md p-4 bg-transparent flex items-center justify-center custom-cursor  overflow-hidden hover:scale-105 transition-transform duration-300"
-                                    >
-                                        <span className="text-3xl sm:text-4xl">+</span>
-                                    </div>
-                                    {mySets.map((item) => (
+                                    {sets.map((item) => (
                                         <Card
                                             key={item.id}
                                             title={item.title}
@@ -224,78 +251,23 @@ const VocabularySetsPage = () => {
                                 </div>
                             )}
                         </section>
-                    )}
+                    );
+                })}
 
-                    {/* Section Daily Learning */}
-                    <section className="mb-12">
-                        <h2 className="text-xl sm:text-2xl font-bold mb-4">Daily Learning</h2>
-                        {dailyLearningSets.length === 0 ? (
-                            <p className="text-sm sm:text-base text-gray-500">Không tìm thấy bộ từ vựng.</p>
-                        ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-                                {dailyLearningSets.map((item) => (
-                                    <Card
-                                        key={item.id}
-                                        title={item.title}
-                                        description={item.description || 'Không có mô tả'}
-                                        theme={item.theme}
-                                        difficultyLevel={item.difficultyLevel}
-                                        image={item.imageUrl || ''}
-                                        vocabularySetid={item.id}
-                                        isPublic={item.isPublic}
-                                        isOwned={item.isOwned}
-                                        createdByUsername={item.createdByUsername || 'Unknown'}
-                                    />
-                                ))}
-                            </div>
-                        )}
-                    </section>
-
-                    {/* Section Advanced Topics */}
-                    <section>
-                        <h2 className="text-xl sm:text-2xl font-bold mb-4">Advanced Topics</h2>
-                        {advancedTopicsSets.length === 0 ? (
-                            <p className="text-sm sm:text-base text-gray-500">Không tìm thấy bộ từ vựng.</p>
-                        ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-                                {advancedTopicsSets.map((item) => (
-                                    <Card
-                                        key={item.id}
-                                        title={item.title}
-                                        description={item.description || 'Không có mô tả'}
-                                        theme={item.theme}
-                                        difficultyLevel={item.difficultyLevel}
-                                        image={item.imageUrl || ''}
-                                        vocabularySetid={item.id}
-                                        isPublic={item.isPublic}
-                                        isOwned={item.isOwned}
-                                        createdByUsername={item.createdByUsername || 'Unknown'}
-                                    />
-                                ))}
-                            </div>
-                        )}
-                    </section>
-
-                    {/* Nút Back to Top (chỉ hiển thị trên mobile) */}
-                    {showBackToTop && (
-                        <button
-                            onClick={scrollToTop}
-                            className="fixed bottom-4 right-4 sm:hidden bg-blue-500 text-white p-3 rounded-full shadow-lg hover:bg-blue-600 transition-opacity duration-300 z-50"
-                        >
-                            <svg
-                                className="w-6 h-6"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                            </svg>
-                        </button>
-                    )}
-                </div>
+                {/* Nút Back to Top (chỉ hiển thị trên mobile) */}
+                {showBackToTop && (
+                    <button
+                        onClick={scrollToTop}
+                        className="fixed bottom-4 right-4 sm:hidden bg-blue-500 text-white p-3 rounded-full shadow-lg hover:bg-blue-600 transition-opacity duration-300 z-50"
+                    >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                        </svg>
+                    </button>
+                )}
             </div>
-        );
+        </div>
+    );
 };
 
 export default VocabularySetsPage;

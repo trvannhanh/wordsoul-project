@@ -26,8 +26,29 @@ export interface VocabularySetDetailDto extends VocabularySetDto {
 }
 
 export const VocabularySetThemeEnum = {
-  DailyLearning: 0,
-  AdvancedTopics: 1,
+  // ── DAILY / BEGINNER ─────────────────────────────────
+  DailyLife: 0,         // Hệ Normal  — từ thường dùng hàng ngày
+  Nature: 1,           // Hệ Grass   — động vật, thực vật, môi trường
+  Weather: 2,          // Hệ Ice     — thời tiết, mùa, khí hậu
+  Food: 3,             // Hệ Water   — ẩm thực, nấu ăn, nhà hàng
+
+  // ── INTERMEDIATE ─────────────────────────────────────
+  Technology: 4,       // Hệ Electric — IT, gadget, internet
+  Travel: 5,           // Hệ Flying   — du lịch, địa điểm, phương tiện
+  Health: 6,           // Hệ Fairy    — sức khỏe, y tế, cảm xúc
+  Sports: 7,           // Hệ Fighting — thể thao, rèn luyện
+
+  // ── ADVANCED / SPECIALIZED ───────────────────────────
+  Business: 8,         // Hệ Steel    — kinh doanh, tài chính, đàm phán
+  Science: 9,          // Hệ Psychic  — khoa học, nghiên cứu, triết học
+  Art: 10,              // Hệ Dragon   — nghệ thuật, âm nhạc, văn học
+  Mystery: 11,          // Hệ Ghost    — idioms, slang, từ bí ẩn
+  Dark: 12,             // Hệ Dark     — từ tiêu cực, tin tức, xung đột
+
+  // ── SPECIAL ──────────────────────────────────────────
+  Custom: 13,           // Hệ Fire     — bộ từ tự tạo, cá nhân hóa
+  Challenge: 14,        // Hệ Rock     — từ khó, thi cử, luyện thi
+  Poison: 15,           // Hệ Poison   — false friends, dễ nhầm lẫn
 } as const;
 
 
