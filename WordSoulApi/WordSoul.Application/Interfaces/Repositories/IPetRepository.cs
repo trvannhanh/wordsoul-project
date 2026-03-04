@@ -37,11 +37,14 @@ namespace WordSoul.Application.Interfaces.Repositories
             CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Lấy danh sách Pet ngẫu nhiên theo độ hiếm (rarity).
+        /// Lấy danh sách Pet ngẫu nhiên theo độ hiếm (rarity),
+        /// ưu tiên các PetType phù hợp với Theme của bộ từ vựng.
+        /// Nếu không đủ pet theo type ưu tiên, tự động fallback về rarity bất kỳ type.
         /// </summary>
         Task<List<Pet>> GetRandomPetsByRarityAsync(
             PetRarity rarity,
             int count,
+            IEnumerable<PetType>? preferredTypes = null,
             CancellationToken cancellationToken = default);
 
         // ----------------------------- UPDATE ------------------------------

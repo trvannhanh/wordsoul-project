@@ -103,17 +103,49 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
             return await _context.Pets.FindAsync([id], cancellationToken);
         }
 
-        // Lấy ngẫu nhiên một số pet theo rarity
-        public async Task<List<Pet>> GetRandomPetsByRarityAsync(PetRarity rarity, int count, CancellationToken cancellationToken = default)
+        // Lấy ngẫu nhiên một số pet theo rarity, ưu tiên theo type của Theme (có fallback)
+        public async Task<List<Pet>> GetRandomPetsByRarityAsync(
+            PetRarity rarity,
+            int count,
+            IEnumerable<PetType>? preferredTypes = null,
+            CancellationToken cancellationToken = default)
         {
-            var pets = await _context.Pets
+            var typeList = preferredTypes?.ToList();
+
+            // Phase 1: nếu có preferredTypes → ưu tiên lấy pets có type khớp
+            if (typeList is { Count: > 0 })
+            {
+                var preferred = await _context.Pets
+                    .Where(p => p.Rarity == rarity && p.IsActive && typeList.Contains(p.Type))
+                    .OrderBy(_ => Guid.NewGuid())
+                    .Take(count)
+                    .ToListAsync(cancellationToken);
+
+                if (preferred.Count >= count)
+                    return preferred;
+
+                // Phase 2: fallback — bổ sung từ bất kỳ type nào (trừ id đã lấy)
+                var takenIds = preferred.Select(p => p.Id).ToHashSet();
+                int remaining = count - preferred.Count;
+
+                var fallback = await _context.Pets
+                    .Where(p => p.Rarity == rarity && p.IsActive && !takenIds.Contains(p.Id))
+                    .OrderBy(_ => Guid.NewGuid())
+                    .Take(remaining)
+                    .ToListAsync(cancellationToken);
+
+                preferred.AddRange(fallback);
+                return preferred;
+            }
+
+            // Không có preferredTypes → random thuần theo rarity (behavior cũ)
+            return await _context.Pets
                 .Where(p => p.Rarity == rarity && p.IsActive)
-                .OrderBy(p => Guid.NewGuid()) // Ngẫu nhiên hóa
+                .OrderBy(_ => Guid.NewGuid())
                 .Take(count)
                 .ToListAsync(cancellationToken);
-
-            return pets;
         }
+
 
         //------------------------------- UPDATE -----------------------------------
         // Cập nhật pet

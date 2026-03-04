@@ -56,7 +56,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ItemId");
 
-                    b.ToTable("Achievements");
+                    b.ToTable("Achievements", (string)null);
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.ActivityLog", b =>
@@ -90,7 +90,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ActivityLogs");
+                    b.ToTable("ActivityLogs", (string)null);
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.AnswerRecord", b =>
@@ -136,7 +136,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("LearningSessionId", "VocabularyId", "QuestionType");
 
-                    b.ToTable("AnswerRecords");
+                    b.ToTable("AnswerRecords", (string)null);
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.DailyQuest", b =>
@@ -179,7 +179,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("DailyQuests");
+                    b.ToTable("DailyQuests", (string)null);
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.Item", b =>
@@ -209,7 +209,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Items");
+                    b.ToTable("Items", (string)null);
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.LearningSession", b =>
@@ -252,7 +252,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("VocabularySetId");
 
-                    b.ToTable("LearningSessions");
+                    b.ToTable("LearningSessions", (string)null);
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.Notification", b =>
@@ -287,7 +287,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.Pet", b =>
@@ -337,7 +337,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Pets");
+                    b.ToTable("Pets", (string)null);
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.SessionVocabulary", b =>
@@ -364,7 +364,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("VocabularyId");
 
-                    b.ToTable("SessionVocabularies");
+                    b.ToTable("SessionVocabularies", (string)null);
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.SetRewardPet", b =>
@@ -382,7 +382,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("VocabularySetId");
 
-                    b.ToTable("SetRewardPets");
+                    b.ToTable("SetRewardPets", (string)null);
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.SetVocabulary", b =>
@@ -404,7 +404,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("VocabularySetId");
 
-                    b.ToTable("SetVocabularies");
+                    b.ToTable("SetVocabularies", (string)null);
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.User", b =>
@@ -453,7 +453,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.UserAchievement", b =>
@@ -491,7 +491,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserAchievements");
+                    b.ToTable("UserAchievements", (string)null);
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.UserDailyQuest", b =>
@@ -527,7 +527,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId", "DailyQuestId", "QuestDate")
                         .IsUnique();
 
-                    b.ToTable("UserDailyQuests");
+                    b.ToTable("UserDailyQuests", (string)null);
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.UserItem", b =>
@@ -553,7 +553,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserItems");
+                    b.ToTable("UserItems", (string)null);
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.UserOwnedPet", b =>
@@ -591,7 +591,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserOwnedPets");
+                    b.ToTable("UserOwnedPets", (string)null);
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.UserVocabularyProgress", b =>
@@ -650,7 +650,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("VocabularyId");
 
-                    b.ToTable("UserVocabularyProgresses");
+                    b.ToTable("UserVocabularyProgresses", (string)null);
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.UserVocabularySet", b =>
@@ -677,7 +677,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("VocabularySetId");
 
-                    b.ToTable("UserVocabularySets");
+                    b.ToTable("UserVocabularySets", (string)null);
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.Vocabulary", b =>
@@ -721,7 +721,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("PartOfSpeech", "CEFRLevel");
 
-                    b.ToTable("Vocabularies");
+                    b.ToTable("Vocabularies", (string)null);
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.VocabularyReviewHistory", b =>
@@ -784,7 +784,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("VocabularyId");
 
-                    b.ToTable("VocabularyReviewHistories");
+                    b.ToTable("VocabularyReviewHistories", (string)null);
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.VocabularySet", b =>
@@ -836,7 +836,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("Theme", "DifficultyLevel", "CreatedAt");
 
-                    b.ToTable("VocabularySets");
+                    b.ToTable("VocabularySets", (string)null);
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.Achievement", b =>
