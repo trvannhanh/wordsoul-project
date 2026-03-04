@@ -11,6 +11,7 @@ import { fetchPets } from "../../services/pet";
 import PetCard from "../../components/Pet/PetCard";
 import type { UserVocabularySetDto } from "../../types/UserDto";
 import type { PetDto } from "../../types/PetDto";
+import { useAuth } from "../../hooks/Auth/useAuth";
 
 interface VocabularySetMeta {
   id: number;
@@ -34,8 +35,7 @@ const VocabularySetDetail: React.FC = () => {
   const [petsLoading, setPetsLoading] = useState<boolean>(false);
   const [petsError, setPetsError] = useState<string | null>(null);
   const navigate = useNavigate();
-
-  const userId = 1; // TODO: lấy từ auth context hoặc localStorage
+  const { user } = useAuth();
 
   const handleCreateLearningSession = async () => {
     setError(null);
@@ -43,7 +43,7 @@ const VocabularySetDetail: React.FC = () => {
     try {
       const session = await createLearningSession(Number(id));
       navigate(`/learningSession/${session.id}?mode=learning`, {
-        state: { petId: session.petId, catchRate: session.catchRate , currentCorrectAnswered : session.currentCorrectAnswered},
+        state: { petId: session.petId, catchRate: session.catchRate, currentCorrectAnswered: session.currentCorrectAnswered },
       });
     } catch (err: any) {
       setError(err?.response?.data?.message || "Lỗi tạo phiên học");
@@ -75,7 +75,7 @@ const VocabularySetDetail: React.FC = () => {
       const data = await fetchPets(filters);
       setPets(data);
       setShowPetsModal(true);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err: any) {
       setPetsError("Lỗi tải danh sách pet");
     } finally {
@@ -109,8 +109,9 @@ const VocabularySetDetail: React.FC = () => {
       const userSets = await getUserVocabularySets(Number(id));
       setUserSetInfo(userSets);
     };
-    if (id && userId) fetchUserSetInfo();
-  }, [userId, id]);
+    // Only fetch user-specific data when authenticated
+    if (id && user) fetchUserSetInfo();
+  }, [user, id]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -140,19 +141,30 @@ const VocabularySetDetail: React.FC = () => {
       />
 
       <div className="background-color flex justify-center items-center py-4 gap-4">
-        <button
-          className="w-full sm:w-1/5 max-w-xs px-2 py-1.5 bg-yellow-300 text-black rounded-xs hover:bg-yellow-200 custom-cursor"
-          onClick={userSetInfo ? handleCreateLearningSession : handleRegisterSet}
-          disabled={isLoading || (userSetInfo?.isCompleted ?? false)}
-        >
-          <span className="mx-1 text-xs font-bold font-sans">
-            {userSetInfo
-              ? userSetInfo.isCompleted
-                ? "Đã hoàn thành"
-                : "Học"
-              : "Đăng ký"}
-          </span>
-        </button>
+        {user ? (
+          <button
+            className="w-full sm:w-1/5 max-w-xs px-2 py-1.5 bg-yellow-300 text-black rounded-xs hover:bg-yellow-200 custom-cursor"
+            onClick={userSetInfo ? handleCreateLearningSession : handleRegisterSet}
+            disabled={isLoading || (userSetInfo?.isCompleted ?? false)}
+          >
+            <span className="mx-1 text-xs font-bold font-sans">
+              {isLoading
+                ? "Đang xử lý..."
+                : userSetInfo
+                  ? userSetInfo.isCompleted
+                    ? "Đã hoàn thành"
+                    : "Học"
+                  : "Đăng ký"}
+            </span>
+          </button>
+        ) : (
+          <button
+            className="w-full sm:w-1/5 max-w-xs px-2 py-1.5 bg-yellow-300 text-black rounded-xs hover:bg-yellow-200 custom-cursor"
+            onClick={() => navigate('/login')}
+          >
+            <span className="mx-1 text-xs font-bold font-sans">Đăng nhập để học</span>
+          </button>
+        )}
         <button
           className="w-full sm:w-1/5 max-w-xs px-2 py-1.5 bg-blue-300 text-black rounded-xs hover:bg-blue-200 custom-cursor"
           onClick={handleFetchPets}

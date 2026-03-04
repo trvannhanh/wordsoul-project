@@ -144,8 +144,21 @@ const VocabularySetsPage = () => {
                                 <span className="text-3xl sm:text-4xl">+</span>
                             </div>
                             {mySets.length > 0
-                                ? <CardGrid items={mySets} />
-                                : <p className="text-sm sm:text-base text-gray-500 col-span-full">Bạn chưa sở hữu bộ từ vựng nào.</p>
+                                ? mySets.map((item) => (
+                                    <Card
+                                        key={item.id}
+                                        title={item.title}
+                                        description={item.description || 'Không có mô tả'}
+                                        theme={item.theme}
+                                        difficultyLevel={item.difficultyLevel}
+                                        image={item.imageUrl || ''}
+                                        vocabularySetid={item.id}
+                                        isPublic={item.isPublic}
+                                        isOwned={item.isOwned}
+                                        createdByUsername={item.createdByUsername || 'Unknown'}
+                                    />
+                                ))
+                                : <p className="text-sm sm:text-base text-gray-500 col-span-2">Bạn chưa sở hữu bộ từ vựng nào.</p>
                             }
                         </div>
                     </section>
