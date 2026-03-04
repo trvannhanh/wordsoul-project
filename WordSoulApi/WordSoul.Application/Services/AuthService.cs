@@ -80,6 +80,8 @@ namespace WordSoul.Application.Services
 
             var user = await _uow.Auth.RegisterUserAsync(newUser, ct);
 
+            await _uow.SaveChangesAsync(ct);
+
             // Gán achievement mặc định cho user
             var achievements = await _uow.Achievement.GetAchievementsAsync(null, 1, 10, ct);
 
