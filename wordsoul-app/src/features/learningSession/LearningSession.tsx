@@ -1,15 +1,20 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import GameScreen from "../../components/LearningSession/GameScreen";
 import AnswerScreen from "../../components/LearningSession/AnswerScreen";
-import BackgroundMusic from "../../components/LearningSession/BackgroundMusic";
 import PetScreen from "../../components/LearningSession/PetScreen";
+import PokemonEncounterIntro from "../../components/LearningSession/PokemonEncounterIntro";
+import MilestoneOverlay from "../../components/LearningSession/MilestoneOverlay";
+import PokemonProgressBar from "../../components/LearningSession/PokemonProgressBar";
 import { useQuizSession } from "../../hooks/LearningSession/useQuizSession";
 import type { QuizQuestionDto } from "../../types/LearningSessionDto";
 import LoadingScreen from "../../components/LearningSession/LoadingScreen";
 import { useAuth } from "../../hooks/Auth/useAuth";
 import { fetchPetById } from "../../services/pet";
+
+const MILESTONE_THRESHOLDS = [5, 10, 15] as const;
+const MAX_QUESTIONS = 20;
 
 const LearningSession: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -20,7 +25,9 @@ const LearningSession: React.FC = () => {
   const navigate = useNavigate();
   const petId = state?.petId;
   const catchRate = state?.catchRate;
-  const [currentCorrectAnswered, setCurrentCorrectAnswered] = useState(state?.currentCorrectAnswered || 0);
+  const [currentCorrectAnswered, setCurrentCorrectAnswered] = useState(
+    state?.currentCorrectAnswered || 0
+  );
 
   const {
     currentQuestion,
@@ -36,29 +43,33 @@ const LearningSession: React.FC = () => {
     catchRate: currentCatchRate,
   } = useQuizSession(sessionId, mode, petId, catchRate, currentCorrectAnswered, setCurrentCorrectAnswered);
 
-  // States for battle animation
-  const [isAnswerCorrect, setIsAnswerCorrect] = useState<boolean | null>(null);
-  const [showBattleAnimation, setShowBattleAnimation] = useState(false);
-
-  // State for toggling PetScreen
-  const [showPetScreen, setShowPetScreen] = useState(true);
-
   const { user } = useAuth();
-  const [isPlaying, setIsPlaying] = useState(true);
   const [showPopup, setShowPopup] = useState(false);
   const [answeredQuestion, setAnsweredQuestion] = useState<QuizQuestionDto | null>(null);
   const [showIntro, setShowIntro] = useState(true);
+
+  // Encounter intro: shown once after loading, only in learning mode with a pet
+  const [showEncounterIntro, setShowEncounterIntro] = useState(false);
+  const encounterShownRef = useRef(false);
+
+  // Milestone overlay
+  const [activeMilestone, setActiveMilestone] = useState<25 | 50 | 75 | null>(null);
+  const reachedMilestones = useRef<Set<number>>(new Set());
+
+  // User's active pet
   const [userPet, setUserPet] = useState<{
     id: number;
     name: string;
     imageUrl: string;
   } | null>(null);
 
+  // Loading screen visible for 1.2 s
   useEffect(() => {
     const timer = setTimeout(() => setShowIntro(false), 1200);
     return () => clearTimeout(timer);
   }, []);
 
+  // Fetch user's active pet
   useEffect(() => {
     const fetchPet = async () => {
       if (typeof user?.petActiveId === "number") {
@@ -75,38 +86,50 @@ const LearningSession: React.FC = () => {
       }
     };
     fetchPet();
-  }, [user?.petActiveId])
+  }, [user?.petActiveId]);
 
-  const toggleMusic = () => {
-    setIsPlaying((prev) => !prev);
-  };
+  // Show encounter intro once encounteredPet is loaded (learning mode only)
+  useEffect(() => {
+    if (
+      mode === "learning" &&
+      encounteredPet &&
+      !showIntro &&
+      !encounterShownRef.current
+    ) {
+      encounterShownRef.current = true;
+      setShowEncounterIntro(true);
+    }
+  }, [encounteredPet, showIntro, mode]);
 
-  // Toggle PetScreen
-  const togglePetScreen = () => {
-    setShowPetScreen((prev) => !prev);
-  };
+  // Milestone detection
+  useEffect(() => {
+    if (showEncounterIntro || showIntro) return;
+    const thresholdMap: Record<number, 25 | 50 | 75> = { 5: 25, 10: 50, 15: 75 };
+    for (const threshold of MILESTONE_THRESHOLDS) {
+      if (
+        currentCorrectAnswered >= threshold &&
+        !reachedMilestones.current.has(threshold) &&
+        !showRewardAnimation
+      ) {
+        reachedMilestones.current.add(threshold);
+        setActiveMilestone(thresholdMap[threshold]);
+        break; // Only show one at a time
+      }
+    }
+  }, [currentCorrectAnswered, showEncounterIntro, showIntro, showRewardAnimation]);
 
-  // Handle close reward
-  const handleCloseReward = () => {
-    navigate(-1);
-  };
+  const handleCloseReward = () => navigate(-1);
 
-  // Wrapped handleAnswer to trigger battle animation
-  const handleAnswer = useCallback(async (
-    question: QuizQuestionDto,
-    answer: string,
-    onAnswerProcessed: () => void
-  ): Promise<boolean> => {
-    return originalHandleAnswer(question, answer, onAnswerProcessed, (correct) => {
-      setIsAnswerCorrect(correct);
-      setShowBattleAnimation(true);
-      // Reset after animation (shorter than feedback timeout to allow overlap)
-      setTimeout(() => {
-        setShowBattleAnimation(false);
-        setIsAnswerCorrect(null);
-      }, 1500);
-    });
-  }, [originalHandleAnswer]);
+  const handleAnswer = useCallback(
+    async (
+      question: QuizQuestionDto,
+      answer: string,
+      onAnswerProcessed: () => void
+    ): Promise<boolean> => {
+      return originalHandleAnswer(question, answer, onAnswerProcessed);
+    },
+    [originalHandleAnswer]
+  );
 
   const handleShowPopup = useCallback((question: QuizQuestionDto) => {
     setAnsweredQuestion(question);
@@ -117,71 +140,42 @@ const LearningSession: React.FC = () => {
     }, 3000);
   }, []);
 
-  if (showIntro) {
-    return <LoadingScreen />;
-  }
-
-  // Calculate progress percentage with a maximum of 25 questions
-  const MAX_QUESTIONS = 20;
-  const progressPercentage = Math.min(Math.max((currentCorrectAnswered / MAX_QUESTIONS) * 100, 0), 100);
-
-  // Dynamic width for Learning Container
-  const learningContainerClass = showPetScreen 
-    ? "w-full sm:w-10/12 lg:w-3/4" 
-    : "w-full sm:w-10/12 lg:w-5/6";
-
-  // Hàm để định dạng thông báo khi kết thúc phiên học
+  // getMessage for reward overlay
   const getMessage = () => {
     if (mode === "learning" && sessionData && "isPetAlreadyOwned" in sessionData) {
-      if (sessionData.isPetAlreadyOwned) {
-        return "Bạn đã sở hữu pet này!";
-      }
-      if (sessionData.isPetRewardGranted) {
+      if (sessionData.isPetAlreadyOwned) return "Bạn đã sở hữu pet này!";
+      if (sessionData.isPetRewardGranted)
         return `Chúc mừng! Bạn đã bắt được ${sessionData.petName}!`;
-      }
       return `${sessionData.petName} đã bỏ trốn!`;
     }
     return sessionData?.message || "Hoàn thành phiên học!";
   };
 
-  return (
-    <div className="h-screen w-screen bg-gray-900 flex flex-col sm:flex-row items-center justify-between p-4 pixel-background relative">
-      <BackgroundMusic
-        isPlaying={isPlaying}
-        volume={0.5}
-        showRewardAnimation={showRewardAnimation}
-        toggleMusic={toggleMusic}
+  // ─── Render gates ───────────────────────────────────────────────
+  if (showIntro) return <LoadingScreen />;
+
+  if (showEncounterIntro) {
+    return (
+      <PokemonEncounterIntro
+        encounteredPet={encounteredPet}
+        onComplete={() => setShowEncounterIntro(false)}
       />
+    );
+  }
 
-      {/* Learning Container */}
-      <div className={`${learningContainerClass} h-full sm:h-full lg:h-full bg-gray-800 border-4 border-black rounded-lg flex flex-col overflow-hidden`}>
+  return (
+    <div className="h-screen w-screen bg-gray-900 flex flex-col items-center justify-between pixel-background relative overflow-hidden">
+      {/* ── Main Learning Container (full width) ── */}
+      <div className="w-full h-full bg-gray-800 border-4 border-black rounded-lg flex flex-col overflow-hidden">
         {/* Progress Bar */}
-        <div className="p-4 flex justify-between items-center">
-          <div className="flex-1">
-            <div className="w-full bg-gray-700 rounded-full h-6 border-2 border-white overflow-hidden">
-              <motion.div
-                className="bg-green-500 h-full"
-                initial={{ width: 0 }}
-                animate={{ width: `${progressPercentage}%` }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
-              />
-            </div>
-            <p className="text-white text-center mt-2 font-pixel">
-              Correct Answers: {currentCorrectAnswered} / {MAX_QUESTIONS}
-            </p>
-          </div>
-          {/* Toggle PetScreen Button */}
-          <motion.button
-            onClick={togglePetScreen}
-            className="ml-4 bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded border-2 border-white font-pixel text-sm custom-cursor"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            title={showPetScreen ? "Hide Pet" : "Show Pet"}
-          >
-            {showPetScreen ? "Hide Pet" : "Show Pet"}
-          </motion.button>
-        </div>
+        <PokemonProgressBar
+          currentCorrectAnswered={currentCorrectAnswered}
+          maxQuestions={MAX_QUESTIONS}
+          catchRate={currentCatchRate}
+          encounteredPet={encounteredPet}
+        />
 
+        {/* Game (question display) */}
         <div className="flex-1 bg-gray-700 border-b-4 border-black p-4 h-1/2">
           <div className="h-full bg-black border-2 border-white rounded-sm flex items-center justify-center">
             <GameScreen
@@ -192,6 +186,7 @@ const LearningSession: React.FC = () => {
           </div>
         </div>
 
+        {/* Answer options */}
         <div className="flex-1 bg-gray-700 p-4 h-1/2">
           <div className="h-full bg-black border-2 border-white rounded-sm flex items-center justify-center">
             <AnswerScreen
@@ -206,8 +201,17 @@ const LearningSession: React.FC = () => {
         </div>
       </div>
 
-      {/* Conditionally render PetScreen */}
-      {showPetScreen && (
+      {/* ── Milestone Overlay ── */}
+      {activeMilestone && (
+        <MilestoneOverlay
+          milestone={activeMilestone}
+          encounteredPet={encounteredPet}
+          onClose={() => setActiveMilestone(null)}
+        />
+      )}
+
+      {/* ── End-of-session PetScreen (fullscreen overlay) ── */}
+      {showRewardAnimation && (
         <PetScreen
           showRewardAnimation={showRewardAnimation}
           captureComplete={captureComplete}
@@ -218,13 +222,14 @@ const LearningSession: React.FC = () => {
           mode={mode}
           petId={petId}
           catchRate={currentCatchRate}
-          showBattleAnimation={showBattleAnimation}
-          isAnswerCorrect={isAnswerCorrect} 
-          handleCloseReward={function (): void {
-            throw new Error("Function not implemented.");
-          } }        />
+          handleCloseReward={handleCloseReward}
+          // Battle animation no longer used; pass neutral defaults
+          showBattleAnimation={false}
+          isAnswerCorrect={null}
+        />
       )}
 
+      {/* ── Word detail popup ── */}
       <AnimatePresence>
         {showPopup && answeredQuestion && (
           <motion.div
@@ -243,8 +248,12 @@ const LearningSession: React.FC = () => {
             >
               <h2 className="text-4xl mb-4">{answeredQuestion.word}</h2>
               <p className="text-2xl mb-2">Nghĩa: {answeredQuestion.meaning}</p>
-              <p className="text-lg mb-2">Phát âm: {answeredQuestion.pronunciation || "N/A"}</p>
-              <p className="text-lg mb-2">Loại từ: {answeredQuestion.partOfSpeech || "N/A"}</p>
+              <p className="text-lg mb-2">
+                Phát âm: {answeredQuestion.pronunciation || "N/A"}
+              </p>
+              <p className="text-lg mb-2">
+                Loại từ: {answeredQuestion.partOfSpeech || "N/A"}
+              </p>
               {answeredQuestion.imageUrl && (
                 <img
                   src={answeredQuestion.imageUrl}
@@ -256,7 +265,7 @@ const LearningSession: React.FC = () => {
           </motion.div>
         )}
 
-        {/* Reward Complete Screen Overlay */}
+        {/* Reward Complete Screen Overlay (fallback — PetScreen handles this) */}
         {showRewardAnimation && sessionData && captureComplete && (
           <motion.div
             className="absolute inset-0 flex items-center justify-center bg-opacity-75 z-50"
@@ -273,7 +282,9 @@ const LearningSession: React.FC = () => {
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                   >
-                    {"petName" in sessionData && sessionData.petName ? `${sessionData.petName} đã bỏ trốn!` : "No new pet reward available"}
+                    {"petName" in sessionData && sessionData.petName
+                      ? `${sessionData.petName} đã bỏ trốn!`
+                      : "No new pet reward available"}
                   </motion.p>
                 )}
               {mode === "review" && (
@@ -295,7 +306,7 @@ const LearningSession: React.FC = () => {
               </motion.h2>
 
               <div className="space-y-2 mb-4">
-                <motion.p className="text-green-900 font-pixel">
+                <motion.p className="text-green-400 font-pixel">
                   💰 XP: +{sessionData.xpEarned}
                 </motion.p>
                 {mode === "review" && "apEarned" in sessionData && (
@@ -305,7 +316,6 @@ const LearningSession: React.FC = () => {
                 )}
               </div>
 
-              {/* Pet Reward Display (chỉ cho mode learning khi bắt thành công) */}
               {mode === "learning" &&
                 "isPetRewardGranted" in sessionData &&
                 sessionData.petId &&
