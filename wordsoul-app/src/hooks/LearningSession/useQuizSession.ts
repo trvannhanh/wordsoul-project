@@ -8,7 +8,7 @@ import {
 } from "../../services/learningSession";
 import { fetchPetById } from "../../services/pet";
 import { QuestionTypeEnum, type AnswerResponseDto, type CompleteLearningSessionResponseDto, type CompleteReviewSessionResponseDto, type QuizQuestionDto } from "../../types/LearningSessionDto";
-import type { AnswerRequestDto, LearningSessionDto } from "../../types/LearningSessionDto";
+import type { AnswerRequestDto } from "../../types/LearningSessionDto";
 
 export const useQuizSession = (
   sessionId: number,
