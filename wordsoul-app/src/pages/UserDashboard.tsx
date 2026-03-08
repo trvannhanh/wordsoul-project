@@ -6,6 +6,7 @@ import { createReviewSession } from '../services/learningSession';
 import { getUserProgress } from '../services/user';
 import ReviewBox from '../components/UserDashboard/ReviewBox';
 import StatsChart from '../components/UserDashboard/StatsChart';
+import StruggleWordsBox from '../components/UserDashboard/StruggleWordsBox';
 import ProfileCard from '../components/UserProfile/ProfileCard';
 import QuestList from '../components/DailyQuest/QuestList';
 import AchievementGrid from '../components/Achievement/AchievementGrid';
@@ -43,7 +44,7 @@ const UserDashboard: React.FC = () => {
       try {
         const data = await getUserProgress();
         const filledStats = Array.from({ length: 5 }, (_, i) => {
-          const level = i + 1;
+          const level = i;
           const found = data.vocabularyStats.find((s) => s.level === level);
           return { level, count: found ? found.count : 0 };
         });
@@ -100,6 +101,7 @@ const UserDashboard: React.FC = () => {
             onCreateReviewSession={handleCreateReviewSession}
           />
           <StatsChart progress={dashboard} />
+          {dashboard && <StruggleWordsBox struggleWords={dashboard.struggleWords || []} />}
           <AchievementGrid />
         </div>
         <div className="w-full sm:w-5/12">

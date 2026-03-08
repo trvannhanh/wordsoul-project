@@ -28,6 +28,7 @@ namespace WordSoul.Application.Services
         private readonly ISRSService _srsService;
         private readonly IDailyQuestService _dailyQuestService;
         private readonly ITimeProvider _timeProvider;
+        private readonly IPetBuffService _petBuffService;
 
         /// <summary>
         /// Khởi tạo LearningSessionService.
@@ -41,6 +42,7 @@ namespace WordSoul.Application.Services
             ISetRewardPetService setRewardPetService,
             ISRSService srsService,
             IDailyQuestService dailyQuestService,
+            IPetBuffService petBuffService,
             ITimeProvider timeProvider)
         {
             _uow = uow;
@@ -52,6 +54,7 @@ namespace WordSoul.Application.Services
             _srsService = srsService;
             _dailyQuestService = dailyQuestService;
             _timeProvider = timeProvider;
+            _petBuffService = petBuffService;
         }
 
         // ------------------------------------CREATE-----------------------------------------
@@ -86,7 +89,16 @@ namespace WordSoul.Application.Services
                     VocabularyIds = existingSession.SessionVocabularies.Select(v => v.VocabularyId).ToList(),
                     PetId = existingSession.PetId,
                     CatchRate = existingSession.CatchRate,
-                    CurrentCorrectAnswered = correctAnswerNumber
+                    CurrentCorrectAnswered = correctAnswerNumber,
+                    BuffPetId = existingSession?.BuffPetId,
+                    BuffName = existingSession?.BuffName,
+                    BuffDescription = existingSession?.BuffDescription,
+                    BuffIcon = existingSession?.BuffIcon,
+
+                    PetXpMultiplier = existingSession?.PetXpMultiplier ?? 1.0,
+                    PetCatchBonus = existingSession?.PetCatchBonus ?? 0,
+                    PetHintShield = existingSession?.PetHintShield ?? false,
+                    PetReducePenalty = existingSession?.PetReducePenalty ?? false,
                 };
             }
 
@@ -182,6 +194,9 @@ namespace WordSoul.Application.Services
             double? catchRate, // Tỷ lệ bắt pet (nếu có)
             CancellationToken ct)
         {
+            var petBuff = await _petBuffService.GetActivePetBuffAsync(userId, ct);
+
+
             // Tạo đối tượng LearningSession mới
             var session = new LearningSession
             {
@@ -198,8 +213,22 @@ namespace WordSoul.Application.Services
                     IsCompleted = false
                 }).ToList(),
                 PetId = petId,
-                CatchRate = catchRate
+                BuffPetId = petBuff?.PetId,
+                CatchRate = catchRate,
+
+                BuffName = petBuff?.BuffName,
+                BuffDescription = petBuff?.BuffDescription,
+                BuffIcon = petBuff?.BuffIcon,
+
+
+                PetXpMultiplier = petBuff?.XpMultiplier ?? 1.0,
+                PetCatchBonus = petBuff?.CatchRateBonus ?? 0,
+                PetHintShield = petBuff?.HasHintShield ?? false,
+                PetReducePenalty = petBuff?.ReducePenalty ?? false,
+
             };
+
+            session.CatchRate += session.PetCatchBonus;
 
             var savedSession = await _uow.LearningSession.CreateLearningSessionAsync(session, ct);
             await _uow.SaveChangesAsync(ct);
@@ -212,8 +241,17 @@ namespace WordSoul.Application.Services
                 IsCompleted = savedSession.IsCompleted,
                 VocabularyIds = savedSession.SessionVocabularies.Select(v => v.VocabularyId).ToList(),
                 PetId = savedSession.PetId,
+                BuffPetId = savedSession.BuffPetId,
                 CatchRate = catchRate,
-                CurrentCorrectAnswered = 0
+                CurrentCorrectAnswered = 0,
+                BuffName = savedSession.BuffName,
+                BuffDescription = savedSession.BuffDescription,
+                BuffIcon = savedSession.BuffIcon,
+
+                PetXpMultiplier = savedSession.PetXpMultiplier,
+                PetCatchBonus = savedSession.PetCatchBonus,
+                PetHintShield = savedSession.PetHintShield,
+                PetReducePenalty = savedSession.PetReducePenalty,
             };
         }
 
@@ -318,7 +356,10 @@ namespace WordSoul.Application.Services
 
             await _activityLogService.TrackFinishLearningSessionAsync(userId, sessionId, ct);
 
-            int xpEarned = sessionType == SessionType.Learning ? 10 : 5;
+            int baseXp = sessionType == SessionType.Learning ? 10 : 100;
+            int xpEarned = (int)Math.Round(baseXp * session.PetXpMultiplier);
+
+
             int apEarned = sessionType == SessionType.Review ? 3 : 0;
 
             // Learning-specific updates
@@ -378,7 +419,7 @@ namespace WordSoul.Application.Services
             var petUpgraded = new UpgradePetDto();
             if (activePet != null)
             {
-                petUpgraded = await _userOwnedPetService.UpgradePetForUserAsync(userId, activePet.Id, 10, ct);
+                petUpgraded = await _userOwnedPetService.UpgradePetForUserAsync(userId, activePet.Id, 100, ct);
             }
 
             // Commit all changes done so far
@@ -495,7 +536,13 @@ namespace WordSoul.Application.Services
                 sessionVocab.IsCompleted = false;
 
                 if (session.CatchRate.HasValue)
-                    session.CatchRate -= 0.05;
+                {
+                    if (!session.PetReducePenalty)
+                    {
+                        session.CatchRate -= 0.05;
+                    }
+                }    
+                    
             }
 
             await _uow.SessionVocabulary.UpdateSessionVocabularyAsync(sessionVocab, ct);
@@ -506,6 +553,7 @@ namespace WordSoul.Application.Services
             await EnsureUserVocabularyProgressAsync(userId, vocab.Id, ct);
 
             await _uow.SaveChangesAsync(ct);
+
 
 
             // Cập nhật SRS và lưu lịch sử ôn tập nếu là session ôn tập và từ đã hoàn thành
@@ -562,6 +610,8 @@ namespace WordSoul.Application.Services
                 };
 
                 await _uow.VocabularyReviewHistory.CreateReviewHistoryAsync(reviewHistory, ct);
+
+
                 await _uow.SaveChangesAsync(ct);
 
                 await _activityLogService.TrackVocabularyReviewedAsync(userId, vocab.Id, ct);

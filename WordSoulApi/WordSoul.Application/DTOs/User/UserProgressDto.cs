@@ -8,6 +8,17 @@
 
         // Biểu đồ số lượng từ theo cấp độ thành thạo
         public List<LevelStatDto> VocabularyStats { get; set; } = [];
+
+        // Danh sách các từ vựng sai nhiều nhất
+        public List<StruggleWordDto> StruggleWords { get; set; } = [];
+    }
+
+    public class StruggleWordDto
+    {
+        public int VocabularyId { get; set; }
+        public string Word { get; set; } = string.Empty;
+        public string? Meaning { get; set; }
+        public int WrongCount { get; set; }
     }
 
     public class LevelStatDto

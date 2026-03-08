@@ -87,7 +87,7 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
         {
             return await _context.Users
                 .Include(u => u.UserOwnedPets).ThenInclude(up => up.Pet)
-                .Include(u => u.UserVocabularyProgresses)
+                .Include(u => u.UserVocabularyProgresses).ThenInclude(p => p.Vocabulary)
                 .AsSplitQuery() // Chia truy vấn thành nhiều truy vấn
                 .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
         }

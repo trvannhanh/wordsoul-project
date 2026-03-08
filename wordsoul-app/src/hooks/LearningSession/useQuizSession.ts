@@ -8,6 +8,7 @@ import {
 } from "../../services/learningSession";
 import { fetchPetById } from "../../services/pet";
 import { QuestionTypeEnum, type AnswerResponseDto, type CompleteLearningSessionResponseDto, type CompleteReviewSessionResponseDto, type QuizQuestionDto } from "../../types/LearningSessionDto";
+import type { AnswerRequestDto, LearningSessionDto } from "../../types/LearningSessionDto";
 
 export const useQuizSession = (
   sessionId: number,
@@ -15,8 +16,25 @@ export const useQuizSession = (
   petId?: number,
   initialCatchRate?: number,
   currentCorrectAnswered?: number,
-  setCurrentCorrectAnswered?: (value: number) => void
+  setCurrentCorrectAnswered?: (value: number) => void,
+
+  initialBuffPetId?: number,
+  initialBuffName?: string,
+  initialBuffDescription?: string,
+  initialBuffIcon?: string,
+  initialPetXpMultiplier?: number,
+  initialPetCatchBonus?: number,
+  initialPetHintShield?: boolean,
+  initialPetReducePenalty?: boolean,
 ) => {
+  const buffPetId = initialBuffPetId;
+  const buffName = initialBuffName;
+  const buffDescription = initialBuffDescription;
+  const buffIcon = initialBuffIcon;
+  const petXpMultiplier = initialPetXpMultiplier;
+  const petCatchBonus = initialPetCatchBonus;
+  const petHintShield = initialPetHintShield;
+  const petReducePenalty = initialPetReducePenalty;
   const [questionsBatch, setQuestionsBatch] = useState<QuizQuestionDto[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState<QuizQuestionDto | null>(null);
@@ -49,10 +67,10 @@ export const useQuizSession = (
     try {
       setLoading(true);
       setError(null);
-      
+
       console.log("🔄 Fetching NEW batch of questions...");
       const questions = await fetchQuizOfSession(sessionId);
-      
+
       if (questions.length === 0) {
         console.log("✅ No more questions, completing session...");
         await handleCompleteSession();
@@ -65,7 +83,7 @@ export const useQuizSession = (
       setQuestionsBatch(questions);
       setCurrentQuestionIndex(0);
       setCurrentQuestion(questions[0]);
-      
+
       if (mode === "learning" && petId) {
         try {
           const pet = await fetchPetById(petId);
@@ -93,7 +111,7 @@ export const useQuizSession = (
     }
 
     const nextIndex = currentQuestionIndex + 1;
-    
+
     if (nextIndex >= questionsBatch.length) {
       console.log("📦 Current batch finished, loading new batch...");
       loadNewQuestionsBatch();
@@ -109,24 +127,45 @@ export const useQuizSession = (
   }, [loadNewQuestionsBatch]);
 
   const handleAnswer = useCallback(async (
-    question: QuizQuestionDto, 
+    question: QuizQuestionDto,
     answer: string,
     onAnswerProcessed: () => void,
-    onResult?: (isCorrect: boolean) => void
+    onResult?: (isCorrect: boolean) => void,
+    responseTimeSeconds?: number
   ): Promise<boolean> => {
     try {
       setLoading(true);
       setError(null);
-      
+
       console.log(`💭 Answering question ${currentQuestionIndex + 1}/${questionsBatch.length}`);
-      
+
+      const requestPayload: AnswerRequestDto = {
+        vocabularyId: question.vocabularyId,
+        questionType: question.questionType,
+        answer,
+        responseTimeSeconds: responseTimeSeconds ?? 0,
+        hintCount: 0,
+      };
+
+      // ── Debug log ──
+      console.group(`📤 [AnswerRequest] Q${currentQuestionIndex + 1}/${questionsBatch.length}`);
+      console.log("🔤 Word:              ", question.word);
+      console.log("❓ QuestionType:      ", question.questionType);
+      console.log("✏️  Answer:            ", answer);
+      console.log("⏱️  ResponseTime (s):  ", requestPayload.responseTimeSeconds);
+      console.log("💡 HintCount:         ", requestPayload.hintCount);
+      console.log("🆔 VocabularyId:      ", requestPayload.vocabularyId);
+      console.log("📦 Full payload:      ", requestPayload);
+      console.groupEnd();
+
       const response: AnswerResponseDto = await answerQuiz(sessionId, {
         vocabularyId: question.vocabularyId,
         questionType: question.questionType,
         answer,
+        responseTimeSeconds: responseTimeSeconds ?? 0,
+        hintCount: 0,
       });
 
-      // Update currentCorrectAnswered based on answer correctness
       if (setCurrentCorrectAnswered) {
         setCurrentCorrectAnswered(
           Math.max(0, Math.min(25, (currentCorrectAnswered || 0) + (response.isCorrect ? 1 : -1)))
@@ -151,13 +190,14 @@ export const useQuizSession = (
         setLevelFeedback({
           message: `🔄 Retry ${retryType} for "${question.word}"`,
         });
-        setCatchRate((prev) => Math.max(0, prev - 0.05));
+        // Only apply catch rate penalty if buff does NOT reduce penalty
+        if (!petReducePenalty) {
+          setCatchRate((prev) => Math.max(0, prev - 0.05));
+        }
       }
 
-      // Notify result if callback provided
       onResult?.(response.isCorrect);
 
-      // Gọi callback để báo hiệu xử lý xong
       setTimeout(() => {
         setLevelFeedback(null);
         onAnswerProcessed();
@@ -172,13 +212,13 @@ export const useQuizSession = (
     } finally {
       setLoading(false);
     }
-  }, [sessionId, currentQuestionIndex, questionsBatch.length, currentCorrectAnswered, setCurrentCorrectAnswered]);
+  }, [sessionId, currentQuestionIndex, questionsBatch.length, currentCorrectAnswered, setCurrentCorrectAnswered, petReducePenalty]);
 
   const handleCompleteSession = useCallback(async () => {
     try {
       setLoading(true);
       let data;
-      
+
       if (mode === "learning") {
         data = await completeLearningSession(sessionId);
         setShowRewardAnimation(true);
@@ -186,7 +226,7 @@ export const useQuizSession = (
         data = await completeReviewSession(sessionId);
         setShowRewardAnimation(true);
       }
-      
+
       setSessionData(data);
       setCurrentQuestion(null);
       setQuestionsBatch([]);
@@ -224,5 +264,14 @@ export const useQuizSession = (
     setCaptureComplete,
     loadNextQuestion,
     catchRate,
+    // ── Buff fields ──
+    buffPetId,
+    buffName,
+    buffDescription,
+    buffIcon,
+    petXpMultiplier,
+    petCatchBonus,
+    petHintShield,
+    petReducePenalty,
   };
 };

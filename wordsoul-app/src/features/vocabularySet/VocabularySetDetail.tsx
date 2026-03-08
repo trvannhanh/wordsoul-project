@@ -42,8 +42,40 @@ const VocabularySetDetail: React.FC = () => {
     setIsLoading(true);
     try {
       const session = await createLearningSession(Number(id));
+
+      // ✅ Log toàn bộ session response từ API
+      console.group("🎮 [CreateLearningSession] Response");
+      console.log("📋 Session ID:        ", session.id);
+      console.log("🐾 PetId:             ", session.petId);
+      console.log("🎯 CatchRate:         ", session.catchRate);
+      console.log("✅ CorrectAnswered:   ", session.currentCorrectAnswered);
+      console.log("─── Buff Info ───────────────────");
+      console.log("🦄 BuffPetId:         ", session.buffPetId);
+      console.log("⭐ BuffName:          ", session.buffName);
+      console.log("📝 BuffDescription:   ", session.buffDescription);
+      console.log("🎨 BuffIcon:          ", session.buffIcon);
+      console.log("💰 PetXpMultiplier:   ", session.petXpMultiplier);
+      console.log("🎯 PetCatchBonus:     ", session.petCatchBonus);
+      console.log("🔮 PetHintShield:     ", session.petHintShield);
+      console.log("🪨 PetReducePenalty:  ", session.petReducePenalty);
+      console.log("📦 Full session:      ", session);
+      console.groupEnd();
+
+
       navigate(`/learningSession/${session.id}?mode=learning`, {
-        state: { petId: session.petId, catchRate: session.catchRate, currentCorrectAnswered: session.currentCorrectAnswered },
+        state: {
+          petId: session.petId,
+          catchRate: session.catchRate,
+          currentCorrectAnswered: session.currentCorrectAnswered,
+          buffPetId: session.buffPetId,
+          buffName: session.buffName,
+          buffDescription: session.buffDescription,
+          buffIcon: session.buffIcon,
+          petXpMultiplier: session.petXpMultiplier,
+          petCatchBonus: session.petCatchBonus,
+          petHintShield: session.petHintShield,
+          petReducePenalty: session.petReducePenalty,
+        },
       });
     } catch (err: any) {
       setError(err?.response?.data?.message || "Lỗi tạo phiên học");

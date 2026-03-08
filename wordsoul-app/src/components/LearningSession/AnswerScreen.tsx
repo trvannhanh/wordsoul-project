@@ -6,7 +6,7 @@ interface AnswerScreenProps {
   question: QuizQuestionDto | null;
   loading: boolean;
   error: string | null;
-  handleAnswer: (question: QuizQuestionDto, answer: string, onAnswerProcessed: () => void) => Promise<boolean>;
+  handleAnswer: (question: QuizQuestionDto, answer: string, onAnswerProcessed: () => void, onResult?: (isCorrect: boolean) => void, responseTimeSeconds?: number) => Promise<boolean>;
   loadNextQuestion: () => void;
   showPopup: (question: QuizQuestionDto) => void; // Callback để hiển thị pop-up
 }
@@ -29,11 +29,32 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
   const [audioProgress, setAudioProgress] = useState(0);
   const [audioDuration, setAudioDuration] = useState(0);
 
+  const startTimeRef = useRef<number>(Date.now());
+
+  useEffect(() => {
+    if (question) {
+      startTimeRef.current = Date.now();
+    }
+  }, [question]);
+
   const handleSubmitAnswer = async (answer: string) => {
     if (question) {
-      const isCorrect = await handleAnswer(question, answer, () => {
-        loadNextQuestion(); // Chuyển câu hỏi sau khi pop-up đóng
-      });
+      const capturedStartTime = startTimeRef.current;
+      const responseTimeSeconds = (Date.now() - capturedStartTime) / 1000;
+
+      console.log("⏱️ Start time:", capturedStartTime);
+      console.log("⏱️ Now:", Date.now());
+      console.log("⏱️ ResponseTime calculated:", responseTimeSeconds);
+
+      const isCorrect = await handleAnswer(
+        question,
+        answer,
+        () => {
+          loadNextQuestion(); // Chuyển câu hỏi sau khi pop-up đóng
+        },
+        undefined,
+        responseTimeSeconds
+      );
       setUserAnswer("");
       setShowFeedback(true);
       setAnswerFeedback(isCorrect ? "correct" : "wrong");
@@ -41,6 +62,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
       setTimeout(() => {
         setShowFeedback(false);
         setAnswerFeedback(null);
+        console.log("Response time:", responseTimeSeconds);
       }, 3000);
     }
   };
@@ -151,9 +173,8 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
         <AnimatePresence>
           {showFeedback && (
             <motion.div
-              className={`absolute top-0 text-2xl font-pixel ${
-                answerFeedback === "correct" ? "text-green-500" : "text-red-500"
-              }`}
+              className={`absolute top-0 text-2xl font-pixel ${answerFeedback === "correct" ? "text-green-500" : "text-red-500"
+                }`}
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0, opacity: 0 }}
@@ -187,7 +208,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
                   Đã Xem
                 </button>
               );
-              
+
             case QuestionTypeEnum.FillInBlank:
               return (
                 <input
@@ -206,7 +227,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
                   placeholder="Type the word..."
                 />
               );
-              
+
             case QuestionTypeEnum.MultipleChoice:
               return (
                 <div className="grid grid-cols-2 gap-6 w-4/5">
@@ -228,14 +249,14 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
             case QuestionTypeEnum.Listening:
               return (
                 <div className="flex flex-col items-center space-y-4 w-4/5 max-w-md">
-                  <motion.h3 
+                  <motion.h3
                     className="text-white font-pixel text-lg text-center"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                   >
                   </motion.h3>
 
-                  <motion.div 
+                  <motion.div
                     className="w-full bg-gray-800 rounded-lg p-4 border-2 border-gray-600"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -248,8 +269,8 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
                         className={`
                           px-4 py-2 rounded-full font-pixel text-white border-2 border-white
                           disabled:opacity-50 disabled:cursor-not-allowed transition-all
-                          ${isPlaying 
-                            ? 'bg-red-600 hover:bg-red-700' 
+                          ${isPlaying
+                            ? 'bg-red-600 hover:bg-red-700'
                             : 'bg-blue-600 hover:bg-blue-700'
                           }
                         `}
@@ -271,7 +292,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
                     {audioDuration > 0 && (
                       <div className="space-y-2">
                         <div className="w-full bg-gray-600 rounded-full h-2">
-                          <motion.div 
+                          <motion.div
                             className="bg-blue-500 h-2 rounded-full relative overflow-hidden"
                             initial={{ width: 0 }}
                             animate={{ width: `${audioProgress}%` }}
@@ -280,12 +301,12 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
                             {isPlaying && (
                               <motion.div
                                 className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30"
-                                animate={{ 
+                                animate={{
                                   x: ["0%", "100%", "0%"],
                                   opacity: [0.3, 0.5, 0.3]
                                 }}
-                                transition={{ 
-                                  duration: 1.5, 
+                                transition={{
+                                  duration: 1.5,
                                   repeat: Infinity,
                                   ease: "linear"
                                 }}
@@ -293,7 +314,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
                             )}
                           </motion.div>
                         </div>
-                        
+
                         <div className="flex justify-between text-xs text-gray-400 font-pixel">
                           <span>{Math.floor(audioProgress)}%</span>
                           <span>{Math.floor(audioDuration)}s</span>
@@ -303,7 +324,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
 
                     {question.pronunciation && (
                       <div className="text-center mt-2">
-                        <motion.p 
+                        <motion.p
                           className="text-blue-300 text-sm font-mono bg-black bg-opacity-30 px-2 py-1 rounded"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
@@ -327,7 +348,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
                     )}
                   </motion.div>
 
-                  <motion.div 
+                  <motion.div
                     className="w-full"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using WordSoul.Api.Extensions;
 using WordSoul.Application.DTOs.Pet;
 using WordSoul.Application.Interfaces.Services;
+using WordSoul.Application.Services;
 using WordSoul.Domain.Enums;
 
 namespace WordSoul.Api.Controllers
@@ -16,11 +17,13 @@ namespace WordSoul.Api.Controllers
         private readonly IPetService _petService;
         private readonly IUserOwnedPetService _userOwnedPetService;
         private readonly IUploadAssetsService _uploadAssetsService;
-        public PetController(IPetService petService , IUploadAssetsService uploadAssetsService, IUserOwnedPetService userOwnedPetService)
+        private readonly IPetBuffService _petBuffService;
+        public PetController(IPetService petService , IUploadAssetsService uploadAssetsService, IUserOwnedPetService userOwnedPetService, IPetBuffService petBuffService)
         {
             _petService = petService;
             _uploadAssetsService = uploadAssetsService;
             _userOwnedPetService = userOwnedPetService;
+            _petBuffService = petBuffService;
         }
 
 
@@ -156,6 +159,22 @@ namespace WordSoul.Api.Controllers
             if (pet == null) return NotFound();
             return Ok(pet);
 
+        }
+
+        /// GET: api/pets/active-buff
+        /// Trả về buff info của active pet hiện tại của user.
+        [Authorize(Roles = "User")]
+        [HttpGet("active-buff")]
+        public async Task<IActionResult> GetActivePetBuff(CancellationToken cancellationToken = default)
+        {
+            var userId = User.GetUserId();
+            if (userId == 0) return Unauthorized();
+
+            var buff = await _petBuffService.GetActivePetBuffAsync(userId, cancellationToken);
+            if (buff == null)
+                return Ok(null); // User chưa có active pet — frontend tự handle
+
+            return Ok(buff);
         }
 
 
