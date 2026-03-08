@@ -73,11 +73,26 @@ namespace WordSoul.Application.Services
                 .OrderBy(s => s.Level)
                 .ToList();
 
+            // Những từ vựng sai nhiều nhất (Struggle words)
+            var struggleWords = progresses
+                .Where(p => p.WrongCount > 0 && p.Vocabulary != null)
+                .OrderByDescending(p => p.WrongCount)
+                .Take(10)
+                .Select(p => new StruggleWordDto
+                {
+                    VocabularyId = p.VocabularyId,
+                    Word = p.Vocabulary!.Word,
+                    Meaning = p.Vocabulary.Meaning,
+                    WrongCount = p.WrongCount
+                })
+                .ToList();
+
             var result = new UserProgressDto
             {
                 ReviewWordCount = reviewWordCount,
                 NextReviewTime = nextReviewTime,
-                VocabularyStats = vocabularyStats
+                VocabularyStats = vocabularyStats,
+                StruggleWords = struggleWords
             };
 
             _logger.LogInformation(

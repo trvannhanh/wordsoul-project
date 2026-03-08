@@ -3,8 +3,17 @@ export interface LearningSessionDto {
   vocabularies: number[];
   isCompleted: boolean;
   petId?: number;
+  buffPetId?: number;
   catchRate?: number;
   currentCorrectAnswered?: number;
+
+  buffName?: string;
+  buffDescription?: string;
+  buffIcon?: string;
+  petXpMultiplier?: number;
+  petCatchBonus?: number;
+  petHintShield?: boolean;
+  petReducePenalty?: boolean;
 }
 
 export interface QuizQuestionDto {
@@ -27,6 +36,8 @@ export interface AnswerRequestDto {
   vocabularyId: number;
   questionType: QuestionTypeEnum;
   answer: string;
+  responseTimeSeconds: number;
+  hintCount: number;
 }
 
 export interface AnswerResponseDto {
@@ -51,7 +62,7 @@ export interface CompleteLearningSessionResponseDto {
   message: string;
 }
 
-export interface CompleteReviewSessionResponseDto{
+export interface CompleteReviewSessionResponseDto {
   xpEarned: number;
   apEarned: number;
   message: string;

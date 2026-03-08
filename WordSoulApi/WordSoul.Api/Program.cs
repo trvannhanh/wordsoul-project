@@ -173,6 +173,9 @@ builder.Services.AddScoped<IAchievementRepository, AchievementRepository>();
 builder.Services.AddScoped<IAchievementService, AchievementService>();
 builder.Services.AddScoped<IUserAchievementRepository, UserAchievementRepository>();
 builder.Services.AddScoped<IUserAchievementService, UserAchievementService>();
+
+builder.Services.AddScoped<IPetBuffService, PetBuffService>();
+
 // Upload Assests
 builder.Services.AddScoped<IUploadAssetsService, UploadAssetsService>();
 

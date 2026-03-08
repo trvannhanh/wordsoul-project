@@ -45,6 +45,14 @@ export interface UserProgressDto {
   reviewWordCount: number;
   nextReviewTime: string | null;
   vocabularyStats: LevelStatDto[];
+  struggleWords?: StruggleWordDto[];
+}
+
+export interface StruggleWordDto {
+  vocabularyId: number;
+  word: string;
+  meaning: string;
+  wrongCount: number;
 }
 
 export interface ActivityLogDto {

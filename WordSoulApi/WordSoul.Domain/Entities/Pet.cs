@@ -1,5 +1,4 @@
-﻿
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using WordSoul.Domain.Enums;
 
 namespace WordSoul.Domain.Entities
