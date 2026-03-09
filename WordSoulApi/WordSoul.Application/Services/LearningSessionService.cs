@@ -510,6 +510,9 @@ namespace WordSoul.Application.Services
             // Kiểm tra câu trả lời
             var isCorrect = CheckAnswer(request, vocab);
 
+            // Đảm bảo UserVocabularyProgress tồn tại
+            await EnsureUserVocabularyProgressAsync(userId, vocab.Id, ct);
+
             var progress = await _uow.UserVocabularyProgress
             .GetUserVocabularyProgressAsync(userId, vocab.Id, ct);
 
@@ -547,11 +550,7 @@ namespace WordSoul.Application.Services
 
             await _uow.SessionVocabulary.UpdateSessionVocabularyAsync(sessionVocab, ct);
 
-            
-
-            // Đảm bảo UserVocabularyProgress tồn tại
-            await EnsureUserVocabularyProgressAsync(userId, vocab.Id, ct);
-
+         
             await _uow.SaveChangesAsync(ct);
 
 
@@ -643,7 +642,7 @@ namespace WordSoul.Application.Services
             };
         }
 
-        // Helper: tính grade SM-2 dựa trên độ chính xác, số lần thử, thời gian phản hồi trung bình và tổng số gợi ý đã dùng
+        // Helper: tính grade SM-2 dựa trên số lần sai, độ chính xác, thời gian phản hồi trung bình và tổng số gợi ý đã dùng
         private static int CalculateSm2Grade(
             bool isCorrect,
             int attemptCount,
@@ -656,28 +655,32 @@ namespace WordSoul.Application.Services
                 return totalHints > 0 ? 1 : 0;
             }
 
-            // Correct - calculate grade based on speed and attempts
+            // A word requires 4 correct answers (levels 0-3) to be completed.
+            // Extra attempts mean the user answered incorrectly.
+            int wrongAttempts = Math.Max(0, attemptCount - 4);
+
+            // Correct - calculate grade based on speed and mistakes
             // Handle invalid avgResponseTime
             if (double.IsNaN(avgResponseTime) || avgResponseTime < 0)
                 avgResponseTime = 10; // Default to slow
 
-            // Perfect recall: 1 attempt, fast, no hints
-            if (attemptCount == 1 && avgResponseTime <= 3 && totalHints == 0)
+            // Perfect recall: 0 wrong attempts, fast, no hints
+            if (wrongAttempts == 0 && avgResponseTime <= 5 && totalHints == 0)
                 return 5;
 
-            // Easy recall: 1 attempt, moderate speed
-            if (attemptCount == 1 && avgResponseTime <= 8)
+            // Easy recall: 0 wrong attempts, moderate speed
+            if (wrongAttempts == 0 && avgResponseTime <= 10)
                 return 4;
 
-            // Good recall: 1 attempt but slow, or used hints
-            if (attemptCount == 1)
+            // Good recall: 0 wrong attempts but slow/used hints, OR 1 wrong attempt
+            if (wrongAttempts <= 1)
                 return 3;
 
-            // Hard recall: needed 2 attempts
-            if (attemptCount == 2)
+            // Hard recall: 2 wrong attempts
+            if (wrongAttempts == 2)
                 return 2;
 
-            // Barely passed: 3+ attempts
+            // Barely passed: 3+ wrong attempts
             return 1;
         }
 

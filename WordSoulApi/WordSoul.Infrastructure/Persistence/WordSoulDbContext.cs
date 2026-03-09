@@ -233,7 +233,7 @@ namespace WordSoul.Infrastructure.Persistence
 
             modelBuilder.Entity<UserVocabularyProgress>()
                 .Property(x => x.RetentionScore)
-                .HasPrecision(5, 4);
+                .HasPrecision(5, 2);
 
             // Configure VocabularyReviewHistory relationships
             modelBuilder.Entity<VocabularyReviewHistory>()

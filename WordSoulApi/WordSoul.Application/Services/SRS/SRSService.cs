@@ -74,17 +74,6 @@ namespace WordSoul.Application.Services.SRS
             progress.LastUpdated = _timeProvider.UtcNow;
 
 
-            // Update counts
-            if (grade >= 3)
-            {
-                progress.CorrectAttempt++;
-            }
-            else
-            {
-                // Consider adding WrongCount field
-            }
-            progress.TotalAttempt++;
-
             // Calculate retention score
             var retentionScore = _algorithm.CalculateRetentionScore(
                 progress.CorrectAttempt,
