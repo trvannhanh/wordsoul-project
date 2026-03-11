@@ -46,6 +46,8 @@ export interface UserProgressDto {
   nextReviewTime: string | null;
   vocabularyStats: LevelStatDto[];
   struggleWords?: StruggleWordDto[];
+  themePreferences?: ThemePreferenceDto[];
+  recommendedSets?: RecommendedSetDto[];
 }
 
 export interface StruggleWordDto {
@@ -53,6 +55,20 @@ export interface StruggleWordDto {
   word: string;
   meaning: string;
   wrongCount: number;
+}
+
+export interface ThemePreferenceDto {
+  theme: string;
+  completedSessionsCount: number;
+}
+
+export interface RecommendedSetDto {
+  id: number;
+  title: string;
+  theme: string;
+  imageUrl?: string;
+  description?: string;
+  difficultyLevel: string;
 }
 
 export interface ActivityLogDto {

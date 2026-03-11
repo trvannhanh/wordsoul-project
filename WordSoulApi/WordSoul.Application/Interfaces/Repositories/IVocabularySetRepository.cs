@@ -55,5 +55,16 @@ namespace WordSoul.Application.Interfaces.Repositories
         Task<bool> DeleteVocabularySetAsync(
             int id,
             CancellationToken cancellationToken = default);
+
+        // ----------------------------- RECOMMENDATION ---------------------
+        /// <summary>
+        /// Gợi ý ngẫu nhiên các bộ từ vựng Active, Public mà người dùng chưa sở hữu,
+        /// ưu tiên theo danh sách chủ đề yêu thích của người dùng.
+        /// </summary>
+        Task<List<VocabularySet>> GetRecommendedSetsForUserAsync(
+            int userId,
+            IEnumerable<VocabularySetTheme> favoriteThemes,
+            int limit = 5,
+            CancellationToken cancellationToken = default);
     }
 }

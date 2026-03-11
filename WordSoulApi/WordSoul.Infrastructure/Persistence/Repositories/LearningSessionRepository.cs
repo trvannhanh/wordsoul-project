@@ -72,5 +72,29 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
                 .AsNoTracking()
                 .AnyAsync(ls => ls.Id == sessionId && ls.UserId == userId, cancellationToken);
         }
+
+        // Lấy Top N chủ đề yêu thích của người dùng dựa trên số phiên học đã hoàn thành
+        public async Task<List<(VocabularySetTheme Theme, int Count)>> GetUserFavoriteThemesAsync(
+            int userId,
+            int limit = 5,
+            CancellationToken cancellationToken = default)
+        {
+            var rawResults = await _context.LearningSessions
+                .AsNoTracking()
+                .Where(s => s.UserId == userId
+                         && s.IsCompleted
+                         && s.VocabularySetId != null
+                         && s.VocabularySet != null)
+                .Include(s => s.VocabularySet)
+                .GroupBy(s => s.VocabularySet!.Theme)
+                .Select(g => new { Theme = g.Key, Count = g.Count() })
+                .OrderByDescending(x => x.Count)
+                .Take(limit)
+                .ToListAsync(cancellationToken);
+
+            return rawResults
+                .Select(x => (x.Theme, x.Count))
+                .ToList();
+        }
     }
 }

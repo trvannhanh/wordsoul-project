@@ -23,6 +23,8 @@ namespace WordSoul.Application.Services
         /// - Số từ cần ôn tập ngay hôm nay
         /// - Thời gian ôn tập tiếp theo gần nhất
         /// - Thống kê số lượng từ theo mức độ thành thạo (ProficiencyLevel)
+        /// - Top 5 chủ đề yêu thích (ThemePreferences)
+        /// - Gợi ý bộ từ vựng phù hợp (RecommendedSets)
         /// </summary>
         /// <param name="userId">ID của người dùng.</param>
         /// <param name="cancellationToken">Token để hủy thao tác bất đồng bộ.</param>
@@ -87,20 +89,63 @@ namespace WordSoul.Application.Services
                 })
                 .ToList();
 
+            // ──────────────────────────────────────────────────────────────
+            // PERSONALIZATION: Sở thích chủ đề + Gợi ý bộ từ vựng
+            // ──────────────────────────────────────────────────────────────
+
+            // 1. Lấy Top 5 chủ đề yêu thích dựa trên số phiên học hoàn thành
+            var favThemes = await _uow.LearningSession
+                .GetUserFavoriteThemesAsync(userId, 5, cancellationToken);
+
+            var themePreferences = favThemes
+                .Select(t => new ThemePreferenceDto
+                {
+                    Theme = t.Theme.ToString(),
+                    CompletedSessionsCount = t.Count
+                })
+                .ToList();
+
+            // 2. Gợi ý bộ từ theo chủ đề yêu thích (chỉ khi đã có data)
+            var recommendedSets = new List<RecommendedSetDto>();
+            if (favThemes.Count > 0)
+            {
+                var recommended = await _uow.VocabularySet
+                    .GetRecommendedSetsForUserAsync(
+                        userId,
+                        favThemes.Select(t => t.Theme),
+                        4,
+                        cancellationToken);
+
+                recommendedSets = recommended
+                    .Select(s => new RecommendedSetDto
+                    {
+                        Id = s.Id,
+                        Title = s.Title,
+                        Theme = s.Theme.ToString(),
+                        ImageUrl = s.ImageUrl,
+                        Description = s.Description,
+                        DifficultyLevel = s.DifficultyLevel.ToString()
+                    })
+                    .ToList();
+            }
+
             var result = new UserProgressDto
             {
                 ReviewWordCount = reviewWordCount,
                 NextReviewTime = nextReviewTime,
                 VocabularyStats = vocabularyStats,
-                StruggleWords = struggleWords
+                StruggleWords = struggleWords,
+                ThemePreferences = themePreferences,
+                RecommendedSets = recommendedSets
             };
 
             _logger.LogInformation(
-                "User {UserId} progress: {ReviewCount} words to review, next review at {NextReview:u}, stats: {Stats}",
+                "User {UserId} progress: {ReviewCount} words to review, next review at {NextReview:u}, stats: {Stats}, top theme: {TopTheme}",
                 userId,
                 reviewWordCount,
                 nextReviewTime,
-                string.Join(", ", vocabularyStats.Select(s => $"{s.Level}:{s.Count}")));
+                string.Join(", ", vocabularyStats.Select(s => $"{s.Level}:{s.Count}")),
+                themePreferences.FirstOrDefault()?.Theme ?? "none");
 
             return result;
         }

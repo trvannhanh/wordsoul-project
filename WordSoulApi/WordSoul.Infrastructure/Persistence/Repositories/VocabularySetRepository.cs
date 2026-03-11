@@ -141,5 +141,29 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
             _context.VocabularySets.Remove(vocabularySet);
             return true;
         }
+
+        // ------------------------------------RECOMMENDATION------------------------------------------
+
+        // Gợi ý ngẫu nhiên các bộ từ mà người dùng chưa sở hữu, ưu tiên theo chủ đề yêu thích
+        public async Task<List<VocabularySet>> GetRecommendedSetsForUserAsync(
+            int userId,
+            IEnumerable<VocabularySetTheme> favoriteThemes,
+            int limit = 5,
+            CancellationToken cancellationToken = default)
+        {
+            var favoriteThemesList = favoriteThemes.ToList();
+
+            var candidates = await _context.VocabularySets
+                .AsNoTracking()
+                .Where(s => s.IsActive
+                         && s.IsPublic
+                         && favoriteThemesList.Contains(s.Theme)
+                         && !s.UserVocabularySets.Any(uvs => uvs.UserId == userId && uvs.IsActive))
+                .OrderBy(s => s.Id) // stable ordering before in-memory shuffle
+                .ToListAsync(cancellationToken);
+
+            // Shuffle in-memory for randomness (avoids DB-specific random functions)
+            return [.. candidates.OrderBy(_ => Guid.NewGuid()).Take(limit)];
+        }
     }
 }
