@@ -32,6 +32,15 @@ namespace WordSoul.Application.Interfaces.Services
             int pageSize = 20,
             CancellationToken cancellationToken = default);
 
+        /// <summary>
+        /// Lấy toàn bộ bộ từ vựng thỏa mãn điều kiện, gom nhóm theo Theme để trả về 1 lần (tối ưu frontend N+1 API).
+        /// </summary>
+        Task<Dictionary<string, List<VocabularySetDto>>> GetGroupedVocabularySetsAsync(
+            string? title = null,
+            int? userId = null,
+            int limitPerTheme = 6,
+            CancellationToken cancellationToken = default);
+
         // ========================================================================
         // UPDATE
         // ========================================================================

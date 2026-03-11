@@ -167,6 +167,27 @@ namespace WordSoul.Api.Controllers
             }
         }
 
+        // GET: api/vocabulary-sets/grouped : Lấy tất cả bộ từ vựng gom nhóm theo chủ đề (giảm N+1 query frontend)
+        [HttpGet("grouped")]
+        public async Task<IActionResult> GetGroupedVocabularySets([FromQuery] string? title, [FromQuery] int limitPerTheme = 6)
+        {
+            try
+            {
+                int? userId = User.GetUserId(); // Có thể là 0 nếu chưa đăng nhập
+                if (userId == 0) userId = null;
+
+                var results = await _vocabularySetService.GetGroupedVocabularySetsAsync(
+                    title, userId, limitPerTheme);
+
+                return Ok(results);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving grouped vocabulary sets");
+                return StatusCode(500, new { Message = "An error occurred while retrieving grouped vocabulary sets.", Error = ex.Message });
+            }
+        }
+
         // GET: api/vocabulary-sets : Tìm kiếm bộ từ vựng với các tiêu chí khác nhau và phân trang
         [HttpGet]
         public async Task<IActionResult> GetAllVocabularySets(

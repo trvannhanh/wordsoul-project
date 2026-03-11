@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
-import { fetchUserVocabularySets, fetchVocabularySets } from '../../services/vocabularySet';
+import { fetchGroupedVocabularySets, fetchUserVocabularySets, fetchVocabularySets } from '../../services/vocabularySet';
 import Card from '../../components/Card';
 import Skeleton from '../../components/Skeleton';
 import { useNavigate } from 'react-router-dom';
@@ -72,14 +72,11 @@ const VocabularySetsPage = () => {
         const loadListData = async () => {
             setIsSearching(true);
             try {
-                const allThemes = THEME_TIERS.flatMap(t => t.themes);
-                const results = await Promise.all(
-                    allThemes.map(theme => fetchVocabularySets(debouncedSearchTitle, theme, undefined, undefined))
-                );
-                const byTheme: Record<string, VocabularySetDto[]> = {};
-                allThemes.forEach((theme, i) => { byTheme[theme] = results[i]; });
-                setTierSets(byTheme);
+                // Sử dụng API gom nhóm (Grouped API) để giải quyết lỗi N+1
+                const groupedData = await fetchGroupedVocabularySets(debouncedSearchTitle, 6);
+                setTierSets(groupedData);
 
+                // Fetch user specific sets if logged in (this request uses Authorization automatically)
                 if (user) {
                     const mySetsData = await fetchUserVocabularySets(debouncedSearchTitle, undefined, undefined, undefined, true);
                     setMySets(mySetsData);
@@ -171,8 +168,8 @@ const VocabularySetsPage = () => {
                             key={tab}
                             onClick={() => setActiveTab(tab)}
                             className={`px-5 py-2 text-sm font-semibold rounded-t-lg transition-all duration-150 ${activeTab === tab
-                                    ? 'bg-blue-600 text-white border border-b-0 border-blue-600'
-                                    : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                                ? 'bg-blue-600 text-white border border-b-0 border-blue-600'
+                                : 'text-gray-400 hover:text-white hover:bg-gray-700'
                                 }`}
                         >
                             {tab === 'list' ? '📚 Danh sách' : '🗺️ Bản đồ'}

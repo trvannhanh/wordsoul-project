@@ -26,6 +26,7 @@ export const endpoints = {
   // VocabularySet
   vocabularySets: '/vocabulary-sets', // Tất cả bộ từ vựng
   vocabularySet: (vocabularySetId: number) => `/vocabulary-sets/${vocabularySetId}`, // Bộ từ vựng chỉ định
+  fetchGroupedVocabularySets: '/vocabulary-sets/grouped', // Gom nhóm bộ từ vựng
   vocabularySetDetail: (vocabularySetId: number) => `/vocabulary-sets/${vocabularySetId}/details`, // Chi tiết bộ từ vựng
 
   // Vocabulary

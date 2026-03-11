@@ -204,6 +204,41 @@ namespace WordSoul.Application.Services
             return dtos;
         }
 
+        /// <summary>
+        /// Lấy toàn bộ bộ từ vựng, gom nhóm theo Theme (chủ đề), trả về tối đa N bộ từ mỗi chủ đề.
+        /// Chuyên dùng để tối ưu N+1 API gọi từ Frontend.
+        /// </summary>
+        public async Task<Dictionary<string, List<VocabularySetDto>>> GetGroupedVocabularySetsAsync(
+            string? title = null,
+            int? userId = null,
+            int limitPerTheme = 6,
+            CancellationToken cancellationToken = default)
+        {
+            var cacheKey = $"VocabularySetsGrouped_{title ?? "∅"}_{userId ?? 0}_{limitPerTheme}";
+
+            if (_cache.TryGetValue(cacheKey, out Dictionary<string, List<VocabularySetDto>> cached))
+            {
+                _logger.LogDebug("Cache HIT: {CacheKey}", cacheKey);
+                return cached;
+            }
+
+            // Fetch all matching sets without pagination
+            var allSets = await _uow.VocabularySet.GetAllVocabularySetsAsync(
+                title, null, null, null, null, userId, 1, 1000, cancellationToken);
+
+            var groupedDtos = allSets
+                .GroupBy(s => s.Theme.ToString())
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(s => MapToDto(s, userId))
+                          .Take(limitPerTheme)
+                          .ToList()
+                );
+
+            CacheResult(cacheKey, groupedDtos, TimeSpan.FromMinutes(15));
+            return groupedDtos;
+        }
+
         // ============================================================================
         // UPDATE
         // ============================================================================
