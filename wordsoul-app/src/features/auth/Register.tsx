@@ -2,7 +2,11 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../hooks/Auth/useAuth";
 
-
+const STARTER_NAMES: Record<string, string> = {
+  '1': 'Bulbasaur 🌿',
+  '4': 'Charmander 🔥',
+  '7': 'Squirtle 💧',
+};
 
 const Register: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -13,13 +17,19 @@ const Register: React.FC = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
 
+  const starterPetRaw = localStorage.getItem('onboarding_starter_pet_id');
+  const starterPetName = starterPetRaw ? STARTER_NAMES[starterPetRaw] : null;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
     try {
-      await register(username, email, password);
-      navigate("/login"); // hoặc navigate("/") nếu muốn auto login
+      const petIdRaw = localStorage.getItem('onboarding_starter_pet_id');
+      const starterPetId = petIdRaw ? parseInt(petIdRaw) : undefined;
+      await register(username, email, password, starterPetId);
+      localStorage.removeItem('onboarding_starter_pet_id');
+      navigate("/home");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(
@@ -35,6 +45,18 @@ const Register: React.FC = () => {
     <div className="w-full h-screen bg-[url('https://res.cloudinary.com/dqpkxxzaf/image/upload/v1756565536/dark-cloud_rzn2xf.webp'),linear-gradient(to_bottom,rgb(3,7,33),rgb(5,11,75))] bg-cover bg-center flex items-center justify-center">
       <div className="w-2/3 h-2/3 bg-[url('https://res.cloudinary.com/dqpkxxzaf/image/upload/v1756565537/sky-stars_xnmjpc.png')] bg-cover bg-center rounded-2xl flex items-center justify-center">
         <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+          {/* Starter Pet banner (shown when coming from Onboarding flow) */}
+          {starterPetName && (
+            <div className="mb-4 px-3 py-2 rounded-lg bg-yellow-50 border border-yellow-300 flex items-center gap-2">
+              <span className="text-xl">
+                {starterPetName.includes('🌿') ? '🌿' : starterPetName.includes('🔥') ? '🔥' : '💧'}
+              </span>
+              <p className="text-xs text-yellow-700">
+                <span className="font-bold">{starterPetName.split(' ')[0]}</span> đang chờ bạn! Tạo tài khoản để nhận ngay.
+              </p>
+            </div>
+          )}
+
           <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
             Đăng ký
           </h2>

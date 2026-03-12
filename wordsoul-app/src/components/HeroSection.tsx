@@ -3,14 +3,15 @@ import { Link } from "react-router-dom";
 interface HeroProps {
     title: string;
     description: string;
-    hidden?: boolean; // Made optional with default value
-    image?: string; // Background image URL
+    hidden?: boolean;
+    image?: string;
     textButton: string;
-    bottomImage?: string; // Bottom background image URL
-    height?: string; // New prop for minimum height
+    bottomImage?: string;
+    height?: string;
+    onButtonClick?: () => void; // Optional: if provided, button triggers this instead of navigating
 }
 
-const HeroSection: React.FC<HeroProps> = ({ title, description, hidden = false, textButton, height = '15rem', }) => {
+const HeroSection: React.FC<HeroProps> = ({ title, description, hidden = false, textButton, height = '15rem', onButtonClick }) => {
     return (
         // truyền props image vào background
         <div className={`min-h-[15rem] max-h-[50rem] mb-10 bg-fixed bg-contain bg-center flex items-center justify-center relative top-[2.5rem]`} style={{ backgroundImage: "url(https://res.cloudinary.com/dqpkxxzaf/image/upload/v1759257741/zl6vjhfc09aa1_leyauw.gif)", height: `${height}` }} >
@@ -30,17 +31,28 @@ const HeroSection: React.FC<HeroProps> = ({ title, description, hidden = false, 
                     {/* truyền props description vào p */}
                     <p className="mb-5 text-lg font-extralight">{description}</p>
                     {!hidden && (
-                        <Link to="/register">
-                            <button className="relative flex items-center px-20 py-3 bg-yellow-300 text-black rounded-md hover:bg-yellow-200 custom-cursor z-30">
+                        onButtonClick ? (
+                            <button
+                                onClick={onButtonClick}
+                                className="relative flex items-center px-20 py-3 bg-yellow-300 text-black rounded-md hover:bg-yellow-200 custom-cursor z-30"
+                            >
                                 <span className="absolute left-0 w-1 h-full bg-yellow-500" />
-                                {/* truyền props text vào span */}
                                 <span className="mx-2 text-lg font-pixel">{textButton}</span>
                                 <span className="absolute right-0 w-1 h-full bg-yellow-500" />
                                 <span className="absolute top-12 right-0 w-full h-2 bg-yellow-500" />
                                 <span className="absolute bottom-13 right-0 w-full h-0.5 bg-yellow-500" />
                             </button>
-                        </Link>
-
+                        ) : (
+                            <Link to="/register">
+                                <button className="relative flex items-center px-20 py-3 bg-yellow-300 text-black rounded-md hover:bg-yellow-200 custom-cursor z-30">
+                                    <span className="absolute left-0 w-1 h-full bg-yellow-500" />
+                                    <span className="mx-2 text-lg font-pixel">{textButton}</span>
+                                    <span className="absolute right-0 w-1 h-full bg-yellow-500" />
+                                    <span className="absolute top-12 right-0 w-full h-2 bg-yellow-500" />
+                                    <span className="absolute bottom-13 right-0 w-full h-0.5 bg-yellow-500" />
+                                </button>
+                            </Link>
+                        )
                     )}
                 </div>
             </div>

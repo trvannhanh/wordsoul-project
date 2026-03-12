@@ -6,7 +6,7 @@ export interface AuthContextType {
   setUser: (user: UserDto | null) => void;
   loading: boolean;
   login: (username: string, password: string) => Promise<void>;
-  register: (username: string, email: string, password: string) => Promise<void>;
+  register: (username: string, email: string, password: string, starterPetId?: number) => Promise<void>;
   logout: () => void;
 }
 
