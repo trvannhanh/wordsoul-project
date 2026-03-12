@@ -99,11 +99,11 @@ const Header: React.FC = () => {
                         </div>
                         {user ? (
                             <Link to="/home" className="ml-2 text-xs sm:text-sm font-press hover:text-blue-700 custom-cursor">
-                                WordSoul
+                                Vocamon
                             </Link>
                         ) : (
                             <Link to="/" className="ml-2 text-xs sm:text-sm font-press  hover:text-blue-700 custom-cursor">
-                                WordSoul
+                                Vocamon
                             </Link>
                         )}
                     </h2>
@@ -123,11 +123,11 @@ const Header: React.FC = () => {
                             <Link to="/vocabularySet">
                                 <button className="flex items-center gap-1 px-3 py-2  hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-md custom-cursor">
                                     Bộ từ vựng
-                                    <span>
+                                    {/* <span>
                                         <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                                             <path fillRule="evenodd" clipRule="evenodd" d="M5.83317 6.6665H4.1665V8.33317H5.83317V9.99984H7.49984V11.6665H9.1665V13.3332H10.8332V11.6665H12.4998V9.99984H14.1665V8.33317H15.8332V6.6665H14.1665V8.33317H12.4998V9.99984H10.8332V11.6665H9.1665V9.99984H7.49984V8.33317H5.83317V6.6665Z" fill="#64748B" />
                                         </svg>
-                                    </span>
+                                    </span> */}
                                 </button>
                             </Link>
                         </div>
@@ -135,11 +135,11 @@ const Header: React.FC = () => {
                             <Link to="/home">
                                 <button className="flex items-center gap-1 px-3 py-2 hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-md custom-cursor">
                                     Ôn tập
-                                    <span>
+                                    {/* <span>
                                         <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                                             <path fillRule="evenodd" clipRule="evenodd" d="M5.83317 6.6665H4.1665V8.33317H5.83317V9.99984H7.49984V11.6665H9.1665V13.3332H10.8332V11.6665H12.4998V9.99984H14.1665V8.33317H15.8332V6.6665H14.1665V8.33317H12.4998V9.99984H10.8332V11.6665H9.1665V9.99984H7.49984V8.33317H5.83317V6.6665Z" fill="#64748B" />
                                         </svg>
-                                    </span>
+                                    </span> */}
                                 </button>
                             </Link>
                         </div>
@@ -154,11 +154,11 @@ const Header: React.FC = () => {
                             <Link to="/community">
                                 <button className="flex items-center gap-1 px-3 py-2  hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-md custom-cursor">
                                     Cộng đồng
-                                    <span>
+                                    {/* <span>
                                         <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                                             <path fillRule="evenodd" clipRule="evenodd" d="M5.83317 6.6665H4.1665V8.33317H5.83317V9.99984H7.49984V11.6665H9.1665V13.3332H10.8332V11.6665H12.4998V9.99984H14.1665V8.33317H15.8332V6.6665H14.1665V8.33317H12.4998V9.99984H10.8332V11.6665H9.1665V9.99984H7.49984V8.33317H5.83317V6.6665Z" fill="#64748B" />
                                         </svg>
-                                    </span>
+                                    </span> */}
                                 </button>
                             </Link>
                         </div>
