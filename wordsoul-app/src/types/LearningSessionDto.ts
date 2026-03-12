@@ -1,6 +1,6 @@
 export interface LearningSessionDto {
   id: number;
-  vocabularies: number[];
+  vocabularyIds: number[];
   isCompleted: boolean;
   petId?: number;
   buffPetId?: number;

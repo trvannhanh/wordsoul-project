@@ -27,7 +27,7 @@ export const fetchVocabularySets = async (
     });
     return response.data;
   } catch (error) {
-    const errorMessage = error instanceof AxiosError 
+    const errorMessage = error instanceof AxiosError
       ? `Failed to fetch vocabulary sets: ${error.response?.data?.message || error.message}`
       : 'An unexpected error occurred while fetching vocabulary sets';
     throw new Error(errorMessage);
@@ -39,7 +39,7 @@ export const fetchUserVocabularySets = async (
   theme?: string,
   difficulty?: string,
   createdAfter?: string,
-  isOwned?: boolean, // Mới: Thêm tham số isOwned
+  isOwned?: boolean,
   pageNumber: number = 1,
   pageSize: number = 10
 ): Promise<VocabularySetDto[]> => {
@@ -50,22 +50,42 @@ export const fetchUserVocabularySets = async (
         theme: theme || undefined,
         difficulty: difficulty || undefined,
         createdAfter: createdAfter || undefined,
-        isOwned: isOwned !== undefined ? isOwned : undefined, // Chỉ gửi nếu isOwned được xác định
+        isOwned: isOwned !== undefined ? isOwned : undefined,
         pageNumber,
         pageSize,
       },
     });
     return response.data;
   } catch (error) {
-    const errorMessage = error instanceof AxiosError 
+    const errorMessage = error instanceof AxiosError
       ? `Failed to fetch vocabulary sets: ${error.response?.data?.message || error.message}`
       : 'An unexpected error occurred while fetching vocabulary sets';
     throw new Error(errorMessage);
   }
 };
 
+export const fetchGroupedVocabularySets = async (
+  title?: string,
+  limitPerTheme: number = 6
+): Promise<Record<string, VocabularySetDto[]>> => {
+  try {
+    const response = await api.get<Record<string, VocabularySetDto[]>>(`${endpoints.vocabularySets}/grouped`, {
+      params: {
+        title: title || undefined,
+        limitPerTheme,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    const errorMessage = error instanceof AxiosError
+      ? `Failed to fetch grouped vocabulary sets: ${error.response?.data?.message || error.message}`
+      : 'An unexpected error occurred while fetching grouped vocabulary sets';
+    throw new Error(errorMessage);
+  }
+};
+
 export const fetchVocabularySetDetail = async (id: number, page = 1, pageSize = 10): Promise<VocabularySetDetailDto> => {
- try {
+  try {
     const response = await api.get<VocabularySetDetailDto>(endpoints.vocabularySetDetail(id), {
       params: {
         page,
@@ -74,7 +94,7 @@ export const fetchVocabularySetDetail = async (id: number, page = 1, pageSize = 
     });
     return response.data;
   } catch (error) {
-    const errorMessage = error instanceof AxiosError 
+    const errorMessage = error instanceof AxiosError
       ? `Failed to fetch vocabulary sets: ${error.response?.data?.message || error.message}`
       : 'An unexpected error occurred while fetching vocabulary sets';
     throw new Error(errorMessage);
@@ -85,7 +105,7 @@ export const createVocabularySet = async (formData: FormData): Promise<Vocabular
   const response = await authApi.post<VocabularySetDto>(endpoints.vocabularySets, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
-  return response.data; 
+  return response.data;
 };
 
 export const updateVocabularySet = async (id: number, data: VocabularySetDto): Promise<void> => {

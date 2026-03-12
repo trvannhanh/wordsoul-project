@@ -1,5 +1,8 @@
 import axios, { AxiosError } from 'axios';
-export const BASE_URL = import.meta.env.VITE_API_URL || 'https://localhost:7272/api';
+// Trong development: Vite proxy forward /api → https://localhost:7272/api (tránh CORS)
+// Trong production: dùng biến môi trường VITE_API_URL
+export const BASE_URL = import.meta.env.VITE_API_URL || '/api';
+
 
 // ---- Endpoints ----
 export const endpoints = {
@@ -23,6 +26,7 @@ export const endpoints = {
   // VocabularySet
   vocabularySets: '/vocabulary-sets', // Tất cả bộ từ vựng
   vocabularySet: (vocabularySetId: number) => `/vocabulary-sets/${vocabularySetId}`, // Bộ từ vựng chỉ định
+  fetchGroupedVocabularySets: '/vocabulary-sets/grouped', // Gom nhóm bộ từ vựng
   vocabularySetDetail: (vocabularySetId: number) => `/vocabulary-sets/${vocabularySetId}/details`, // Chi tiết bộ từ vựng
 
   // Vocabulary

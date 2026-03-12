@@ -7,6 +7,8 @@ import { getUserProgress } from '../services/user';
 import ReviewBox from '../components/UserDashboard/ReviewBox';
 import StatsChart from '../components/UserDashboard/StatsChart';
 import StruggleWordsBox from '../components/UserDashboard/StruggleWordsBox';
+import ThemeRadarChart from '../components/UserDashboard/ThemeRadarChart';
+import RecommendedSetsBox from '../components/UserDashboard/RecommendedSetsBox';
 import ProfileCard from '../components/UserProfile/ProfileCard';
 import QuestList from '../components/DailyQuest/QuestList';
 import AchievementGrid from '../components/Achievement/AchievementGrid';
@@ -102,6 +104,13 @@ const UserDashboard: React.FC = () => {
           />
           <StatsChart progress={dashboard} />
           {dashboard && <StruggleWordsBox struggleWords={dashboard.struggleWords || []} />}
+          {dashboard?.themePreferences && dashboard.themePreferences.length > 0 && (
+            <ThemeRadarChart preferences={dashboard.themePreferences} />
+          )}
+          <RecommendedSetsBox
+            recommendedSets={dashboard?.recommendedSets ?? []}
+            onAdded={() => setDashboard(prev => prev ? { ...prev, recommendedSets: [] } : prev)}
+          />
           <AchievementGrid />
         </div>
         <div className="w-full sm:w-5/12">
