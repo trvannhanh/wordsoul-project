@@ -1,8 +1,8 @@
 <h1 align="center">
   <br>
-  <a href="https://github.com/your-username/wordsoul"><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1759222012/egg-logo_pflvdz.png" alt="WordSoul" width="100"></a>
+  <a href="https://github.com/your-username/wordsoul"><img src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1759222012/egg-logo_pflvdz.png" alt="vocamon" width="100"></a>
   <br>
-  WordSoul
+  Vocamon
   <br>
 </h1>
 
@@ -24,7 +24,7 @@
 
 ## Project Overview
 
-WordSoul is a web application aimed at:
+Vocamon is a web application aimed at:
 - Combining scientific memory principles (SRS — spaced repetition; retrieval practice) with gamification to boost learning motivation.
 - Users learn through vocabulary sets, with each word progressing through a sequence of question types (Flashcard → Fill-in-Blank → MultipleChoice → Listening) and is considered mastered upon completing the sequence in a single session.
 - The system includes a pet mechanism: collect, upgrade, and evolve pets using XP/AP to enhance user engagement.
