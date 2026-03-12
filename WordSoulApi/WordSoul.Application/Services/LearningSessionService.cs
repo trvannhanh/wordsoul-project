@@ -356,7 +356,7 @@ namespace WordSoul.Application.Services
 
             await _activityLogService.TrackFinishLearningSessionAsync(userId, sessionId, ct);
 
-            int baseXp = sessionType == SessionType.Learning ? 10 : 100;
+            int baseXp = sessionType == SessionType.Learning ? 20 : 100;
             int xpEarned = (int)Math.Round(baseXp * session.PetXpMultiplier);
 
 

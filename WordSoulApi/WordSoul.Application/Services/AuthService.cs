@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -98,6 +98,33 @@ namespace WordSoul.Application.Services
             await _uow.UserAchievement.BulkCreateUserAchievementAsync(userAchievements, ct);
             await _uow.SaveChangesAsync(ct);
 
+            // Gán Starter Pet cho người dùng mới
+            // Nếu người dùng đăng ký qua Onboarding Flow thì sẽ có StarterPetId. 
+            // Nếu không qua Onboarding Flow (đăng ký trực tiếp), chọn ngẫu nhiên 1 trong 3 con (ID: 1, 4, 7) -> Bulbasaur, Charmander, Squirtle
+            int finalStarterPetId = registerDto.StarterPetId ?? new[] { 1, 4, 7 }[new Random().Next(3)];
+
+            var starterPet = await _uow.Pet.GetPetByIdAsync(finalStarterPetId, ct);
+            if (starterPet != null && starterPet.IsActive)
+            {
+                var userStarterPet = new UserOwnedPet
+                {
+                    UserId = user.Id,
+                    PetId = starterPet.Id,
+                    IsActive = true,        // Active Pet đầu tiên của người dùng
+                    Level = 1,
+                    Experience = 0,
+                    IsFavorite = true,      // Starter mặc định là yêu thích
+                    AcquiredAt = DateTime.UtcNow
+                };
+                await _uow.UserOwnedPet.CreateUserOwnedPetAsync(userStarterPet, ct);
+                await _uow.SaveChangesAsync(ct);
+                _logger.LogInformation("Gán Starter Pet ID {PetId} ({PetName}) cho User {UserId}",
+                    starterPet.Id, starterPet.Name, user.Id);
+            }
+            else
+            {
+                _logger.LogWarning("StarterPetId {PetId} không tìm thấy hoặc không active — bỏ qua.", finalStarterPetId);
+            }
 
             await _activityLogService.TrackUserRegisterAsync(user.Id, ct);
 
@@ -110,6 +137,7 @@ namespace WordSoul.Application.Services
                 CreatedAt = user.CreatedAt,
                 IsActive = user.IsActive
             };
+
         }
 
         /// <summary>

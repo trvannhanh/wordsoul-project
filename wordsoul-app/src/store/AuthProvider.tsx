@@ -54,9 +54,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
 
-    const register = async (username: string, email: string, password: string) => {
+    const register = async (username: string, email: string, password: string, starterPetId?: number) => {
         try {
-            await api.post(endpoints.register, { username, email, password });
+            await api.post(endpoints.register, { username, email, password, starterPetId });
             await login(username, password);
         } catch (err) {
             console.error("Register thất bại:", err);

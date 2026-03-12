@@ -4,14 +4,15 @@ import HeroSection from '../components/HeroSection';
 import { fetchVocabularySets } from '../services/vocabularySet';
 import Skeleton from '../components/Skeleton';
 import type { VocabularySetDto } from '../types/VocabularySetDto';
-
-
-
+import OnboardingFlow from '../features/onboarding/OnboardingFlow';
+import { useAuth } from '../hooks/Auth/useAuth';
 
 const Home: React.FC = () => {
+  const { user } = useAuth();
   const [vocabularySets, setVocabularySets] = useState<VocabularySetDto[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -27,17 +28,20 @@ const Home: React.FC = () => {
       });
   }, []);
 
+  const heroButtonProps = user
+    ? {} // Logged-in users: button navigates to /register as usual (or can be hidden with hidden=true if desired)
+    : { onButtonClick: () => setShowOnboarding(true) };
+
   if (loading) {
     return (
       <>
         <HeroSection
           title="Chào mừng bạn đến với Eralis"
           description="Hành trình giải mã những văn tự cố, giải thoát những sinh vật bí ẩn, xây dựng kiến thức lâu dài."
-          textButton="Bắt đầu"
-          image="./src/assets/thumb.gif"
-          bottomImage="./src/assets/grass.gif"
+          textButton="Bắt đầu hành trình"
           height="29rem"
           hidden={false}
+          {...heroButtonProps}
         />
         <div className="background-color text-white h-screen px-10 py-3">
           <Skeleton type="cards" />
@@ -51,14 +55,13 @@ const Home: React.FC = () => {
         <HeroSection
           title="Chào mừng bạn đến với Eralis"
           description="Hành trình giải mã những văn tự cố, giải thoát những sinh vật bí ẩn, xây dựng kiến thức lâu dài."
-          textButton="Bắt đầu"
-          image="./src/assets/thumb.gif"
-          bottomImage="./src/assets/grass.gif"
+          textButton="Bắt đầu hành trình"
           height="29rem"
           hidden={false}
+          {...heroButtonProps}
         />
         <div className="background-color h-screen px-10 text-center py-8 text-red-500">
-          {error}  // Hoặc thêm nút retry: <button onClick={() => window.location.reload()}>Retry</button>
+          {error}
         </div>
       </>
     );
@@ -69,11 +72,10 @@ const Home: React.FC = () => {
       <HeroSection
         title="Chào mừng bạn đến với Eralis"
         description="Hành trình giải mã những văn tự cố, giải thoát những sinh vật bí ẩn, xây dựng kiến thức lâu dài."
-        textButton="Bắt đầu"
-        image="./src/assets/thumb.gif"
-        bottomImage="./src/assets/grass.gif"
+        textButton="Bắt đầu hành trình"
         height="35rem"
         hidden={false}
+        {...heroButtonProps}
       />
 
       <div className="home-background-color text-white min-h-100 flex justify-center items-center">
@@ -105,6 +107,11 @@ const Home: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {/* Onboarding full-screen overlay — triggered when guest presses "Bắt đầu" */}
+      {showOnboarding && (
+        <OnboardingFlow onClose={() => setShowOnboarding(false)} />
+      )}
     </>
   );
 };
