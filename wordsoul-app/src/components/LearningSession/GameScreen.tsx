@@ -59,7 +59,7 @@ const MetaRow: React.FC<{ pronunciation?: string; partOfSpeech?: string }> = ({ 
   );
 };
 
-const GameScreen: React.FC<GameScreenProps> = ({ question, loading, error, mode }) => {
+const GameScreen: React.FC<GameScreenProps> = ({ question, loading, error }) => {
   if (loading) return <div className="text-white font-pixel text-sm animate-pulse">Loading...</div>;
   if (error) return <div className="text-red-400 font-pixel text-sm">{error}</div>;
   if (!question) return <div className="text-white font-pixel text-sm">Hoàn thành session!</div>;
