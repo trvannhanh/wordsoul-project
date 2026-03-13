@@ -5,8 +5,7 @@ import PetCard from '../../components/Pet/PetCard';
 import type { PetDto } from '../../types/PetDto';
 
 const rarityOptions = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
-const typeOptions = ['Nomadica', 'Dynamora', 'Adornica', 'Velocira', 'Substitua', 'Connectara', 'Preposita', 'Exclamora'];
-
+const typeOptions = ['Normal', 'Fire', 'Water', 'Electric', 'Grass', 'Ice', 'Fighting', 'Poison', 'Ground', 'Flying', 'Psychic', 'Bug', 'Rock', 'Ghost', 'Dragon', 'Dark', 'Steel', 'Fairy'];
 const Pets: React.FC = () => {
   const [pets, setPets] = useState<PetDto[]>([]);
   const [searchName, setSearchName] = useState<string>('');
@@ -50,7 +49,7 @@ const Pets: React.FC = () => {
       const data = await fetchPets(filters);
       setPets((prev) => (reset ? data : [...prev, ...data]));
       setHasMore(data.length === 20);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       setError('Error loading pets');
     } finally {

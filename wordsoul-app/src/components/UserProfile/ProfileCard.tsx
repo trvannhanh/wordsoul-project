@@ -27,7 +27,7 @@ const ProfileCard: React.FC = () => {
           />
         </div>
         <div>
-          <div className="font-pokemon text-lg text-color">{user?.username ?? 'Guest'}</div>
+          <div className="font-pixel text-lg text-color">{user?.username ?? 'Guest'}</div>
           <div className="text-xs text-color">Level {user?.level ?? 0}</div>
         </div>
       </div>
@@ -39,7 +39,7 @@ const ProfileCard: React.FC = () => {
       </div>
       <Link to="/profile" className="no-underline">
         <motion.button
-          className="w-full px-4 py-2 background-color text-color font-pokemon text-sm rounded pixel-border hover:bg-blue-400 custom-cursor"
+          className="w-full px-4 py-2 background-color text-color font-pixel text-sm rounded pixel-border hover:bg-blue-400 custom-cursor"
           whileHover={{ scale: 1.05, boxShadow: '0 0 10px rgba(59, 130, 246, 0.7)' }}
           whileTap={{ scale: 0.95 }}
         >

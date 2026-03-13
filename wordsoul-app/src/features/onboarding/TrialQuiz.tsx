@@ -100,7 +100,7 @@ const TrialQuiz: React.FC<TrialQuizProps> = ({ onComplete, onExit }) => {
             </button>
 
             {/* Trial banner */}
-            <div className="absolute top-3 left-4 z-50 font-pokemon text-xs text-yellow-300 bg-gray-900/80 px-2 py-1 rounded-lg border border-yellow-700">
+            <div className="absolute top-3 left-4 z-50 font-pixel text-xs text-yellow-300 bg-gray-900/80 px-2 py-1 rounded-lg border border-yellow-700">
                 🎓 Bài kiểm tra tân thủ ({questionIndex + 1}/{TRIAL_QUESTIONS.length})
             </div>
 

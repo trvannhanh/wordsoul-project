@@ -3,6 +3,7 @@ import { useParams, useSearchParams, useNavigate, useLocation } from "react-rout
 import { motion, AnimatePresence } from "framer-motion";
 import GameScreen from "../../components/LearningSession/GameScreen";
 import AnswerScreen from "../../components/LearningSession/AnswerScreen";
+import ReviewLayout from "../../components/LearningSession/ReviewLayout";
 import PetScreen from "../../components/LearningSession/PetScreen";
 import PokemonEncounterIntro from "../../components/LearningSession/PokemonEncounterIntro";
 import MilestoneOverlay from "../../components/LearningSession/MilestoneOverlay";
@@ -54,7 +55,6 @@ const LearningSession: React.FC = () => {
     catchRate: currentCatchRate,
     hintBalance,
     setHintBalance,
-    // ── NEW: buff fields exposed from hook ──
     buffPetId,
     buffName,
     buffDescription,
@@ -63,7 +63,8 @@ const LearningSession: React.FC = () => {
     petCatchBonus,
     petHintShield,
     petReducePenalty,
-  } = useQuizSession(sessionId, mode, petId, catchRate,
+  } = useQuizSession(
+    sessionId, mode, petId, catchRate,
     currentCorrectAnswered, setCurrentCorrectAnswered,
     initialBuffPetId,
     initialBuffName,
@@ -72,52 +73,33 @@ const LearningSession: React.FC = () => {
     initialPetXpMultiplier,
     initialPetCatchBonus,
     initialPetHintShield,
-    initialPetReducePenalty);
-
-  // console.group("🗺️ [LearningSession] Location State");
-  // console.log("🐾 petId:             ", petId);
-  // console.log("🎯 catchRate:         ", catchRate);
-  // console.log("🦄 initialBuffPetId:  ", initialBuffPetId);
-  // console.log("⭐ initialBuffName:   ", initialBuffName);
-  // console.log("📝 initialBuffDesc:   ", initialBuffDescription);
-  // console.log("🎨 initialBuffIcon:   ", initialBuffIcon);
-  // console.log("💰 xpMultiplier:      ", initialPetXpMultiplier);
-  // console.log("🎯 catchBonus:        ", initialPetCatchBonus);
-  // console.log("🔮 hintShield:        ", initialPetHintShield);
-  // console.log("🪨 reducePenalty:     ", initialPetReducePenalty);
-  // console.log("📦 Full state:        ", state);
-  // console.groupEnd();
+    initialPetReducePenalty
+  );
 
   const { user } = useAuth();
   const [showPopup, setShowPopup] = useState(false);
   const [answeredQuestion, setAnsweredQuestion] = useState<QuizQuestionDto | null>(null);
   const [showIntro, setShowIntro] = useState(true);
 
-  // Encounter intro: shown once after loading, only in learning mode with a pet
   const [showEncounterIntro, setShowEncounterIntro] = useState(false);
   const encounterShownRef = useRef(false);
 
-  // Milestone overlay
   const [activeMilestone, setActiveMilestone] = useState<25 | 50 | 75 | null>(null);
   const reachedMilestones = useRef<Set<number>>(new Set());
 
-  // User's active pet
   const [userPet, setUserPet] = useState<{
     id: number;
     name: string;
     imageUrl: string;
   } | null>(null);
 
-  // ── NEW: buff pet data fetched from API ──
   const [buffPet, setBuffPet] = useState<PetDto | null>(null);
 
-  // Loading screen visible for 1.2 s
   useEffect(() => {
     const timer = setTimeout(() => setShowIntro(false), 1200);
     return () => clearTimeout(timer);
   }, []);
 
-  // Fetch user's active pet
   useEffect(() => {
     const fetchPet = async () => {
       if (typeof user?.petActiveId === "number") {
@@ -136,23 +118,11 @@ const LearningSession: React.FC = () => {
     fetchPet();
   }, [user?.petActiveId]);
 
-  // ── NEW: Fetch buff pet info when buffPetId is available ──
   useEffect(() => {
     const fetchBuffPet = async () => {
       if (typeof buffPetId === "number") {
         try {
           const pet = await fetchPetById(buffPetId);
-
-
-          // console.group("🦄 [BuffPet] Fetched");
-          // console.log("🆔 ID:      ", pet.id);
-          // console.log("📛 Name:    ", pet.name);
-          // console.log("🏷️  Type:    ", (pet as any).type);
-          // console.log("💎 Rarity:  ", (pet as any).rarity);
-          // console.log("🖼️  ImageUrl:", pet.imageUrl);
-          // console.log("📦 Full:    ", pet);
-          // console.groupEnd();
-
           setBuffPet(pet as unknown as PetDto);
         } catch (err) {
           console.warn("Failed to load buff pet:", err);
@@ -162,7 +132,6 @@ const LearningSession: React.FC = () => {
     fetchBuffPet();
   }, [buffPetId]);
 
-  // Show encounter intro once encounteredPet is loaded (learning mode only)
   useEffect(() => {
     if (
       mode === "learning" &&
@@ -175,7 +144,6 @@ const LearningSession: React.FC = () => {
     }
   }, [encounteredPet, showIntro, mode]);
 
-  // Milestone detection
   useEffect(() => {
     if (showEncounterIntro || showIntro) return;
     const thresholdMap: Record<number, 25 | 50 | 75> = { 5: 25, 10: 50, 15: 75 };
@@ -227,7 +195,7 @@ const LearningSession: React.FC = () => {
     return sessionData?.message || "Hoàn thành phiên học!";
   };
 
-  // ─── Render gates ───────────────────────────────────────────────
+  // ─── Render gates ────────────────────────────────────────────────
   if (showIntro) return <LoadingScreen />;
 
   if (showEncounterIntro) {
@@ -242,7 +210,7 @@ const LearningSession: React.FC = () => {
   return (
     <div className="h-screen w-screen bg-gray-900 flex flex-col items-center justify-between pixel-background relative overflow-hidden">
 
-      {/* ── Buff Badge (top-right, always visible during session) ── */}
+      {/* ── Buff Badge ── */}
       {(buffName || buffPet) && (
         <BuffBadge
           buffPet={buffPet}
@@ -256,31 +224,52 @@ const LearningSession: React.FC = () => {
         />
       )}
 
-      {/* ── Main Learning Container (full width) ── */}
+      {/* ── Main container ── */}
       <div className="w-full h-full bg-gray-800 border-4 border-black rounded-lg flex flex-col overflow-hidden">
-        {/* Progress Bar */}
+
+        {/* Progress bar — always shown */}
         <PokemonProgressBar
           currentCorrectAnswered={currentCorrectAnswered}
           maxQuestions={MAX_QUESTIONS}
           catchRate={currentCatchRate}
-          encounteredPet={encounteredPet}
+          encounteredPet={mode === "learning" ? encounteredPet : null}
         />
 
-        {/* Game (question display) */}
-        <div className="flex-1 bg-gray-700 border-b-4 border-black p-4 h-1/2">
-          <div className="h-full bg-black border-2 border-white rounded-sm flex items-center justify-center">
-            <GameScreen
-              question={currentQuestion}
-              loading={loading}
-              error={error}
-            />
-          </div>
-        </div>
+        {/* ── LEARNING MODE: classic split layout ── */}
+        {mode === "learning" && (
+          <>
+            <div className="flex-1 bg-gray-700 border-b-4 border-black p-4 h-1/2">
+              <div className="h-full bg-black border-2 border-white rounded-sm flex items-center justify-center">
+                <GameScreen
+                  question={currentQuestion}
+                  loading={loading}
+                  error={error}
+                  mode="learning"
+                />
+              </div>
+            </div>
 
-        {/* Answer options */}
-        <div className="flex-1 bg-gray-700 p-4 h-1/2">
-          <div className="h-full bg-black border-2 border-white rounded-sm flex items-center justify-center">
-            <AnswerScreen
+            <div className="flex-1 bg-gray-700 p-4 h-1/2">
+              <div className="h-full bg-black border-2 border-white rounded-sm flex items-center justify-center overflow-hidden">
+                <AnswerScreen
+                  question={currentQuestion}
+                  loading={loading}
+                  error={error}
+                  handleAnswer={handleAnswer}
+                  loadNextQuestion={loadNextQuestion}
+                  showPopup={handleShowPopup}
+                  hintBalance={hintBalance}
+                  setHintBalance={setHintBalance}
+                />
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* ── REVIEW MODE: pet training layout ── */}
+        {mode === "review" && (
+          <div className="flex-1 overflow-hidden">
+            <ReviewLayout
               question={currentQuestion}
               loading={loading}
               error={error}
@@ -289,23 +278,24 @@ const LearningSession: React.FC = () => {
               showPopup={handleShowPopup}
               hintBalance={hintBalance}
               setHintBalance={setHintBalance}
+              userPet={userPet}
+              currentCorrectAnswered={currentCorrectAnswered}
+              maxQuestions={MAX_QUESTIONS}
             />
           </div>
-        </div>
+        )}
       </div>
-
-
 
       {/* ── Milestone Overlay ── */}
       {activeMilestone && (
         <MilestoneOverlay
           milestone={activeMilestone}
-          encounteredPet={encounteredPet}
+          encounteredPet={mode === "learning" ? encounteredPet : null}
           onClose={() => setActiveMilestone(null)}
         />
       )}
 
-      {/* ── End-of-session PetScreen (fullscreen overlay) ── */}
+      {/* ── End-of-session PetScreen ── */}
       {showRewardAnimation && (
         <PetScreen
           showRewardAnimation={showRewardAnimation}
@@ -359,7 +349,7 @@ const LearningSession: React.FC = () => {
           </motion.div>
         )}
 
-        {/* Reward Complete Screen Overlay */}
+        {/* Reward Complete overlay */}
         {showRewardAnimation && sessionData && captureComplete && (
           <motion.div
             className="absolute inset-0 flex items-center justify-center bg-opacity-75 z-50"

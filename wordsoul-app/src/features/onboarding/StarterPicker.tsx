@@ -63,7 +63,7 @@ const StarterPicker: React.FC<StarterPickerProps> = ({ onPicked }) => {
                 transition={{ duration: 0.5 }}
             >
                 <p className="font-pixel text-gray-400 text-xs mb-2">Prof. Lexi:</p>
-                <h1 className="font-pokemon text-2xl md:text-3xl text-yellow-300 leading-snug mb-3">
+                <h1 className="font-pixel text-2xl md:text-3xl text-yellow-300 leading-snug mb-3">
                     Chọn người bạn đồng hành!
                 </h1>
                 <p className="font-pixel text-gray-400 text-sm max-w-sm mx-auto leading-relaxed">

@@ -47,7 +47,7 @@ const RecommendedSetsBox: React.FC<RecommendedSetsBoxProps> = ({ recommendedSets
 
     return (
         <div className="pokemon-background pixel-border rounded-xl p-6 mt-6">
-            <h3 className="font-pokemon text-xl mb-1 text-yellow-300">✨ Gợi ý cho bạn</h3>
+            <h3 className="font-pixel text-xl mb-1 text-yellow-300">✨ Gợi ý cho bạn</h3>
             <p className="font-pixel text-gray-400 text-xs mb-4">
                 Dựa trên sở thích chủ đề của bạn
             </p>
@@ -88,7 +88,7 @@ const RecommendedSetsBox: React.FC<RecommendedSetsBoxProps> = ({ recommendedSets
                                 {/* Meta */}
                                 <div className="flex items-start justify-between gap-2">
                                     <div className="flex-1 min-w-0">
-                                        <p className="font-pokemon text-white text-xs truncate">{set.title}</p>
+                                        <p className="font-pixel text-white text-xs truncate">{set.title}</p>
                                         <p className="font-pixel text-gray-400 text-xs mt-0.5">
                                             {emoji} {set.theme}
                                         </p>
@@ -108,9 +108,9 @@ const RecommendedSetsBox: React.FC<RecommendedSetsBoxProps> = ({ recommendedSets
                                 <motion.button
                                     onClick={() => handleAdd(set.id)}
                                     disabled={isAdded || isAdding}
-                                    className={`mt-auto font-pokemon text-xs rounded px-3 py-1.5 transition-all border ${isAdded
-                                            ? 'bg-green-900 border-green-600 text-green-300 cursor-default'
-                                            : 'bg-yellow-600 border-yellow-500 text-black hover:bg-yellow-400 disabled:opacity-50'
+                                    className={`mt-auto font-pixel text-xs rounded px-3 py-1.5 transition-all border ${isAdded
+                                        ? 'bg-green-900 border-green-600 text-green-300 cursor-default'
+                                        : 'bg-yellow-600 border-yellow-500 text-black hover:bg-yellow-400 disabled:opacity-50'
                                         }`}
                                     whileTap={isAdded ? {} : { scale: 0.96 }}
                                 >

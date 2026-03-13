@@ -7,7 +7,7 @@ import { getUserProgress } from '../services/user';
 import ReviewBox from '../components/UserDashboard/ReviewBox';
 import StatsChart from '../components/UserDashboard/StatsChart';
 import StruggleWordsBox from '../components/UserDashboard/StruggleWordsBox';
-import ThemeRadarChart from '../components/UserDashboard/ThemeRadarChart';
+// import ThemeRadarChart from '../components/UserDashboard/ThemeRadarChart';
 import RecommendedSetsBox from '../components/UserDashboard/RecommendedSetsBox';
 import ProfileCard from '../components/UserProfile/ProfileCard';
 import QuestList from '../components/DailyQuest/QuestList';
@@ -64,7 +64,7 @@ const UserDashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="bg-black text-white h-screen flex items-center justify-center">
-        <div className="font-pokemon text-xl">Đang tải...</div>
+        <div className="font-pixel text-xl">Đang tải...</div>
       </div>
     );
   }
@@ -72,13 +72,13 @@ const UserDashboard: React.FC = () => {
   if (error) {
     return (
       <div className="bg-black text-white h-screen flex items-center justify-center">
-        <div className="font-pokemon text-red-500 text-xl">{error}</div>
+        <div className="font-pixel text-red-500 text-xl">{error}</div>
       </div>
     );
   }
 
   return (
-    <div className="review-box-background bg-fixed text-white min-h-screen font-pokemon relative overflow-auto">
+    <div className="review-box-background bg-fixed text-white min-h-screen font-pixel relative overflow-auto">
       <Particles
         id="tsparticles"
         init={particlesInit}
@@ -104,9 +104,9 @@ const UserDashboard: React.FC = () => {
           />
           <StatsChart progress={dashboard} />
           {dashboard && <StruggleWordsBox struggleWords={dashboard.struggleWords || []} />}
-          {dashboard?.themePreferences && dashboard.themePreferences.length > 0 && (
+          {/* {dashboard?.themePreferences && dashboard.themePreferences.length > 0 && (
             <ThemeRadarChart preferences={dashboard.themePreferences} />
-          )}
+          )} */}
           <RecommendedSetsBox
             recommendedSets={dashboard?.recommendedSets ?? []}
             onAdded={() => setDashboard(prev => prev ? { ...prev, recommendedSets: [] } : prev)}

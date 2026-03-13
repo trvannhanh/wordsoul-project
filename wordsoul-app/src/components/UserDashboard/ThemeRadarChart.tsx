@@ -40,7 +40,7 @@ const ThemeRadarChart: React.FC<ThemeRadarChartProps> = ({ preferences }) => {
     if (preferences.length < 2) {
         return (
             <div className="pokemon-background pixel-border rounded-xl p-6 mt-6">
-                <h3 className="font-pokemon text-xl mb-3 text-yellow-300">🗺️ Sở thích chủ đề</h3>
+                <h3 className="font-pixel text-xl mb-3 text-yellow-300">🗺️ Sở thích chủ đề</h3>
                 <p className="font-pixel text-gray-400 text-xs text-center py-6 leading-relaxed">
                     Hãy hoàn thành thêm phiên học để<br />
                     biểu đồ sở thích của bạn hiện ra! ✨
@@ -106,7 +106,7 @@ const ThemeRadarChart: React.FC<ThemeRadarChartProps> = ({ preferences }) => {
 
     return (
         <div className="pokemon-background pixel-border rounded-xl p-6 mt-6">
-            <h3 className="font-pokemon text-xl mb-1 text-yellow-300">🗺️ Sở thích chủ đề</h3>
+            <h3 className="font-pixel text-xl mb-1 text-yellow-300">🗺️ Sở thích chủ đề</h3>
             <p className="font-pixel text-gray-400 text-xs mb-4">
                 Dựa trên {values.reduce((a, b) => a + b, 0)} phiên học đã hoàn thành
             </p>

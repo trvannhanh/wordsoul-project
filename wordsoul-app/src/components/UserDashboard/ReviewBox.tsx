@@ -22,10 +22,10 @@ const ReviewBox: React.FC<ReviewBoxProps> = ({ progress, loading, onCreateReview
           className="w-16 h-16 object-cover pixelated"
         />
       </div>
-      <h2 className="fon-pixel text-3xl mb-2 text-yellow-300">Welcome to WordSoul</h2>
+      <h2 className="font-pixel text-3xl mb-2 text-yellow-300">Welcome to Vocamon</h2>
       {progress && progress.reviewWordCount > 0 ? (
         <>
-          <p className="text-sm text-yellow-300 mb-4">
+          <p className="font-pixel text-sm text-yellow-300 mb-4">
             Bạn có {progress.reviewWordCount} từ cần ôn tập{' '}
             {progress.nextReviewTime &&
               `sau ${new Date(progress.nextReviewTime).toLocaleTimeString()}`}
@@ -51,7 +51,7 @@ const ReviewBox: React.FC<ReviewBoxProps> = ({ progress, loading, onCreateReview
           </p>
           <div className="flex justify-center"> {/* Container Flexbox để căn giữa nút */}
             <motion.button
-              className="relative flex items-center justify-center w-32 px-4 py-2 bg-yellow-400 text-black font-pokemon text-sm rounded pixel-border-dark hover:bg-yellow-300 custom-cursor"
+              className="relative flex items-center justify-center w-32 px-4 py-2 bg-yellow-400 text-black font-pixel text-sm rounded pixel-border-dark hover:bg-yellow-300 custom-cursor"
               whileHover={{ scale: 1.05, boxShadow: '0 0 10px rgba(255, 204, 0, 0.7)' }}
               whileTap={{ scale: 0.95 }}
             >

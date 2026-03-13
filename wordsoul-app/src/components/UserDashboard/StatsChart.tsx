@@ -21,7 +21,7 @@ interface StatsChartProps {
 const StatsChart: React.FC<StatsChartProps> = ({ progress }) => {
   return (
     <div className="pokemon-background pixel-border rounded-xl p-6 mt-6">
-      <h3 className="font-pokemon text-xl mb-4 text-yellow-300">Thống kê từ vựng</h3>
+      <h3 className="font-pixel text-xl mb-4 text-yellow-300">Thống kê từ vựng</h3>
       {progress && (
         <Bar
           data={{
