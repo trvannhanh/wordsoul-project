@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using WordSoul.Api.Extensions;
@@ -45,6 +45,20 @@ namespace WordSoul.Api.Controllers
             var result = await _userOwnedPetService.AssignPetToUserAsync(assignDto);
             if (result == null) return NotFound("User hoặc pet không tồn tại.");
             return Ok(result);
+        }
+
+        // POST: api/users/me/hints/consume : Tiêu thụ 1 Hint của người dùng đang đăng nhập
+        [Authorize(Roles = "Admin,User")]
+        [HttpPost("me/hints/consume")]
+        public async Task<IActionResult> ConsumeHint(CancellationToken cancellationToken)
+        {
+            var userId = User.GetUserId();
+            if (userId == 0) return Unauthorized();
+
+            var result = await _userService.ConsumeHintAsync(userId, cancellationToken);
+            if (!result) return BadRequest(new { Message = "Không đủ Hint hoặc có lỗi xảy ra." });
+
+            return Ok(new { Message = "Sử dụng Hint thành công." });
         }
 
         //------------------------------ GET -----------------------------------

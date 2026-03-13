@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace WordSoul.Application.DTOs.User
 {
@@ -19,6 +19,7 @@ namespace WordSoul.Application.DTOs.User
         public int Level { get; set; }
         public int TotalXP { get; set; }
         public int TotalAP { get; set; }
+        public int HintBalance { get; set; }
         public int StreakDays { get; set; }
         public int PetCount { get; set; }
         public int? PetActiveId { get; set; }

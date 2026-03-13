@@ -20,6 +20,7 @@ export const endpoints = {
   leaderBoard: '/users/leaderboard', // Bảng xếp hạng
   AllUserActivities: '/users/activities', // Tất cả activity của user
   userActivities: (userId: number) => `/users/${userId}/activities`, // Activity của user chỉ định
+  consumeHint: '/users/me/hints/consume', // Tiêu thụ Hint
   userVocabularySets: (vocabularySetId: number) => `/users/vocabulary-sets/${vocabularySetId}`, // Danh sách bộ từ vựng của user
   userOwnedPet: (userId: number, petId: number) => `/users/${userId}/pets/${petId}`, // Pet của user chỉ định
 
