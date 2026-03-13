@@ -1,4 +1,4 @@
-﻿
+
 
 using WordSoul.Domain.Enums;
 
@@ -22,6 +22,14 @@ namespace WordSoul.Application.DTOs.QuizQuestion
         // Cho Listening
         public string? PronunciationUrl { get; set; }
         public bool IsRetry { get; set; }
+
+        /// <summary>
+        /// Câu hỏi được hiển thị trên GameScreen, tuỳ loại câu hỏi:
+        /// - MultipleChoice: nghĩa của từ (Meaning) → user chọn Word đúng
+        /// - FillInBlank: câu ví dụ từ Description với từ bị thay bằng "___"
+        /// - Null: Flashcard / Listening dùng Word và Meaning bình thường
+        /// </summary>
+        public string? QuestionPrompt { get; set; }
     }
 
 }

@@ -17,6 +17,11 @@ export const getUserById = async (userId: number): Promise<UserDto> => {
   return response.data;
 };
 
+export const getCurrentUser = async (): Promise<UserDto> => {
+  const response = await authApi.get<UserDto>(endpoints.currentUser);
+  return response.data;
+};
+
 export const updateUser = async (userId: number, userDto: UserDto): Promise<void> => {
   await authApi.put(endpoints.user(userId), userDto);
 };
@@ -57,5 +62,10 @@ export const getLeaderBoard = async (topXP?: boolean, topAP?:boolean, pageNumber
   const response = await api.get<LeaderBoardDto[]>(endpoints.leaderBoard, {
     params: { topXP, topAP, pageNumber, pageSize },
   });
+  return response.data;
+};
+
+export const consumeHint = async (): Promise<{ message: string }> => {
+  const response = await authApi.post<{ message: string }>(endpoints.consumeHint);
   return response.data;
 };

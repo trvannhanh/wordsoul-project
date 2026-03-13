@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using WordSoul.Domain.Enums;
 
 namespace WordSoul.Domain.Entities
@@ -14,6 +14,7 @@ namespace WordSoul.Domain.Entities
         public required string PasswordHash { get; set; }
         public int XP { get; set; } = 0; // Experience Points
         public int AP { get; set; } = 0; // Achivement Points
+        public int HintBalance { get; set; } = 5; // Default 5 hints
         public UserRole Role { get; set; } = UserRole.User; // Default role is User
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsActive { get; set; } = true;

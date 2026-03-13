@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using WordSoul.Application.Common;
 using WordSoul.Application.DTOs.AnswerRecord;
@@ -308,6 +308,42 @@ namespace WordSoul.Application.Services
         // Helper: tạo QuizQuestionDto từ Vocabulary và QuestionType
         private QuizQuestionDto CreateQuizQuestionDto(Vocabulary vocab, QuestionType type, List<string> allWords, bool isRetry)
         {
+            // ── Proposal A: MCQ ──────────────────────────────────────────────────────────
+            // Đối với MultipleChoice: QuestionPrompt = Meaning của từ (người dùng xem nghĩa → chọn từ đúng)
+            // Options vẫn là danh sách các Word, đảm bảo luôn có đủ 3 distractors.
+            // ── Proposal B: FillInBlank ──────────────────────────────────────────────────
+            // Đối với FillInBlank: QuestionPrompt = câu ví dụ từ Description với từ bị thay bằng "___"
+            // Nếu Description null hoặc không chứa từ → fallback về null (GameScreen sẽ dùng Meaning bình thường)
+
+            string? questionPrompt = type switch
+            {
+                QuestionType.MultipleChoice => vocab.Meaning,
+
+                QuestionType.FillInBlank when
+                    !string.IsNullOrWhiteSpace(vocab.Description) &&
+                    vocab.Description.Contains(vocab.Word, StringComparison.OrdinalIgnoreCase)
+                    => BuildContextSentence(vocab.Description, vocab.Word),
+
+                _ => null
+            };
+
+            // Đảm bảo MCQ luôn có đủ 3 distractor words (loại trừ từ đúng)
+            List<string>? options = null;
+            if (type == QuestionType.MultipleChoice)
+            {
+                var distractors = allWords
+                    .Where(w => !string.Equals(w, vocab.Word, StringComparison.OrdinalIgnoreCase))
+                    .OrderBy(_ => Guid.NewGuid())
+                    .Take(3)
+                    .ToList();
+
+                // Nếu không đủ 3 distractors từ session, thêm placeholder để đảm bảo UI không bị lỗi
+                while (distractors.Count < 3)
+                    distractors.Add($"—");
+
+                options = distractors.Append(vocab.Word).OrderBy(_ => Guid.NewGuid()).ToList();
+            }
+
             return new QuizQuestionDto
             {
                 VocabularyId = vocab.Id,
@@ -320,11 +356,25 @@ namespace WordSoul.Application.Services
                 PartOfSpeech = vocab.PartOfSpeech.ToString(),
                 CEFRLevel = vocab.CEFRLevel.ToString(),
                 QuestionType = type,
-                Options = type == QuestionType.MultipleChoice
-                    ? allWords.Where(w => w != vocab.Word).OrderBy(x => Guid.NewGuid()).Take(3).Append(vocab.Word).OrderBy(x => Guid.NewGuid()).ToList()
-                    : null,
-                IsRetry = isRetry
+                Options = options,
+                IsRetry = isRetry,
+                QuestionPrompt = questionPrompt,
             };
+        }
+
+        /// <summary>
+        /// Tạo câu ví dụ (context sentence) bằng cách thay thế từ cần học bằng "___".
+        /// So sánh case-insensitive để tìm vị trí từ trong câu.
+        /// </summary>
+        private static string BuildContextSentence(string description, string word)
+        {
+            // Dùng regex để thay thế toàn bộ word boundary một cách an toàn
+            var pattern = System.Text.RegularExpressions.Regex.Escape(word);
+            return System.Text.RegularExpressions.Regex.Replace(
+                description,
+                pattern,
+                "___",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
         }
 
         //------------------------------------UPDATE-----------------------------------------

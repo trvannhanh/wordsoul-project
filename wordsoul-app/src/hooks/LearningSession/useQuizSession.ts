@@ -1,11 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useState, useCallback } from "react";
-import {
-  answerQuiz,
-  completeLearningSession,
-  completeReviewSession,
-  fetchQuizOfSession,
-} from "../../services/learningSession";
+import { fetchQuizOfSession, completeLearningSession, completeReviewSession, answerQuiz } from "../../services/learningSession";
+import { getCurrentUser } from "../../services/user";
 import { fetchPetById } from "../../services/pet";
 import { QuestionTypeEnum, type AnswerResponseDto, type CompleteLearningSessionResponseDto, type CompleteReviewSessionResponseDto, type QuizQuestionDto } from "../../types/LearningSessionDto";
 import type { AnswerRequestDto } from "../../types/LearningSessionDto";
@@ -55,6 +51,19 @@ export const useQuizSession = (
   const [showRewardAnimation, setShowRewardAnimation] = useState(false);
   const [captureComplete, setCaptureComplete] = useState(false);
   const [catchRate, setCatchRate] = useState<number>(initialCatchRate || 0);
+  const [hintBalance, setHintBalance] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchUserHints = async () => {
+      try {
+         const user = await getCurrentUser();
+         setHintBalance(user.hintBalance || 0);
+      } catch (e) {
+         console.warn("Could not fetch user hints", e);
+      }
+    };
+    fetchUserHints();
+  }, []);
 
   const levelToType: Record<number, QuestionTypeEnum> = {
     0: QuestionTypeEnum.Flashcard,
@@ -131,7 +140,8 @@ export const useQuizSession = (
     answer: string,
     onAnswerProcessed: () => void,
     onResult?: (isCorrect: boolean) => void,
-    responseTimeSeconds?: number
+    responseTimeSeconds?: number,
+    usedHintCount = 0
   ): Promise<boolean> => {
     try {
       setLoading(true);
@@ -144,7 +154,7 @@ export const useQuizSession = (
         questionType: question.questionType,
         answer,
         responseTimeSeconds: responseTimeSeconds ?? 0,
-        hintCount: 0,
+        hintCount: usedHintCount,
       };
 
       // ── Debug log ──
@@ -163,7 +173,7 @@ export const useQuizSession = (
         questionType: question.questionType,
         answer,
         responseTimeSeconds: responseTimeSeconds ?? 0,
-        hintCount: 0,
+        hintCount: usedHintCount,
       });
 
       if (setCurrentCorrectAnswered) {
@@ -264,6 +274,8 @@ export const useQuizSession = (
     setCaptureComplete,
     loadNextQuestion,
     catchRate,
+    hintBalance,
+    setHintBalance,
     // ── Buff fields ──
     buffPetId,
     buffName,

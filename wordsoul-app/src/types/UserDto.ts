@@ -30,6 +30,7 @@ export interface UserDto {
   level: number;
   totalXP: number;
   totalAP: number;
+  hintBalance?: number;
   streakDays: number;
   avatarUrl?: string;
   petCount?: number;

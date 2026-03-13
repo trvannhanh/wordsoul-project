@@ -28,7 +28,14 @@ export interface QuizQuestionDto {
   description?: string;
   options?: string[];
   pronunciationUrl?: string;
-  isRetry?: boolean; // Thêm thuộc tính isRetry
+  isRetry?: boolean;
+  /**
+   * Câu hỏi được hiển thị trên GameScreen:
+   * - MultipleChoice: nghĩa của từ (Meaning) → user chọn Word đúng
+   * - FillInBlank: câu ví dụ với ___ thay cho từ cần học (nếu có Description)
+   * - undefined: Flashcard / Listening hiển thị word + meaning bình thường
+   */
+  questionPrompt?: string;
 }
 
 

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using WordSoul.Application.DTOs.User;
 using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
@@ -81,6 +81,7 @@ namespace WordSoul.Application.Services
                 IsActive = user.IsActive,
                 TotalXP = user.XP,
                 TotalAP = user.AP,
+                HintBalance = user.HintBalance,
                 Level = user.XP / 100, // 100 XP = 1 level
                 StreakDays = streakDays,
                 PetCount = user.UserOwnedPets?.Count ?? 0,
@@ -156,6 +157,25 @@ namespace WordSoul.Application.Services
                 CreatedAt = user.CreatedAt,
                 IsActive = user.IsActive
             };
+        }
+
+        /// <summary>
+        /// Tiêu thụ 1 Hint của người dùng.
+        /// </summary>
+        public async Task<bool> ConsumeHintAsync(int userId, CancellationToken cancellationToken = default)
+        {
+            var user = await _uow.User.GetUserByIdAsync(userId, cancellationToken)
+                ?? throw new KeyNotFoundException($"User with ID {userId} not found.");
+
+            if (user.HintBalance <= 0)
+                return false; // Hết Hint
+
+            user.HintBalance--;
+            await _uow.User.UpdateUserAsync(user, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation("User {UserId} consumed a hint. Remaining: {HintBalance}", userId, user.HintBalance);
+            return true;
         }
 
         /// <summary>

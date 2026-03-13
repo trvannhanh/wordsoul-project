@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using WordSoul.Application.DTOs.User;
@@ -80,6 +80,14 @@ namespace WordSoul.Application.Interfaces.Services
             int id,
             UpdateUserDto dto,
             CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Tiêu thụ 1 Hint của người dùng.
+        /// </summary>
+        /// <param name="userId">ID người dùng.</param>
+        /// <param name="cancellationToken">Token để hủy thao tác.</param>
+        /// <returns>true nếu tiêu thụ thành công, false nếu hết Hint.</returns>
+        Task<bool> ConsumeHintAsync(int userId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gán vai trò cho người dùng (Admin/User).

@@ -52,6 +52,8 @@ const LearningSession: React.FC = () => {
     setCaptureComplete,
     loadNextQuestion,
     catchRate: currentCatchRate,
+    hintBalance,
+    setHintBalance,
     // ── NEW: buff fields exposed from hook ──
     buffPetId,
     buffName,
@@ -198,9 +200,10 @@ const LearningSession: React.FC = () => {
       answer: string,
       onAnswerProcessed: () => void,
       onResult?: (isCorrect: boolean) => void,
-      responseTimeSeconds?: number
+      responseTimeSeconds?: number,
+      usedHintCount?: number
     ): Promise<boolean> => {
-      return originalHandleAnswer(question, answer, onAnswerProcessed, onResult, responseTimeSeconds);
+      return originalHandleAnswer(question, answer, onAnswerProcessed, onResult, responseTimeSeconds, usedHintCount);
     },
     [originalHandleAnswer]
   );
@@ -284,6 +287,8 @@ const LearningSession: React.FC = () => {
               handleAnswer={handleAnswer}
               loadNextQuestion={loadNextQuestion}
               showPopup={handleShowPopup}
+              hintBalance={hintBalance}
+              setHintBalance={setHintBalance}
             />
           </div>
         </div>

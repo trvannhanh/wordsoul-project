@@ -2,13 +2,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
 import { QuestionTypeEnum, type QuizQuestionDto } from "../../types/LearningSessionDto";
 
+import { consumeHint } from "../../services/user";
+
 interface AnswerScreenProps {
   question: QuizQuestionDto | null;
   loading: boolean;
   error: string | null;
-  handleAnswer: (question: QuizQuestionDto, answer: string, onAnswerProcessed: () => void, onResult?: (isCorrect: boolean) => void, responseTimeSeconds?: number) => Promise<boolean>;
+  handleAnswer: (question: QuizQuestionDto, answer: string, onAnswerProcessed: () => void, onResult?: (isCorrect: boolean) => void, responseTimeSeconds?: number, usedHintCount?: number) => Promise<boolean>;
   loadNextQuestion: () => void;
   showPopup: (question: QuizQuestionDto) => void; // Callback để hiển thị pop-up
+  hintBalance?: number;
+  setHintBalance?: (value: number) => void;
 }
 
 const AnswerScreen: React.FC<AnswerScreenProps> = ({
@@ -18,6 +22,8 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
   handleAnswer,
   loadNextQuestion,
   showPopup,
+  hintBalance,
+  setHintBalance,
 }) => {
   const [answerFeedback, setAnswerFeedback] = useState<"correct" | "wrong" | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -31,11 +37,38 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
 
   const startTimeRef = useRef<number>(Date.now());
 
+  const [usedHint, setUsedHint] = useState(false);
+  const [eliminatedOptions, setEliminatedOptions] = useState<string[]>([]);
+  const [isConsumingHint, setIsConsumingHint] = useState(false);
+
   useEffect(() => {
     if (question) {
       startTimeRef.current = Date.now();
+      setUsedHint(false);
+      setEliminatedOptions([]);
     }
   }, [question]);
+
+  const handleUseHint = async () => {
+    if (usedHint || !hintBalance || hintBalance <= 0 || !question || isConsumingHint) return;
+
+    setIsConsumingHint(true);
+    try {
+      await consumeHint();
+      setHintBalance?.(hintBalance - 1);
+      setUsedHint(true);
+
+      if (question.questionType === QuestionTypeEnum.MultipleChoice && question.options) {
+        const wrongOptions = question.options.filter((opt) => opt !== question.word);
+        const toEliminate = wrongOptions.sort(() => 0.5 - Math.random()).slice(0, 2);
+        setEliminatedOptions(toEliminate);
+      }
+    } catch (e) {
+      console.error("Failed to use hint", e);
+    } finally {
+      setIsConsumingHint(false);
+    }
+  };
 
   const handleSubmitAnswer = async (answer: string) => {
     if (question) {
@@ -53,7 +86,8 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
           loadNextQuestion(); // Chuyển câu hỏi sau khi pop-up đóng
         },
         undefined,
-        responseTimeSeconds
+        responseTimeSeconds,
+        usedHint ? 1 : 0
       );
       setUserAnswer("");
       setShowFeedback(true);
@@ -211,38 +245,56 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
 
             case QuestionTypeEnum.FillInBlank:
               return (
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={userAnswer}
-                  className="bg-white p-4 rounded w-3/4 text-2xl text-black font-pixel text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  autoFocus
-                  onChange={(e) => setUserAnswer(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !showFeedback && userAnswer.trim()) {
-                      handleSubmitAnswer(userAnswer);
-                    }
-                  }}
-                  disabled={showFeedback}
-                  placeholder="Type the word..."
-                />
+                <div className="flex flex-col items-center space-y-4 w-3/4">
+                  {usedHint && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-yellow-900 border-2 border-yellow-500 text-yellow-300 font-pixel px-4 py-2 rounded shadow-lg"
+                    >
+                      Bắt đầu: {question.word.charAt(0).toUpperCase()} ... Cuối: {question.word.charAt(question.word.length - 1).toUpperCase()}
+                    </motion.div>
+                  )}
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={userAnswer}
+                    className="bg-white p-4 rounded w-full text-2xl text-black font-pixel text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    autoFocus
+                    onChange={(e) => setUserAnswer(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !showFeedback && userAnswer.trim()) {
+                        handleSubmitAnswer(userAnswer);
+                      }
+                    }}
+                    disabled={showFeedback}
+                    placeholder="Type the word..."
+                  />
+                </div>
               );
 
             case QuestionTypeEnum.MultipleChoice:
               return (
                 <div className="grid grid-cols-2 gap-6 w-4/5">
-                  {question.options?.map((opt) => (
-                    <motion.button
-                      key={opt}
-                      onClick={() => handleSubmitAnswer(opt)}
-                      className="bg-emerald-600 p-5 rounded-lg font-pixel text-white text-2xl hover:bg-emerald-700 disabled:opacity-50 transition-colors custom-cursor"
-                      disabled={showFeedback}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      {opt}
-                    </motion.button>
-                  ))}
+                  {question.options?.map((opt) => {
+                    const isEliminated = eliminatedOptions.includes(opt);
+                    return (
+                      <motion.button
+                        key={opt}
+                        onClick={() => handleSubmitAnswer(opt)}
+                        className={`p-5 rounded-lg font-pixel text-white text-2xl transition-colors custom-cursor ${
+                          isEliminated
+                            ? "bg-gray-600 opacity-30 cursor-not-allowed"
+                            : "bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50"
+                        }`}
+                        disabled={showFeedback || isEliminated}
+                        whileHover={!isEliminated ? { scale: 1.05 } : {}}
+                        whileTap={!isEliminated ? { scale: 0.95 } : {}}
+                      >
+                        {isEliminated ? "" : opt}
+                      </motion.button>
+                    );
+                  })}
                 </div>
               );
 
@@ -349,11 +401,20 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
                   </motion.div>
 
                   <motion.div
-                    className="w-full"
+                    className="w-full flex flex-col items-center"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                   >
+                    {usedHint && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mb-3 bg-yellow-900 border-2 border-yellow-500 text-yellow-300 font-pixel text-xl px-4 py-2 rounded shadow-lg tracking-widest"
+                      >
+                        {Array(question.word.length).fill("_").join(" ")} ({question.word.length} chữ cái)
+                      </motion.div>
+                    )}
                     <input
                       type="text"
                       value={userAnswer}
@@ -376,6 +437,29 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
               return <div className="text-white font-pixel">Unknown question type</div>;
           }
         })()}
+
+        {/* Nút Hint: Gắn cố định góc trái dưới box câu hỏi */}
+        {question.questionType !== QuestionTypeEnum.Flashcard && (
+          <div className="absolute bottom-4 left-4">
+            <button
+              onClick={handleUseHint}
+              disabled={usedHint || isConsumingHint || !hintBalance || hintBalance <= 0 || showFeedback}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-full font-pixel transition-colors border-2
+                ${usedHint
+                  ? "bg-gray-700 text-gray-400 border-gray-600 opacity-50 cursor-not-allowed"
+                  : (!hintBalance || hintBalance <= 0)
+                  ? "bg-red-900 text-red-300 border-red-700 opacity-50 cursor-not-allowed"
+                  : "bg-yellow-600 text-white border-yellow-400 hover:bg-yellow-500 custom-cursor"
+                }
+              `}
+            >
+              <span>💡 Hint</span>
+              <span className="bg-black bg-opacity-50 px-2 py-0.5 rounded-full text-sm">
+                {hintBalance || 0}
+              </span>
+            </button>
+          </div>
+        )}
       </div>
     </motion.div>
   );
