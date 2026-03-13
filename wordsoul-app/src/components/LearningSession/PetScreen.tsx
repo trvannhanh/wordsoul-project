@@ -61,12 +61,7 @@ const PetScreen: React.FC<PetScreenProps> = ({
   return (
     <div
       className="fixed inset-0 z-40 flex items-center justify-center"
-      style={{
-        backgroundImage: `url("../src/assets/battle-background.png")`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundColor: "rgba(0,0,0,0.75)",
-      }}
+
     >
       <AnimatePresence>
         <motion.div

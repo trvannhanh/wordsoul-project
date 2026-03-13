@@ -42,7 +42,7 @@ const ProfilePage: React.FC = () => {
               />
             </motion.div>
             <div>
-              <h1 className="text-3xl font-pokemon text-yellow-500">{user.username}</h1>
+              <h1 className="text-3xl font-pixel text-yellow-500">{user.username}</h1>
               <div className="text-lg text-color">Level {user.level}</div>
               <div className="text-sm text-color">{user.email}</div>
             </div>
@@ -84,7 +84,7 @@ const ProfilePage: React.FC = () => {
           <div className="flex justify-center gap-4">
             <Link to="/community" className="no-underline">
               <motion.button
-                className="px-6 py-2 bg-blue-500 text-white font-pokemon text-sm rounded pixel-border hover:bg-blue-400"
+                className="px-6 py-2 bg-blue-500 text-white font-pixel text-sm rounded pixel-border hover:bg-blue-400"
                 whileHover={{ scale: 1.05, boxShadow: '0 0 10px rgba(59, 130, 246, 0.7)' }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -93,7 +93,7 @@ const ProfilePage: React.FC = () => {
             </Link>
             <Link to="/pets" className="no-underline">
               <motion.button
-                className="px-6 py-2 bg-green-500 text-white font-pokemon text-sm rounded pixel-border hover:bg-green-400"
+                className="px-6 py-2 bg-green-500 text-white font-pixel text-sm rounded pixel-border hover:bg-green-400"
                 whileHover={{ scale: 1.05, boxShadow: '0 0 10px rgba(34, 197, 94, 0.7)' }}
                 whileTap={{ scale: 0.95 }}
               >

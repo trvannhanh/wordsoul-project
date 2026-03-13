@@ -118,7 +118,7 @@ const Header: React.FC = () => {
                     </div>
 
                     {/* Navigation Links */}
-                    <div className="hidden md:flex items-center justify-center gap-2 text-xs">
+                    <div className="font-pixel hidden md:flex items-center justify-center gap-2 text-xs">
                         <div className="relative">
                             <Link to="/vocabularySet">
                                 <button className="flex items-center gap-1 px-3 py-2  hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-md custom-cursor">
@@ -224,7 +224,7 @@ const Header: React.FC = () => {
 
             {/* Mobile Menu Dropdown */}
             {isMobileMenuOpen && (
-                <div className="md:hidden bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2 absolute top-[48px] left-0 w-full z-40">
+                <div className="font-pixel fixed md:hidden bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2 absolute top-[48px] left-0 w-full z-40">
                     <div className="flex flex-col gap-2">
                         <Link to="/vocabularySet" className="py-2 hover:text-blue-400" onClick={toggleMobileMenu}>
                             Bộ từ vựng

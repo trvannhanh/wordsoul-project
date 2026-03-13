@@ -74,7 +74,7 @@ const PrologueIntro: React.FC<PrologueIntroProps> = ({
                 className="relative z-10 w-4xl mx-4 h-50 bg-gray-900 border-4 border-yellow-400 rounded-2xl p-6 shadow-2xl cursor-pointer select-none"
                 onClick={(e) => { e.stopPropagation(); advance(); }}
             >
-                <div className="absolute -top-3 left-6 bg-yellow-400 px-3 py-0.5 rounded font-pokemon text-xs text-gray-900">
+                <div className="absolute -top-3 left-6 bg-yellow-400 px-3 py-0.5 rounded font-pixel text-xs text-gray-900">
                     {speakerName}
                 </div>
                 <p className="font-pixel text-white text-sm leading-relaxed min-h-[3rem]">
@@ -94,7 +94,7 @@ const PrologueIntro: React.FC<PrologueIntroProps> = ({
                         ? <span className="font-pixel text-gray-400 text-xs animate-pulse">Nhấp để tiếp tục ▶</span>
                         : <button
                             onClick={onStart}
-                            className="font-pokemon text-xs bg-yellow-400 text-gray-900 px-4 py-1.5 rounded-lg hover:bg-yellow-300 active:scale-95 transition-all"
+                            className="font-pixel text-xs bg-yellow-400 text-gray-900 px-4 py-1.5 rounded-lg hover:bg-yellow-300 active:scale-95 transition-all"
                         >
                             {onStartLabel}
                         </button>
