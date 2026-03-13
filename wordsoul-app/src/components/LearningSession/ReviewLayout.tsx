@@ -266,16 +266,14 @@ const ReviewLayout: React.FC<ReviewLayoutProps> = ({
     hintBalance,
     setHintBalance,
     userPet,
-    currentCorrectAnswered,
-    maxQuestions,
 }) => {
     const [petMood, setPetMood] = useState<PetMood>("idle");
     const [reactionText, setReactionText] = useState("Cùng ôn bài nào!");
     const [streak, setStreak] = useState(0);
-    const [totalAnswered, setTotal] = useState(0);
+    const [, setTotal] = useState(0);
     const [berries, setBerries] = useState<BerryParticle[]>([]);
     const [eatBurst, setEatBurst] = useState(false);
-    const [idleIdx, setIdleIdx] = useState(0);
+    const [, setIdleIdx] = useState(0);
 
     const berryIdRef = useRef(0);
 
