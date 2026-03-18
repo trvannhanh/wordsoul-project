@@ -29,6 +29,7 @@ namespace WordSoul.Application.Services
         private readonly IDailyQuestService _dailyQuestService;
         private readonly ITimeProvider _timeProvider;
         private readonly IPetBuffService _petBuffService;
+        private readonly IGymLeaderService _gymLeaderService;
 
         /// <summary>
         /// Khởi tạo LearningSessionService.
@@ -43,7 +44,8 @@ namespace WordSoul.Application.Services
             ISRSService srsService,
             IDailyQuestService dailyQuestService,
             IPetBuffService petBuffService,
-            ITimeProvider timeProvider)
+            ITimeProvider timeProvider,
+            IGymLeaderService gymLeaderService)
         {
             _uow = uow;
             _logger = logger;
@@ -55,6 +57,7 @@ namespace WordSoul.Application.Services
             _dailyQuestService = dailyQuestService;
             _timeProvider = timeProvider;
             _petBuffService = petBuffService;
+            _gymLeaderService = gymLeaderService;
         }
 
         // ------------------------------------CREATE-----------------------------------------
@@ -492,6 +495,16 @@ namespace WordSoul.Application.Services
                     1,
                     null,
                     ct);
+            }
+
+            // ── Kiểm tra và mở khóa Gym Leader mới (fire-and-forget style, không block response) ──
+            try
+            {
+                await _gymLeaderService.CheckAndUnlockGymsAsync(userId, ct);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Non-critical: CheckAndUnlockGymsAsync failed for user {UserId}", userId);
             }
 
             // Return DTO

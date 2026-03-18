@@ -1,5 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using WordSoul.Domain.Entities;
+using WordSoul.Domain.Enums;
 
 namespace WordSoul.Infrastructure.Persistence
 {
@@ -26,6 +27,12 @@ namespace WordSoul.Infrastructure.Persistence
         public DbSet<VocabularyReviewHistory> VocabularyReviewHistories { get; set; }
         public DbSet<DailyQuest> DailyQuests { get; set; }
         public DbSet<UserDailyQuest> UserDailyQuests { get; set; }
+
+        // ── Gym Leader Progression System ────────────────
+        public DbSet<GymLeader> GymLeaders { get; set; }
+        public DbSet<UserGymProgress> UserGymProgresses { get; set; }
+        public DbSet<BattleSession> BattleSessions { get; set; }
+        public DbSet<BattleAnswer> BattleAnswers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -301,7 +308,171 @@ namespace WordSoul.Infrastructure.Persistence
             modelBuilder.Entity<UserDailyQuest>()
                 .HasIndex(udq => new { udq.UserId, udq.DailyQuestId, udq.QuestDate })
                 .IsUnique();
-        }
+
+            // ── Gym Leader Progression ────────────────────────────────────────────
+
+            // UserGymProgress: composite PK
+            modelBuilder.Entity<UserGymProgress>()
+                .HasKey(ugp => new { ugp.UserId, ugp.GymLeaderId });
+
+            modelBuilder.Entity<UserGymProgress>()
+                .HasOne(ugp => ugp.User)
+                .WithMany(u => u.UserGymProgresses)
+                .HasForeignKey(ugp => ugp.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserGymProgress>()
+                .HasOne(ugp => ugp.GymLeader)
+                .WithMany(gl => gl.UserGymProgresses)
+                .HasForeignKey(ugp => ugp.GymLeaderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // GymLeader → Achievement (badge)
+            modelBuilder.Entity<GymLeader>()
+                .HasOne(gl => gl.BadgeAchievement)
+                .WithMany()
+                .HasForeignKey(gl => gl.BadgeAchievementId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // BattleSession: Challenger
+            modelBuilder.Entity<BattleSession>()
+                .HasOne(bs => bs.ChallengerUser)
+                .WithMany()
+                .HasForeignKey(bs => bs.ChallengerUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // BattleSession: Opponent (nullable)
+            modelBuilder.Entity<BattleSession>()
+                .HasOne(bs => bs.OpponentUser)
+                .WithMany()
+                .HasForeignKey(bs => bs.OpponentUserId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+
+            // BattleSession: GymLeader (nullable)
+            modelBuilder.Entity<BattleSession>()
+                .HasOne(bs => bs.GymLeader)
+                .WithMany(gl => gl.BattleSessions)
+                .HasForeignKey(bs => bs.GymLeaderId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+
+            // BattleAnswer
+            modelBuilder.Entity<BattleAnswer>()
+                .HasOne(ba => ba.BattleSession)
+                .WithMany(bs => bs.Answers)
+                .HasForeignKey(ba => ba.BattleSessionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<BattleAnswer>()
+                .HasOne(ba => ba.Vocabulary)
+                .WithMany()
+                .HasForeignKey(ba => ba.VocabularyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Indexes
+            modelBuilder.Entity<BattleSession>()
+                .HasIndex(bs => new { bs.ChallengerUserId, bs.Status });
+            modelBuilder.Entity<UserGymProgress>()
+                .HasIndex(ugp => new { ugp.UserId, ugp.Status });
+
+            // ── Seed: 8 Badge Achievements ────────────────────────────────────────
+            modelBuilder.Entity<Achievement>().HasData(
+                new Achievement { Id = 101, Name = "Boulder Badge",  Description = "Defeated Norm, Guardian of Daily Life",  ConditionType = ConditionType.GymDefeated, ConditionValue = 1, RewardItemId = 0, CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+                new Achievement { Id = 102, Name = "Leaf Badge",     Description = "Defeated Flora, Guardian of Nature",      ConditionType = ConditionType.GymDefeated, ConditionValue = 2, RewardItemId = 0, CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+                new Achievement { Id = 103, Name = "Frost Badge",    Description = "Defeated Hail, Guardian of Weather",      ConditionType = ConditionType.GymDefeated, ConditionValue = 3, RewardItemId = 0, CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+                new Achievement { Id = 104, Name = "Tide Badge",     Description = "Defeated Marina, Guardian of Food",       ConditionType = ConditionType.GymDefeated, ConditionValue = 4, RewardItemId = 0, CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+                new Achievement { Id = 105, Name = "Spark Badge",    Description = "Defeated Volt, Guardian of Technology",   ConditionType = ConditionType.GymDefeated, ConditionValue = 5, RewardItemId = 0, CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+                new Achievement { Id = 106, Name = "Wing Badge",     Description = "Defeated Aero, Guardian of Travel",       ConditionType = ConditionType.GymDefeated, ConditionValue = 6, RewardItemId = 0, CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+                new Achievement { Id = 107, Name = "Glow Badge",     Description = "Defeated Lumi, Guardian of Health",       ConditionType = ConditionType.GymDefeated, ConditionValue = 7, RewardItemId = 0, CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+                new Achievement { Id = 108, Name = "Iron Badge",     Description = "Defeated Brawl, Guardian of Sports",      ConditionType = ConditionType.GymDefeated, ConditionValue = 8, RewardItemId = 0, CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) }
+            );
+
+            // ── Seed: 8 GymLeaders ────────────────────────────────────────────────
+            modelBuilder.Entity<GymLeader>().HasData(
+                new GymLeader
+                {
+                    Id = 1, GymOrder = 1, Name = "Norm",
+                    Title = "Guardian of Daily Life",
+                    Description = "Norm greets every newcomer with a warm smile. Her words are simple, but mastering them is the foundation of your journey.",
+                    BadgeName = "Boulder Badge", BadgeAchievementId = 101,
+                    Theme = VocabularySetTheme.DailyLife, RequiredCefrLevel = CEFRLevel.A1,
+                    XpThreshold = 300,  VocabThreshold = 15, RequiredMemoryState = "Learning",
+                    XpReward = 150, QuestionCount = 15, PassRatePercent = 80, CooldownHours = 12
+                },
+                new GymLeader
+                {
+                    Id = 2, GymOrder = 2, Name = "Flora",
+                    Title = "Guardian of Nature",
+                    Description = "Flora speaks in the language of forests and living things. She rewards those who have truly internalized the world around them.",
+                    BadgeName = "Leaf Badge", BadgeAchievementId = 102,
+                    Theme = VocabularySetTheme.Nature, RequiredCefrLevel = CEFRLevel.A1,
+                    XpThreshold = 600,  VocabThreshold = 15, RequiredMemoryState = "Review",
+                    XpReward = 200, QuestionCount = 15, PassRatePercent = 80, CooldownHours = 12
+                },
+                new GymLeader
+                {
+                    Id = 3, GymOrder = 3, Name = "Hail",
+                    Title = "Guardian of Weather",
+                    Description = "Hail's temperament shifts like the wind. Only those who can describe the sky in all its moods can earn her trust.",
+                    BadgeName = "Frost Badge", BadgeAchievementId = 103,
+                    Theme = VocabularySetTheme.Weather, RequiredCefrLevel = CEFRLevel.A2,
+                    XpThreshold = 1000, VocabThreshold = 20, RequiredMemoryState = "Learning",
+                    XpReward = 250, QuestionCount = 15, PassRatePercent = 80, CooldownHours = 12
+                },
+                new GymLeader
+                {
+                    Id = 4, GymOrder = 4, Name = "Marina",
+                    Title = "Guardian of Food",
+                    Description = "Marina believes language is best shared over a meal. Prove to her you can navigate any kitchen or restaurant conversation.",
+                    BadgeName = "Tide Badge", BadgeAchievementId = 104,
+                    Theme = VocabularySetTheme.Food, RequiredCefrLevel = CEFRLevel.A2,
+                    XpThreshold = 1500, VocabThreshold = 20, RequiredMemoryState = "Review",
+                    XpReward = 300, QuestionCount = 15, PassRatePercent = 80, CooldownHours = 12
+                },
+                new GymLeader
+                {
+                    Id = 5, GymOrder = 5, Name = "Volt",
+                    Title = "Guardian of Technology",
+                    Description = "Volt moves at the speed of electricity. Only the digitally fluent can keep up with his rapid-fire tech vocabulary.",
+                    BadgeName = "Spark Badge", BadgeAchievementId = 105,
+                    Theme = VocabularySetTheme.Technology, RequiredCefrLevel = CEFRLevel.B1,
+                    XpThreshold = 2500, VocabThreshold = 25, RequiredMemoryState = "Learning",
+                    XpReward = 400, QuestionCount = 15, PassRatePercent = 80, CooldownHours = 12
+                },
+                new GymLeader
+                {
+                    Id = 6, GymOrder = 6, Name = "Aero",
+                    Title = "Guardian of Travel",
+                    Description = "Aero has circled the globe many times over. She tests your ability to navigate the world — literally and linguistically.",
+                    BadgeName = "Wing Badge", BadgeAchievementId = 106,
+                    Theme = VocabularySetTheme.Travel, RequiredCefrLevel = CEFRLevel.B1,
+                    XpThreshold = 3500, VocabThreshold = 25, RequiredMemoryState = "Review",
+                    XpReward = 500, QuestionCount = 15, PassRatePercent = 80, CooldownHours = 12
+                },
+                new GymLeader
+                {
+                    Id = 7, GymOrder = 7, Name = "Lumi",
+                    Title = "Guardian of Health",
+                    Description = "Lumi radiates calm and wisdom. She demands precision — the language of health leaves no room for misunderstanding.",
+                    BadgeName = "Glow Badge", BadgeAchievementId = 107,
+                    Theme = VocabularySetTheme.Health, RequiredCefrLevel = CEFRLevel.B1,
+                    XpThreshold = 5000, VocabThreshold = 30, RequiredMemoryState = "Review",
+                    XpReward = 600, QuestionCount = 15, PassRatePercent = 80, CooldownHours = 12
+                },
+                new GymLeader
+                {
+                    Id = 8, GymOrder = 8, Name = "Brawl",
+                    Title = "Guardian of Sports",
+                    Description = "Brawl is the ultimate test of endurance. This battle will push your B2 vocabulary to the limit — no shortcuts allowed.",
+                    BadgeName = "Iron Badge", BadgeAchievementId = 108,
+                    Theme = VocabularySetTheme.Sports, RequiredCefrLevel = CEFRLevel.B2,
+                    XpThreshold = 7000, VocabThreshold = 30, RequiredMemoryState = "Learning",
+                    XpReward = 800, QuestionCount = 15, PassRatePercent = 80, CooldownHours = 12
+                }
+            );
     }
 
-}
+}   // class WordSoulDbContext
+
+}   // namespace WordSoul.Infrastructure.Persistence

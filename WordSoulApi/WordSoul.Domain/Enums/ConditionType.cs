@@ -1,4 +1,4 @@
-﻿
+
 
 namespace WordSoul.Domain.Enums
 {
@@ -7,6 +7,7 @@ namespace WordSoul.Domain.Enums
         MasterWords,
         DailyStreak,
         CompletedSet,
-        CatchedPets
+        CatchedPets,
+        GymDefeated  // Dành riêng để track badge khi chinh phục Gym Leader
     }
 }

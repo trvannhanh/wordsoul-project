@@ -1,4 +1,4 @@
-﻿using CloudinaryDotNet;
+using CloudinaryDotNet;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -196,6 +196,9 @@ builder.Services.AddScoped<SRSAlgorithm>();
 builder.Services.AddScoped<ITimeProvider, SystemTimeProvider>();
 builder.Services.AddScoped<IDailyQuestService, DailyQuestService>();
 builder.Services.AddScoped<IUserInventoryService, UserInventoryService>();
+
+// Gym Leader Progression
+builder.Services.AddScoped<IGymLeaderService, GymLeaderService>();
 
 // Configure Cloudinary
 builder.Services.AddSingleton<Cloudinary>(sp =>
