@@ -10,4 +10,28 @@ export default defineConfig({
   ],
 
   base: '/',
+
+  server: {
+    proxy: {
+      // Forward tất cả /api request sang backend (tránh CORS + self-signed cert)
+      '/api': {
+        target: 'https://localhost:7272',
+        changeOrigin: true,
+        secure: false, // bỏ qua self-signed certificate ở local
+      },
+      // Forward SignalR hub
+      '/notificationHub': {
+        target: 'https://localhost:7272',
+        changeOrigin: true,
+        secure: false,
+        ws: true,
+      },
+      '/battleHub': {
+        target: 'https://localhost:7272',
+        changeOrigin: true,
+        secure: false,
+        ws: true,
+      },
+    },
+  },
 })

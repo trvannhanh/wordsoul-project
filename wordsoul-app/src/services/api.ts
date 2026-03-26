@@ -68,6 +68,12 @@ export const endpoints = {
   // Achievement
   myAchievements: '/achievements/me', // Danh sách thành tựu của user
   claimAchievement: (achievementId: number) => `/achievements/${achievementId}/claim`, // Nhận phần thưởng thành tựu
+
+  // Gym Leader & Battle
+  gyms: '/gym',                                                             // GET: danh sách 8 gym
+  gymDetail: (gymId: number) => `/gym/${gymId}`,                            // GET: chi tiết 1 gym
+  startGymBattle: (gymId: number) => `/gym/${gymId}/battle/start`,          // POST: bắt đầu battle
+  submitBattle: (sessionId: number) => `/gym/battle/${sessionId}/submit`,   // POST: submit kết quả
 };
 
 // ---- Helpers ----
@@ -153,6 +159,34 @@ authApi.interceptors.response.use(
       }
     }
 
+    return Promise.reject(error);
+  }
+);
+
+authApi.interceptors.request.use((config) => {
+  console.log('🚀 REQUEST');
+  console.log('URL:', config.url);
+  console.log('METHOD:', config.method);
+  console.log('DATA:', config.data);
+  console.log('PARAMS:', config.params);
+  console.log('HEADERS:', config.headers);
+  return config;
+});
+
+authApi.interceptors.response.use(
+  (response) => {
+    console.log('✅ RESPONSE');
+    console.log('URL:', response.config.url);
+    console.log('STATUS:', response.status);
+    console.log('DATA:', response.data);
+    return response;
+  },
+  (error) => {
+    console.log('❌ ERROR RESPONSE');
+    console.log('URL:', error.config?.url);
+    console.log('STATUS:', error.response?.status);
+    console.log('DATA:', error.response?.data);
+    console.log('FULL ERROR:', error);
     return Promise.reject(error);
   }
 );
