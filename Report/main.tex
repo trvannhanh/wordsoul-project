@@ -1,0 +1,75 @@
+% Template for DAN, KLTN, SVNCKH 
+
+\documentclass[oneside,a4paper,13pt]{extreport}
+
+% --- PHẦN PREAMBLE (CÁC GÓI LỆNH) ---
+\usepackage[T5]{fontenc}
+\usepackage[utf8]{inputenc}
+\DeclareTextSymbolDefault{\DH}{T1}
+
+% Tài liệu tham khảo
+\usepackage[backend=biber, style=numeric, sorting=none, giveninits=true]{biblatex}
+\addbibresource{References/references.bib}
+
+% Chèn hình
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+
+% Chèn và định dạng mã nguồn (listings)
+\usepackage{listings}
+\usepackage{color}
+% ... (Giữ nguyên các định dạng màu sắc của bạn)
+
+% Chèn và định dạng mã giả, bảng biểu, tiêu đề...
+\usepackage{amsmath}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage{titlesec}
+\usepackage{setspace}
+\usepackage{indentfirst}
+\usepackage{geometry}
+\usepackage{tikz}
+\usetikzlibrary{calc}      
+\usepackage[hidelinks]{hyperref}
+
+% --- SỬA LỖI TẠI ĐÂY ---
+% 1. Lệnh \includeonly PHẢI nằm ở đây (trước \begin{document}).
+% 2. Chỉ dùng MỘT lệnh duy nhất, liệt kê các chương cách nhau bằng dấu phẩy.
+% 3. Muốn biên dịch chương nào thì để tên chương đó, muốn ẩn thì xóa hoặc comment.
+
+% \includeonly{Chapter1/chapter1,Chapter2/chapter2,Chapter3/chapter3} 
+% \includeonly{Chapter1/chapter1,Chapter2/chapter2}
+
+% --- HẾT PHẦN PREAMBLE ---
+
+\begin{document}
+
+\input{Title/title.tex}
+\pagenumbering{roman}
+
+% ... (Các phần Ý kiến GV, Lời cảm ơn, Mục lục giữ nguyên)
+
+\clearpage
+\pagenumbering{arabic} 
+
+% --- THAY ĐỔI CÁCH GỌI CHƯƠNG ---
+% Sử dụng \include thay vì \includeonly ở đây. 
+% LaTeX sẽ đối chiếu danh sách trong \includeonly ở trên để quyết định có nạp file này hay không.
+
+\include{Chapter1/chapter1}
+\include{Chapter2/chapter2}
+\include{Chapter3/chapter3}
+\include{Chapter4/chapter4}
+\include{Chapter5/chapter5}
+
+% In tài liệu tham khảo
+\phantomsection
+\addcontentsline{toc}{chapter}{Tài liệu tham khảo}
+\printbibheading[title={Tài liệu tham khảo}]
+\printbibliography[heading=subbibliography, title={Tiếng Anh}, notkeyword=Tieng, resetnumbers=16] 
+
+% Phần phụ lục
+\addcontentsline{toc}{chapter}{Phụ Lục}
+\include{Appendix/appendix1}
+
+\end{document}

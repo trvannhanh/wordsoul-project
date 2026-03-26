@@ -1,0 +1,224 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{none/global//global/global/global}
+    \entry{Nation2001}{book}{}{}
+      \name{author}{1}{}{%
+        {{hash=06cf066393e7354610bc8d607b38e75a}{%
+           family={Nation},
+           familyi={N\bibinitperiod},
+           given={Paul},
+           giveni={P\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Cambridge, UK}%
+      }
+      \list{publisher}{1}{%
+        {Cambridge University Press}%
+      }
+      \strng{namehash}{06cf066393e7354610bc8d607b38e75a}
+      \strng{fullhash}{06cf066393e7354610bc8d607b38e75a}
+      \strng{fullhashraw}{06cf066393e7354610bc8d607b38e75a}
+      \strng{bibnamehash}{06cf066393e7354610bc8d607b38e75a}
+      \strng{authorbibnamehash}{06cf066393e7354610bc8d607b38e75a}
+      \strng{authornamehash}{06cf066393e7354610bc8d607b38e75a}
+      \strng{authorfullhash}{06cf066393e7354610bc8d607b38e75a}
+      \strng{authorfullhashraw}{06cf066393e7354610bc8d607b38e75a}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Learning Vocabulary in Another Language}
+      \field{year}{2001}
+    \endentry
+    \entry{Cepeda2008}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=14837560a3bdfed38fe787078c0a9534}{%
+           family={Cepeda},
+           familyi={C\bibinitperiod},
+           given={Nicholas\bibnamedelima J.},
+           giveni={N\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+        {{hash=cde380bfd352bf4bc3e1bdab699d66b7}{%
+           family={Vul},
+           familyi={V\bibinitperiod},
+           given={Elizabeth},
+           giveni={E\bibinitperiod}}}%
+        {{hash=88eeb1c9f6fea38b213cd444bcefd8f2}{%
+           family={Rohrer},
+           familyi={R\bibinitperiod},
+           given={Doug},
+           giveni={D\bibinitperiod}}}%
+        {{hash=38026ba4ee6b102b47bf3ffb41325c8f}{%
+           family={al.},
+           familyi={a\bibinitperiod},
+           prefix={et},
+           prefixi={e\bibinitperiod}}}%
+      }
+      \strng{namehash}{181b37b84920a2ac9683c53d8e23ddc7}
+      \strng{fullhash}{788585e5098f21f5370f5440a860c372}
+      \strng{fullhashraw}{788585e5098f21f5370f5440a860c372}
+      \strng{bibnamehash}{181b37b84920a2ac9683c53d8e23ddc7}
+      \strng{authorbibnamehash}{181b37b84920a2ac9683c53d8e23ddc7}
+      \strng{authornamehash}{181b37b84920a2ac9683c53d8e23ddc7}
+      \strng{authorfullhash}{788585e5098f21f5370f5440a860c372}
+      \strng{authorfullhashraw}{788585e5098f21f5370f5440a860c372}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Psychological Science}
+      \field{number}{11}
+      \field{title}{Spacing Effects in Learning: A Temporal Ridgeline of Optimal Retention}
+      \field{volume}{19}
+      \field{year}{2008}
+      \field{pages}{1095\bibrangedash 1102}
+      \range{pages}{8}
+      \verb{doi}
+      \verb 10.1111/j.1467-9280.2008.02209.x
+      \endverb
+    \endentry
+    \entry{Karpicke2008}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=585da0827f5f2a43fc258a4f97ee1590}{%
+           family={Karpicke},
+           familyi={K\bibinitperiod},
+           given={Jeffrey\bibnamedelima D.},
+           giveni={J\bibinitperiod\bibinitdelim D\bibinitperiod}}}%
+        {{hash=003577404f9c429e11867e6f0dac09aa}{%
+           family={Roediger},
+           familyi={R\bibinitperiod},
+           given={Henry\bibnamedelima L.},
+           giveni={H\bibinitperiod\bibinitdelim L\bibinitperiod}}}%
+      }
+      \strng{namehash}{a13c949ca1b93aeb3fd49dd9e9a418df}
+      \strng{fullhash}{a13c949ca1b93aeb3fd49dd9e9a418df}
+      \strng{fullhashraw}{a13c949ca1b93aeb3fd49dd9e9a418df}
+      \strng{bibnamehash}{a13c949ca1b93aeb3fd49dd9e9a418df}
+      \strng{authorbibnamehash}{a13c949ca1b93aeb3fd49dd9e9a418df}
+      \strng{authornamehash}{a13c949ca1b93aeb3fd49dd9e9a418df}
+      \strng{authorfullhash}{a13c949ca1b93aeb3fd49dd9e9a418df}
+      \strng{authorfullhashraw}{a13c949ca1b93aeb3fd49dd9e9a418df}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Science}
+      \field{number}{5865}
+      \field{title}{The critical importance of retrieval for learning}
+      \field{volume}{319}
+      \field{year}{2008}
+      \field{pages}{966\bibrangedash 968}
+      \range{pages}{3}
+      \verb{doi}
+      \verb 10.1126/science.1152408
+      \endverb
+    \endentry
+    \entry{DuolingoBlog2024}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=45c074fa7b5b8e404ac9169be10ae777}{%
+           family={{Duolingo Team}},
+           familyi={D\bibinitperiod}}}%
+      }
+      \strng{namehash}{45c074fa7b5b8e404ac9169be10ae777}
+      \strng{fullhash}{45c074fa7b5b8e404ac9169be10ae777}
+      \strng{fullhashraw}{45c074fa7b5b8e404ac9169be10ae777}
+      \strng{bibnamehash}{45c074fa7b5b8e404ac9169be10ae777}
+      \strng{authorbibnamehash}{45c074fa7b5b8e404ac9169be10ae777}
+      \strng{authornamehash}{45c074fa7b5b8e404ac9169be10ae777}
+      \strng{authorfullhash}{45c074fa7b5b8e404ac9169be10ae777}
+      \strng{authorfullhashraw}{45c074fa7b5b8e404ac9169be10ae777}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://blog.duolingo.com/duolingo-101-how-to-learn-a-language-on-duolingo/}}
+      \field{title}{Duolingo 101: How to learn a language on Duolingo}
+      \field{year}{2024}
+    \endentry
+    \entry{QuizletLearn2024}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=b13eb1d083589ff1d8332b80258d34a4}{%
+           family={{Quizlet}},
+           familyi={Q\bibinitperiod}}}%
+      }
+      \strng{namehash}{b13eb1d083589ff1d8332b80258d34a4}
+      \strng{fullhash}{b13eb1d083589ff1d8332b80258d34a4}
+      \strng{fullhashraw}{b13eb1d083589ff1d8332b80258d34a4}
+      \strng{bibnamehash}{b13eb1d083589ff1d8332b80258d34a4}
+      \strng{authorbibnamehash}{b13eb1d083589ff1d8332b80258d34a4}
+      \strng{authornamehash}{b13eb1d083589ff1d8332b80258d34a4}
+      \strng{authorfullhash}{b13eb1d083589ff1d8332b80258d34a4}
+      \strng{authorfullhashraw}{b13eb1d083589ff1d8332b80258d34a4}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://quizlet.com/features/learn}}
+      \field{title}{Learn: Turn any flashcard set into adaptive practice}
+      \field{year}{2024}
+    \endentry
+    \entry{AnkiWeb2024}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=4e5688d8d725439331f8beb8a2eb3433}{%
+           family={{Anki}},
+           familyi={A\bibinitperiod}}}%
+      }
+      \strng{namehash}{4e5688d8d725439331f8beb8a2eb3433}
+      \strng{fullhash}{4e5688d8d725439331f8beb8a2eb3433}
+      \strng{fullhashraw}{4e5688d8d725439331f8beb8a2eb3433}
+      \strng{bibnamehash}{4e5688d8d725439331f8beb8a2eb3433}
+      \strng{authorbibnamehash}{4e5688d8d725439331f8beb8a2eb3433}
+      \strng{authornamehash}{4e5688d8d725439331f8beb8a2eb3433}
+      \strng{authorfullhash}{4e5688d8d725439331f8beb8a2eb3433}
+      \strng{authorfullhashraw}{4e5688d8d725439331f8beb8a2eb3433}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://apps.ankiweb.net/}}
+      \field{title}{Anki — powerful, intelligent flashcards}
+      \field{year}{2024}
+    \endentry
+    \entry{MemriseHelp2024}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=80620fc6e800d98aa171afbf3b1cde7a}{%
+           family={{Memrise}},
+           familyi={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{80620fc6e800d98aa171afbf3b1cde7a}
+      \strng{fullhash}{80620fc6e800d98aa171afbf3b1cde7a}
+      \strng{fullhashraw}{80620fc6e800d98aa171afbf3b1cde7a}
+      \strng{bibnamehash}{80620fc6e800d98aa171afbf3b1cde7a}
+      \strng{authorbibnamehash}{80620fc6e800d98aa171afbf3b1cde7a}
+      \strng{authornamehash}{80620fc6e800d98aa171afbf3b1cde7a}
+      \strng{authorfullhash}{80620fc6e800d98aa171afbf3b1cde7a}
+      \strng{authorfullhashraw}{80620fc6e800d98aa171afbf3b1cde7a}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://memrise.zendesk.com/hc/en-us/articles/360015889057-How-does-the-spaced-repetition-system-work}}
+      \field{title}{How does the spaced repetition system work?}
+      \field{year}{2024}
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

@@ -83,8 +83,12 @@ export default function GymMap() {
         <div className="inline-flex flex-wrap justify-center gap-3 bg-black/40 rounded-xl px-6 py-3 border border-yellow-400/30">
           {gyms.map(gym => (
             <span key={gym.id} title={gym.badgeName}
-              className={`text-xl transition-all duration-300 ${gym.status === GymStatus.Defeated ? 'scale-110' : 'grayscale opacity-30'}`}>
-              {BADGE_ICONS[gym.gymOrder] || '🛡️'}
+              className={`w-8 h-8 flex items-center justify-center text-xl transition-all duration-300 ${gym.status === GymStatus.Defeated ? 'scale-110' : 'grayscale opacity-30'}`}>
+              {gym.badgeImageUrl ? (
+                <img src={gym.badgeImageUrl} alt={gym.badgeName} className="w-full h-full object-contain pixel-art" />
+              ) : (
+                BADGE_ICONS[gym.gymOrder] || '🛡️'
+              )}
             </span>
           ))}
         </div>

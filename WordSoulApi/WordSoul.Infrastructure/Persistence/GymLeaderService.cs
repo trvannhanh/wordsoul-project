@@ -138,10 +138,7 @@ namespace WordSoul.Infrastructure.Persistence
                 .Where(uvp =>
                     uvp.UserId == userId &&
                     eligibleStates.Contains(uvp.MemoryState) &&
-                    uvp.Vocabulary!.CEFRLevel == gym.RequiredCefrLevel &&
-                    _db.SetVocabularies.Any(sv =>
-                        sv.VocabularyId == uvp.VocabularyId &&
-                        sv.VocabularySet!.Theme == gym.Theme))
+                    uvp.Vocabulary!.CEFRLevel == gym.RequiredCefrLevel)
                 .CountAsync(ct);
         }
 

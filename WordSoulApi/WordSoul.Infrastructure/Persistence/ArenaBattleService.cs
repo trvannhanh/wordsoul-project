@@ -495,10 +495,7 @@ namespace WordSoul.Infrastructure.Persistence
                 .AsNoTracking()
                 .Where(uvp => uvp.UserId == userId
                     && priorityStates.Contains(uvp.MemoryState)
-                    && uvp.Vocabulary!.CEFRLevel == gym.RequiredCefrLevel
-                    && _db.SetVocabularies.Any(sv =>
-                        sv.VocabularyId == uvp.VocabularyId
-                        && sv.VocabularySet!.Theme == gym.Theme))
+                    && uvp.Vocabulary!.CEFRLevel == gym.RequiredCefrLevel)
                 .Include(uvp => uvp.Vocabulary)
                 .OrderBy(_ => Guid.NewGuid())
                 .Take(needed)
@@ -508,15 +505,12 @@ namespace WordSoul.Infrastructure.Persistence
             if (priority.Count >= needed) return priority;
 
             var taken = priority.Select(v => v.Id).ToHashSet();
-            var fallback = await _db.SetVocabularies
+            var fallback = await _db.Vocabularies
                 .AsNoTracking()
-                .Where(sv => sv.VocabularySet!.Theme == gym.Theme
-                    && sv.Vocabulary!.CEFRLevel == gym.RequiredCefrLevel
-                    && !taken.Contains(sv.VocabularyId))
-                .Include(sv => sv.Vocabulary)
+                .Where(v => v.CEFRLevel == gym.RequiredCefrLevel
+                    && !taken.Contains(v.Id)) // Removed sv.VocabularySet query
                 .OrderBy(_ => Guid.NewGuid())
                 .Take(needed - priority.Count)
-                .Select(sv => sv.Vocabulary!)
                 .ToListAsync(ct);
 
             priority.AddRange(fallback);
