@@ -1,0 +1,97 @@
+\chapter{Cơ sở lý thuyết}
+\label{Chapter2}
+\section{Lý thuyết về học từ vựng và thuật toán lặp lại có khoảng cách}Trong lĩnh vực tiếp thu ngôn ngữ thứ hai, từ vựng không chỉ là những đơn vị ngôn ngữ rời rạc mà còn là nền tảng cốt lõi chi phối khả năng vận hành cả bốn kỹ năng nghe, nói, đọc và viết. Tuy nhiên, thách thức lớn nhất đối với người học không nằm ở việc tiếp nhận thông tin mới, mà ở khả năng duy trì thông tin đó trong trí nhớ dài hạn. Thực tế này được làm sáng tỏ bởi Hermann Ebbinghaus thông qua khái niệm "đường cong quên lãng" (forgetting curve), mô tả sự suy giảm theo hàm mũ của dấu vết trí nhớ ngay sau khi quá trình học kết thúc.
+\begin{figure}[H]
+\centering
+\includegraphics[width=13cm]{images/the-forgetting-curve.png}
+\caption{Đường cong quên lãng.}
+\label{fig_forgetting_curve}
+\end{figure}
+Quy luật tự nhiên này chỉ ra rằng nếu không có sự can thiệp kịp thời, phần lớn kiến thức sẽ biến mất chỉ sau một thời gian ngắn.
+Để đối phó với hiện tượng quên lãng, kỹ thuật lặp lại có khoảng cách (Spaced Repetition - SRS) đã ra đời như một giải pháp dựa trên bằng chứng khoa học. Thay vì nhồi nhét thông tin trong một thời gian ngắn (massed practice), SRS tập trung vào việc dàn trải các phiên ôn tập theo thời gian. Nguyên lý then chốt của kỹ thuật này là thực hiện truy hồi thông tin ngay tại thời điểm trí nhớ bắt đầu suy giảm (forgetting point). Mỗi lần truy hồi thành công tại "điểm nút" này không chỉ khôi phục trí nhớ mà còn làm chậm đáng kể tốc độ quên lãng sau đó, giúp củng cố thông tin từ trí nhớ ngắn hạn sang trí nhớ dài hạn một cách bền vững.Hiệu quả của mô hình SRS trong hệ thống này được hiện thực hóa thông qua thuật toán SM-2 (SuperMemo-2). Đây là một mô hình toán học cho phép cá nhân hóa hoàn toàn lộ trình học tập dựa trên khả năng phản hồi của từng cá nhân. Khác với các cơ chế nhắc nhở cố định, SM-2 vận hành dựa trên sự biến thiên của chỉ số độ dễ (Easiness Factor - EF) — đại lượng đại diện cho độ phức tạp của một từ vựng đối với một người học cụ thể. Thông qua điểm số chất lượng phản hồi ($q$) từ 0 đến 5, hệ thống sẽ liên tục điều chỉnh $EF$ theo công thức:$$EF' = EF + (0.1 - (5 - q) \times (0.08 + (5 - q) \times 0.02))$$Dựa trên chỉ số này, khoảng cách giữa các lần ôn tập ($I$) sẽ được mở rộng dần theo cấp số nhân. Trong đó, lần ôn tập thứ nhất ($I_1$) thường là sau 1 ngày, lần thứ hai ($I_2$) là 6 ngày, và từ lần thứ $n$ trở đi, khoảng cách được tính theo công thức $I_n = I_{n-1} \times EF$. Một đặc điểm quan trọng của thuật toán là việc duy trì ngưỡng $EF \ge 1.3$ để đảm bảo khoảng cách không bị thu hẹp quá mức, tránh gây ra sự quá tải và nhàm chán cho người học.
+Sự linh hoạt của SM-2 nằm ở cơ chế "thử thách vừa đủ": nếu người học trả lời sai ($q < 3$), thuật toán sẽ lập tức thiết lập lại chu kỳ về 0, buộc từ vựng đó phải xuất hiện thường xuyên hơn để củng cố lại dấu vết trí nhớ. Ngược lại, những từ vựng dễ sẽ được đẩy xa hơn trong lịch trình, giúp tối ưu hóa thời gian và công sức. Sự kết hợp giữa quy luật tâm lý học của Ebbinghaus và tính chính xác của thuật toán SM-2 tạo nên một động lực học tập dựa trên sự tiến bộ thực tế, đặt nền móng cho việc xây dựng thói quen ghi nhớ bền vững trong hệ thống.
+
+\section{Lý thuyết Gamification và Động lực học tập}
+
+Dù các thuật toán như SM-2 giải quyết hiệu quả bài toán tối ưu hóa nhận thức, nhưng việc duy trì một lộ trình học tập kỷ luật trong dài hạn thường vấp phải rào cản lớn về tâm lý học hành vi. Gamification, hay việc vận dụng các thành phần và cơ chế của trò chơi vào bối cảnh phi trò chơi, đóng vai trò là chất xúc tác để "nội tại hóa" những nhiệm vụ sư phạm vốn dĩ khô khan. Thay vì chỉ dựa vào ý chí tự thân, hệ thống tận dụng các cấu trúc tương tác để kích thích hệ thống phần thưởng trong não bộ, từ đó nâng cao mức độ tham gia tự nguyện của người dùng. Để đảm bảo tính bền vững và tránh hiện tượng "burnout" (kiệt sức) do áp lực thành tích, nền tảng lý luận của hệ thống được xây dựng dựa trên Thuyết Tự Quyết (Self-Determination Theory - SDT) của Deci và Ryan.
+
+Theo SDT, động lực con người không phải là một khối thống nhất mà là một dải phổ từ động lực ngoại tại đến động lực nội tại. Sự chuyển dịch này chỉ xảy ra khi ba nhu cầu tâm lý cơ bản được thỏa mãn đồng thời. Trước hết, nhu cầu về Năng lực (Competence) được hiện thực hóa thông qua các vòng phản hồi tức thì. Trong hệ thống, điểm kinh nghiệm (XP) và cấp độ (Level) không đơn thuần là những chỉ số định lượng, mà chúng đóng vai trò là bằng chứng trực quan cho sự tăng trưởng kiến thức. Khi người học nhận thấy sự tịnh tiến rõ rệt của bản thân qua từng phiên học, cảm giác làm chủ (mastery) sẽ được củng cố, thúc đẩy họ tiếp tục đương đầu với những thử thách khó hơn.
+
+Bên cạnh đó, nhu cầu về Tự chủ (Autonomy) được đề cao thông qua việc trao quyền kiểm soát lộ trình cho người dùng. Khác với các phương pháp giáo trình truyền thống mang tính áp đặt, việc cho phép người học tự xây dựng bộ từ vựng cá nhân và lựa chọn linh thú đồng hành giúp biến quá trình học từ một nhiệm vụ bắt buộc thành một hành động tự nguyện đầy trách nhiệm. Sự gắn kết này càng trở nên sâu sắc hơn nhờ nhu cầu về Gắn kết (Relatedness), nơi các bảng xếp hạng công khai tạo ra một bối cảnh xã hội có tính cạnh tranh lành mạnh. Việc đặt sự tiến bộ cá nhân vào tương quan với cộng đồng không chỉ tạo ra động lực thúc đẩy mà còn mang lại cảm giác thuộc về một nhóm những người cùng chí hướng.
+
+Điểm khác biệt cốt lõi trong mô hình gamification của hệ thống chính là việc lồng ghép hệ thống nuôi dưỡng thú ảo (Pet System) như một công cụ gắn kết cảm xúc. Thay vì sử dụng cơ chế "streak" (chuỗi ngày học liên tiếp) vốn dễ tạo ra áp lực tâm lý tiêu cực khi bị gián đoạn, hệ thống tập trung vào sự phát triển tích lũy của sinh vật ảo. Khi thú cưng sở hữu khả năng tiến hóa dựa trên nỗ lực của chủ nhân, chúng trở thành hiện thân cho thành quả lao động trí tuệ của người học. Sự chuyển dịch từ việc học "để không mất chuỗi" sang học "để nuôi dưỡng một sự sống ảo" là chìa khóa để duy trì thói quen bền vững, giúp người dùng tìm thấy ý nghĩa và niềm vui tự thân trong việc chinh phục ngôn ngữ mới.
+\section{Các công trình và ứng dụng liên quan}
+Những nguyên tắc học tập như lặp lại có khoảng cách (SRS) và thực hành truy hồi đã được nhiều ứng dụng học ngoại ngữ khai thác thành công, tạo ra những sản phẩm được hàng triệu người sử dụng. Tuy nhiên, qua phân tích sâu các ứng dụng phổ biến, vẫn tồn tại những khoảng trống nghiên cứu và thực tiễn đáng kể.
+
+Một ví dụ tiêu biểu là \textbf{Duolingo}, ứng dụng ngôn ngữ phổ biến nhất hiện nay. Duolingo kết hợp hệ thống điểm kinh nghiệm (XP), streak và bảng xếp hạng để khuyến khích người học quay lại hằng ngày. Cách tiếp cận này giúp duy trì thói quen học tập rất tốt, đặc biệt đối với những người mới bắt đầu. Tuy nhiên, từ góc độ tâm lý học hành vi, việc quá phụ thuộc vào streak tạo ra một loại động lực ngoại tại (external motivation) mang tính áp lực. Khi streak bị gián đoạn, người dùng dễ rơi vào trạng thái "burnout" và có xu hướng bỏ hẳn thay vì quay lại học \cite{DuolingoBlog2024}. Đây chính là \textbf{khoảng trống về sự thiếu hụt cơ chế gắn kết cảm xúc bền vững}: hệ thống thiên về thúc đẩy bằng con số hơn là xây dựng mối liên kết nội tại với tiến trình phát triển của người học.
+
+Một hướng tiếp cận khác được thể hiện rõ ở \textbf{Quizlet}, nơi người học chủ động tạo ra các bộ flashcard cá nhân. Ưu điểm của Quizlet là tính cá nhân hóa cao, cho phép người học tập trung vào đúng chủ đề họ quan tâm \cite{QuizletLearn2024}. Tuy nhiên, Quizlet chủ yếu đóng vai trò như một công cụ hỗ trợ học tập thuần túy, thiếu vắng các yếu tố Gamification chuyên sâu. Điều này dẫn đến \textbf{sự tách biệt giữa động lực nội tại và ngoại tại}: người học cần có tính tự giác cực cao để duy trì thói quen vì hệ thống không thỏa mãn đồng bộ ba nhu cầu tâm lý theo thuyết SDT (Năng lực, Tự chủ, và Sự gắn kết).
+
+Các ứng dụng như \textbf{Anki} và \textbf{Memrise} lại đi sâu vào cơ chế SRS tự động, tối ưu khoảng cách ôn tập dựa trên hiệu suất ghi nhớ \cite{AnkiWeb2024, MemriseHelp2024}. Đây là các công cụ cực kỳ hiệu quả về mặt khoa học nhận thức, nhưng lại tồn tại một rào cản lớn về trải nghiệm người dùng (UX). Giao diện thường khô khan, thiếu yếu tố xã hội và hoàn toàn không có tính "truyện kể" (narrative). Người dùng phổ thông thường cảm thấy việc học với Anki giống như một nhiệm vụ hành chính hơn là một hành trình khám phá, dẫn đến việc thiếu \textbf{mối liên kết cảm xúc (emotional connection)} với dữ liệu mình đang học.
+
+Từ việc phân tích trên, có thể tổng kết \textbf{ba khoảng trống nghiên cứu (Research Gaps)} chính mà các hệ thống hiện tại chưa giải quyết triệt để:
+
+\begin{itemize}
+\item \textbf{Thiếu cơ chế gắn kết cảm xúc lâu dài:} Các hệ thống hiện có dựa quá nhiều vào streak (áp lực ngắn hạn) thay vì các cơ chế nuôi dưỡng/chăm sóc (như sinh vật ảo) gắn liền với tiến trình học để tạo sự gắn bó tự nhiên.
+\item \textbf{Sự mất cân bằng trong Gamification:} Phần lớn ứng dụng chỉ tập trung vào một vài yếu tố bề nổi (XP, Leaderboard) mà chưa triển khai hài hòa cả ba yếu tố của Thuyết Tự Quyết (SDT) để chuyển hóa động lực từ bên ngoài vào bên trong.
+\item \textbf{Sự thiếu hụt mô hình kết hợp tối ưu SRS + Gamification + Emotional Engagement:} Chưa có hệ thống nào kế thừa được thuật toán SRS mạnh mẽ của Anki, tính cá nhân hóa của Quizlet, và sự lôi cuốn của Duolingo nhưng lại loại bỏ được áp lực tiêu cực từ streak và sự khô khan trong giao diện.
+\end{itemize}
+
+Đây chính là điểm cốt lõi mà hệ thống hướng tới: xây dựng một "hành trình" có mục tiêu rõ ràng, nơi người học quay lại mỗi ngày không chỉ để hoàn thành bài tập mà còn để chăm sóc và nâng cấp thú cưng của mình. Việc biến sự tiến bộ trong kiến thức thành sự tiến hóa của sinh vật ảo giúp cụ thể hóa nhu cầu về năng lực (Competence) và tạo ra sự gắn bó lâu dài, khắc phục các hạn chế về động lực mà những ứng dụng đi trước gặp phải.
+
+\section{Công nghệ sử dụng trong hệ thống}
+
+Việc lựa chọn nền tảng công nghệ cho hệ thống được thực hiện theo tiêu chí thực tiễn: đáp ứng hiệu năng và độ trễ thấp cho thao tác người dùng nhiều tương tác, hỗ trợ mô hình phát triển an toàn, dễ kiểm thử và dễ bảo trì, có khả năng mở rộng (scale) khi cần phục vụ số lượng lớn người dùng, có hệ sinh thái công cụ và tài liệu phong phú để giảm rủi ro triển khai. Trên cơ sở đó, bộ công nghệ trọng tâm gồm \textbf{ASP.NET Core} (backend) + \textbf{Entity Framework Core} (ORM), \textbf{ReactJS} (frontend) kết hợp \textbf{Vite} và \textbf{TypeScript}, và \textbf{SQL Server} cho lưu trữ quan hệ.
+
+\subsection{ASP.NET Core}
+Lựa chọn ASP.NET Core xuất phát từ yêu cầu kết hợp hiệu năng thực tế, môi trường vận hành tin cậy và năng suất phát triển. So với Node.js + Express, ASP.NET Core cung cấp mô hình lập trình kiểu tĩnh (C\#) và công cụ IDE mạnh (Visual Studio/VS Code) giúp phát hiện lỗi sớm và refactor an toàn; so với Django, .NET dễ tối ưu để đạt hiệu năng cực thấp cho các endpoint API có tải cao; so với Spring Boot, ASP.NET Core thường nhẹ hơn ở cấu hình khởi tạo cho hệ thống tầm trung và có cú pháp ngắn gọn hơn khi viết Web API hiện đại. Vì cần xử lý nhiều yêu cầu API (quiz, lưu tiến trình, tính toán SRS, push notification, real-time challenge, ...), một nền tảng có hiệu năng cao kèm khả năng phát triển nhanh là ưu tiên.
+
+ASP.NET Core là kết quả tái thiết lại toàn bộ kiến trúc ASP.NET truyền thống, được phát hành chính thức cùng .NET Core từ giữa thập niên 2010 và ổn định từ 2016 trở về sau; mục tiêu chính là đa nền tảng (Windows/Linux/macOS), mô-đun hóa, và tối ưu cho triển khai cloud/container. Từ phiên bản ban đầu đến các bản .NET 6/7/8, đội ngũ .NET liên tục gia tăng tối ưu hiệu năng, bổ sung Minimal APIs, cải tiến GC và JIT, cùng các tiện ích cho microservices, observability và bảo mật.
+
+Để hiểu vì sao ASP.NET Core phù hợp với hệ thống, cần làm rõ một số thành tố kỹ thuật then chốt:
+\begin{itemize}
+    \item \textbf{Kestrel và mô hình hosting}: Kestrel là web server gốc của ASP.NET Core, được thiết kế cho hiệu năng cao, hỗ trợ HTTP/1.1, HTTP/2, HTTP/3 và WebSockets; Kestrel có thể chạy trực tiếp hoặc kết hợp với reverse proxy (IIS/nginx) trong môi trường production, cho phép tối ưu theo yêu cầu tải và bảo mật. Nhờ Kestrel, các endpoint API có thể đạt throughput và latency rất tốt — điều quan trọng cho các API quiz/point updates cần phản hồi tức thì.
+    \item \textbf{Middleware pipeline}: ASP.NET Core sử dụng pipeline middleware để xử lý luồng request–response theo chuỗi các thành phần (logging, authentication, authorization, validation, caching, compression). Kiến trúc này giúp tách rõ trách nhiệm, dễ chèn các logic xuyên suốt (ví dụ: rate limiting, global error handling) và tối ưu hoá từng lớp xử lý — rất hữu dụng cho việc áp dụng chính sách caching/điều phối cho các endpoint SRS hay content tĩnh. 
+    \item \textbf{Dependency Injection (DI) tích hợp}: DI được tích hợp sẵn, hỗ trợ các scope (singleton, scoped, transient), giúp cấu trúc Controller–Service–Repository rõ ràng. Điều này làm tăng testability (unit/integration tests) và giảm chi phí bảo trì khi mở rộng các tính năng như quy luật phần thưởng, logic tiến hóa thú cưng, hay đặt thời gian ôn tập cho SRS.
+    \item \textbf{Asynchronous programming và I/O không đồng bộ}: C\# / .NET có async/await và một runtime với thread pool, I/O không đồng bộ tốt — phù hợp cho xử lý nhiều request đồng thời (high concurrency) mà không phải thêm nhiều thread, tối ưu tài nguyên máy chủ khi phục vụ nhiều người dùng truy cập cùng lúc.
+    \item \textbf{Bảo mật và Observability}: Hệ sinh thái ASP.NET Core cung cấp middleware cho authentication (JWT, cookie), ASP.NET Core Identity, Data Protection API, health checks và logging tích hợp, thuận lợi để hiện thực hoá chính sách bảo mật và giám sát sản phẩm trong môi trường production.
+    \item \textbf{Tích hợp EF Core và quản lý schema}: Entity Framework Core hỗ trợ code-first, migrations, change tracking, compiled queries và raw SQL khi cần tối ưu, giúp quản lý schema tiến hoá theo phát triển tính năng. EF Core cân bằng được năng suất lập trình với khả năng tối ưu query khi cần.
+\end{itemize}
+
+Các đặc tính trên trực tiếp giải quyết yêu cầu nghiệp vụ của đề tài: API latency thấp cho trải nghiệm quiz mượt; background services cho lịch SRS và push notification; DI + unit tests đảm bảo logic phần thưởng dễ kiểm thử; EF Core giúp quản lý tiến trình học và migration khi thay đổi schema.
+
+\subsection{ReactJS}
+
+ReactJS được lựa chọn làm nền tảng frontend nhờ khả năng tạo giao diện người dùng tương tác mượt mà, cộng đồng phát triển lớn và hệ sinh thái phong phú. So với Angular (có đường cong học tập cao, nặng nề cho dự án vừa) và Vue (thân thiện nhưng hệ sinh thái nhỏ hơn), ReactJS đạt sự cân bằng giữa tính linh hoạt, hiệu năng và khả năng mở rộng. Điều này đặc biệt quan trọng với hệ thống, nơi UI cần liên tục cập nhật tiến trình học, điểm thưởng và các hiệu ứng thú cưng theo thời gian thực.
+
+ReactJS được Meta (Facebook) giới thiệu năm 2013 với mục tiêu giải quyết vấn đề hiệu năng khi cập nhật giao diện động. Nó mang đến khái niệm Virtual DOM và component-based architecture, thay đổi cách xây dựng ứng dụng web so với phương pháp truyền thống. Qua nhiều phiên bản, ReactJS bổ sung Hooks, Concurrent Mode, Suspense, giúp quản lý trạng thái và side-effect đơn giản, hiệu quả hơn.  
+
+Để tối ưu trải nghiệm phát triển, hệ thống kết hợp ReactJS với Vite – công cụ build thế hệ mới hỗ trợ khởi động dự án cực nhanh, HMR (Hot Module Replacement) mượt mà – và TypeScript để bổ sung kiểm tra kiểu tĩnh, giảm lỗi runtime và cải thiện khả năng bảo trì trong dự án dài hạn. Ngoài ra, Tailwind CSS được sử dụng để tăng tốc độ thiết kế và triển khai giao diện, nhờ cú pháp tiện lợi theo dạng utility-first và khả năng tuỳ biến cao.
+
+\begin{itemize}
+    \item \textbf{Component-based architecture}: React khuyến khích tách UI thành components có trạng thái và props; điều này giúp xây dựng library UI (đều cho màn học, pet UI, progress bar) dễ tái sử dụng, test và bảo trì.
+    \item \textbf{Virtual DOM và reconciliation}: Virtual DOM cho phép tính toán diff giữa state cũ và mới, từ đó cập nhật DOM thực tế chỉ ở những phần cần thiết — giảm chi phí repaint và tăng hiệu năng trên các màn có animation/interactive-heavy.
+    \item \textbf{Hooks}: Hooks (useState, useEffect, useReducer, custom hooks) cung cấp API đơn giản để quản lý trạng thái và side-effect (ví dụ đồng bộ hóa progress với server, debounce input khi trả lời quiz).
+    \item \textbf{TypeScript}: TypeScript thêm kiểm tra kiểu tĩnh, interface, generics giúp phát hiện lỗi sớm, cải thiện autocompletion, refactor an toàn — đặc biệt hữu ích khi codebase phức tạp có nhiều state, kiểu response API và mô hình dữ liệu học.
+    \item \textbf{Vite}: Vite tạo môi trường phát triển gần như tức thời (fast cold start) và HMR rất mượt, rút ngắn vòng lặp develop–test, hỗ trợ tăng tốc độ phát triển tính năng UI (thú cưng, animation, transition). Vite cũng hỗ trợ build production (Rollup) để tối ưu tree-shaking và bundle size.
+    \item \textbf{Tailwind CSS}: Tailwind CSS áp dụng triết lý utility-first, cung cấp sẵn nhiều lớp tiện ích cho layout, spacing, typography, color, animation; cho phép xây dựng UI thống nhất, hiện đại mà không cần viết nhiều CSS thủ công. Tailwind hỗ trợ tốt việc responsive và dark mode, đồng thời dễ dàng tuỳ chỉnh theme để đồng bộ với phong cách thiết kế riêng của hệ thống.
+\end{itemize}
+
+Việc sử dụng ReactJS cùng Vite, TypeScript và Tailwind CSS giúp hệ thống xây dựng giao diện hiện đại, tốc độ phản hồi nhanh, linh hoạt trong thiết kế và dễ mở rộng trong tương lai khi bổ sung thêm mini-game, dashboard nâng cao hay các chế độ học mới.
+
+\subsection{SQL Server}
+
+SQL Server được lựa chọn làm hệ quản trị cơ sở dữ liệu quan hệ vì khả năng tích hợp liền mạch với hệ sinh thái .NET, hỗ trợ ACID transaction và cung cấp công cụ quản trị trực quan thông qua SQL Server Management Studio. Đây là giải pháp ổn định, được nhiều doanh nghiệp sử dụng, đảm bảo tính toàn vẹn dữ liệu – yếu tố đặc biệt quan trọng với hệ thống học tập, nơi dữ liệu tiến trình và thành tích người học cần được bảo toàn chính xác.
+
+Từ phiên bản đầu tiên năm 1989 đến nay, SQL Server đã phát triển với nhiều cải tiến như columnstore index, Always On Availability Groups, tích hợp Machine Learning Services, và hỗ trợ triển khai trên đám mây Azure. So với MySQL (phổ biến nhưng hạn chế về tính năng nâng cao) và PostgreSQL (mạnh về chuẩn SQL nhưng yêu cầu cấu hình thủ công nhiều hơn), SQL Server mang đến sự cân bằng giữa hiệu năng, khả năng quản trị và tính tiện lợi khi triển khai trong môi trường sản xuất.
+
+\subsection{Đánh giá chiến lược}
+
+Kết luận, tổ hợp \textbf{ASP.NET Core + EF Core} (backend) và \textbf{React + Vite + TypeScript} (frontend) với \textbf{SQL Server} ở tầng dữ liệu là một lựa chọn cân bằng giữa hiệu suất hệ thống, năng suất phát triển và khả năng vận hành/ mở rộng. Các đặc tính kỹ thuật của ASP.NET Core (Kestrel, middleware, DI, async model, background services) trực tiếp giải quyết những yêu cầu nghiệp vụ của hệ thống; trong khi tổ hợp frontend đảm bảo trải nghiệm mượt mà, dễ mở rộng UI và tốc độ phát triển. Việc chọn stack này không chỉ phục vụ mục tiêu đồ án mà còn thuận lợi cho việc mở rộng thành sản phẩm thực tế hoặc đưa vào môi trường production khi cần.
+
+
+
+
+
+
+

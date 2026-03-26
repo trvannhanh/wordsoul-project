@@ -1,0 +1,48 @@
+\chapter{Giới thiệu}
+\label{Chapter1}
+
+\section{Lý do chọn đề tài}
+Trong thời kỳ hội nhập quốc tế, tiếng Anh trở thành một kỹ năng thiết yếu cho học tập, công việc và giao tiếp xuyên biên giới. Trong số các năng lực ngoại ngữ, vốn từ vựng đóng vai trò nền tảng và có mối quan hệ chặt chẽ với bốn kỹ năng nghe, nói, đọc, viết; do đó đầu tư vào việc học và quản lý từ vựng có tác động trực tiếp tới khả năng sử dụng ngôn ngữ \cite{Nation2001}.
+
+Tuy nhiên, thực tiễn học tập cho thấy nhiều người học gặp khó khăn trong việc ghi nhớ từ vựng lâu dài và duy trì thói quen học đều đặn. Các nghiên cứu tâm lý học đã chứng minh rằng kỹ thuật lặp lại có khoảng cách (spaced repetition) và thực hành truy hồi (retrieval practice) có hiệu quả rõ rệt trong việc củng cố trí nhớ dài hạn \cite{Cepeda2008, Karpicke2008}. Mặc dù các ứng dụng hiện nay như Anki hay Duolingo đã khai thác các nguyên lý này, nhưng vẫn tồn tại sự tách biệt giữa thuật toán ghi nhớ khô khan và cơ chế gắn kết cảm xúc lâu dài. Động lực ngoại tại (như chuỗi ngày học - streak) thường gây áp lực tâm lý thay vì tạo ra sự hứng thú nội tại thông qua sự phát triển cá nhân.
+
+Bên cạnh đó, việc xây dựng một hệ thống học tập hiện đại đòi hỏi một nền tảng kỹ thuật vững chắc, có khả năng mở rộng và bảo trì cao. Từ những thực trạng trên, đề tài \textbf{“Xây dựng hệ thống học từ vựng tiếng Anh kết hợp gamification”} được lựa chọn nhằm mục tiêu: (1) Giải quyết bài toán ghi nhớ bằng thuật toán khoa học; (2) Duy trì động lực bền vững thông qua hệ thống thú ảo gắn liền với tiến trình học; và (3) Hiện thực hóa giải pháp trên một kiến trúc phần mềm tiên tiến (Clean Architecture) sử dụng hệ sinh thái .NET 8 và ReactJS.
+
+\section{Mục tiêu đề tài}
+Mục tiêu chính của đề tài là phát triển một hệ thống học từ vựng trực tuyến giúp người học ghi nhớ hiệu quả hơn và duy trì thói quen học lâu dài. Hệ thống áp dụng thuật toán SuperMemo-2 (SM-2) để tối ưu hóa lộ trình ôn tập cá nhân hóa. Đồng thời, các yếu tố Gamification chuyên sâu như hệ thống tiến hóa thú ảo (Pet System) được tích hợp để biến quá trình học thành một hành trình chinh phục, giúp thỏa mãn các nhu cầu tâm lý về năng lực và sự tự chủ của người học.
+
+
+
+\section{Phạm vi đề tài}
+Đề tài tập trung vào việc xây dựng một ứng dụng web (Web Application) đa nền tảng hướng tới người học tiếng Anh ở trình độ cơ bản đến trung cấp.
+\begin{itemize}
+\item \textbf{Về chức năng:} Tập trung vào quản lý bộ từ cá nhân, thực hiện phiên học với 4 dạng tương tác (Flashcard, Fill-in-blank, Multiple Choice, Listening) và hệ thống quản lý thú ảo.
+\item \textbf{Về kỹ thuật:} Thiết kế và hiện thực hệ thống theo kiến trúc \textbf{Onion Architecture} (Clean Architecture), đảm bảo tính tách biệt giữa logic nghiệp vụ và hạ tầng công nghệ.
+\item \textbf{Giới hạn:} Đề tài không đi sâu vào việc giảng dạy ngữ pháp chuyên sâu hay giao tiếp thời gian thực, mà tập trung tối ưu hóa quy trình học và quản lý từ vựng.
+\end{itemize}
+
+\section{Phương pháp tiếp cận}
+Đề tài được thực hiện dựa trên quy trình xây dựng phần mềm chuyên nghiệp kết hợp nghiên cứu thực nghiệm:
+
+\begin{enumerate}
+\item \textbf{Nghiên cứu lý thuyết:} Tổng hợp tài liệu về đường cong quên lãng, thuật toán SM-2 và Thuyết Tự Quyết (SDT) để làm cơ sở thiết kế logic hệ thống.
+\item \textbf{Quy trình phát triển:} Áp dụng mô hình \textbf{Agile/Scrum} rút gọn để phát triển hệ thống theo từng giai đoạn, cho phép kiểm thử và tinh chỉnh liên tục các tính năng Gamification.
+\item \textbf{Thiết kế kiến trúc:} Sử dụng ngôn ngữ UML để mô hình hóa hệ thống. Backend được tổ chức theo mô hình \textbf{Onion Architecture} với các Design Patterns tiêu biểu như Repository, Unit of Work và DTO để đảm bảo tính dễ kiểm thử (Testability).
+\item \textbf{Hiện thực hóa (Tech Stack):}
+\begin{itemize}
+\item \textbf{Backend:} .NET 8, ASP.NET Core Web API, Entity Framework Core, SQL Server.
+\item \textbf{Frontend:} ReactJS, TypeScript, Vite, Tailwind CSS.
+\end{itemize}
+\item \textbf{Kiểm thử và Đánh giá:} Thực hiện Unit Test cho logic nghiệp vụ và kiểm thử chức năng trên các kịch bản thực tế để đối chiếu với các giả thuyết nghiên cứu ban đầu.
+\end{enumerate}
+
+\section{Bố cục của khóa luận}
+Khóa luận được cấu trúc thành bốn chương chính:
+
+\textbf{Chương 1: Giới thiệu} - Trình bày bối cảnh, lý do chọn đề tài, mục tiêu, giả thuyết và phương pháp tiếp cận.
+
+\textbf{Chương 2: Cơ sở lý thuyết và công trình liên quan} - Phân tích các nguyên lý khoa học về trí nhớ, tâm lý học hành vi và đánh giá các ứng dụng hiện có để chỉ ra khoảng trống nghiên cứu.
+
+\textbf{Chương 3: Phân tích, thiết kế và hiện thực hệ thống} - Đây là chương trọng tâm, mô tả chi tiết kiến trúc Onion, thiết kế UML, mô hình dữ liệu và trình bày kết quả triển khai thực tế (Demo) cùng các đánh giá kỹ thuật.
+
+\textbf{Chương 4: Kết luận và hướng phát triển} - Tổng kết kết quả đạt được đối chiếu với mục tiêu đề ra, tự đánh giá ưu khuyết điểm và đề xuất hướng mở rộng.

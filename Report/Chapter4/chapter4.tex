@@ -1,0 +1,48 @@
+\chapter{Kết luận và Hướng phát triển}
+\label{Chapter4}
+
+\section{Kết luận}
+Đề tài đã được triển khai với mục tiêu kết hợp các nguyên tắc khoa học về ghi nhớ (spaced repetition, retrieval practice) và yếu tố gamification (XP, phần thưởng, thú cưng) nhằm nâng cao hiệu quả học tập và duy trì động lực lâu dài cho người học.  
+
+Kết quả đạt được cho thấy hệ thống đã hiện thực thành công khoảng 80–90\% các chức năng đã đặt ra trong phạm vi đề tài, bao gồm:
+\begin{itemize}
+    \item Quản lý người dùng (đăng ký, đăng nhập, cập nhật thông tin cá nhân).  
+    \item Tạo và quản lý bộ từ vựng cá nhân, tìm kiếm và chọn từ để thêm vào bộ.  
+    \item Thực hiện các phiên học và ôn tập theo cơ chế \textit{spaced repetition} và \textit{active recall}, cung cấp phản hồi tức thì, cập nhật tiến trình học tự động.  
+    \item Tích hợp hệ thống gamification với điểm XP, AP, phần thưởng và thú cưng.  
+    \item Dashboard trực quan cho phép người dùng theo dõi tiến trình học, số lượng từ cần ôn tập, cấp độ cá nhân và tình trạng sưu tập thú cưng.  
+\end{itemize}
+
+Bên cạnh các chức năng cốt lõi, hệ thống còn phát triển thêm nhiều chức năng hỗ trợ giúp nâng cao trải nghiệm người dùng, chẳng hạn như:
+\begin{itemize}
+    \item Tìm kiếm và lọc bộ từ vựng, từ vựng và thú cưng theo nhiều tiêu chí (chủ đề, độ khó, độ hiếm).  
+    \item Bảng xếp hạng theo điểm kinh nghiệm (XP) để tạo động lực cạnh tranh lành mạnh giữa các người học.  
+    \item Quản lý thông báo nhắc nhở lịch ôn tập và thông báo nhận thưởng.  
+\end{itemize}
+
+Về mặt kỹ thuật, hệ thống được thiết kế theo kiến trúc ba lớp, sử dụng ASP.NET Core Web API cho backend, React + TypeScript cho frontend và SQL Server làm cơ sở dữ liệu. Hệ thống đã được kiểm thử nội bộ, hoạt động ổn định và chứng minh được tính khả thi của mô hình đề xuất.  
+
+Đóng góp chính của đề tài là áp dụng các nguyên tắc học tập dựa trên bằng chứng khoa học vào một sản phẩm phần mềm cụ thể, đồng thời tích hợp gamification một cách hợp lý để duy trì hứng thú học tập mà không tạo áp lực quá mức. Đây là một cách tiếp cận vừa mang tính học thuật vừa có tính ứng dụng thực tiễn, mở ra khả năng triển khai trong môi trường giáo dục trực tuyến.
+\clearpage
+\section{Hạn chế}
+Do giới hạn thời gian và nguồn lực, hệ thống vẫn tồn tại một số hạn chế:
+\begin{itemize}
+    \item Về tính năng: Chưa triển khai được ý tưởng \textit{Pet Challenge} – cơ chế thách đấu thú cưng giữa các người dùng, nơi sát thương phụ thuộc vào tốc độ và độ chính xác trả lời.  
+    \item Về giao diện: Một số màn hình vẫn đang ở mức thử nghiệm, chưa tối ưu UX/UI và chưa hỗ trợ tốt cho thiết bị di động.  
+    \item Về học thuật: Hệ thống mới tập trung vào bài tập nhận biết (quiz, flashcard, nghe) mà chưa có tính năng luyện phát âm hoặc đánh giá \textit{speaking}.  
+    \item Về đánh giá hiệu quả: Chưa có khảo sát thực nghiệm với người dùng thật để đo lường mức cải thiện khả năng ghi nhớ.  
+\end{itemize}
+
+\section{Hướng phát triển}
+
+Để hoàn thiện và mở rộng hệ thống trong tương lai, có thể triển khai các hướng sau:
+\begin{itemize}
+    \item Hoàn thiện giao diện người dùng: Tối ưu trải nghiệm đa thiết bị, cải thiện hiệu ứng trực quan và hỗ trợ tùy chỉnh giao diện.  
+    \item Phát triển tính năng Pet Challenge: Xây dựng hệ thống chỉ số (HP, ATK, SPD) cho thú cưng, cơ chế chiến đấu dựa trên độ chính xác và tốc độ trả lời câu hỏi để tăng tính cạnh tranh.  
+    \item Bổ sung dạng bài tập nâng cao: Tích hợp API nhận diện giọng nói để chấm điểm phát âm, hỗ trợ luyện speaking.  
+    \item Mở rộng tính năng cộng đồng: Kết bạn, nhóm học chung, bảng xếp hạng nhiều tiêu chí (XP, streak, số lần thách đấu thành công).  
+    \item Đánh giá thực nghiệm: Tiến hành thử nghiệm với người dùng thật, thu thập phản hồi để tinh chỉnh thuật toán spaced repetition và gamification.  
+    \item Triển khai thực tế: Đưa hệ thống lên môi trường sản xuất, phục vụ nhiều người dùng đồng thời với khả năng mở rộng và bảo mật tốt.  
+\end{itemize}
+
+Các định hướng trên không chỉ nhằm khắc phục các hạn chế hiện tại mà còn hướng đến việc biến hệ thống thành một nền tảng học từ vựng hiện đại, bền vững và thu hút người học lâu dài.

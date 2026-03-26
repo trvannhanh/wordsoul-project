@@ -1,0 +1,15 @@
+[main]
+.\main.tex
+
+[texfiles]
+.\Chapter1\chapter1.tex
+.\Chapter2\chapter2.tex
+.\Chapter3\chapter3.tex
+.\Title\title.tex
+.\References\references.bib
+.\Appendix\appendix1.tex
+.\Appendix\appendix2.tex
+.\Appendix\publish.tex
+.\Appendix\reassurances.tex
+.\Appendix\thanks.tex
+

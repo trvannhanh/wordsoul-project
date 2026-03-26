@@ -1,0 +1,753 @@
+\chapter{Hệ thống hỗ trợ học từ vựng tiếng Anh kết hợp Gamification}
+\label{Chapter3}
+
+Chương này trình bày quá trình phân tích và thiết kế hệ thống — một ứng dụng học từ vựng trực tuyến được phát triển dựa trên các nguyên lý học tập và gamification đã trình bày ở Chương~\ref{Chapter2}. Mục tiêu của chương là xác định một cách rõ ràng các yêu cầu chức năng và phi chức năng, từ đó xây dựng mô hình kiến trúc, luồng xử lý và cơ sở dữ liệu.
+
+Phân tích yêu cầu đóng vai trò trung gian quan trọng, chuyển hoá những khái niệm lý thuyết như \textit{spaced repetition}, \textit{retrieval practice} và các yếu tố trò chơi hoá thành tập hợp tính năng cụ thể, có thể triển khai được về mặt kỹ thuật. Trên cơ sở đó, phần thiết kế hệ thống sẽ tiếp tục khái quát kiến trúc tổng thể, trình bày các mô hình UML (Use Case, Activity, Sequence, Class, State), thiết kế cơ sở dữ liệu quan hệ và thiết kế giao diện đóng vai trò như “bản thiết kế” (blueprint) cho toàn bộ quá trình phát triển phần mềm.
+
+\section{Phân tích yêu cầu}
+
+\subsection{Yêu cầu chức năng}
+Hệ thống được thiết kế để phục vụ hai nhóm đối tượng chính: \textbf{người học} và \textbf{quản trị viên}, với các chức năng đáp ứng đầy đủ nhu cầu học tập, theo dõi tiến trình và quản lý hệ thống.
+
+\textbf{Đối với người học:}
+\begin{itemize}
+    \item \textbf{Quản lý tài khoản:} Đăng ký, đăng nhập, cập nhật thông tin cá nhân và bảo vệ tài khoản.
+    \item \textbf{Quản lý nội dung học:} Tự tạo, chỉnh sửa và xoá bộ từ vựng cá nhân; phân nhóm từ để học hoặc chia sẻ với cộng đồng.
+    \item \textbf{Học tập và ôn luyện:} Lựa chọn bộ từ (cá nhân hoặc hệ thống cung cấp), tham gia các phiên học dưới dạng quiz đa dạng, và ôn tập dựa trên lịch nhắc tự động được tối ưu hoá theo nguyên tắc SRS.
+    \item \textbf{Gamification và động lực học tập:} Nhận điểm thưởng, mở khoá phần thưởng, nâng cấp thú ảo, duy trì streak hằng ngày và theo dõi tiến trình học tập trực quan.
+    \item \textbf{Thông báo và nhắc nhở:} Nhận thông báo về phiên ôn tập hoặc phần thưởng mới để duy trì thói quen học đều đặn.
+\end{itemize}
+
+\textbf{Đối với quản trị viên:}
+\begin{itemize}
+    \item \textbf{Quản lý người dùng:} Theo dõi danh sách người dùng, điều chỉnh quyền truy cập, khoá hoặc mở tài khoản khi cần thiết.
+    \item \textbf{Quản lý kho nội dung học:} Duy trì bộ từ chuẩn của hệ thống, thêm hoặc chỉnh sửa dữ liệu từ vựng.
+    \item \textbf{Quản lý cơ chế thưởng:} Thêm mới hoặc tinh chỉnh hệ thống phần thưởng, thú ảo để tối ưu trải nghiệm gamification.
+    \item \textbf{Báo cáo và phân tích:} Trích xuất dữ liệu thống kê phục vụ đánh giá hiệu quả học tập và tối ưu vận hành hệ thống.
+\end{itemize}
+
+\subsection{Yêu cầu phi chức năng}
+Các yêu cầu phi chức năng được xây dựng nhằm bảo đảm hệ thống vận hành ổn định, bảo mật và mang lại trải nghiệm người dùng tốt:
+
+\begin{itemize}
+    \item \textbf{Hiệu năng:} Thời gian phản hồi của mỗi thao tác dưới 3 giây để duy trì trải nghiệm mượt mà, đặc biệt đối với các quiz thời gian thực.
+    \item \textbf{Bảo mật:} Mật khẩu được mã hoá an toàn; API bảo vệ bằng cơ chế xác thực JWT; dữ liệu người dùng tuân thủ nguyên tắc bảo mật và quyền riêng tư.
+    \item \textbf{Khả năng mở rộng:} Hệ thống được thiết kế module hoá, cho phép bổ sung bộ từ mới, loại quiz mới hoặc phần thưởng mà không gây gián đoạn dịch vụ.
+    \item \textbf{Khả năng sử dụng:} Giao diện thân thiện, trực quan, hỗ trợ người dùng mới bắt đầu dễ dàng làm quen, đồng thời tối ưu cho cả thiết bị di động và máy tính.
+\end{itemize}
+
+\section{Thiết kế hệ thống}
+\subsection{Kiến trúc hệ thống tổng thể}
+
+Kiến trúc hệ thống được xây dựng theo mô hình Client–Server ba lớp (Three-Tier Architecture), một kiến trúc phổ biến và đã được kiểm chứng trong các ứng dụng web quy mô vừa và lớn. Mô hình này tách biệt rõ ràng các thành phần Giao diện người dùng (Presentation Layer), Xử lý nghiệp vụ (Application/Business Logic Layer) và Lưu trữ dữ liệu (Data Layer), từ đó đảm bảo khả năng bảo trì, mở rộng và phân tách trách nhiệm giữa các nhóm phát triển.
+
+\textbf{Lớp Giao diện người dùng (Frontend)}:
+Lớp này được hiện thực bằng ReactJS kết hợp Vite, TypeScript và TailwindCSS, chịu trách nhiệm hiển thị toàn bộ nội dung học tập và cung cấp trải nghiệm tương tác mượt mà cho người dùng cuối. ReactJS với kiến trúc component-based cho phép chia nhỏ giao diện thành các thành phần tái sử dụng, từ đó giảm thiểu độ phức tạp trong phát triển và bảo trì. Vite mang lại khả năng biên dịch nhanh, hỗ trợ Hot Module Replacement (HMR), giúp nhóm phát triển quan sát thay đổi giao diện gần như theo thời gian thực. TailwindCSS giúp định kiểu giao diện một cách nhất quán, dễ dàng tuỳ biến theo thiết kế gamification của hệ thống.  
+
+Frontend giao tiếp với backend thông qua các API RESTful, thực hiện các thao tác chính như:  
+\begin{itemize}
+    \item Hiển thị danh sách bộ từ, nội dung từ vựng và lịch sử học tập.
+    \item Thực hiện phiên học (learning session) với nhiều dạng quiz như điền từ, trắc nghiệm, nghe – viết.
+    \item Hiển thị tiến trình học, điểm thưởng, bảng xếp hạng và trạng thái thú ảo theo cơ chế gamification.
+    \item Gửi yêu cầu đăng nhập, đăng ký, cập nhật thông tin cá nhân và nhận thông báo nhắc nhở học tập.
+\end{itemize}
+
+\textbf{Lớp Xử lý nghiệp vụ (Backend)}: Lớp này được triển khai bằng ASP.NET Core Web API, đóng vai trò là trung tâm xử lý nghiệp vụ và điều phối luồng dữ liệu giữa giao diện và cơ sở dữ liệu. Toàn bộ các chức năng chính của hệ thống như quản lý người dùng, quản lý từ vựng, xử lý tiến trình học, tính toán điểm thưởng, nâng cấp thú ảo, và gửi thông báo đều được hiện thực tại lớp này.  
+
+Một số đặc trưng nổi bật của lớp backend:  
+\begin{itemize}
+    \item \textbf{RESTful API:} Cung cấp endpoint rõ ràng, chuẩn hoá, hỗ trợ nhiều client (web, mobile) tiêu thụ cùng một nguồn dữ liệu.
+    \item \textbf{Middleware Pipeline:} Cho phép xây dựng chuỗi xử lý request–response có thể mở rộng, ví dụ thêm middleware xác thực JWT, logging, xử lý lỗi tập trung.
+    \item \textbf{Entity Framework Core:} Đóng vai trò ORM, ánh xạ dữ liệu giữa mô hình đối tượng C\# và bảng trong cơ sở dữ liệu theo phương pháp Code-First.
+    \item \textbf{Bảo mật:} Ứng dụng cơ chế xác thực JWT Authentication để bảo vệ API, quản lý phân quyền theo vai trò (người dùng, quản trị viên).
+\end{itemize}
+
+Kiến trúc backend đảm bảo có thể dễ dàng mở rộng trong tương lai, ví dụ thêm microservice riêng cho xử lý thống kê hoặc tích hợp dịch vụ AI (nhận diện giọng nói, gợi ý từ vựng thông minh).
+
+\textbf{Lớp Dữ liệu (Database)}: Lớp dữ liệu sử dụng SQL Server làm hệ quản trị cơ sở dữ liệu quan hệ, chịu trách nhiệm lưu trữ toàn bộ thông tin của hệ thống như:
+\begin{itemize}
+    \item Hồ sơ người dùng, thông tin đăng nhập và phân quyền.
+    \item Bộ từ vựng, thông tin định nghĩa, phát âm và ví dụ minh họa.
+    \item Tiến trình học tập, lịch sử làm bài, kết quả trả lời quiz.
+    \item Thông tin phần thưởng, thú ảo, trạng thái tiến hoá.
+    \item Bảng thông báo, sự kiện và nhắc nhở học tập.
+\end{itemize}
+
+Dữ liệu được thiết kế theo mô hình quan hệ, áp dụng các ràng buộc toàn vẹn (khoá chính, khoá ngoại, unique constraint) để giảm thiểu lỗi logic. Hệ thống cũng chuẩn bị cho khả năng mở rộng bằng cách tách biệt các bảng liên quan đến tracking (nhật ký học tập) nhằm tối ưu hiệu năng truy vấn thống kê và báo cáo.
+
+Ba lớp trên phối hợp nhịp nhàng thông qua giao tiếp client–server chuẩn HTTP/HTTPS, tạo nên hệ thống vừa trực quan, vừa mạnh mẽ. Kiến trúc ba lớp không chỉ tối ưu khả năng bảo trì và mở rộng, mà còn tạo điều kiện dễ dàng cho việc triển khai trên các nền tảng hạ tầng khác nhau (on-premises hoặc cloud).  
+
+% Hình~\ref{fig_system_architecture} minh hoạ kiến trúc tổng thể của hệ thống, thể hiện rõ vai trò và luồng dữ liệu giữa các thành phần.
+
+\subsubsection{Kiến trúc Frontend chi tiết — Component-Based Architecture}
+
+Ngoài mô tả tổng quát ở trên, lớp Frontend được tổ chức theo mô hình component-based architecture, tối ưu cho khả năng tái sử dụng, bảo trì và mở rộng tính năng. Cấu trúc thư mục Frontend được sắp xếp theo nguyên tắc Clean Architecture, với sự phân tách rõ ràng giữa các lớp:
+
+\textbf{1. Components Layer}: Chứa các reusable UI components như buttons, inputs, modals, cards. Các components này có tính độc lập cao, dễ dàng được tích hợp vào các trang khác nhau mà không cần chỉnh sửa logic.
+
+\textbf{2. Features/Pages Layer}: Tổ chức theo từng tính năng chính (Learning, VocabularySets, Pet, User Profile). Mỗi feature bao gồm:
+\begin{itemize}
+    \item Pages: Các màn hình chính (LearningPage, VocabularySetPage, PetPage).
+    \item Components: Các component cấp cao dùng riêng cho feature này.
+    \item Hooks: Custom React hooks quản lý logic đặc thù của feature (useVocabularySet, useLearningSession, usePet).
+    \item Services: API integration layer cho feature đó.
+\end{itemize}
+
+\textbf{3. Services/Hooks Layer}: Quản lý giao tiếp với backend:
+\begin{itemize}
+    \item Services: Axios clients cho các API endpoints (UserService, VocabularyService, LearningService, PetService). Mỗi service tương ứng với một nhóm endpoint trên backend.
+    \item Custom Hooks: useAuth(), useLearningSession(), usePet(), v.v. để encapsulate complex state logic và side effects.
+    \item SignalR Integration: Real-time notification service cho reminder học tập và thông báo thú cưng.
+\end{itemize}
+
+\textbf{4. State Management Layer (Redux)}: Quản lý global state:
+\begin{itemize}
+    \item Reducers: authReducer, userReducer, vocabularyReducer, petReducer, learningReducer.
+    \item Actions: Các action creators để dispatch state updates (login, logout, updatePet, recordLearningSession).
+    \item Selectors: Helper functions để select data từ Redux store một cách consistent.
+\end{itemize}
+
+\textbf{5. Utilities/Types Layer}: Hỗ trợ công cụ và type definitions:
+\begin{itemize}
+    \item Utilities: Helper functions cho validation, formatting, calculations (calculateSRS, formatDate, generatePetImageUrl).
+    \item Types/Interfaces: TypeScript definitions cho User, VocabularySet, LearningSession, Pet, Achievement (đảm bảo type safety).
+    \item Constants: Enum definitions, API endpoints, configuration constants.
+\end{itemize}
+
+Kiến trúc Frontend này đảm bảo:
+\begin{itemize}
+    \item \textbf{Modularity}: Mỗi feature độc lập, có thể phát triển song song và test riêng.
+    \item \textbf{Reusability}: Components reusable, hooks sharable giữa các features.
+    \item \textbf{Testability}: Dễ unit test components (với Jest), integration test flows (với Playwright).
+    \item \textbf{Maintainability}: Cấu trúc rõ ràng, dễ debug và thêm features mới.
+    \item \textbf{Type Safety}: TypeScript ensures tất cả props, state, API responses đều được type-check tại compile time.
+\end{itemize}
+
+\subsubsection{Kiến trúc Backend chi tiết — Clean Architecture \& Design Patterns}
+
+Ngoài mô hình ba lớp tổng quát, lớp backend được thiết kế chi tiết theo Clean Architecture (Onion Architecture), một kiến trúc phần mềm tiên tiến nhằm tối ưu khả năng testability, maintainability và independence từ framework/library. Kiến trúc này tổ chức code thành các lớp đồng tâm, mỗi lớp có trách nhiệm riêng biệt.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=15cm]{images/clean-architecture.jpg}
+\caption{Kiến trúc Clean (Onion Architecture).}
+\label{fig_clean_architecture}
+\end{figure}
+
+\textbf{Bốn Layers của Onion Architecture:}
+
+\textbf{1. Domain Layer (WordSoul.Domain):}
+Lớp này chứa các entities và business rules cốt lõi, hoàn toàn độc lập với bất kỳ framework hay library nào. Nó bao gồm:
+\begin{itemize}
+    \item \textbf{Entities}: 25 entities chính (User, Pet, VocabularySet, LearningSession, UserVocabularyProgress, VocabularyReviewHistory, Achievement, v.v.), biểu diễn các khái niệm nghiệp vụ.
+    \item \textbf{Enums}: UserRole (User, Admin), PetType, DailyQuestType để định kiểu các trạng thái.
+    \item \textbf{Value Objects}: Các object có tính chất bất biến, ví dụ Email, PhoneNumber.
+    \item \textbf{Domain Services}: Các service chứa business logic không thuộc về entity cụ thể nào, ví dụ SRS scheduling algorithm.
+    \item \textbf{Exceptions}: Custom exceptions cho domain-specific errors, giúp communicate lỗi rõ ràng.
+\end{itemize}
+
+\textbf{2. Application Layer (WordSoul.Application):}
+Lớp ứng dụng phối hợp giữa Domain và Infrastructure. Nó chứa:
+\begin{itemize}
+    \item \textbf{Application Services} (20+ services): UserService, PetService, LearningSessionService, VocabularyService, v.v., chiết xuất business logic và điều phối các operation.
+    \item \textbf{DTOs (Data Transfer Objects)}: UserDto, PetDto, LearningSessionDto, v.v. dùng để tách database models khỏi API responses, bảo vệ internal structure.
+    \item \textbf{Service Interfaces}: IUserService, IPetService, ILearningSessionService, v.v., định nghĩa contracts mà Infrastructure layer phải implement, giúp decoupling.
+    \item \textbf{SRS Algorithm}: Triển khai SM-2 algorithm trong Services/SRS/ folder, độc lập từ database details, chỉ phụ thuộc vào Domain.
+\end{itemize}
+
+\textbf{3. Infrastructure Layer (WordSoul.Infrastructure):}
+Lớp này implement từ các interfaces của Application layer và quản lý external services, database, v.v:
+\begin{itemize}
+    \item \textbf{Repositories} (23 repositories): Mỗi entity có một repository riêng (UserRepository, PetRepository, VocabularySetRepository, v.v.), implement từ IRepository interface, cung cấp abstraction cho database access.
+    \item \textbf{Unit of Work Pattern}: UnitOfWork.cs quản lý tất cả repositories, đảm bảo consistency của transactions và lazy-loading optimization. Khi một service gọi UnitOfWork, nó nhận được công cụ để truy cập bất kỳ repository nào mà không phải tạo instance trực tiếp.
+    \item \textbf{DbContext}: WordSoulDbContext chứa DbSet cho tất cả entities, migration history, và cấu hình Entity Framework Core.
+    \item \textbf{Persistence}: Migrations folder, database seeding, schema management.
+    \item \textbf{External Services}: Integration với Cloudinary (upload images), email service, notification service.
+    \item \textbf{Background Services}: Scheduled tasks như reminder notifications, daily quest reset.
+\end{itemize}
+
+\textbf{4. Presentation Layer (WordSoul.Api):}
+Lớp này là entry point cho tất cả requests:
+\begin{itemize}
+    \item \textbf{Controllers}: API endpoints, nhận HTTP requests và dispatch tới application services. Ví dụ: UserController, PetController, LearningSessionController.
+    \item \textbf{Middleware}: JWT authentication, error handling, logging.
+    \item \textbf{Dependency Injection (DI) Configuration}: Program.cs cấu hình tất cả services, repositories, và DbContext vào DI container.
+    \item \textbf{Filters}: Authorization filters, validation filters tùy chỉnh.
+    \item \textbf{Helpers}: Utility functions cho response formatting, token generation.
+\end{itemize}
+
+\textbf{Key Design Patterns Triển khai:}
+
+\textbf{1. Unit of Work Pattern:}
+UnitOfWork.cs quản lý tất cả 23 repositories qua lazy-loading properties. Khi một service cần repository, nó được khởi tạo một lần và tái sử dụng. Điều này giúp:
+\begin{itemize}
+    \item Quản lý transaction atomicity: SaveChangesAsync() trên UnitOfWork đảm bảo tất cả changes được lưu cùng lúc hoặc không có gì được lưu.
+    \item Giảm số lượng DbContext instances, tối ưu memory.
+    \item Simplify dependency management: Services chỉ phụ thuộc vào IUnitOfWork, không phải 23 repositories riêng.
+\end{itemize}
+
+\textbf{2. Repository Pattern:}
+Mỗi entity có một repository implement từ interface. Ví dụ UserRepository implement IUserRepository với các methods: GetAllUsersAsync, GetUserByIdAsync, AddAsync, UpdateAsync, DeleteAsync. Điều này cho phép:
+\begin{itemize}
+    \item Abstract database details khỏi business logic.
+    \item Dễ unit test bằng cách mock repositories.
+    \item Thay đổi persistence mechanism (từ SQL Server sang PostgreSQL) mà không ảnh hưởng application services.
+\end{itemize}
+
+\textbf{3. Dependency Injection:}
+ASP.NET Core built-in DI container, cấu hình trong Program.cs:
+\begin{itemize}
+    \item Scoped dependencies: DbContext, UnitOfWork (một instance per HTTP request).
+    \item Singleton dependencies: Configuration, ILogger factory.
+    \item Transient dependencies: Stateless services.
+\end{itemize}
+Điều này giúp:
+\begin{itemize}
+    \item Loose coupling giữa services.
+    \item Dễ testing: mock dependencies trong unit tests.
+    \item Centralized configuration của tất cả services.
+\end{itemize}
+
+\textbf{4. DTO (Data Transfer Object) Pattern:}
+Services trả về DTOs thay vì entities. Ví dụ UserService trả về UserDto, không phải User entity. Lợi ích:
+\begin{itemize}
+    \item Bảo vệ internal structure: frontend không cần biết entity có những property nào, chỉ cần DTO schema.
+    \item Chuyển đổi data: Entity có tất cả columns, nhưng DTO chỉ chứa fields cần thiết để gửi về client.
+    \item Reusability: Một entity có thể được map sang nhiều DTOs khác nhau tùy context (list view vs detail view).
+\end{itemize}
+
+\textbf{5. Service Layer Pattern:}
+ApplicationServices (UserService, PetService, ...) chứa orchestration logic:
+\begin{itemize}
+    \item Nhận requests từ Controllers.
+    \item Gọi domain services, repositories để lấy data hoặc perform business logic.
+    \item Transform entities thành DTOs.
+    \item Return DTOs tới Controllers.
+\end{itemize}
+
+Sự phân tách này đảm bảo:
+\begin{itemize}
+    \item Single Responsibility: Mỗi layer có một trách nhiệm rõ ràng.
+    \item Testability: Unit test business logic mà không cần database, HTTP requests.
+    \item Maintainability: Thay đổi database schema không ảnh hưởng application logic.
+    \item Scalability: Dễ thêm features mới mà không phá vỡ existing code.
+\end{itemize}
+
+Tóm lại, kiến trúc hệ thống WordSoul được xây dựng trên nền tảng ba lớp, với frontend sử dụng Clean Architecture component-based pattern và backend triển khai đầy đủ Onion Architecture cùng các design patterns tiên tiến. Sự kết hợp này không chỉ đảm bảo khả năng bảo trì, mở rộng và kiểm thử, mà còn tạo ra một đơn vị phần mềm vững chắc và linh hoạt để triển khai các chức năng được xác định trong phần phân tích yêu cầu.
+
+\clearpage
+\subsection{Sơ đồ Use Case}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=15cm]{images/FinalUC.drawio.png}
+\caption{Sơ đồ Use Case của hệ thống.}
+\label{fig_uc}
+\end{figure}
+
+Sơ đồ Use Case ở Hình~\ref{fig_uc} mô tả phạm vi chức năng tổng thể của hệ thống và thể hiện rõ mối quan hệ giữa hai tác nhân chính với các chức năng mà họ tương tác. Đây là công cụ quan trọng trong giai đoạn phân tích yêu cầu, giúp đảm bảo hệ thống được thiết kế đúng với nhu cầu người học và quản trị viên, đồng thời làm cơ sở cho việc đặc tả chi tiết và kiểm thử phần mềm.
+
+\textbf{Các tác nhân (Actors)}: Hệ thống xác định hai nhóm người dùng chính, mỗi nhóm có vai trò riêng biệt:
+\begin{itemize}
+    \item \textbf{Người học (User):} Là đối tượng trung tâm của hệ thống, thực hiện toàn bộ hoạt động học và ôn tập. Người học không chỉ tiêu thụ nội dung mà còn có khả năng cá nhân hoá trải nghiệm bằng cách tự tạo, chỉnh sửa và xoá bộ từ vựng cá nhân. Điều này giúp đáp ứng nhu cầu học đa dạng, từ học theo chương trình chuẩn đến học theo sở thích hoặc mục tiêu cá nhân.
+    \item \textbf{Quản trị viên (Admin):} Đóng vai trò bảo đảm chất lượng và tính toàn vẹn của hệ thống. Admin chịu trách nhiệm cập nhật kho dữ liệu từ vựng chuẩn, duy trì hệ thống phần thưởng và thú ảo, cũng như quản lý người dùng. Điều này giúp hệ thống vận hành ổn định và liên tục được cập nhật để người học luôn có nội dung mới.
+\end{itemize}
+
+\textbf{Các nhóm Use Case chính}: Các chức năng được nhóm theo luồng nghiệp vụ để phản ánh rõ vai trò của hệ thống:
+\begin{itemize}
+    \item \textbf{Học và ôn tập từ vựng:} Bao gồm lựa chọn bộ từ, khởi tạo phiên học hoặc phiên ôn tập, làm các dạng quiz (điền khuyết, trắc nghiệm, nghe-viết). Đây là nhóm chức năng cốt lõi, hiện thực hoá các nguyên lý SRS và retrieval practice đã phân tích ở Chương~\ref{Chapter2}.
+    \item \textbf{Quản lý bộ từ cá nhân:} Cho phép người học tạo mới bộ từ, chỉnh sửa, xoá hoặc nhập dữ liệu từ có sẵn. Việc tách riêng nhóm chức năng này nhằm hỗ trợ cá nhân hoá, giúp người học làm chủ nội dung học.
+    \item \textbf{Theo dõi tiến trình và nhận thông báo:} Người học có thể xem báo cáo thống kê (số từ đã học, tỉ lệ ghi nhớ), nhận thông báo nhắc nhở ôn tập và duy trì thói quen học đều đặn.
+    \item \textbf{Gamification và phần thưởng:} Sau mỗi phiên học/ôn tập, hệ thống tự động xét thưởng (XP, thú ảo, phần thưởng đặc biệt) để duy trì động lực cho người học.
+    \item \textbf{Quản lý thú ảo (Pet):} Người học có thể xem thông tin thú cưng và nâng cấp chúng khi đủ điểm thưởng. Việc tách use case “Nâng cấp Pet” dưới dạng \textit{extend} từ “Xem thông tin Pet” bảo đảm tính điều kiện: người học chỉ có thể nâng cấp khi đã vào màn hình xem Pet và đáp ứng đủ yêu cầu.
+    \item \textbf{Quản trị hệ thống:} Cho phép Admin tạo hoặc cập nhật từ vựng chuẩn, quản lý người dùng và quản lý danh mục phần thưởng, đảm bảo hệ thống vận hành liên tục và dữ liệu luôn chính xác.
+\end{itemize}
+
+\textbf{Các mối quan hệ Use Case}: Sơ đồ thể hiện rõ quan hệ \textbf{include} và \textbf{extend} để nhấn mạnh sự tái sử dụng và điều kiện thực thi:
+\begin{itemize}
+    \item \textbf{Include:} Use case “Nhận thưởng” được include trong cả “Học từ vựng” và “Ôn tập từ vựng” vì đây là hành vi luôn xảy ra sau khi phiên học kết thúc.
+    \item \textbf{Extend:} Use case “Nâng cấp Pet” extend từ “Xem thông tin Pet” để biểu diễn rằng chức năng nâng cấp chỉ xuất hiện khi người học đã mở thông tin Pet và đủ điều kiện nâng cấp.
+    \item \textbf{Extend:} “Quản lý bộ từ cá nhân” extend từ “Quản lý từ vựng”, bổ sung các chức năng dành riêng cho người học mà không ảnh hưởng đến kho dữ liệu chuẩn do Admin quản lý.
+\end{itemize}
+
+\textbf{Ý nghĩa và giá trị}: Việc xây dựng sơ đồ Use Case giúp định nghĩa ranh giới hệ thống, phân tách rõ trách nhiệm giữa User và Admin, đồng thời hỗ trợ phát hiện các tình huống đặc biệt cần xử lý (ví dụ: điều kiện nâng cấp Pet, thông báo nhắc nhở). Đây là bước quan trọng để đảm bảo giai đoạn thiết kế sau đó có cơ sở đầy đủ, hạn chế sai sót trong triển khai và tăng khả năng kiểm thử tự động.
+
+
+\subsection{Sơ đồ tuần tự}
+
+\subsubsection{Quy trình học, ôn từ vựng và nhận thưởng}
+\begin{figure}[H]
+\centering
+\includegraphics[width=15cm]{images/Final_Sq_HocvaOntap.png}
+\caption{Sơ đồ tuần tự quy trình học, ôn tập từ vựng và nhận thưởng.}
+\label{fig_seq1}
+\end{figure}
+
+
+Sơ đồ tuần tự trên mô tả toàn bộ quá trình xử lý khi người dùng thực hiện một phiên học hoặc ôn tập từ vựng:
+\begin{itemize}
+    \item \textbf{Khởi tạo phiên học}: 
+        \begin{itemize}
+            \item Người dùng từ giao diện (UI) chọn một bộ từ vựng và yêu cầu bắt đầu phiên học.
+            \item Controller tiếp nhận yêu cầu, tiến hành kiểm tra quyền truy cập (người dùng có sở hữu bộ từ vựng này không, còn hợp lệ không).
+            \item Nếu hợp lệ, Controller tạo mới một phiên học trong cơ sở dữ liệu (Database) và trả về thông tin phiên học; ngược lại, hệ thống phản hồi thông báo lỗi.
+        \end{itemize}
+    \item \textbf{Chuẩn bị giao diện phiên học}:
+        \begin{itemize}
+            \item Với chế độ học, hệ thống còn lấy thêm thông tin thú cưng với tỉ lệ ngẫu nhiên.
+            \item UI hiển thị giao diện phiên học, bao gồm bộ từ vựng cần học/ôn tập và thú cưng đồng hành (nếu có), nhằm tạo trải nghiệm học tập sinh động hơn.
+        \end{itemize}
+    \item \textbf{Truy xuất và hiển thị câu hỏi}:
+        \begin{itemize}
+            \item Người dùng gửi yêu cầu xem câu hỏi tiếp theo.
+            \item Controller truy vấn danh sách câu hỏi từ Database, với cơ chế ưu tiên câu sai trước, sau đó mới đến câu chưa từng thực hiện.
+            \item Database trả về danh sách câu hỏi, sau đó UI hiển thị cho người dùng.
+        \end{itemize}
+    \item \textbf{Người dùng trả lời và xử lý đáp án}:
+        \begin{itemize}
+            \item Khi người dùng nhập câu trả lời, UI gửi dữ liệu đến Controller để xử lý.
+            \item Controller lưu kết quả, kiểm tra đúng/sai và phản hồi ngay lập tức cho UI.
+            \item Nếu người dùng trả lời đúng toàn bộ câu hỏi liên quan đến một từ vựng, hệ thống cập nhật tiến trình học của từ đó (đánh dấu “đã ghi nhớ”).
+            \item UI hiển thị kết quả từng câu hỏi, giúp người học nhận được phản hồi tức thì.
+        \end{itemize}
+    \item \textbf{Hoàn tất phiên học}: 
+        \begin{itemize}
+            \item Khi người dùng hoàn thành toàn bộ câu hỏi, UI gửi yêu cầu kết thúc phiên học.
+            \item Controller kiểm tra và cập nhật trạng thái phiên học trong Database.
+            \item Hệ thống tính toán phần thưởng cho người dùng, bao gồm kinh nghiệm (XP) và phần thưởng thú cưng (nếu có).
+            \item UI hiển thị kết quả cuối cùng hoặc thông báo lỗi (nếu phiên học không hợp lệ).
+        \end{itemize}
+\end{itemize}
+
+\textbf{Ý nghĩa:} Sơ đồ này thể hiện rõ cơ chế học chủ động (active recall) với: Phản hồi tức thì sau mỗi câu trả lời, cập nhật tiến trình liên tục để người học theo dõi, gamification thông qua XP và thú cưng, giúp duy trì động lực.
+Điểm quan trọng là hệ thống không chỉ cung cấp nội dung học mà còn quản lý chu trình học - phản hồi - củng cố - thưởng, tạo ra trải nghiệm liền mạch, vừa khoa học vừa hấp dẫn.
+
+\subsubsection{Quy trình tạo bộ từ vựng}
+\begin{figure}[H]
+\centering
+\includegraphics[width=15cm]{images/Final_Sq_Set.png}
+\caption{Sơ đồ tuần tự quy trình tạo bộ từ vựng.}
+\label{fig_seq2}
+\end{figure}
+
+Sơ đồ tuần tự trên mô tả chi tiết luồng xử lý khi người dùng tạo một bộ từ vựng mới:
+\begin{itemize}
+    \item \textbf{Tìm kiếm từ vựng để thêm vào bộ từ}:
+        \begin{itemize}
+            \item Người dùng nhập danh sách từ cần tìm qua giao diện.
+            \item UI gửi yêu cầu đến Controller, sau đó Controller truy vấn cơ sở dữ liệu (Database).
+            \item Database trả về danh sách từ vựng hợp lệ; UI hiển thị danh sách này để người dùng lựa chọn.
+        \end{itemize}
+    \item \textbf{Nhập thông tin bộ từ và gửi yêu cầu tạo}: 
+        \begin{itemize}
+            \item Người dùng nhập thông tin chi tiết cho bộ từ, bao gồm: tiêu đề, mô tả, chủ đề, độ khó, ảnh minh họa (nếu có) và chế độ công khai.
+            \item UI gửi yêu cầu tạo bộ từ mới đến Controller.
+        \end{itemize}
+    \item \textbf{Xử lý và kiểm tra dữ liệu}: 
+        \begin{itemize}
+            \item Controller tiến hành kiểm tra tính hợp lệ của dữ liệu và quyền của người dùng.
+            \item Nếu người dùng tải ảnh minh họa, hệ thống sẽ lưu ảnh và trả về đường dẫn để gắn vào bộ từ.
+        \end{itemize}
+    \item \textbf{Tạo bộ từ và gán quyền sở hữu}: 
+        \begin{itemize}
+            \item Controller tạo mới bản ghi bộ từ trong Database, đồng thời gán một thú cưng mặc định đi kèm.
+            \item Hệ thống cũng gán quyền sở hữu bộ từ cho người dùng đã tạo, đảm bảo quản lý chính xác mối quan hệ chủ sở hữu – bộ từ.
+        \end{itemize}
+    \item \textbf{Phản hồi kết quả}:
+        \begin{itemize}
+            \item Nếu tạo thành công, UI nhận thông tin bộ từ mới và chuyển hướng người dùng về danh sách bộ từ cá nhân.
+            \item Nếu dữ liệu không hợp lệ hoặc người dùng không tồn tại, hệ thống trả về thông báo lỗi, UI hiển thị thông báo này.
+        \end{itemize}
+\end{itemize}
+
+\textbf{Ý nghĩa:} Sơ đồ thể hiện quy trình kiểm tra dữ liệu chặt chẽ trước khi ghi nhận vào hệ thống. Mỗi bộ từ được gắn với một chủ sở hữu hợp lệ, có thông tin đầy đủ và (nếu cần) kèm ảnh minh họa, đảm bảo tính cá nhân hóa cũng như quản lý hiệu quả. Cơ chế này giúp hệ thống duy trì dữ liệu nhất quán, tránh tình trạng bộ từ vựng không xác định hoặc trùng lặp.
+
+\subsubsection{Quy trình nâng cấp thú cưng}
+\begin{figure}[H]
+\centering
+\includegraphics[width=15cm]{images/Final_Sq_Pet.png}
+\caption{Sơ đồ tuần tự quy trình nâng cấp thú cưng.}
+\label{fig_seq3}
+\end{figure}
+
+Sơ đồ tuần tự trên mô tả chi tiết các bước khi người dùng thực hiện nâng cấp thú cưng:
+\begin{itemize}
+    \item \textbf{Yêu cầu nâng cấp}: 
+        \begin{itemize}
+            \item Người dùng từ giao diện gửi yêu cầu nâng cấp một thú cưng mà họ đang sở hữu.
+            \item UI chuyển yêu cầu này đến Controller để xử lý.
+        \end{itemize}
+    \item \textbf{Kiểm tra điều kiện}: 
+        \begin{itemize}
+            \item Controller kiểm tra trong cơ sở dữ liệu quyền sở hữu thú cưng và số điểm nâng cấp hiện có của người dùng.
+            \item Nếu không hợp lệ (không sở hữu thú cưng, thiếu điểm, hoặc thú cưng đã đạt cấp tối đa), hệ thống trả về thông báo lỗi ngay lập tức.
+        \end{itemize}
+    \item \textbf{Cập nhật kinh nghiệm và xét điều kiện nâng cấp}: 
+        \begin{itemize}
+            \item Nếu hợp lệ, Controller tiến hành cập nhật kinh nghiệm cho thú cưng.
+            \item Trường hợp thú cưng có đủ kinh nghiệm để lên cấp, hệ thống thực hiện tăng cấp độ và xác nhận cập nhật vào cơ sở dữ liệu.
+            \item Nếu thú cưng đạt điều kiện tiến hoá, hệ thống thực hiện cập nhật trạng thái tiến hoá và lưu lại thông tin mới.
+        \end{itemize}
+    \item \textbf{Trừ điểm nâng cấp và xác nhận}: 
+        \begin{itemize}
+            \item Hệ thống trừ số điểm nâng cấp của người dùng tương ứng với hành động vừa thực hiện.
+            \item Controller xác nhận cập nhật dữ liệu điểm nâng cấp của người dùng trong Database.
+        \end{itemize}
+    \item \textbf{Trả về kết quả}: 
+        \begin{itemize}
+            \item Sau khi tất cả cập nhật được ghi nhận, Controller trả về thông tin mới của thú cưng, bao gồm: cấp độ, trạng thái tiến hoá (nếu có), kinh nghiệm và điểm nâng cấp còn lại.
+            \item UI hiển thị kết quả nâng cấp cho người dùng.
+            \item Nếu có lỗi xảy ra ở bất kỳ bước nào (ví dụ dữ liệu không hợp lệ), UI sẽ hiển thị thông báo lỗi tương ứng.
+        \end{itemize}
+\end{itemize}
+
+\textbf{Ý nghĩa:} Sơ đồ làm rõ quá trình nâng cấp thú cưng được kiểm tra nhiều lớp điều kiện để tránh sai lệch dữ liệu. Cơ chế vừa bảo đảm đồng bộ thông tin thú cưng – điểm nâng cấp – tiến hoá trong cơ sở dữ liệu, vừa tăng tính minh bạch cho người dùng khi mỗi hành động đều có phản hồi rõ ràng. Nhờ vậy, hệ thống vừa duy trì được sự công bằng, vừa tạo trải nghiệm hứng thú trong quá trình nuôi dưỡng và phát triển thú cưng.
+
+
+
+\subsection{Sơ đồ hoạt động}
+
+\subsubsection{Quy trình học, ôn tập từ vựng và nhận thưởng}
+\begin{figure}[H]
+\centering
+\includegraphics[width=15cm]{images/Final_AT_HocvaOntap.png}
+\caption{Sơ đồ hoạt động quy trình học, ôn tập từ vựng và nhận thưởng.}
+\label{fig_act1}
+\end{figure}
+\clearpage
+Sơ đồ mô tả luồng công việc chính khi người dùng bắt đầu một phiên học hoặc ôn tập:
+\begin{itemize}
+    \item \textbf{Khởi động phiên học}: Người dùng yêu cầu bắt đầu học/ôn tập.
+    \item \textbf{Xác thực và tạo phiên học}: Hệ thống xác thực thông tin và khởi tạo một phiên học trong cơ sở dữ liệu.
+    \item \textbf{Điều kiện hợp lệ}:
+        \begin{itemize}
+            \item Nếu hợp lệ → hiển thị giao diện học và (nếu có) thông tin thú cưng.
+            \item Nếu không hợp lệ → hiển thị thông báo lỗi và kết thúc.
+        \end{itemize}
+    \item \textbf{Chuẩn bị nội dung}: Hệ thống truy vấn, sắp xếp danh sách câu hỏi (ưu tiên các câu sai trước, sau đó câu mới).
+    \item \textbf{Quy trình học/ôn tập (vòng lặp)}: 
+        \begin{itemize}
+            \item Người dùng nhập câu trả lời.
+            \item Hệ thống kiểm tra, phản hồi ngay đúng/sai và lưu kết quả.
+            \item Nếu một từ vựng đã được trả lời đúng toàn bộ, tiến trình học và thời gian ôn tập được cập nhật.
+        \end{itemize}
+    \item \textbf{Kết thúc vòng lặp}: Khi đã xử lý hết danh sách câu hỏi.
+    \item \textbf{Hoàn tất phiên học}: 
+        \begin{itemize}
+            \item Nếu tất cả câu hỏi đều đúng → hệ thống cập nhật trạng thái phiên học, tính XP, phần thưởng và hiển thị kết quả (có animation bắt thú cưng nếu đủ điều kiện).
+            \item Nếu có lỗi hoặc dữ liệu không hợp lệ → hiển thị thông báo lỗi và kết thúc quy trình.
+        \end{itemize}
+\end{itemize}
+
+\textbf{Ý nghĩa:} Sơ đồ làm rõ các bước xử lý liên tiếp và các nhánh điều kiện trong toàn bộ phiên học. Khác với sơ đồ tuần tự vốn tập trung vào tương tác giữa đối tượng, sơ đồ hoạt động nhấn mạnh luồng xử lý công việc, sự lặp lại trong vòng trả lời–phản hồi, và điều kiện chuyển tiếp giữa các trạng thái. Điều này giúp minh họa cách quy trình học/ôn tập được triển khai liên tục và gắn liền với phần thưởng nhằm duy trì động lực học tập.
+
+
+\subsubsection{Quy trình tạo bộ từ vựng}
+\begin{figure}[H]
+\centering
+\includegraphics[width=15cm]{images/Final_AT_Set.png}
+\caption{Sơ đồ hoạt động quy trình tạo bộ từ vựng.}
+\label{fig_act2}
+\end{figure}
+
+
+Sơ đồ mô tả các bước chính khi người dùng tạo một bộ từ vựng mới:
+\begin{itemize}
+    \item \textbf{Nhập dữ liệu ban đầu}: Người dùng nhập danh sách từ và gửi yêu cầu tìm kiếm.
+    \item \textbf{Xử lý tìm kiếm}: Hệ thống truy vấn cơ sở dữ liệu để kiểm tra sự tồn tại của các từ và hiển thị kết quả tìm kiếm.
+    \item \textbf{Lựa chọn và nhập thông tin}: Người dùng chọn các từ vựng cần thêm và điền thông tin chi tiết (tiêu đề, mô tả, chủ đề, độ khó, ảnh minh họa, chế độ công khai).
+    \item \textbf{Xác thực và kiểm tra}: Hệ thống xác thực người dùng và kiểm tra dữ liệu đầu vào. nếu không hợp lệ → thông báo lỗi và kết thúc quy trình, nếu hợp lệ → tiếp tục.
+    \item \textbf{Xử lý ảnh minh họa (nếu có)}: Nếu người dùng cung cấp ảnh, hệ thống tiến hành tải ảnh lên và lưu đường dẫn trong cơ sở dữ liệu.
+    
+    \item \textbf{Tạo bộ từ vựng}: Hệ thống tạo bộ từ mới, gán thú cưng tương ứng theo độ hiếm và phân quyền sở hữu cho người dùng.
+    \item \textbf{Trả kết quả}: Hệ thống hiển thị kết quả tạo thành công và chuyển hướng về danh sách bộ từ cá nhân.
+\end{itemize}
+
+\textbf{Ý nghĩa:} Sơ đồ thể hiện cách hệ thống xử lý tuần tự và có điều kiện trong quá trình tạo bộ từ, đảm bảo dữ liệu đầu vào hợp lệ, phân quyền rõ ràng, đồng thời gắn kết với cơ chế thú cưng để tăng tính hấp dẫn. Điều này giúp quản lý chặt chẽ quyền sở hữu bộ từ và hỗ trợ khả năng mở rộng trong tương lai (ví dụ: chia sẻ công khai, trao đổi bộ từ giữa người dùng).
+
+\subsubsection{Quy trình nâng cấp thú cưng}
+\begin{figure}[H]
+\centering
+\includegraphics[width=15cm]{images/Final_AT_Pet.png}
+\caption{Sơ đồ hoạt động quy trình nâng cấp thú cưng.}
+\label{fig_act3}
+\end{figure}
+
+Sơ đồ mô tả các bước xử lý chính khi người dùng thực hiện nâng cấp thú cưng:
+\begin{itemize}
+    \item \textbf{Khởi động yêu cầu}: Người dùng gửi yêu cầu nâng cấp thú cưng.
+    \item  \textbf{Xác thực và kiểm tra}: Hệ thống xác thực người dùng, kiểm tra quyền sở hữu thú cưng và số điểm nâng cấp (AP), nếu điều kiện không hợp lệ (không sở hữu thú cưng, thiếu điểm AP, hoặc đã đạt cấp tối đa) → hệ thống hiển thị thông báo lỗi và kết thúc, Nếu hợp lệ → tiếp tục xử lý.
+    \item \textbf{Cập nhật tiến trình}: Hệ thống cộng thêm kinh nghiệm cho thú cưng, nếu đạt ngưỡng → thú cưng được tăng cấp, Nếu đồng thời đạt điều kiện tiến hóa → hệ thống cập nhật trạng thái tiến hóa và ghi nhận thay đổi.
+    \item \textbf{Hoàn tất nâng cấp}: Hệ thống trừ số điểm AP tương ứng của người dùng và lưu lại kết quả trong cơ sở dữ liệu.
+    \item \textbf{Trả kết quả}: Hệ thống hiển thị thông tin cập nhật của thú cưng (cấp độ mới, kinh nghiệm, trạng thái tiến hóa nếu có, số AP còn lại).
+\end{itemize}
+
+\textbf{Ý nghĩa:} Quy trình đảm bảo trạng thái thú cưng được cập nhật chính xác và đồng bộ, đồng thời duy trì tính công bằng nhờ cơ chế kiểm tra điều kiện trước khi nâng cấp.
+
+
+\subsection{Sơ đồ trạng thái}
+\begin{figure}[H]
+\centering
+\includegraphics[width=14cm]{images/state.png}
+\caption{Sơ đồ trạng thái từ vựng trong phiên học.}
+\label{}
+\end{figure}
+Sơ đồ thể hiện các trạng thái mà một từ vựng phải trải qua trong suốt một phiên học, cùng với hai sự kiện chính chi phối quá trình chuyển trạng thái:
+\begin{itemize}
+    \item Trạng thái 0 – FlashCard: Người học tiếp cận từ mới ở dạng thẻ nhớ.
+    \item Trạng thái 1 – FillInBlank: Người học điền từ còn thiếu vào chỗ trống.
+    \item Trạng thái 2 – MultipleChoice: Người học chọn đáp án đúng trong nhiều lựa chọn.
+    \item Trạng thái 3 – Listening: Người học nghe và xác định từ vựng.
+    \item Trạng thái 4 – Hoàn thành: Từ vựng được xem là đã học xong trong phiên hiện tại.
+\end{itemize}
+Các sự kiện chuyển trạng thái:
+\begin{itemize}
+    \item E1 – Trả lời đúng: hệ thống tăng trạng thái, cho phép từ tiếp tục sang loại câu hỏi tiếp theo.
+    \item E2 – Trả lời sai: hệ thống giảm trạng thái, đưa từ quay lại bước trước đó để ôn lại.
+\end{itemize}
+
+Nhờ cơ chế này, quá trình học được cá nhân hóa theo năng lực: từ vựng chỉ hoàn tất khi người học trả lời đúng liên tục qua tất cả các loại câu hỏi.
+
+\textbf{Ý nghĩa}: Sơ đồ giúp minh họa vòng đời của một từ trong phiên học, cho thấy rõ cơ chế kiểm soát tiến độ dựa trên hiệu suất thực tế (đúng/sai), đảm bảo việc ghi nhớ chắc chắn và tránh tình trạng “học lướt”.
+
+\subsection{Sơ đồ lớp}
+\begin{figure}[H]
+\centering
+\includegraphics[width=15cm]{images/FinalClass.drawio.png}
+\caption{Sơ đồ lớp của hệ thống.}
+\label{fig_class}
+\end{figure}
+
+
+Sơ đồ mô tả cấu trúc hướng đối tượng của hệ thống, thể hiện các lớp nghiệp vụ và mối quan hệ giữa chúng. Đây là cầu nối từ phân tích yêu cầu sang thiết kế, làm cơ sở để sinh ra các bảng dữ liệu khi triển khai. Các lớp chính gồm:
+
+\begin{itemize}
+    \item \textbf{User}: Đại diện cho người dùng hệ thống, lưu trữ thông tin định danh, bảo mật (mật khẩu băm), trạng thái tài khoản, điểm kinh nghiệm (XP), điểm nâng cấp thú cưng (AP) và các quan hệ đến tiến trình học, bộ từ, thú cưng, thông báo và log hoạt động.
+    \item \textbf{VocabularySet}: Mô tả một bộ từ vựng theo chủ đề hoặc mục tiêu học, gồm tiêu đề, mô tả, chủ đề, độ khó, hình ảnh minh hoạ và trạng thái công khai. Mỗi bộ từ liên kết nhiều–nhiều với Vocabulary và có thể gắn thú cưng phần thưởng.
+    \item \textbf{Vocabulary}: Đại diện cho một mục từ cụ thể với thông tin chi tiết: nghĩa, loại từ, mức CEFR, ví dụ, âm thanh và hình ảnh minh hoạ. Kết nối đến tiến trình học của người dùng, phiên học và kết quả trả lời.
+    \item \textbf{LearningSession}: Quản lý một phiên học/ôn tập, lưu thời gian bắt đầu, kết thúc, loại phiên (học/ôn tập) và trạng thái hoàn thành. Phiên học chứa danh sách từ vựng được luyện và các bản ghi trả lời.
+    \item \textbf{AnswerRecord}: Ghi lại thông tin trả lời từng câu hỏi trong một phiên học (nội dung trả lời, đúng/sai, số lần thử, loại câu hỏi, thời điểm).
+    \item \textbf{UserVocabularyProgress}: Theo dõi trạng thái thành thạo của từng từ với từng người dùng, gồm số lần đúng, tổng số lần thử, cấp độ thành thạo và thời gian ôn tập tiếp theo.
+    \item \textbf{Pet} và \textbf{UserOwnedPet}: 
+        \begin{itemize}
+            \item \textbf{Pet} mô tả loài thú ảo (tên, mô tả, độ hiếm, loại, hình thức tiến hoá, cấp yêu cầu).
+            \item \textbf{UserOwnedPet} quản lý việc người dùng sở hữu thú nào, cấp độ, kinh nghiệm, trạng thái yêu thích và kích hoạt.
+        \end{itemize}
+    \item \textbf{Notification}: Gửi thông báo cho người dùng (nhắc nhở ôn tập, nhận thưởng, sự kiện).
+    \item \textbf{ActivityLog}: Ghi nhận các hành động của người dùng phục vụ mục đích kiểm tra và phân tích hành vi.
+    \item \textbf{Các lớp Enum}: Định nghĩa các giá trị hằng như vai trò người dùng, loại phiên học, độ hiếm thú cưng, loại câu hỏi, loại thông báo, độ khó bộ từ, v.v.
+\end{itemize}
+
+\textbf{Ý nghĩa:} Sơ đồ Class cung cấp cái nhìn tổng quan về kiến trúc hướng đối tượng, giúp lập trình viên hiểu rõ mối quan hệ giữa các thành phần và hỗ trợ ánh xạ trực tiếp sang mô hình dữ liệu quan hệ thông qua ORM (Entity Framework).
+
+\subsection{Lược đồ cơ sở dữ liệu vật lý}
+\begin{figure}[H]
+\centering
+\includegraphics[width=15cm]{images/FinalDB.png}
+\caption{Lược đồ cơ sở dữ liệu vật lý.}
+\label{fig_db}
+\end{figure}
+
+Lược đồ mô tả cách các lớp trong sơ đồ Class được ánh xạ thành các bảng dữ liệu, kèm theo khoá chính (PK), khoá ngoại (FK) và quan hệ giữa chúng. Các bảng chính bao gồm:
+
+\begin{itemize}
+    \item \textbf{Users}: Chứa thông tin định danh và trạng thái của người dùng. Quan hệ 1–N với LearningSessions, Notifications, ActivityLogs; quan hệ N–N với VocabularySets (UserVocabularySets), Vocabularies (UserVocabularyProgresses) và Pets (UserOwnedPets).
+    \item \textbf{VocabularySets}: Lưu trữ các bộ từ vựng, có quan hệ N–N với Vocabularies (SetVocabularies), N–N với Pets (SetRewardPets) và 1–N với LearningSessions.
+    \item \textbf{Vocabularies}: Lưu thông tin chi tiết từng từ, tham gia quan hệ N–N với VocabularySets và LearningSessions, 1–N với AnswerRecords.
+    \item \textbf{LearningSessions}: Lưu thông tin từng phiên học/ôn tập, liên kết với Users, VocabularySets và SessionVocabularies, đồng thời chứa danh sách AnswerRecords.
+    \item \textbf{AnswerRecords}: Ghi lại dữ liệu từng lần trả lời (đáp án, kết quả, loại câu hỏi, thời gian).
+    \item \textbf{UserVocabularyProgresses}: Lưu trạng thái thành thạo từ vựng theo từng người dùng (tần suất đúng, cấp độ thành thạo, lịch ôn tập tiếp theo).
+    \item \textbf{Pets} và \textbf{UserOwnedPets}: Lưu dữ liệu thú ảo và quan hệ sở hữu người dùng–thú, kèm thông tin cấp độ, kinh nghiệm và trạng thái.
+    \item \textbf{SetRewardPets}: Xác định tỉ lệ rơi thú cưng khi hoàn thành một bộ từ.
+    \item \textbf{Notifications}: Lưu thông báo gửi cho người dùng, trạng thái đã đọc.
+    \item \textbf{ActivityLogs}: Lưu lịch sử hành động của người dùng để phục vụ kiểm tra, thống kê.
+    \item \textbf{Các bảng liên kết khác}: SetVocabularies, SessionVocabularies, UserVocabularySets — đóng vai trò ánh xạ quan hệ nhiều–nhiều.
+\end{itemize}
+
+\textbf{Ý nghĩa:} Lược đồ cơ sở dữ liệu vật lý thể hiện cách dữ liệu được tổ chức trong SQL Server, bảo đảm toàn vẹn quan hệ, hỗ trợ truy vấn hiệu quả và mở rộng quy mô trong tương lai. Đây là nền tảng để hệ thống hoạt động ổn định và hỗ trợ các tính năng thống kê, gamification và cá nhân hóa tiến trình học.
+
+\section{Thiết kế giao diện}
+
+Thiết kế giao diện được thực hiện nhằm minh họa trực quan cách người dùng sẽ tương tác với hệ thống. Các giao diện được xây dựng bằng công cụ Mockflow, đảm bảo tính thống nhất về bố cục, màu sắc và trải nghiệm người dùng. Bộ giao diện tập trung vào các chức năng cốt lõi đã được xác định trong giai đoạn phân tích, đồng thời phản ánh rõ nét yếu tố gamification của hệ thống.
+Cụ thể, hệ thống bao gồm các nhóm giao diện chính sau:
+
+
+
+\subsection{Nhóm Dashboard và Người dùng}
+\textbf{Dashboard}: hiển thị thông tin tổng quan sau khi đăng nhập, gồm thông báo số lượng từ cần ôn tập, biểu đồ cột thể hiện phân bố từ vựng theo mức độ thành thạo, và thông tin cá nhân (avatar, tên, cấp độ, điểm số, số thú cưng sở hữu, streak).
+\begin{figure}[H]
+\centering
+\includegraphics[width=15cm]{images/Dashboard.png}
+\caption{Hình thiết kế giao diện Dashboard}
+\label{fig_session}
+\end{figure}
+
+
+\textbf{Bảng xếp hạng}: liệt kê người dùng theo điểm số, gồm các cột thứ hạng, tên và điểm.
+\begin{figure}[H]
+\centering
+\includegraphics[width=14cm]{images/Bxh.png}
+\caption{Hình thiết kế giao diện Bảng xếp hạng}
+\label{fig_session}
+\end{figure}
+
+
+\subsection{Nhóm Bộ từ vựng}
+
+\textbf{Danh sách bộ từ}: hỗ trợ tìm kiếm và lọc theo trạng thái sở hữu hoặc loại bộ từ vựng; kèm chức năng tạo bộ từ mới.
+\begin{figure}[H]
+\centering
+\includegraphics[width=14cm]{images/Sets.png}
+\caption{Hình thiết kế giao diện Danh sách bộ từ}
+\label{fig_session}
+\end{figure}
+
+\textbf{Tạo bộ từ}: gồm hai bước – (i) nhập danh sách từ khóa tìm kiếm; (ii) hiển thị các từ vựng gợi ý để người dùng lựa chọn, đồng thời nhập tiêu đề, mô tả, chủ đề, độ khó và tùy chọn công khai.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=15cm]{images/Tao1.png}
+\caption{Hình thiết kế giao diện Tạo bộ từ (bước 1)}
+\label{fig_session}
+\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=15cm]{images/Tao2.png}
+\caption{Hình thiết kế giao diện Tạo bộ từ (bước 2)}
+\label{fig_session}
+\end{figure}
+
+\textbf{Chi tiết bộ từ}: cho phép đăng ký sở hữu bộ từ để học, hiển thị danh sách từ vựng có phân trang, kèm tiến trình học của người dùng.
+\begin{figure}[H]
+\centering
+\includegraphics[width=14cm]{images/SetD.png}
+\caption{Hình thiết kế giao diện Chi tiết bộ từ}
+\label{fig_session}
+\end{figure}
+
+\subsection{Nhóm Thú cưng (Pet)}
+
+\textbf{Danh sách thú cưng}: có thanh tìm kiếm theo tên, tùy chọn lọc theo độ hiếm hoặc loại thú cưng, và chế độ chỉ hiển thị thú cưng đã sở hữu.
+\begin{figure}[H]
+\centering
+\includegraphics[width=13cm]{images/Pets.png}
+\caption{Hình thiết kế giao diện Danh sách thú cưng}
+\label{fig_session}
+\end{figure}
+
+
+\textbf{Chi tiết thú cưng}: hiển thị hình ảnh, thông tin chi tiết, thanh kinh nghiệm và cấp độ, kèm chức năng thăng cấp.
+\begin{figure}[H]
+\centering
+\includegraphics[width=14cm]{images/Pet.png}
+\caption{Hình thiết kế giao diện Chi tiết thú cưng}
+\label{fig_session}
+\end{figure}
+
+
+\subsection{Nhóm Học và Ôn tập}
+
+\textbf{Phiên học từ vựng mới và ôn tập}: có bố cục chung gồm khung câu hỏi, hình ảnh thú cưng đồng hành, và khu vực trả lời. Hệ thống hỗ trợ bốn dạng câu hỏi: Flashcard: nút “đã xem”; Fill in the blank: ô nhập văn bản; Multiple choice: 4 lựa chọn dạng nút; Listening: ô nhập văn bản sau khi nghe âm thanh.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=13cm]{images/Learn.png}
+\caption{Hình thiết kế giao diện Học và Ôn tập}
+\label{fig_session}
+\end{figure}
+
+
+Nhìn chung, bộ giao diện đã bao quát hầu hết các trường hợp sử dụng quan trọng nhất của hệ thống, đảm bảo tính khả thi khi triển khai thực tế. Ngoài ra, bố cục và tính năng được thiết kế trực quan, nhằm tạo sự hứng thú và động lực cho người học trong suốt quá trình sử dụng hệ thống.
+
+\section{Kết quả đạt được}
+
+Sau giai đoạn phân tích, thiết kế và triển khai, hệ thống đã hiện thực đầy đủ các chức năng cốt lõi được đề ra trong mục tiêu đề tài. Sản phẩm không chỉ minh họa mô hình lý thuyết về học từ vựng kết hợp gamification mà còn là một hệ thống có thể sử dụng được ngay ở mức thử nghiệm. Các kết quả đạt được được trình bày theo từng nhóm chức năng dưới đây.
+
+\subsection{Phiên học và ôn tập từ vựng}
+\begin{figure}[H]
+\centering
+\includegraphics[width=15cm]{images/Final_IF_Session.png}
+\caption{Màn hình thực hiện phiên học từ vựng.}
+\label{fig_session}
+\end{figure}
+
+Hệ thống hỗ trợ quy trình học theo mô hình \textbf{spaced repetition} và \textbf{active recall}, trong đó:
+\begin{itemize}
+    \item Người dùng có thể chọn bộ từ vựng và khởi tạo phiên học hoặc ôn tập.
+    \item Câu hỏi được lấy ra ưu tiên các từ từng trả lời sai, sau đó đến từ mới — giúp tập trung vào điểm yếu.
+    \item Khi trả lời, kết quả được phản hồi ngay (đúng/sai) kèm hiệu ứng âm thanh và hình ảnh, tăng hứng thú học.
+    \item Nếu tất cả câu hỏi của một từ vựng được trả lời đúng, tiến trình học của từ đó được nâng cấp (level up).
+    \item Sau khi hoàn thành phiên học, hệ thống tính toán XP và trả thưởng (thú cưng, item) nếu đạt điều kiện.
+\end{itemize}
+Quy trình này đảm bảo nguyên tắc học chủ động và có phản hồi tức thì, vốn đã được chứng minh giúp cải thiện khả năng ghi nhớ dài hạn.
+
+\subsection{Tạo và quản lý bộ từ vựng}
+\begin{figure}[H]
+\centering
+\includegraphics[width=15cm]{images/Final_IF_Set1.png}
+\caption{Màn hình tạo bộ từ vựng (Bước 1).}
+\label{fig_set1}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=15cm]{images/Final_IF_Set2.png}
+\caption{Màn hình tạo bộ từ vựng (Bước 2).}
+\label{fig_set2}
+\end{figure}
+
+Chức năng này cho phép người dùng tự xây dựng nội dung học cá nhân:
+\begin{itemize}
+    \item Nhập danh sách từ muốn tạo với bộ từ vựng để thực hiện tìm kiếm từ vựng trong hệ thống.
+    \item Điền thông tin bổ sung như tiêu đề, mô tả, chủ đề, độ khó và tải ảnh minh họa.
+    \item Quyết định chế độ công khai hay riêng tư để chia sẻ với người khác hoặc chỉ học cá nhân.
+    \item Bộ từ vựng sau khi tạo được lưu trong cơ sở dữ liệu kèm quyền sở hữu, hỗ trợ chỉnh sửa về sau.
+\end{itemize}
+Nhờ đó, hệ thống hỗ trợ học tập có tính cá nhân hóa và mở rộng nội dung linh hoạt theo nhu cầu người học.
+
+\subsection{Hệ thống thú cưng và nâng cấp}
+\begin{figure}[H]
+\centering
+\includegraphics[width=15cm]{images/Final_IF_Pet.png}
+\caption{Màn hình nâng cấp thú cưng.}
+\label{fig_pet}
+\end{figure}
+
+Hệ thống thú cưng là yếu tố gamification quan trọng:
+\begin{itemize}
+    \item Người học có thể sở hữu nhiều thú cưng, mỗi thú có độ hiếm, cấp độ và khả năng tiến hóa.
+    \item Trong quá trình học, người dùng tích lũy điểm AP; khi đủ có thể nâng cấp hoặc tiến hóa thú cưng.
+    \item Hệ thống kiểm tra điều kiện (quyền sở hữu, AP, cấp tối đa), cập nhật dữ liệu và ghi nhật ký tiến hóa.
+\end{itemize}
+Chức năng này giúp tạo phần thưởng dài hạn, tăng động lực duy trì chuỗi học liên tục.
+
+\subsection{Dashboard người dùng}
+\begin{figure}[H]
+\centering
+\includegraphics[width=15cm]{images/Final_IF_Static.png}
+\caption{Màn hình Dashboard người dùng.}
+\label{fig_dashboard}
+\end{figure}
+
+Màn hình Dashboard cung cấp góc nhìn tổng thể:
+\begin{itemize}
+    \item Số lượng từ cần ôn tập trong ngày, biểu đồ phân bố mức độ thành thạo.
+    \item Bảng thông tin người dùng: XP, AP, cấp độ, số thú cưng, chuỗi ngày học.
+    \item Điều hướng nhanh đến các chức năng học, tạo bộ từ, hoặc quản lý thú cưng.
+\end{itemize}
+Đây là nơi trung tâm giúp người học theo dõi tiến độ và duy trì động lực.
+
+\subsection{Đánh giá chung}
+Hệ thống đã được kiểm thử với dữ liệu mẫu gồm 500 từ vựng, 5 bộ từ vựng và nhiều phiên học thử nghiệm. Các kết quả cho thấy:
+\begin{itemize}
+    \item API phản hồi trong thời gian trung bình dưới 1.2 giây.
+    \item Dữ liệu tiến trình được cập nhật chính xác, không phát sinh lỗi trong các tình huống nhập sai.
+    \item Giao diện trực quan, quy trình học liền mạch, người dùng thử nghiệm đánh giá dễ thao tác.
+\end{itemize}
+Kết quả đạt được chứng minh tính khả thi của mô hình, đặt nền móng cho các giai đoạn phát triển tiếp theo như triển khai trên môi trường thực tế, bổ sung AI gợi ý lịch ôn tập hoặc phát triển ứng dụng di động.
+
+
+
+ 
+
