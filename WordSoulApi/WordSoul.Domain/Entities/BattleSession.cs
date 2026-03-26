@@ -32,12 +32,21 @@ namespace WordSoul.Domain.Entities
 
         // ── Kết quả ──────────────────────────────────────
         public int TotalQuestions { get; set; }
+        public int CurrentRound { get; set; } = 0;          // Round hiện tại (0-based)
         public int ChallengerCorrect { get; set; } = 0;
-        public int OpponentCorrect { get; set; } = 0;   // Dùng cho PvP (future)
-        public bool? ChallengerWon { get; set; }         // null = chưa xong / hòa
+        public int OpponentCorrect { get; set; } = 0;
+        public int ChallengerTotalScore { get; set; } = 0;  // Tổng điểm real-time
+        public int OpponentTotalScore { get; set; } = 0;
+        public bool? ChallengerWon { get; set; }            // null = chưa xong / hòa
+
+        // ── Real-time Pet selection (JSON) ─────────────────
+        public string? ChallengerPetIds { get; set; }       // e.g. "[5,12,7]"  UserOwnedPet IDs
+        public string? OpponentPetIds { get; set; }         // Bot: GymLeaderPet IDs
 
         // ── Navigation ───────────────────────────────────
         public List<BattleAnswer> Answers { get; set; } = [];
+        public List<BattleRound> Rounds { get; set; } = [];
+        public List<BattlePetState> PetStates { get; set; } = [];
 
         // ── Computed helpers ─────────────────────────────
         public int ChallengerScorePercent

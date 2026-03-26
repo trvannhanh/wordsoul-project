@@ -15,6 +15,7 @@ using WordSoul.Application.Services;
 using WordSoul.Application.Services.SRS;
 using WordSoul.Infrastructure.BackgroundServices;
 using WordSoul.Infrastructure.Common;
+using WordSoul.Infrastructure.Persistence;
 
 
 //using WordSoul.Infrastructure.BackgroundServices;
@@ -122,6 +123,21 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"]!)),
             ValidateIssuerSigningKey = true
         };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    (path.StartsWithSegments("/notificationHub") || path.StartsWithSegments("/battleHub")))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
+        };
     });
 
 // Thêm dịch vụ SignalR
@@ -200,6 +216,7 @@ builder.Services.AddScoped<IUserInventoryService, UserInventoryService>();
 // Gym Leader Progression
 builder.Services.AddScoped<IGymLeaderService, GymLeaderService>();
 builder.Services.AddScoped<IBattleService, BattleService>();
+builder.Services.AddScoped<IArenaBattleService, ArenaBattleService>();
 
 // Configure Cloudinary
 builder.Services.AddSingleton<Cloudinary>(sp =>
@@ -245,6 +262,7 @@ app.MapControllers();
 
 // Hub SignalR - đặt sau UseCors để policy được áp dụng
 app.MapHub<NotificationHub>("/notificationHub").RequireCors("AllowFrontend");
+app.MapHub<BattleHub>("/battleHub").RequireCors("AllowFrontend");
 
 // 7. Migration
 using (var scope = app.Services.CreateScope())

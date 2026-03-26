@@ -62,5 +62,8 @@ namespace WordSoul.Domain.Entities
         // Navigation
         public List<UserGymProgress> UserGymProgresses { get; set; } = [];
         public List<BattleSession> BattleSessions { get; set; } = [];
+
+        /// <summary>3 Pokémon của Gym Leader dùng cho trận PvE (Bot).</summary>
+        public List<GymLeaderPet> GymLeaderPets { get; set; } = [];
     }
 }
