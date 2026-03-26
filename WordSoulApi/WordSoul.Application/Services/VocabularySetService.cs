@@ -1,4 +1,4 @@
-﻿
+
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using WordSoul.Application.DTOs.VocabularySet;
@@ -330,22 +330,25 @@ namespace WordSoul.Application.Services
         /// </summary>
         private static readonly Dictionary<VocabularySetTheme, IEnumerable<PetType>> ThemeToPetTypesMap = new()
         {
-            { VocabularySetTheme.DailyLife,   [PetType.Normal] },
-            { VocabularySetTheme.Nature,      [PetType.Grass,    PetType.Bug] },
-            { VocabularySetTheme.Weather,     [PetType.Ice,      PetType.Flying] },
-            { VocabularySetTheme.Food,        [PetType.Water,    PetType.Fairy] },
-            { VocabularySetTheme.Technology,  [PetType.Electric] },
-            { VocabularySetTheme.Travel,      [PetType.Flying,   PetType.Normal] },
-            { VocabularySetTheme.Health,      [PetType.Fairy,    PetType.Psychic] },
-            { VocabularySetTheme.Sports,      [PetType.Fighting] },
-            { VocabularySetTheme.Business,    [PetType.Steel] },
-            { VocabularySetTheme.Science,     [PetType.Psychic,  PetType.Electric] },
-            { VocabularySetTheme.Art,         [PetType.Dragon,   PetType.Psychic] },
-            { VocabularySetTheme.Mystery,     [PetType.Ghost] },
-            { VocabularySetTheme.Dark,        [PetType.Dark] },
-            { VocabularySetTheme.Custom,      [PetType.Fire] },
-            { VocabularySetTheme.Challenge,   [PetType.Rock] },
-            { VocabularySetTheme.Poison,      [PetType.Poison] },
+            { VocabularySetTheme.DailyLife,     [PetType.Normal] },
+            { VocabularySetTheme.Nature,        [PetType.Grass] },
+            { VocabularySetTheme.Food,          [PetType.Fire] },
+            { VocabularySetTheme.Weather,       [PetType.Flying] },
+            { VocabularySetTheme.Technology,    [PetType.Electric] },
+            { VocabularySetTheme.Travel,        [PetType.Ground] },
+            { VocabularySetTheme.Health,        [PetType.Fairy] },
+            { VocabularySetTheme.Sports,        [PetType.Fighting] },
+            { VocabularySetTheme.Business,      [PetType.Steel] },
+            { VocabularySetTheme.Science,       [PetType.Psychic] },
+            { VocabularySetTheme.Art,           [PetType.Bug] },
+            { VocabularySetTheme.Communication, [PetType.Water] },
+            { VocabularySetTheme.Mystery,       [PetType.Ghost] },
+            { VocabularySetTheme.Dark,          [PetType.Dark] },
+            { VocabularySetTheme.Academic,      [PetType.Ice] },
+            { VocabularySetTheme.Challenge,     [PetType.Rock] },
+            { VocabularySetTheme.TrapWords,     [PetType.Poison] },
+            { VocabularySetTheme.System,        [PetType.Dragon] },
+            { VocabularySetTheme.Custom,        [PetType.Normal, PetType.Psychic] }
         };
 
         private VocabularySetDto MapToDto(VocabularySet set, int? currentUserId = null) => new()

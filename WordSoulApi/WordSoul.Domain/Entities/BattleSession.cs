@@ -43,8 +43,6 @@ namespace WordSoul.Domain.Entities
         public string? ChallengerPetIds { get; set; }       // e.g. "[5,12,7]"  UserOwnedPet IDs
         public string? OpponentPetIds { get; set; }         // Bot: GymLeaderPet IDs
 
-        // ── Navigation ───────────────────────────────────
-        public List<BattleAnswer> Answers { get; set; } = [];
         public List<BattleRound> Rounds { get; set; } = [];
         public List<BattlePetState> PetStates { get; set; } = [];
 

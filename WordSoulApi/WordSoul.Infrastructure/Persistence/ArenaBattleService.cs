@@ -232,7 +232,13 @@ namespace WordSoul.Infrastructure.Persistence
 
             // 3. Tính damage
             int scoreDiff = Math.Abs(p1Score - p2Score);
-            int damage = scoreDiff == 0 ? 0 : Math.Clamp(scoreDiff / 10, 1, 20);
+
+            // SUDDEN DEATH MECHANIC
+            int damageMultiplier = 1;
+            if (dto.RoundIndex >= 14) damageMultiplier = 5; // Round 15+ x5
+            else if (dto.RoundIndex >= 9) damageMultiplier = 2; // Round 10+ x2
+
+            int damage = scoreDiff == 0 ? 0 : Math.Clamp(scoreDiff / 10, 1, 20) * damageMultiplier;
             int damagedPlayer = p1Score > p2Score ? 2 : (p2Score > p1Score ? 1 : 0);
 
             // 4. Cập nhật round
@@ -268,16 +274,16 @@ namespace WordSoul.Infrastructure.Persistence
             // 7. Kiểm tra kết thúc
             bool allP1Fainted = petStates.Where(p => p.PlayerIndex == 1).All(p => p.IsFainted);
             bool allP2Fainted = petStates.Where(p => p.PlayerIndex == 2).All(p => p.IsFainted);
-            bool lastRound = dto.RoundIndex >= session.TotalQuestions - 1;
 
             BattleEndedDto? battleEnded = null;
             RoundQuestionDto? nextQuestion = null;
 
-            if (allP1Fainted || allP2Fainted || lastRound)
+            // Chế độ sinh tồn 100%: Chỉ kết thúc khi 1 trong 2 bên chết hết sạch Pet (hoặc lỡ hết câu hỏi dữ trữ)
+            bool noMoreQuestions = dto.RoundIndex >= session.TotalQuestions - 1;
+            if (allP1Fainted || allP2Fainted || noMoreQuestions)
             {
                 // Xác định người thắng
-                bool p1Won = allP2Fainted
-                    || (!allP1Fainted && session.ChallengerTotalScore >= session.OpponentTotalScore);
+                bool p1Won = allP2Fainted && !allP1Fainted;
                 session.ChallengerWon = p1Won;
                 session.Status = BattleStatus.Completed;
                 session.CompletedAt = DateTime.UtcNow;
@@ -303,8 +309,9 @@ namespace WordSoul.Infrastructure.Persistence
                     }
                     gymProgress!.TotalAttempts++;
                     gymProgress.LastAttemptAt = DateTime.UtcNow;
-                    int scoreP = session.TotalQuestions == 0 ? 0
-                        : (int)Math.Round((double)session.ChallengerCorrect / session.TotalQuestions * 100);
+                    int roundsPlayed = dto.RoundIndex + 1;
+                    int scoreP = roundsPlayed == 0 ? 0
+                        : (int)Math.Round((double)session.ChallengerCorrect / roundsPlayed * 100);
                     if (scoreP > gymProgress.BestScore) gymProgress.BestScore = scoreP;
 
                     // Badge
@@ -339,7 +346,7 @@ namespace WordSoul.Infrastructure.Persistence
                     P2TotalScore = session.OpponentTotalScore,
                     P1CorrectCount = session.ChallengerCorrect,
                     P2CorrectCount = session.OpponentCorrect,
-                    TotalRounds = session.TotalQuestions,
+                    TotalRounds = dto.RoundIndex + 1,
                     XpEarned = xpEarned,
                     BadgeEarned = badgeEarned,
                     BadgeName = badgeName,
@@ -481,7 +488,7 @@ namespace WordSoul.Infrastructure.Persistence
         private async Task<List<Vocabulary>> SelectBattleVocabsAsync(
             int userId, GymLeader gym, CancellationToken ct)
         {
-            int needed = gym.QuestionCount;
+            int needed = 50; // Dự trữ sẵn 50 câu hỏi cho 1 trận để chạy Endless/Sudden Death
             var priorityStates = new[] { "Learning", "Review", "Mastered" };
 
             var priority = await _db.UserVocabularyProgresses

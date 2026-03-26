@@ -123,7 +123,6 @@ namespace WordSoul.Infrastructure.Persistence
 
             // 3. Chấm điểm từng câu
             var answerResults = new List<BattleAnswerResultDto>();
-            var battleAnswers = new List<BattleAnswer>();
             int correctCount = 0;
 
             foreach (var answer in request.Answers)
@@ -137,16 +136,6 @@ namespace WordSoul.Infrastructure.Persistence
                     StringComparison.OrdinalIgnoreCase);
 
                 if (isCorrect) correctCount++;
-
-                battleAnswers.Add(new BattleAnswer
-                {
-                    BattleSessionId = session.Id,
-                    VocabularyId = answer.VocabularyId,
-                    ChallengerAnswer = answer.Answer,
-                    ChallengerIsCorrect = isCorrect,
-                    ChallengerAnsweredMs = answer.ResponseTimeMs,
-                    QuestionOrder = answer.QuestionOrder
-                });
 
                 answerResults.Add(new BattleAnswerResultDto
                 {
@@ -242,8 +231,6 @@ namespace WordSoul.Infrastructure.Persistence
                     userId, gym.Id, gym.Name, scorePercent);
             }
 
-            // 8. Lưu BattleAnswers + tất cả thay đổi
-            _db.BattleAnswers.AddRange(battleAnswers);
             await _db.SaveChangesAsync(ct);
 
             return new BattleResultDto
