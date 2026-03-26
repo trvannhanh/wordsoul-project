@@ -165,9 +165,13 @@ export default function GymDetail() {
         {/* Reward preview */}
         <div className="rounded-xl p-4 border border-yellow-500/20 bg-yellow-500/5">
           <p className="font-pixel text-xs text-yellow-400 mb-2">🏆 VICTORY REWARD</p>
-          <div className="flex gap-4 text-sm font-noto text-gray-300">
+          <div className="flex items-center gap-4 text-sm font-noto text-gray-300">
             <span>+{gym.xpReward} XP</span>
-            <span>• {gym.badgeName}</span>
+            <span className="flex items-center gap-2">
+              •
+              {gym.badgeImageUrl && <img src={gym.badgeImageUrl} alt={gym.badgeName} className="w-6 h-6 object-contain pixel-art" />}
+              {gym.badgeName}
+            </span>
           </div>
         </div>
 

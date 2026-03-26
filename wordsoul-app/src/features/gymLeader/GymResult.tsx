@@ -52,7 +52,7 @@ export default function GymResult() {
   if (!result) return null;
 
   const { isVictory, scorePercent, correctAnswers, totalQuestions,
-          passRatePercent, xpEarned, badgeEarned, badgeName, gymLeaderName,
+          passRatePercent, xpEarned, badgeEarned, badgeName, badgeImageUrl, gymLeaderName,
           answerResults, bestScore } = result;
 
   return (
@@ -106,7 +106,11 @@ export default function GymResult() {
             {badgeEarned && (
               <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg border"
                 style={{ background: `${color}15`, borderColor: `${color}40` }}>
-                <span className="text-2xl">🏅</span>
+                {badgeImageUrl ? (
+                    <img src={badgeImageUrl} alt={badgeName} className="w-6 h-6 object-contain pixel-art" />
+                ) : (
+                    <span className="text-2xl">🏅</span>
+                )}
                 <span className="font-pixel text-xs" style={{ color }}>{badgeName} earned!</span>
               </div>
             )}

@@ -277,10 +277,7 @@ namespace WordSoul.Infrastructure.Persistence
                 .Where(uvp =>
                     uvp.UserId == userId &&
                     priorityStates.Contains(uvp.MemoryState) &&
-                    uvp.Vocabulary!.CEFRLevel == gym.RequiredCefrLevel &&
-                    _db.SetVocabularies.Any(sv =>
-                        sv.VocabularyId == uvp.VocabularyId &&
-                        sv.VocabularySet!.Theme == gym.Theme))
+                    uvp.Vocabulary!.CEFRLevel == gym.RequiredCefrLevel)
                 .Include(uvp => uvp.Vocabulary)
                 .OrderBy(_ => Guid.NewGuid())           // random shuffle
                 .Take(needed)
@@ -294,16 +291,13 @@ namespace WordSoul.Infrastructure.Persistence
             var alreadySelectedIds = priorityVocabs.Select(v => v.Id).ToHashSet();
             int remaining = needed - priorityVocabs.Count;
 
-            var fallbackVocabs = await _db.SetVocabularies
+            var fallbackVocabs = await _db.Vocabularies
                 .AsNoTracking()
-                .Where(sv =>
-                    sv.VocabularySet!.Theme == gym.Theme &&
-                    sv.Vocabulary!.CEFRLevel == gym.RequiredCefrLevel &&
-                    !alreadySelectedIds.Contains(sv.VocabularyId))
-                .Include(sv => sv.Vocabulary)
+                .Where(v =>
+                    v.CEFRLevel == gym.RequiredCefrLevel &&
+                    !alreadySelectedIds.Contains(v.Id))
                 .OrderBy(_ => Guid.NewGuid())
                 .Take(remaining)
-                .Select(sv => sv.Vocabulary!)
                 .ToListAsync(ct);
 
             priorityVocabs.AddRange(fallbackVocabs);
