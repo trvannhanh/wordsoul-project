@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WordSoul.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using WordSoul.Infrastructure.Persistence;
 namespace WordSoul.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(WordSoulDbContext))]
-    partial class WordSoulDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260325165414_AddRealTimeBattle")]
+    partial class AddRealTimeBattle
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -57,6 +60,88 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.HasIndex("ItemId");
 
                     b.ToTable("Achievements");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 101,
+                            ConditionType = 4,
+                            ConditionValue = 1,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Defeated Brock, Pewter City Gym Leader",
+                            Name = "Boulder Badge",
+                            RewardItemId = 0
+                        },
+                        new
+                        {
+                            Id = 102,
+                            ConditionType = 4,
+                            ConditionValue = 2,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Defeated Misty, Cerulean City Gym Leader",
+                            Name = "Cascade Badge",
+                            RewardItemId = 0
+                        },
+                        new
+                        {
+                            Id = 103,
+                            ConditionType = 4,
+                            ConditionValue = 3,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Defeated Lt. Surge, Vermilion Gym Leader",
+                            Name = "Thunder Badge",
+                            RewardItemId = 0
+                        },
+                        new
+                        {
+                            Id = 104,
+                            ConditionType = 4,
+                            ConditionValue = 4,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Defeated Erika, Celadon Gym Leader",
+                            Name = "Rainbow Badge",
+                            RewardItemId = 0
+                        },
+                        new
+                        {
+                            Id = 105,
+                            ConditionType = 4,
+                            ConditionValue = 5,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Defeated Koga, Fuchsia Gym Leader",
+                            Name = "Soul Badge",
+                            RewardItemId = 0
+                        },
+                        new
+                        {
+                            Id = 106,
+                            ConditionType = 4,
+                            ConditionValue = 6,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Defeated Sabrina, Saffron Gym Leader",
+                            Name = "Marsh Badge",
+                            RewardItemId = 0
+                        },
+                        new
+                        {
+                            Id = 107,
+                            ConditionType = 4,
+                            ConditionValue = 7,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Defeated Blaine, Cinnabar Gym Leader",
+                            Name = "Volcano Badge",
+                            RewardItemId = 0
+                        },
+                        new
+                        {
+                            Id = 108,
+                            ConditionType = 4,
+                            ConditionValue = 8,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Defeated Giovanni, Viridian Gym Leader",
+                            Name = "Earth Badge",
+                            RewardItemId = 0
+                        });
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.ActivityLog", b =>
@@ -137,6 +222,50 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.HasIndex("LearningSessionId", "VocabularyId", "QuestionType");
 
                     b.ToTable("AnswerRecords");
+                });
+
+            modelBuilder.Entity("WordSoul.Domain.Entities.BattleAnswer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BattleSessionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ChallengerAnswer")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ChallengerAnsweredMs")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("ChallengerIsCorrect")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("OpponentAnswer")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("OpponentAnsweredMs")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("OpponentIsCorrect")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("QuestionOrder")
+                        .HasColumnType("int");
+
+                    b.Property<int>("VocabularyId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BattleSessionId");
+
+                    b.HasIndex("VocabularyId");
+
+                    b.ToTable("BattleAnswers");
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.BattlePetState", b =>
@@ -441,6 +570,160 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.HasIndex("BadgeAchievementId");
 
                     b.ToTable("GymLeaders");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            BadgeAchievementId = 101,
+                            BadgeName = "Boulder Badge",
+                            CooldownHours = 12,
+                            Description = "Brock tests your fundamentals. Solid like rock, his battle demands strong basics.",
+                            GymOrder = 1,
+                            Name = "Brock",
+                            PassRatePercent = 80,
+                            QuestionCount = 15,
+                            RequiredCefrLevel = 0,
+                            RequiredMemoryState = "Learning",
+                            Theme = 14,
+                            Title = "Rock-Type Master",
+                            VocabThreshold = 15,
+                            XpReward = 150,
+                            XpThreshold = 300
+                        },
+                        new
+                        {
+                            Id = 2,
+                            BadgeAchievementId = 102,
+                            BadgeName = "Cascade Badge",
+                            CooldownHours = 12,
+                            Description = "Misty flows like water. Adaptability is key to overcoming her strategies.",
+                            GymOrder = 2,
+                            Name = "Misty",
+                            PassRatePercent = 80,
+                            QuestionCount = 15,
+                            RequiredCefrLevel = 0,
+                            RequiredMemoryState = "Review",
+                            Theme = 3,
+                            Title = "Water-Type Specialist",
+                            VocabThreshold = 15,
+                            XpReward = 200,
+                            XpThreshold = 600
+                        },
+                        new
+                        {
+                            Id = 3,
+                            BadgeAchievementId = 103,
+                            BadgeName = "Thunder Badge",
+                            CooldownHours = 12,
+                            Description = "Fast and explosive, Lt. Surge overwhelms unprepared challengers.",
+                            GymOrder = 3,
+                            Name = "Lt. Surge",
+                            PassRatePercent = 80,
+                            QuestionCount = 15,
+                            RequiredCefrLevel = 1,
+                            RequiredMemoryState = "Learning",
+                            Theme = 4,
+                            Title = "Lightning American",
+                            VocabThreshold = 20,
+                            XpReward = 250,
+                            XpThreshold = 1000
+                        },
+                        new
+                        {
+                            Id = 4,
+                            BadgeAchievementId = 104,
+                            BadgeName = "Rainbow Badge",
+                            CooldownHours = 12,
+                            Description = "Erika’s calm style hides dangerous precision. Patience wins this match.",
+                            GymOrder = 4,
+                            Name = "Erika",
+                            PassRatePercent = 80,
+                            QuestionCount = 15,
+                            RequiredCefrLevel = 1,
+                            RequiredMemoryState = "Review",
+                            Theme = 1,
+                            Title = "Nature-Loving Princess",
+                            VocabThreshold = 20,
+                            XpReward = 300,
+                            XpThreshold = 1500
+                        },
+                        new
+                        {
+                            Id = 5,
+                            BadgeAchievementId = 105,
+                            BadgeName = "Soul Badge",
+                            CooldownHours = 12,
+                            Description = "Koga uses deception and speed. One mistake and it's over.",
+                            GymOrder = 5,
+                            Name = "Koga",
+                            PassRatePercent = 80,
+                            QuestionCount = 15,
+                            RequiredCefrLevel = 2,
+                            RequiredMemoryState = "Learning",
+                            Theme = 15,
+                            Title = "Poison Ninja Master",
+                            VocabThreshold = 25,
+                            XpReward = 400,
+                            XpThreshold = 2500
+                        },
+                        new
+                        {
+                            Id = 6,
+                            BadgeAchievementId = 106,
+                            BadgeName = "Marsh Badge",
+                            CooldownHours = 12,
+                            Description = "Sabrina reads your moves before you make them. Precision is mandatory.",
+                            GymOrder = 6,
+                            Name = "Sabrina",
+                            PassRatePercent = 80,
+                            QuestionCount = 15,
+                            RequiredCefrLevel = 2,
+                            RequiredMemoryState = "Review",
+                            Theme = 9,
+                            Title = "Psychic Master",
+                            VocabThreshold = 25,
+                            XpReward = 500,
+                            XpThreshold = 3500
+                        },
+                        new
+                        {
+                            Id = 7,
+                            BadgeAchievementId = 107,
+                            BadgeName = "Volcano Badge",
+                            CooldownHours = 12,
+                            Description = "Blaine combines knowledge and battle. Expect tricky questions and heat.",
+                            GymOrder = 7,
+                            Name = "Blaine",
+                            PassRatePercent = 80,
+                            QuestionCount = 15,
+                            RequiredCefrLevel = 2,
+                            RequiredMemoryState = "Review",
+                            Theme = 13,
+                            Title = "Fire-Type Quiz Master",
+                            VocabThreshold = 30,
+                            XpReward = 600,
+                            XpThreshold = 5000
+                        },
+                        new
+                        {
+                            Id = 8,
+                            BadgeAchievementId = 108,
+                            BadgeName = "Earth Badge",
+                            CooldownHours = 12,
+                            Description = "Giovanni is the ultimate test. Strategy, power, and mastery decide victory.",
+                            GymOrder = 8,
+                            Name = "Giovanni",
+                            PassRatePercent = 80,
+                            QuestionCount = 15,
+                            RequiredCefrLevel = 3,
+                            RequiredMemoryState = "Learning",
+                            Theme = 14,
+                            Title = "Team Rocket Boss",
+                            VocabThreshold = 30,
+                            XpReward = 800,
+                            XpThreshold = 7000
+                        });
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.GymLeaderPet", b =>
@@ -477,6 +760,224 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("GymLeaderPets");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            BotAccuracy = 0.55000000000000004,
+                            BotAvgResponseMs = 7000,
+                            GymLeaderId = 1,
+                            PetId = 50,
+                            SlotIndex = 0
+                        },
+                        new
+                        {
+                            Id = 2,
+                            BotAccuracy = 0.55000000000000004,
+                            BotAvgResponseMs = 7000,
+                            GymLeaderId = 1,
+                            PetId = 51,
+                            SlotIndex = 1
+                        },
+                        new
+                        {
+                            Id = 3,
+                            BotAccuracy = 0.55000000000000004,
+                            BotAvgResponseMs = 7000,
+                            GymLeaderId = 1,
+                            PetId = 52,
+                            SlotIndex = 2
+                        },
+                        new
+                        {
+                            Id = 4,
+                            BotAccuracy = 0.59999999999999998,
+                            BotAvgResponseMs = 6500,
+                            GymLeaderId = 2,
+                            PetId = 53,
+                            SlotIndex = 0
+                        },
+                        new
+                        {
+                            Id = 5,
+                            BotAccuracy = 0.59999999999999998,
+                            BotAvgResponseMs = 6500,
+                            GymLeaderId = 2,
+                            PetId = 54,
+                            SlotIndex = 1
+                        },
+                        new
+                        {
+                            Id = 6,
+                            BotAccuracy = 0.59999999999999998,
+                            BotAvgResponseMs = 6500,
+                            GymLeaderId = 2,
+                            PetId = 55,
+                            SlotIndex = 2
+                        },
+                        new
+                        {
+                            Id = 7,
+                            BotAccuracy = 0.65000000000000002,
+                            BotAvgResponseMs = 6000,
+                            GymLeaderId = 3,
+                            PetId = 56,
+                            SlotIndex = 0
+                        },
+                        new
+                        {
+                            Id = 8,
+                            BotAccuracy = 0.65000000000000002,
+                            BotAvgResponseMs = 6000,
+                            GymLeaderId = 3,
+                            PetId = 57,
+                            SlotIndex = 1
+                        },
+                        new
+                        {
+                            Id = 9,
+                            BotAccuracy = 0.65000000000000002,
+                            BotAvgResponseMs = 6000,
+                            GymLeaderId = 3,
+                            PetId = 58,
+                            SlotIndex = 2
+                        },
+                        new
+                        {
+                            Id = 10,
+                            BotAccuracy = 0.69999999999999996,
+                            BotAvgResponseMs = 5500,
+                            GymLeaderId = 4,
+                            PetId = 59,
+                            SlotIndex = 0
+                        },
+                        new
+                        {
+                            Id = 11,
+                            BotAccuracy = 0.69999999999999996,
+                            BotAvgResponseMs = 5500,
+                            GymLeaderId = 4,
+                            PetId = 60,
+                            SlotIndex = 1
+                        },
+                        new
+                        {
+                            Id = 12,
+                            BotAccuracy = 0.69999999999999996,
+                            BotAvgResponseMs = 5500,
+                            GymLeaderId = 4,
+                            PetId = 61,
+                            SlotIndex = 2
+                        },
+                        new
+                        {
+                            Id = 13,
+                            BotAccuracy = 0.75,
+                            BotAvgResponseMs = 5000,
+                            GymLeaderId = 5,
+                            PetId = 62,
+                            SlotIndex = 0
+                        },
+                        new
+                        {
+                            Id = 14,
+                            BotAccuracy = 0.75,
+                            BotAvgResponseMs = 5000,
+                            GymLeaderId = 5,
+                            PetId = 63,
+                            SlotIndex = 1
+                        },
+                        new
+                        {
+                            Id = 15,
+                            BotAccuracy = 0.75,
+                            BotAvgResponseMs = 5000,
+                            GymLeaderId = 5,
+                            PetId = 64,
+                            SlotIndex = 2
+                        },
+                        new
+                        {
+                            Id = 16,
+                            BotAccuracy = 0.80000000000000004,
+                            BotAvgResponseMs = 4500,
+                            GymLeaderId = 6,
+                            PetId = 65,
+                            SlotIndex = 0
+                        },
+                        new
+                        {
+                            Id = 17,
+                            BotAccuracy = 0.80000000000000004,
+                            BotAvgResponseMs = 4500,
+                            GymLeaderId = 6,
+                            PetId = 66,
+                            SlotIndex = 1
+                        },
+                        new
+                        {
+                            Id = 18,
+                            BotAccuracy = 0.80000000000000004,
+                            BotAvgResponseMs = 4500,
+                            GymLeaderId = 6,
+                            PetId = 67,
+                            SlotIndex = 2
+                        },
+                        new
+                        {
+                            Id = 19,
+                            BotAccuracy = 0.84999999999999998,
+                            BotAvgResponseMs = 3500,
+                            GymLeaderId = 7,
+                            PetId = 68,
+                            SlotIndex = 0
+                        },
+                        new
+                        {
+                            Id = 20,
+                            BotAccuracy = 0.84999999999999998,
+                            BotAvgResponseMs = 3500,
+                            GymLeaderId = 7,
+                            PetId = 69,
+                            SlotIndex = 1
+                        },
+                        new
+                        {
+                            Id = 21,
+                            BotAccuracy = 0.84999999999999998,
+                            BotAvgResponseMs = 3500,
+                            GymLeaderId = 7,
+                            PetId = 70,
+                            SlotIndex = 2
+                        },
+                        new
+                        {
+                            Id = 22,
+                            BotAccuracy = 0.90000000000000002,
+                            BotAvgResponseMs = 3000,
+                            GymLeaderId = 8,
+                            PetId = 71,
+                            SlotIndex = 0
+                        },
+                        new
+                        {
+                            Id = 23,
+                            BotAccuracy = 0.90000000000000002,
+                            BotAvgResponseMs = 3000,
+                            GymLeaderId = 8,
+                            PetId = 72,
+                            SlotIndex = 1
+                        },
+                        new
+                        {
+                            Id = 24,
+                            BotAccuracy = 0.90000000000000002,
+                            BotAvgResponseMs = 3000,
+                            GymLeaderId = 8,
+                            PetId = 73,
+                            SlotIndex = 2
+                        });
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.Item", b =>
@@ -1234,6 +1735,25 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.Navigation("Vocabulary");
                 });
 
+            modelBuilder.Entity("WordSoul.Domain.Entities.BattleAnswer", b =>
+                {
+                    b.HasOne("WordSoul.Domain.Entities.BattleSession", "BattleSession")
+                        .WithMany("Answers")
+                        .HasForeignKey("BattleSessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WordSoul.Domain.Entities.Vocabulary", "Vocabulary")
+                        .WithMany()
+                        .HasForeignKey("VocabularyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("BattleSession");
+
+                    b.Navigation("Vocabulary");
+                });
+
             modelBuilder.Entity("WordSoul.Domain.Entities.BattlePetState", b =>
                 {
                     b.HasOne("WordSoul.Domain.Entities.BattleSession", "BattleSession")
@@ -1592,6 +2112,8 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("WordSoul.Domain.Entities.BattleSession", b =>
                 {
+                    b.Navigation("Answers");
+
                     b.Navigation("PetStates");
 
                     b.Navigation("Rounds");

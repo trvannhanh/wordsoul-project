@@ -1,5 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using WordSoul.Domain.Entities;
+using WordSoul.Domain.Enums;
 
 namespace WordSoul.Infrastructure.Persistence
 {
@@ -26,6 +27,14 @@ namespace WordSoul.Infrastructure.Persistence
         public DbSet<VocabularyReviewHistory> VocabularyReviewHistories { get; set; }
         public DbSet<DailyQuest> DailyQuests { get; set; }
         public DbSet<UserDailyQuest> UserDailyQuests { get; set; }
+
+        // ── Gym Leader Progression System ────────────────
+        public DbSet<GymLeader> GymLeaders { get; set; }
+        public DbSet<GymLeaderPet> GymLeaderPets { get; set; }
+        public DbSet<UserGymProgress> UserGymProgresses { get; set; }
+        public DbSet<BattleSession> BattleSessions { get; set; }
+        public DbSet<BattleRound> BattleRounds { get; set; }
+        public DbSet<BattlePetState> BattlePetStates { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -301,7 +310,117 @@ namespace WordSoul.Infrastructure.Persistence
             modelBuilder.Entity<UserDailyQuest>()
                 .HasIndex(udq => new { udq.UserId, udq.DailyQuestId, udq.QuestDate })
                 .IsUnique();
-        }
-    }
 
-}
+            // ── Gym Leader Progression ────────────────────────────────────────────
+
+            // UserGymProgress: composite PK
+            modelBuilder.Entity<UserGymProgress>()
+                .HasKey(ugp => new { ugp.UserId, ugp.GymLeaderId });
+
+            modelBuilder.Entity<UserGymProgress>()
+                .HasOne(ugp => ugp.User)
+                .WithMany(u => u.UserGymProgresses)
+                .HasForeignKey(ugp => ugp.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserGymProgress>()
+                .HasOne(ugp => ugp.GymLeader)
+                .WithMany(gl => gl.UserGymProgresses)
+                .HasForeignKey(ugp => ugp.GymLeaderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // GymLeader → Achievement (badge)
+            modelBuilder.Entity<GymLeader>()
+                .HasOne(gl => gl.BadgeAchievement)
+                .WithMany()
+                .HasForeignKey(gl => gl.BadgeAchievementId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // BattleSession: Challenger
+            modelBuilder.Entity<BattleSession>()
+                .HasOne(bs => bs.ChallengerUser)
+                .WithMany()
+                .HasForeignKey(bs => bs.ChallengerUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // BattleSession: Opponent (nullable)
+            modelBuilder.Entity<BattleSession>()
+                .HasOne(bs => bs.OpponentUser)
+                .WithMany()
+                .HasForeignKey(bs => bs.OpponentUserId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+
+            // BattleSession: GymLeader (nullable)
+            modelBuilder.Entity<BattleSession>()
+                .HasOne(bs => bs.GymLeader)
+                .WithMany(gl => gl.BattleSessions)
+                .HasForeignKey(bs => bs.GymLeaderId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+
+            // ── BattleRound ─────────────────────────────────
+            modelBuilder.Entity<BattleRound>()
+                .HasOne(br => br.BattleSession)
+                .WithMany(bs => bs.Rounds)
+                .HasForeignKey(br => br.BattleSessionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<BattleRound>()
+                .HasOne(br => br.Vocabulary)
+                .WithMany()
+                .HasForeignKey(br => br.VocabularyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<BattleRound>()
+                .HasIndex(br => new { br.BattleSessionId, br.RoundIndex })
+                .IsUnique();
+
+            // ── BattlePetState ─────────────────────────────
+            modelBuilder.Entity<BattlePetState>()
+                .HasOne(bps => bps.BattleSession)
+                .WithMany(bs => bs.PetStates)
+                .HasForeignKey(bps => bps.BattleSessionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<BattlePetState>()
+                .HasOne(bps => bps.UserOwnedPet)
+                .WithMany()
+                .HasForeignKey(bps => bps.UserOwnedPetId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+
+            modelBuilder.Entity<BattlePetState>()
+                .HasOne(bps => bps.GymLeaderPet)
+                .WithMany()
+                .HasForeignKey(bps => bps.GymLeaderPetId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+
+            // ── GymLeaderPet ───────────────────────────────
+            modelBuilder.Entity<GymLeaderPet>()
+                .HasOne(glp => glp.GymLeader)
+                .WithMany(gl => gl.GymLeaderPets)
+                .HasForeignKey(glp => glp.GymLeaderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<GymLeaderPet>()
+                .HasOne(glp => glp.Pet)
+                .WithMany()
+                .HasForeignKey(glp => glp.PetId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<GymLeaderPet>()
+                .HasIndex(glp => new { glp.GymLeaderId, glp.SlotIndex })
+                .IsUnique();
+
+            // Indexes
+            modelBuilder.Entity<BattleSession>()
+                .HasIndex(bs => new { bs.ChallengerUserId, bs.Status });
+            modelBuilder.Entity<UserGymProgress>()
+                .HasIndex(ugp => new { ugp.UserId, ugp.Status });
+        }
+
+}   // class WordSoulDbContext
+
+}   // namespace WordSoul.Infrastructure.Persistence

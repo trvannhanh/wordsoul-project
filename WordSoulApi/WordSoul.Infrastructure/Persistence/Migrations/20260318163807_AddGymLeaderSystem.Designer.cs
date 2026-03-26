@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WordSoul.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using WordSoul.Infrastructure.Persistence;
 namespace WordSoul.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(WordSoulDbContext))]
-    partial class WordSoulDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260318163807_AddGymLeaderSystem")]
+    partial class AddGymLeaderSystem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -57,6 +60,88 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.HasIndex("ItemId");
 
                     b.ToTable("Achievements");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 101,
+                            ConditionType = 4,
+                            ConditionValue = 1,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Defeated Norm, Guardian of Daily Life",
+                            Name = "Boulder Badge",
+                            RewardItemId = 0
+                        },
+                        new
+                        {
+                            Id = 102,
+                            ConditionType = 4,
+                            ConditionValue = 2,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Defeated Flora, Guardian of Nature",
+                            Name = "Leaf Badge",
+                            RewardItemId = 0
+                        },
+                        new
+                        {
+                            Id = 103,
+                            ConditionType = 4,
+                            ConditionValue = 3,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Defeated Hail, Guardian of Weather",
+                            Name = "Frost Badge",
+                            RewardItemId = 0
+                        },
+                        new
+                        {
+                            Id = 104,
+                            ConditionType = 4,
+                            ConditionValue = 4,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Defeated Marina, Guardian of Food",
+                            Name = "Tide Badge",
+                            RewardItemId = 0
+                        },
+                        new
+                        {
+                            Id = 105,
+                            ConditionType = 4,
+                            ConditionValue = 5,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Defeated Volt, Guardian of Technology",
+                            Name = "Spark Badge",
+                            RewardItemId = 0
+                        },
+                        new
+                        {
+                            Id = 106,
+                            ConditionType = 4,
+                            ConditionValue = 6,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Defeated Aero, Guardian of Travel",
+                            Name = "Wing Badge",
+                            RewardItemId = 0
+                        },
+                        new
+                        {
+                            Id = 107,
+                            ConditionType = 4,
+                            ConditionValue = 7,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Defeated Lumi, Guardian of Health",
+                            Name = "Glow Badge",
+                            RewardItemId = 0
+                        },
+                        new
+                        {
+                            Id = 108,
+                            ConditionType = 4,
+                            ConditionValue = 8,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Defeated Brawl, Guardian of Sports",
+                            Name = "Iron Badge",
+                            RewardItemId = 0
+                        });
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.ActivityLog", b =>
@@ -139,7 +224,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.ToTable("AnswerRecords");
                 });
 
-            modelBuilder.Entity("WordSoul.Domain.Entities.BattlePetState", b =>
+            modelBuilder.Entity("WordSoul.Domain.Entities.BattleAnswer", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -150,109 +235,37 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.Property<int>("BattleSessionId")
                         .HasColumnType("int");
 
-                    b.Property<int>("CurrentHp")
-                        .HasColumnType("int");
-
-                    b.Property<string>("DisplayName")
-                        .IsRequired()
+                    b.Property<string>("ChallengerAnswer")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("FaintedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("GymLeaderPetId")
+                    b.Property<int>("ChallengerAnsweredMs")
                         .HasColumnType("int");
 
-                    b.Property<string>("ImageUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsFainted")
+                    b.Property<bool>("ChallengerIsCorrect")
                         .HasColumnType("bit");
 
-                    b.Property<int>("MaxHp")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PlayerIndex")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SlotIndex")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("UserOwnedPetId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BattleSessionId");
-
-                    b.HasIndex("GymLeaderPetId");
-
-                    b.HasIndex("UserOwnedPetId");
-
-                    b.ToTable("BattlePetStates");
-                });
-
-            modelBuilder.Entity("WordSoul.Domain.Entities.BattleRound", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("BattleSessionId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("DamageDealt")
-                        .HasColumnType("int");
-
-                    b.Property<int>("DamagedPlayer")
-                        .HasColumnType("int");
-
-                    b.Property<string>("P1Answer")
+                    b.Property<string>("OpponentAnswer")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("P1AnswerMs")
+                    b.Property<int>("OpponentAnsweredMs")
                         .HasColumnType("int");
 
-                    b.Property<bool>("P1Correct")
+                    b.Property<bool>("OpponentIsCorrect")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("P1Score")
+                    b.Property<int>("QuestionOrder")
                         .HasColumnType("int");
-
-                    b.Property<string>("P2Answer")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("P2AnswerMs")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("P2Correct")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("P2Score")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ResolvedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("RoundIndex")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("StartedAt")
-                        .HasColumnType("datetime2");
 
                     b.Property<int>("VocabularyId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BattleSessionId");
+
                     b.HasIndex("VocabularyId");
 
-                    b.HasIndex("BattleSessionId", "RoundIndex")
-                        .IsUnique();
-
-                    b.ToTable("BattleRounds");
+                    b.ToTable("BattleAnswers");
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.BattleSession", b =>
@@ -266,12 +279,6 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.Property<int>("ChallengerCorrect")
                         .HasColumnType("int");
 
-                    b.Property<string>("ChallengerPetIds")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ChallengerTotalScore")
-                        .HasColumnType("int");
-
                     b.Property<int>("ChallengerUserId")
                         .HasColumnType("int");
 
@@ -281,19 +288,10 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("CompletedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("CurrentRound")
-                        .HasColumnType("int");
-
                     b.Property<int?>("GymLeaderId")
                         .HasColumnType("int");
 
                     b.Property<int>("OpponentCorrect")
-                        .HasColumnType("int");
-
-                    b.Property<string>("OpponentPetIds")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("OpponentTotalScore")
                         .HasColumnType("int");
 
                     b.Property<int?>("OpponentUserId")
@@ -441,42 +439,160 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.HasIndex("BadgeAchievementId");
 
                     b.ToTable("GymLeaders");
-                });
 
-            modelBuilder.Entity("WordSoul.Domain.Entities.GymLeaderPet", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<double>("BotAccuracy")
-                        .HasColumnType("float");
-
-                    b.Property<int>("BotAvgResponseMs")
-                        .HasColumnType("int");
-
-                    b.Property<int>("GymLeaderId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Nickname")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("PetId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SlotIndex")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PetId");
-
-                    b.HasIndex("GymLeaderId", "SlotIndex")
-                        .IsUnique();
-
-                    b.ToTable("GymLeaderPets");
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            BadgeAchievementId = 101,
+                            BadgeName = "Boulder Badge",
+                            CooldownHours = 12,
+                            Description = "Norm greets every newcomer with a warm smile. Her words are simple, but mastering them is the foundation of your journey.",
+                            GymOrder = 1,
+                            Name = "Norm",
+                            PassRatePercent = 80,
+                            QuestionCount = 15,
+                            RequiredCefrLevel = 0,
+                            RequiredMemoryState = "Learning",
+                            Theme = 0,
+                            Title = "Guardian of Daily Life",
+                            VocabThreshold = 15,
+                            XpReward = 150,
+                            XpThreshold = 300
+                        },
+                        new
+                        {
+                            Id = 2,
+                            BadgeAchievementId = 102,
+                            BadgeName = "Leaf Badge",
+                            CooldownHours = 12,
+                            Description = "Flora speaks in the language of forests and living things. She rewards those who have truly internalized the world around them.",
+                            GymOrder = 2,
+                            Name = "Flora",
+                            PassRatePercent = 80,
+                            QuestionCount = 15,
+                            RequiredCefrLevel = 0,
+                            RequiredMemoryState = "Review",
+                            Theme = 1,
+                            Title = "Guardian of Nature",
+                            VocabThreshold = 15,
+                            XpReward = 200,
+                            XpThreshold = 600
+                        },
+                        new
+                        {
+                            Id = 3,
+                            BadgeAchievementId = 103,
+                            BadgeName = "Frost Badge",
+                            CooldownHours = 12,
+                            Description = "Hail's temperament shifts like the wind. Only those who can describe the sky in all its moods can earn her trust.",
+                            GymOrder = 3,
+                            Name = "Hail",
+                            PassRatePercent = 80,
+                            QuestionCount = 15,
+                            RequiredCefrLevel = 1,
+                            RequiredMemoryState = "Learning",
+                            Theme = 2,
+                            Title = "Guardian of Weather",
+                            VocabThreshold = 20,
+                            XpReward = 250,
+                            XpThreshold = 1000
+                        },
+                        new
+                        {
+                            Id = 4,
+                            BadgeAchievementId = 104,
+                            BadgeName = "Tide Badge",
+                            CooldownHours = 12,
+                            Description = "Marina believes language is best shared over a meal. Prove to her you can navigate any kitchen or restaurant conversation.",
+                            GymOrder = 4,
+                            Name = "Marina",
+                            PassRatePercent = 80,
+                            QuestionCount = 15,
+                            RequiredCefrLevel = 1,
+                            RequiredMemoryState = "Review",
+                            Theme = 3,
+                            Title = "Guardian of Food",
+                            VocabThreshold = 20,
+                            XpReward = 300,
+                            XpThreshold = 1500
+                        },
+                        new
+                        {
+                            Id = 5,
+                            BadgeAchievementId = 105,
+                            BadgeName = "Spark Badge",
+                            CooldownHours = 12,
+                            Description = "Volt moves at the speed of electricity. Only the digitally fluent can keep up with his rapid-fire tech vocabulary.",
+                            GymOrder = 5,
+                            Name = "Volt",
+                            PassRatePercent = 80,
+                            QuestionCount = 15,
+                            RequiredCefrLevel = 2,
+                            RequiredMemoryState = "Learning",
+                            Theme = 4,
+                            Title = "Guardian of Technology",
+                            VocabThreshold = 25,
+                            XpReward = 400,
+                            XpThreshold = 2500
+                        },
+                        new
+                        {
+                            Id = 6,
+                            BadgeAchievementId = 106,
+                            BadgeName = "Wing Badge",
+                            CooldownHours = 12,
+                            Description = "Aero has circled the globe many times over. She tests your ability to navigate the world — literally and linguistically.",
+                            GymOrder = 6,
+                            Name = "Aero",
+                            PassRatePercent = 80,
+                            QuestionCount = 15,
+                            RequiredCefrLevel = 2,
+                            RequiredMemoryState = "Review",
+                            Theme = 5,
+                            Title = "Guardian of Travel",
+                            VocabThreshold = 25,
+                            XpReward = 500,
+                            XpThreshold = 3500
+                        },
+                        new
+                        {
+                            Id = 7,
+                            BadgeAchievementId = 107,
+                            BadgeName = "Glow Badge",
+                            CooldownHours = 12,
+                            Description = "Lumi radiates calm and wisdom. She demands precision — the language of health leaves no room for misunderstanding.",
+                            GymOrder = 7,
+                            Name = "Lumi",
+                            PassRatePercent = 80,
+                            QuestionCount = 15,
+                            RequiredCefrLevel = 2,
+                            RequiredMemoryState = "Review",
+                            Theme = 6,
+                            Title = "Guardian of Health",
+                            VocabThreshold = 30,
+                            XpReward = 600,
+                            XpThreshold = 5000
+                        },
+                        new
+                        {
+                            Id = 8,
+                            BadgeAchievementId = 108,
+                            BadgeName = "Iron Badge",
+                            CooldownHours = 12,
+                            Description = "Brawl is the ultimate test of endurance. This battle will push your B2 vocabulary to the limit — no shortcuts allowed.",
+                            GymOrder = 8,
+                            Name = "Brawl",
+                            PassRatePercent = 80,
+                            QuestionCount = 15,
+                            RequiredCefrLevel = 3,
+                            RequiredMemoryState = "Learning",
+                            Theme = 7,
+                            Title = "Guardian of Sports",
+                            VocabThreshold = 30,
+                            XpReward = 800,
+                            XpThreshold = 7000
+                        });
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.Item", b =>
@@ -1234,35 +1350,10 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.Navigation("Vocabulary");
                 });
 
-            modelBuilder.Entity("WordSoul.Domain.Entities.BattlePetState", b =>
+            modelBuilder.Entity("WordSoul.Domain.Entities.BattleAnswer", b =>
                 {
                     b.HasOne("WordSoul.Domain.Entities.BattleSession", "BattleSession")
-                        .WithMany("PetStates")
-                        .HasForeignKey("BattleSessionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("WordSoul.Domain.Entities.GymLeaderPet", "GymLeaderPet")
-                        .WithMany()
-                        .HasForeignKey("GymLeaderPetId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("WordSoul.Domain.Entities.UserOwnedPet", "UserOwnedPet")
-                        .WithMany()
-                        .HasForeignKey("UserOwnedPetId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("BattleSession");
-
-                    b.Navigation("GymLeaderPet");
-
-                    b.Navigation("UserOwnedPet");
-                });
-
-            modelBuilder.Entity("WordSoul.Domain.Entities.BattleRound", b =>
-                {
-                    b.HasOne("WordSoul.Domain.Entities.BattleSession", "BattleSession")
-                        .WithMany("Rounds")
+                        .WithMany("Answers")
                         .HasForeignKey("BattleSessionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1311,25 +1402,6 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("BadgeAchievement");
-                });
-
-            modelBuilder.Entity("WordSoul.Domain.Entities.GymLeaderPet", b =>
-                {
-                    b.HasOne("WordSoul.Domain.Entities.GymLeader", "GymLeader")
-                        .WithMany("GymLeaderPets")
-                        .HasForeignKey("GymLeaderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("WordSoul.Domain.Entities.Pet", "Pet")
-                        .WithMany()
-                        .HasForeignKey("PetId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("GymLeader");
-
-                    b.Navigation("Pet");
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.LearningSession", b =>
@@ -1592,16 +1664,12 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("WordSoul.Domain.Entities.BattleSession", b =>
                 {
-                    b.Navigation("PetStates");
-
-                    b.Navigation("Rounds");
+                    b.Navigation("Answers");
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.GymLeader", b =>
                 {
                     b.Navigation("BattleSessions");
-
-                    b.Navigation("GymLeaderPets");
 
                     b.Navigation("UserGymProgresses");
                 });

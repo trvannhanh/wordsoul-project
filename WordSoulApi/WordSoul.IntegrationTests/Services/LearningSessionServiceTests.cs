@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using WordSoul.Application.DTOs.AnswerRecord;
@@ -39,8 +39,8 @@ namespace WordSoul.IntegrationTests.Services
                 srsService,
                 new FakeDailyQuestService(),
                 new FakePetBuffService(),
-                _timeProvider
-
+                _timeProvider,
+                new FakeGymLeaderService()
             );
         }
 

@@ -32,6 +32,7 @@ namespace WordSoul.Domain.Entities
         public List<UserItem> UserItems { get; set; } = [];
         public List<UserAchievement> UserAchievements { get; set; } = [];
         public List<UserDailyQuest> UserDailyQuests { get; set; } = new();
+        public List<UserGymProgress> UserGymProgresses { get; set; } = [];
     }
 
 }

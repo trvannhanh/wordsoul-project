@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Particles from 'react-particles';
-import { loadFull } from 'tsparticles';
+import { loadSlim } from "@tsparticles/slim";
 import { createReviewSession } from '../services/learningSession';
 import { getUserProgress } from '../services/user';
 import ReviewBox from '../components/UserDashboard/ReviewBox';
@@ -12,6 +12,7 @@ import RecommendedSetsBox from '../components/UserDashboard/RecommendedSetsBox';
 import ProfileCard from '../components/UserProfile/ProfileCard';
 import QuestList from '../components/DailyQuest/QuestList';
 import AchievementGrid from '../components/Achievement/AchievementGrid';
+import BadgeCaseWidget from '../components/UserDashboard/BadgeCaseWidget';
 import type { UserProgressDto } from '../types/UserDto';
 
 const UserDashboard: React.FC = () => {
@@ -22,7 +23,7 @@ const UserDashboard: React.FC = () => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const particlesInit = async (main: any) => {
-    await loadFull(main);
+    await loadSlim(main);
   };
 
   const handleCreateReviewSession = async () => {
@@ -111,6 +112,7 @@ const UserDashboard: React.FC = () => {
             recommendedSets={dashboard?.recommendedSets ?? []}
             onAdded={() => setDashboard(prev => prev ? { ...prev, recommendedSets: [] } : prev)}
           />
+          <BadgeCaseWidget />
           <AchievementGrid />
         </div>
         <div className="w-full sm:w-5/12">
