@@ -38,7 +38,7 @@ namespace WordSoul.Infrastructure.Persistence
             // 2. Validate: tất cả pet phải thuộc user
             var ownedPets = await _db.UserOwnedPets
                 .AsNoTracking()
-                .Where(uop => uop.UserId == userId && uop.IsActive
+                .Where(uop => uop.UserId == userId
                               && dto.SelectedPetIds.Contains(uop.PetId))
                 .Include(uop => uop.Pet)
                 .ToListAsync(ct);
