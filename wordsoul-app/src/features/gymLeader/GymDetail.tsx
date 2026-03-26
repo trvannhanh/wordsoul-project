@@ -5,12 +5,18 @@ import type { GymLeaderDto } from '../../types/GymTypes';
 import { GymStatus } from '../../types/GymTypes';
 
 const THEME_COLORS: Record<string, string> = {
-  DailyLife: '#a8a8a8', Nature: '#48bb78', Weather: '#90cdf4', Food: '#4299e1',
-  Technology: '#f6e05e', Travel: '#68d391', Health: '#f687b3', Sports: '#fc8181',
+  DailyLife: '#a8a878', Nature: '#78c850', Food: '#f08030', Weather: '#a0c8f0',
+  Technology: '#f8d030', Travel: '#e0c068', Health: '#ee99ac', Sports: '#c03028',
+  Business: '#b8b8d0', Science: '#f85888', Art: '#a8b820', Communication: '#6890f0',
+  Mystery: '#705898', Dark: '#705848', Academic: '#98d8d8',
+  Challenge: '#b8a038', TrapWords: '#a040a0', System: '#7038f8', Custom: '#a8a8a8',
 };
 const THEME_EMOJI: Record<string, string> = {
-  DailyLife: '⭐', Nature: '🌿', Weather: '❄️', Food: '💧',
-  Technology: '⚡', Travel: '🦅', Health: '✨', Sports: '🥊',
+  DailyLife: '⭐', Nature: '🌿', Food: '🔥', Weather: '🦅',
+  Technology: '⚡', Travel: '🏜️', Health: '✨', Sports: '🥋',
+  Business: '⚙️', Science: '🔮', Art: '🐛', Communication: '💧',
+  Mystery: '👻', Dark: '🌙', Academic: '❄️',
+  Challenge: '🪨', TrapWords: '☠️', System: '🐉', Custom: '👑',
 };
 
 function useCooldownTimer(cooldownEndsAt?: string) {

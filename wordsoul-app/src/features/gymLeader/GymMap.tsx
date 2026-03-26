@@ -4,34 +4,46 @@ import { fetchGyms } from '../../services/gym';
 import type { GymLeaderDto } from '../../types/GymTypes';
 import { GymStatus } from '../../types/GymTypes';
 
-// ── Kanto Gym theme colors & type icons ──────────────────────────────────
+// ── Johto & Kanto Gym theme colors & type icons ─────────────────────────────────
 const GYM_THEMES: Record<number, { color: string; glow: string; type: string; emoji: string }> = {
-  1: { color: '#a8a8a8', glow: 'shadow-gray-400',   type: 'Normal',   emoji: '⭐' },
-  2: { color: '#48bb78', glow: 'shadow-green-400',  type: 'Grass',    emoji: '🌿' },
-  3: { color: '#90cdf4', glow: 'shadow-blue-300',   type: 'Ice',      emoji: '❄️' },
-  4: { color: '#4299e1', glow: 'shadow-blue-500',   type: 'Water',    emoji: '💧' },
-  5: { color: '#f6e05e', glow: 'shadow-yellow-400', type: 'Electric', emoji: '⚡' },
-  6: { color: '#68d391', glow: 'shadow-teal-400',   type: 'Flying',   emoji: '🦅' },
-  7: { color: '#f687b3', glow: 'shadow-pink-400',   type: 'Fairy',    emoji: '✨' },
-  8: { color: '#fc8181', glow: 'shadow-red-400',    type: 'Fighting', emoji: '🥊' },
+  // Johto (1-8)
+  1: { color: '#a0c8f0', glow: 'shadow-blue-300', type: 'Flying', emoji: '🦅' },
+  2: { color: '#a8b820', glow: 'shadow-lime-500', type: 'Bug', emoji: '🐛' },
+  3: { color: '#a8a878', glow: 'shadow-gray-400', type: 'Normal', emoji: '⭐' },
+  4: { color: '#705898', glow: 'shadow-purple-500', type: 'Ghost', emoji: '👻' },
+  5: { color: '#c03028', glow: 'shadow-red-500', type: 'Fighting', emoji: '🥋' },
+  6: { color: '#b8b8d0', glow: 'shadow-gray-300', type: 'Steel', emoji: '⚙️' },
+  7: { color: '#98d8d8', glow: 'shadow-cyan-300', type: 'Ice', emoji: '❄️' },
+  8: { color: '#7038f8', glow: 'shadow-indigo-500', type: 'Dragon', emoji: '🐉' },
+  // Kanto (9-16)
+  9: { color: '#b8a038', glow: 'shadow-yellow-600', type: 'Rock', emoji: '🪨' },
+  10: { color: '#6890f0', glow: 'shadow-blue-500', type: 'Water', emoji: '💧' },
+  11: { color: '#f8d030', glow: 'shadow-yellow-400', type: 'Electric', emoji: '⚡' },
+  12: { color: '#78c850', glow: 'shadow-green-500', type: 'Grass', emoji: '🌿' },
+  13: { color: '#a040a0', glow: 'shadow-purple-400', type: 'Poison', emoji: '☠️' },
+  14: { color: '#f85888', glow: 'shadow-pink-400', type: 'Psychic', emoji: '🔮' },
+  15: { color: '#f08030', glow: 'shadow-orange-500', type: 'Fire', emoji: '🔥' },
+  16: { color: '#f85888', glow: 'shadow-red-400', type: 'Champion', emoji: '👑' },
 };
 
 const STATUS_STYLE: Record<GymStatus, { badge: string; border: string; opacity: string }> = {
-  [GymStatus.Defeated]: { badge: 'bg-green-500 text-white',   border: 'border-green-400',  opacity: 'opacity-100' },
-  [GymStatus.Unlocked]: { badge: 'bg-yellow-400 text-black',  border: 'border-yellow-300', opacity: 'opacity-100' },
-  [GymStatus.Locked]:   { badge: 'bg-gray-600 text-gray-300', border: 'border-gray-600',   opacity: 'opacity-40'  },
+  [GymStatus.Defeated]: { badge: 'bg-green-500 text-white', border: 'border-green-400', opacity: 'opacity-100' },
+  [GymStatus.Unlocked]: { badge: 'bg-yellow-400 text-black', border: 'border-yellow-300', opacity: 'opacity-100' },
+  [GymStatus.Locked]: { badge: 'bg-gray-600 text-gray-300', border: 'border-gray-600', opacity: 'opacity-40' },
 };
 
 const STATUS_LABEL: Record<GymStatus, string> = {
   [GymStatus.Defeated]: '✅ Defeated',
   [GymStatus.Unlocked]: '⚔️ Challenge!',
-  [GymStatus.Locked]:   '🔒 Locked',
+  [GymStatus.Locked]: '🔒 Locked',
 };
 
-// ── Kanto Badge images (placeholder SVG data-uris for now) ───────────────
+// ── Badge images (placeholder SVG data-uris for now) ───────────────
 const BADGE_ICONS: Record<number, string> = {
-  1: '🏅', 2: '🎖️', 3: '🥇', 4: '🏆',
-  5: '⚡', 6: '🦅', 7: '💫', 8: '🥊',
+  1: '🌪️', 2: '🐞', 3: '🥛', 4: '🌫️',
+  5: '🌪️', 6: '🔩', 7: '🧊', 8: '🐉',
+  9: '🏅', 10: '💧', 11: '⚡', 12: '🌸',
+  13: '💜', 14: '👁️', 15: '🌋', 16: '🌍',
 };
 
 export default function GymMap() {
@@ -57,26 +69,26 @@ export default function GymMap() {
   );
 
   return (
-    <div className="min-h-screen text-white" style={{ background: 'rgb(2,6,23)' }}>
+    <div className="min-h-screen text-white mt-12" style={{ background: 'rgb(2,6,23)' }}>
       {/* ── Header ── */}
       <div className="relative overflow-hidden py-12 px-6 text-center"
         style={{ background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)' }}>
         <div className="absolute inset-0 opacity-10"
           style={{ backgroundImage: 'repeating-linear-gradient(0deg,transparent,transparent 30px,rgba(255,255,255,.1) 30px,rgba(255,255,255,.1) 31px),repeating-linear-gradient(90deg,transparent,transparent 30px,rgba(255,255,255,.1) 30px,rgba(255,255,255,.1) 31px)' }} />
         <h1 className="font-press text-2xl md:text-3xl mb-2" style={{ color: '#f6e05e', textShadow: '0 0 20px #f6e05e88' }}>
-          KANTO GYM CIRCUIT
+          JOHTO & KANTO GYM CIRCUIT
         </h1>
-        <p className="text-gray-300 font-noto text-base mb-4">Challenge 8 Gym Leaders to prove your vocabulary mastery</p>
+        <p className="text-gray-300 font-noto text-base mb-4">Challenge 16 Gym Leaders to prove your vocabulary mastery</p>
         {/* Badge case */}
-        <div className="inline-flex gap-3 bg-black/40 rounded-xl px-6 py-3 border border-yellow-400/30">
+        <div className="inline-flex flex-wrap justify-center gap-3 bg-black/40 rounded-xl px-6 py-3 border border-yellow-400/30">
           {gyms.map(gym => (
             <span key={gym.id} title={gym.badgeName}
               className={`text-xl transition-all duration-300 ${gym.status === GymStatus.Defeated ? 'scale-110' : 'grayscale opacity-30'}`}>
-              {BADGE_ICONS[gym.gymOrder]}
+              {BADGE_ICONS[gym.gymOrder] || '🛡️'}
             </span>
           ))}
         </div>
-        <p className="text-yellow-400 font-pixel text-xs mt-3">{defeatedCount} / 8 BADGES</p>
+        <p className="text-yellow-400 font-pixel text-xs mt-3">{defeatedCount} / 16 BADGES</p>
       </div>
 
       {/* ── Gym Grid ── */}
@@ -133,13 +145,12 @@ export default function GymMap() {
                 <button
                   disabled={gym.status === GymStatus.Locked}
                   onClick={e => { e.stopPropagation(); navigate(`/gym/${gym.id}`); }}
-                  className={`w-full py-2 rounded font-pixel text-xs transition-all ${
-                    gym.status === GymStatus.Locked
+                  className={`w-full py-2 rounded font-pixel text-xs transition-all ${gym.status === GymStatus.Locked
                       ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
                       : gym.status === GymStatus.Defeated
-                      ? 'bg-green-700 hover:bg-green-600 text-white'
-                      : 'text-black hover:opacity-90'
-                  }`}
+                        ? 'bg-green-700 hover:bg-green-600 text-white'
+                        : 'text-black hover:opacity-90'
+                    }`}
                   style={gym.status === GymStatus.Unlocked ? { background: theme.color } : undefined}>
                   {STATUS_LABEL[gym.status]}
                 </button>
@@ -171,7 +182,7 @@ function GymMapSkeleton() {
     <div className="min-h-screen" style={{ background: 'rgb(2,6,23)' }}>
       <div className="h-48 animate-pulse" style={{ background: 'rgba(48,43,99,0.5)' }} />
       <div className="max-w-5xl mx-auto px-4 py-10 grid grid-cols-2 lg:grid-cols-4 gap-5">
-        {[...Array(8)].map((_, i) => (
+        {[...Array(16)].map((_, i) => (
           <div key={i} className="h-64 rounded-xl animate-pulse" style={{ background: 'rgba(255,255,255,0.05)' }} />
         ))}
       </div>

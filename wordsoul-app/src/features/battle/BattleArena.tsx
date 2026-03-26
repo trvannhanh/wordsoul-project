@@ -244,8 +244,8 @@ export default function BattleArena() {
                         <span className="font-press text-sm text-red-400">{state.p2TotalScore}</span>
                     </div>
                     {q && (
-                        <div className="font-pixel text-[9px] text-gray-500 mt-1">
-                            Round {(q.roundIndex ?? 0) + 1} / {state.totalRounds}
+                        <div className={`font-pixel text-[9px] mt-1 ${(q.roundIndex ?? 0) >= 14 ? 'text-red-500 animate-pulse' : (q.roundIndex ?? 0) >= 9 ? 'text-orange-400' : 'text-gray-500'}`}>
+                            {(q.roundIndex ?? 0) >= 9 ? '🔥 SUDDEN DEATH ' : 'Round '}{(q.roundIndex ?? 0) + 1}
                         </div>
                     )}
                 </div>
