@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using WordSoul.Domain.Enums;
 
 namespace WordSoul.Domain.Entities
@@ -14,6 +14,7 @@ namespace WordSoul.Domain.Entities
         public string? ImageUrl { get; set; }
         public PetRarity Rarity { get; set; }
         public PetType Type { get; set; } 
+        public PetType? SecondaryType { get; set; }
         public int? Order { get; set; }
         public int? BaseFormId { get; set; }
         public int? NextEvolutionId { get; set; }

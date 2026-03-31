@@ -1,4 +1,4 @@
-﻿using WordSoul.Application.DTOs.Pet;
+using WordSoul.Application.DTOs.Pet;
 using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
 using WordSoul.Domain.Enums;
@@ -41,6 +41,28 @@ namespace WordSoul.Application.Services
             var rarityMult = RarityMultiplier.GetValueOrDefault(activedPet.Rarity, 1.0);
             var (buffName, buffIcon, buffDesc, xpMult, catchBonus, hintShield, reducePenalty)
                 = CalculateBuff(activedPet.Type, rarityMult);
+
+            if (activedPet.SecondaryType.HasValue)
+            {
+                var (secName, secIcon, secDesc, secXp, secCatch, secHint, secReduce)
+                    = CalculateBuff(activedPet.SecondaryType.Value, rarityMult);
+
+                if (buffName != secName)
+                {
+                    buffName = $"{buffName} & {secName}";
+                    buffIcon = $"{buffIcon}{secIcon}";
+                    
+                    if (buffDesc != secDesc)
+                    {
+                        buffDesc = $"{buffDesc}, {secDesc}";
+                    }
+                    
+                    xpMult = 1.0 + (xpMult - 1.0) + (secXp - 1.0);
+                    catchBonus += secCatch;
+                    hintShield = hintShield || secHint;
+                    reducePenalty = reducePenalty || secReduce;
+                }
+            }
 
             return new PetBuffDto
             {

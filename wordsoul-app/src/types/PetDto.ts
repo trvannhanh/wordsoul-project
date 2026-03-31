@@ -6,6 +6,7 @@ export interface PetDto {
   imageUrl: string;
   rarity: string;
   type: string;
+  secondaryType?: string | null;
   order: number
 }
 
@@ -16,6 +17,7 @@ export interface PetDetailDto {
   imageUrl: string;
   rarity: string;
   type: string;
+  secondaryType?: string | null;
   level: number | null;
   experience: number | null;
   isFavorite: boolean | null;

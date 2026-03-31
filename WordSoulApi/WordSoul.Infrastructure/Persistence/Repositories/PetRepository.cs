@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using WordSoul.Application.Interfaces.Repositories;
 using WordSoul.Domain.Entities;
 using WordSoul.Domain.Enums;
@@ -67,7 +67,7 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
             // Filter theo type
             if (type.HasValue)
             {
-                query = query.Where(x => x.Pet.Type == type.Value);
+                query = query.Where(x => x.Pet.Type == type.Value || x.Pet.SecondaryType == type.Value);
             }
 
             // Filter theo isOwned
@@ -116,7 +116,8 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
             if (typeList is { Count: > 0 })
             {
                 var preferred = await _context.Pets
-                    .Where(p => p.Rarity == rarity && p.IsActive && typeList.Contains(p.Type))
+                    .Where(p => p.Rarity == rarity && p.IsActive && 
+                                (typeList.Contains(p.Type) || (p.SecondaryType != null && typeList.Contains(p.SecondaryType.Value))))
                     .OrderBy(_ => Guid.NewGuid())
                     .Take(count)
                     .ToListAsync(cancellationToken);

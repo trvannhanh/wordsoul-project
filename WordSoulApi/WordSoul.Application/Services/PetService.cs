@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using WordSoul.Application.DTOs.Pet;
 using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
@@ -43,7 +43,8 @@ namespace WordSoul.Application.Services
                 Description = petDto.Description,
                 ImageUrl = imageUrl,
                 Rarity = petDto.Rarity,
-                Type = petDto.Type
+                Type = petDto.Type,
+                SecondaryType = petDto.SecondaryType
             };
 
             await _uow.Pet.CreatePetAsync(pet);
@@ -57,6 +58,7 @@ namespace WordSoul.Application.Services
                 ImageUrl = pet.ImageUrl,
                 Rarity = pet.Rarity.ToString(),
                 Type = pet.Type.ToString(),
+                SecondaryType = pet.SecondaryType?.ToString(),
                 CreatedAt = pet.CreatedAt,
                 IsActive = pet.IsActive
             };
@@ -81,6 +83,7 @@ namespace WordSoul.Application.Services
                     ImageUrl = imageUrl,
                     Rarity = dto.Rarity,
                     Type = dto.Type,
+                    SecondaryType = dto.SecondaryType,
                     BaseFormId = dto.BaseFormId,
                     NextEvolutionId = dto.NextEvolutionId,
                     RequiredLevel = dto.RequiredLevel,
@@ -97,6 +100,7 @@ namespace WordSoul.Application.Services
                     ImageUrl = pet.ImageUrl,
                     Rarity = pet.Rarity.ToString(),
                     Type = pet.Type.ToString(),
+                    SecondaryType = pet.SecondaryType?.ToString(),
                     BaseFormId = pet.BaseFormId,
                     NextEvolutionId = pet.NextEvolutionId,
                     RequiredLevel = pet.RequiredLevel,
@@ -143,6 +147,7 @@ namespace WordSoul.Application.Services
                 ImageUrl = x.Pet.ImageUrl ?? "",
                 Rarity = x.Pet.Rarity.ToString(),
                 Type = x.Pet.Type.ToString(),
+                SecondaryType = x.Pet.SecondaryType?.ToString(),
                 BaseFormId = x.Pet.BaseFormId,
                 NextEvolutionId = x.Pet.NextEvolutionId,
                 RequiredLevel = x.Pet.RequiredLevel,
@@ -168,6 +173,7 @@ namespace WordSoul.Application.Services
                 ImageUrl = pet.ImageUrl ?? "",
                 Rarity = pet.Rarity.ToString(),
                 Type = pet.Type.ToString(),
+                SecondaryType = pet.SecondaryType?.ToString(),
                 Level = owned?.Level,
                 Experience = owned?.Experience,
                 IsFavorite = owned?.IsFavorite,
@@ -188,6 +194,7 @@ namespace WordSoul.Application.Services
                 ImageUrl = pet.ImageUrl,
                 Rarity = pet.Rarity.ToString(),
                 Type = pet.Type.ToString(),
+                SecondaryType = pet.SecondaryType?.ToString(),
                 CreatedAt = pet.CreatedAt,
                 IsActive = pet.IsActive
             };
@@ -208,6 +215,7 @@ namespace WordSoul.Application.Services
             pet.ImageUrl = imageUrl ?? pet.ImageUrl;
             pet.Rarity = dto.Rarity;
             pet.Type = dto.Type;
+            pet.SecondaryType = dto.SecondaryType;
             pet.IsActive = dto.IsActive;
             pet.CreatedAt = dto.CreatedAt;
 
@@ -222,6 +230,7 @@ namespace WordSoul.Application.Services
                 ImageUrl = pet.ImageUrl,
                 Rarity = pet.Rarity.ToString(),
                 Type = pet.Type.ToString(),
+                SecondaryType = pet.SecondaryType?.ToString(),
                 CreatedAt = pet.CreatedAt,
                 IsActive = pet.IsActive
             };
@@ -246,6 +255,7 @@ namespace WordSoul.Application.Services
                 pet.Description = dto.Description;
                 pet.Rarity = dto.Rarity;
                 pet.Type = dto.Type;
+                pet.SecondaryType = dto.SecondaryType;
                 pet.BaseFormId = dto.BaseFormId;
                 pet.NextEvolutionId = dto.NextEvolutionId;
                 pet.RequiredLevel = dto.RequiredLevel;
@@ -261,6 +271,7 @@ namespace WordSoul.Application.Services
                     ImageUrl = pet.ImageUrl,
                     Rarity = pet.Rarity.ToString(),
                     Type = pet.Type.ToString(),
+                    SecondaryType = pet.SecondaryType?.ToString(),
                     BaseFormId = pet.BaseFormId,
                     NextEvolutionId = pet.NextEvolutionId,
                     RequiredLevel = pet.RequiredLevel,
