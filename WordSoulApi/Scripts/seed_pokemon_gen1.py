@@ -8,15 +8,15 @@ No external API calls needed — all data is hardcoded for speed and accuracy.
 
 Usage:
     cd Scripts
-    python seed_pokemon.py
+    python seed_pokemon_gen1.py
 
 Output:
-    seed_pokemon.sql
+    seed_pokemon_gen1.sql
 """
 
 from datetime import datetime
 
-OUTPUT_FILE = "seed_pokemon.sql"
+OUTPUT_FILE = "seed_pokemon_gen1.sql"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # ENUM VALUES  (must match C# enums exactly)

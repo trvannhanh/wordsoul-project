@@ -232,7 +232,10 @@ const PetDetailPage: React.FC = () => {
               </div>
               <div>
                 <span className="font-bold text-color">Loại: </span>
-                <span className="text-yellow-400">{pet.type}</span>
+                <span className="text-yellow-400">
+                  {pet.type}
+                  {pet.secondaryType && ` / ${pet.secondaryType}`}
+                </span>
               </div>
               {isOwned && (
                 <>

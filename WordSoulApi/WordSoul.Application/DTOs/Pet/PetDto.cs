@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace WordSoul.Application.DTOs.Pet
 {
@@ -10,6 +10,7 @@ namespace WordSoul.Application.DTOs.Pet
         public required string ImageUrl { get; set; }
         public string? Rarity { get; set; }
         public string? Type { get; set; }
+        public string? SecondaryType { get; set; }
         public int? BaseFormId { get; set; }
         public int? NextEvolutionId { get; set; }
         public int? RequiredLevel { get; set; }
