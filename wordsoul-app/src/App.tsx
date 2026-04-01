@@ -25,6 +25,9 @@ import GymResult from './features/gymLeader/GymResult';
 import PetSelector from './features/battle/PetSelector';
 import BattleArena from './features/battle/BattleArena';
 import BattleArenaResult from './features/battle/BattleArenaResult';
+import PvpLobby from './features/battle/PvpLobby';
+import PvpPetSelector from './features/battle/PvpPetSelector';
+import PvpBattleArena from './features/battle/PvpBattleArena';
 import { AuthProvider } from './store/AuthProvider';
 
 
@@ -55,6 +58,9 @@ const App: React.FC = () => {
           <Route path="/gym/:gymId/pets" element={<PetSelector />} />
           <Route path="/arena/:sessionId" element={<BattleArena />} />
           <Route path="/arena/:sessionId/result" element={<BattleArenaResult />} />
+          <Route path="/pvp" element={<PvpLobby />} />
+          <Route path="/pvp/pets" element={<PvpPetSelector />} />
+          <Route path="/pvp/arena/:sessionId" element={<PvpBattleArena />} />
 
           <Route element={<NoFooterLayout />}>
             <Route path='/pets' element={<Pets />} />

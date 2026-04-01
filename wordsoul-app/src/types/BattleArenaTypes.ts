@@ -7,6 +7,8 @@ export interface PetStateDto {
     maxHp: number;
     currentHp: number;
     isFainted: boolean;
+    petType: string;
+    secondaryPetType?: string;
 }
 
 export interface OpponentInfoDto {
@@ -50,10 +52,20 @@ export interface RoundResultDto {
     p2Answer?: string;
     damageDealt: number;
     damagedPlayer: number;   // 1=P1 damaged, 2=P2 damaged, 0=draw
+    typeMultiplier: number;
+    typeEffectivenessText?: string;
     p1Pets: PetStateDto[];
     p2Pets: PetStateDto[];
     p1TotalScore: number;
     p2TotalScore: number;
+}
+
+export interface PvpEloResultDto {
+    oldRating: number;
+    newRating: number;
+    ratingChange: number;
+    oldTier: string;
+    newTier: string;
 }
 
 export interface BattleEndedDto {
@@ -68,4 +80,5 @@ export interface BattleEndedDto {
     badgeEarned: boolean;
     badgeName?: string;
     badgeImageUrl?: string;
+    pvpEloResult?: PvpEloResultDto;
 }

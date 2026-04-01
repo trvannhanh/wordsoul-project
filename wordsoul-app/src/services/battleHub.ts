@@ -12,6 +12,10 @@ type EventCallbacks = {
     onNextQuestion: (data: RoundQuestionDto) => void;
     onBattleEnded: (data: BattleEndedDto) => void;
     onError: (msg: string) => void;
+    // PvP events
+    onOpponentJoined?: (data: { opponentName: string; avatarUrl?: string; opponentRating: number }) => void;
+    onWaitingOpponent?: (data: { message: string }) => void;
+    onOpponentForfeited?: (data: BattleEndedDto) => void;
 };
 
 let connection: signalR.HubConnection | null = null;
@@ -40,6 +44,14 @@ export async function connectBattleHub(
     connection.on('BattleEnded', callbacks.onBattleEnded);
     connection.onclose(() => callbacks.onError('Connection closed.'));
 
+    // PvP events (optional)
+    if (callbacks.onOpponentJoined)
+        connection.on('OpponentJoined', callbacks.onOpponentJoined);
+    if (callbacks.onWaitingOpponent)
+        connection.on('WaitingOpponent', callbacks.onWaitingOpponent);
+    if (callbacks.onOpponentForfeited)
+        connection.on('OpponentForfeited', callbacks.onOpponentForfeited);
+
     await connection.start();
     return connection;
 }
@@ -66,4 +78,23 @@ export async function sendSubmitAnswer(
     }
 ) {
     await conn.invoke('SubmitAnswer', payload);
+}
+
+// ── PvP Hub methods ─────────────────────────────────────────────────────────
+
+export async function sendPlayerReadyPvP(conn: signalR.HubConnection, sessionId: number) {
+    await conn.invoke('PlayerReadyPvP', sessionId);
+}
+
+export async function sendSubmitPvpAnswer(
+    conn: signalR.HubConnection,
+    payload: {
+        battleSessionId: number;
+        roundIndex: number;
+        vocabularyId: number;
+        answer: string;
+        elapsedMs: number;
+    }
+) {
+    await conn.invoke('SubmitPvpAnswer', payload);
 }
