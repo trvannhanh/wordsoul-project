@@ -135,6 +135,7 @@ namespace WordSoul.Infrastructure.Persistence
                 for (int i = 0; i < p1PetIds.Count; i++)
                 {
                     var pet = p1Pets.First(p => p.Id == p1PetIds[i]);
+                    int maxHp = CalculateMaxHp(pet.Pet!.Rarity, pet.Level);
                     _db.BattlePetStates.Add(new BattlePetState
                     {
                         BattleSessionId = sessionId,
@@ -143,7 +144,9 @@ namespace WordSoul.Infrastructure.Persistence
                         UserOwnedPetId = pet.Id,
                         DisplayName = pet.Pet?.Name ?? "?",
                         ImageUrl = pet.Pet?.ImageUrl,
-                        MaxHp = 100, CurrentHp = 100
+                        PetType = pet.Pet!.Type,
+                        SecondaryPetType = pet.Pet.SecondaryType,
+                        MaxHp = maxHp, CurrentHp = maxHp
                     });
                 }
 
@@ -151,6 +154,7 @@ namespace WordSoul.Infrastructure.Persistence
                 var gymPets = session.GymLeader!.GymLeaderPets.OrderBy(p => p.SlotIndex).ToList();
                 for (int i = 0; i < gymPets.Count; i++)
                 {
+                    int maxHp = CalculateMaxHp(gymPets[i].Pet!.Rarity, gymPets[i].Level);
                     _db.BattlePetStates.Add(new BattlePetState
                     {
                         BattleSessionId = sessionId,
@@ -159,7 +163,9 @@ namespace WordSoul.Infrastructure.Persistence
                         GymLeaderPetId = gymPets[i].Id,
                         DisplayName = gymPets[i].Nickname ?? gymPets[i].Pet?.Name ?? "?",
                         ImageUrl = gymPets[i].Pet?.ImageUrl,
-                        MaxHp = 100, CurrentHp = 100
+                        PetType = gymPets[i].Pet!.Type,
+                        SecondaryPetType = gymPets[i].Pet?.SecondaryType,
+                        MaxHp = maxHp, CurrentHp = maxHp
                     });
                 }
                 await _db.SaveChangesAsync(ct);
@@ -238,8 +244,39 @@ namespace WordSoul.Infrastructure.Persistence
             if (dto.RoundIndex >= 14) damageMultiplier = 5; // Round 15+ x5
             else if (dto.RoundIndex >= 9) damageMultiplier = 2; // Round 10+ x2
 
-            int damage = scoreDiff == 0 ? 0 : Math.Clamp(scoreDiff / 10, 1, 20) * damageMultiplier;
+            int baseDamage = scoreDiff == 0 ? 0 : Math.Clamp(scoreDiff / 10, 1, 20) * damageMultiplier;
             int damagedPlayer = p1Score > p2Score ? 2 : (p2Score > p1Score ? 1 : 0);
+
+            // Load pet states up front for type effectiveness
+            var petStates = await _db.BattlePetStates
+                .Where(bps => bps.BattleSessionId == dto.BattleSessionId)
+                .ToListAsync(ct);
+
+            double typeMultiplier = 1.0;
+            string? typeEffectivenessText = null;
+            int damage = baseDamage;
+
+            if (baseDamage > 0 && damagedPlayer > 0)
+            {
+                int attackerPlayerIndex = damagedPlayer == 1 ? 2 : 1;
+                var attackerPet = petStates.Where(p => p.PlayerIndex == attackerPlayerIndex && !p.IsFainted).OrderBy(p => p.SlotIndex).FirstOrDefault();
+                var defenderPet = petStates.Where(p => p.PlayerIndex == damagedPlayer && !p.IsFainted).OrderBy(p => p.SlotIndex).FirstOrDefault();
+                
+                if (attackerPet != null && defenderPet != null)
+                {
+                    typeMultiplier = WordSoul.Domain.DomainServices.TypeEffectivenessCalculator.Calculate(
+                        attackerPet.PetType, defenderPet.PetType, defenderPet.SecondaryPetType);
+                    
+                    if (typeMultiplier != 1.0)
+                    {
+                        typeEffectivenessText = WordSoul.Domain.DomainServices.TypeEffectivenessCalculator.GetEffectivenessText(typeMultiplier);
+                    }
+                    
+                    damage = (int)(baseDamage * typeMultiplier);
+                }
+
+                ApplyDamage(petStates, damagedPlayer, damage);
+            }
 
             // 4. Cập nhật round
             round.P1Score = p1Score;
@@ -252,17 +289,10 @@ namespace WordSoul.Infrastructure.Persistence
             round.P2AnswerMs = botMs;
             round.DamageDealt = damage;
             round.DamagedPlayer = damagedPlayer;
+            round.TypeMultiplier = typeMultiplier;
             round.ResolvedAt = DateTime.UtcNow;
 
-            // 5. Cập nhật HP
-            var petStates = await _db.BattlePetStates
-                .Where(bps => bps.BattleSessionId == dto.BattleSessionId)
-                .ToListAsync(ct);
-
-            if (damage > 0 && damagedPlayer > 0)
-            {
-                ApplyDamage(petStates, damagedPlayer, damage);
-            }
+            // 5. Tính điểm session
 
             // 6. Cập nhật session scores
             if (p1Correct) session.ChallengerCorrect++;
@@ -380,6 +410,7 @@ namespace WordSoul.Infrastructure.Persistence
                 P1AnswerMs = dto.ElapsedMs, P2AnswerMs = botMs,
                 P1Answer = dto.Answer, P2Answer = botCorrect ? correctAnswer : "???",
                 DamageDealt = damage, DamagedPlayer = damagedPlayer,
+                TypeMultiplier = typeMultiplier, TypeEffectivenessText = typeEffectivenessText,
                 P1Pets = petStates.Where(p => p.PlayerIndex == 1).OrderBy(p => p.SlotIndex)
                     .Select(MapPetState).ToList(),
                 P2Pets = petStates.Where(p => p.PlayerIndex == 2).OrderBy(p => p.SlotIndex)
@@ -399,6 +430,31 @@ namespace WordSoul.Infrastructure.Persistence
         // ═══════════════════════════════════════════════════════════
         // PRIVATE HELPERS
         // ═══════════════════════════════════════════════════════════
+
+        private static int CalculateMaxHp(PetRarity rarity, int level)
+        {
+            int baseHp = rarity switch
+            {
+                PetRarity.Common => 80,
+                PetRarity.Uncommon => 100,
+                PetRarity.Rare => 120,
+                PetRarity.Epic => 150,
+                PetRarity.Legendary => 180,
+                _ => 100
+            };
+
+            int multiplier = rarity switch
+            {
+                PetRarity.Common => 4,
+                PetRarity.Uncommon => 5,
+                PetRarity.Rare => 6,
+                PetRarity.Epic => 7,
+                PetRarity.Legendary => 9,
+                _ => 5
+            };
+
+            return baseHp + (level * multiplier);
+        }
 
         private static int CalculateScore(int elapsedMs)
         {
@@ -436,6 +492,8 @@ namespace WordSoul.Infrastructure.Persistence
             SlotIndex = bps.SlotIndex,
             DisplayName = bps.DisplayName,
             ImageUrl = bps.ImageUrl,
+            PetType = bps.PetType.ToString(),
+            SecondaryPetType = bps.SecondaryPetType?.ToString(),
             MaxHp = bps.MaxHp,
             CurrentHp = bps.CurrentHp,
             IsFainted = bps.IsFainted

@@ -33,6 +33,9 @@ namespace WordSoul.Domain.Entities
         public string DisplayName { get; set; } = "";
         public string? ImageUrl { get; set; }
 
+        public WordSoul.Domain.Enums.PetType PetType { get; set; } = WordSoul.Domain.Enums.PetType.Normal;
+        public WordSoul.Domain.Enums.PetType? SecondaryPetType { get; set; }
+
         // ── Trạng thái HP ─────────────────────────────────
         public int MaxHp { get; set; } = 100;
         public int CurrentHp { get; set; } = 100;

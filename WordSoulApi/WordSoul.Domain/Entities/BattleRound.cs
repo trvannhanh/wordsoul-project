@@ -35,6 +35,9 @@ namespace WordSoul.Domain.Entities
         /// <summary>Bên bị damage: 1 = P1, 2 = P2, 0 = hòa (không ai mất HP).</summary>
         public int DamagedPlayer { get; set; }
 
+        /// <summary>Hệ số nhân damage dựa trên Type Effectiveness.</summary>
+        public double TypeMultiplier { get; set; } = 1.0;
+
         public DateTime StartedAt { get; set; } = DateTime.UtcNow;
         public DateTime? ResolvedAt { get; set; }
     }
