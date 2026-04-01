@@ -104,6 +104,8 @@ namespace WordSoul.Application.DTOs.Battle
         public bool BadgeEarned { get; set; }
         public string? BadgeName { get; set; }
         public string? BadgeImageUrl { get; set; }
+        /// <summary>Chỉ có giá trị khi trận đấu là PvP.</summary>
+        public PvpEloResultDto? EloResult { get; set; }
     }
 
     // ── Wrapper returned by SubmitAnswerAsync ─────────────────────────────────

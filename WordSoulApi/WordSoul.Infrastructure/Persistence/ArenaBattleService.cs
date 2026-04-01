@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using WordSoul.Application.DTOs.Battle;
@@ -16,12 +17,14 @@ namespace WordSoul.Infrastructure.Persistence
     {
         private readonly WordSoulDbContext _db;
         private readonly ILogger<ArenaBattleService> _logger;
+        private readonly IMemoryCache _cache;
         private static readonly Random _rng = new();
 
-        public ArenaBattleService(WordSoulDbContext db, ILogger<ArenaBattleService> logger)
+        public ArenaBattleService(WordSoulDbContext db, ILogger<ArenaBattleService> logger, IMemoryCache cache)
         {
             _db = db;
             _logger = logger;
+            _cache = cache;
         }
 
         // ═══════════════════════════════════════════════════════════
@@ -573,6 +576,541 @@ namespace WordSoul.Infrastructure.Persistence
 
             priority.AddRange(fallback);
             return priority.OrderBy(_ => Guid.NewGuid()).ToList();
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // PVP – Tạo phòng
+        // ═══════════════════════════════════════════════════════════
+
+        public async Task<PvpRoomCreatedDto> CreatePvpSessionAsync(
+            CreatePvpSessionDto dto, int userId, CancellationToken ct = default)
+        {
+            if (dto.SelectedPetIds.Count != 3)
+                throw new InvalidOperationException("Bạn phải chọn đúng 3 Pokémon.");
+
+            var ownedPets = await _db.UserOwnedPets
+                .AsNoTracking()
+                .Where(uop => uop.UserId == userId && dto.SelectedPetIds.Contains(uop.PetId))
+                .Include(uop => uop.Pet)
+                .ToListAsync(ct);
+
+            ownedPets = ownedPets.GroupBy(p => p.PetId).Select(g => g.First()).ToList();
+            if (ownedPets.Count != 3)
+                throw new InvalidOperationException("Một hoặc nhiều Pokémon không hợp lệ.");
+
+            // Sinh RoomCode 6 ký tự alphanumeric
+            string roomCode = GenerateRoomCode();
+
+            var session = new BattleSession
+            {
+                ChallengerUserId = userId,
+                Type = BattleType.PvP,
+                Status = BattleStatus.Waiting,
+                StartedAt = DateTime.UtcNow,
+                RoomCode = roomCode,
+                ChallengerPetIds = JsonSerializer.Serialize(ownedPets.Select(p => p.Id).ToList())
+            };
+
+            _db.BattleSessions.Add(session);
+            await _db.SaveChangesAsync(ct);
+
+            _logger.LogInformation("PvP room {Code} created by user {U}, sessionId={S}", roomCode, userId, session.Id);
+            return new PvpRoomCreatedDto { SessionId = session.Id, RoomCode = roomCode };
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // PVP – Join phòng
+        // ═══════════════════════════════════════════════════════════
+
+        public async Task<(int sessionId, int opponentUserId)> JoinPvpSessionAsync(
+            JoinPvpSessionDto dto, int userId, CancellationToken ct = default)
+        {
+            if (dto.SelectedPetIds.Count != 3)
+                throw new InvalidOperationException("Bạn phải chọn đúng 3 Pokémon.");
+
+            var session = await _db.BattleSessions
+                .FirstOrDefaultAsync(s =>
+                    s.RoomCode == dto.RoomCode.ToUpper() &&
+                    s.Type == BattleType.PvP &&
+                    s.Status == BattleStatus.Waiting, ct)
+                ?? throw new KeyNotFoundException("Không tìm thấy phòng với mã này hoặc phòng đã đầy.");
+
+            if (session.ChallengerUserId == userId)
+                throw new InvalidOperationException("Bạn không thể tự join phòng của mình.");
+
+            var ownedPets = await _db.UserOwnedPets
+                .AsNoTracking()
+                .Where(uop => uop.UserId == userId && dto.SelectedPetIds.Contains(uop.PetId))
+                .Include(uop => uop.Pet)
+                .ToListAsync(ct);
+
+            ownedPets = ownedPets.GroupBy(p => p.PetId).Select(g => g.First()).ToList();
+            if (ownedPets.Count != 3)
+                throw new InvalidOperationException("Một hoặc nhiều Pokémon không hợp lệ.");
+
+            // Chọn vocab: 50% từ P1 + 50% từ P2
+            var vocabs = await SelectPvpVocabsAsync(session.ChallengerUserId, userId, ct);
+            if (vocabs.Count == 0)
+                throw new InvalidOperationException("Không đủ từ vựng để bắt đầu trận đấu.");
+
+            session.OpponentUserId = userId;
+            session.Status = BattleStatus.InProgress;
+            session.TotalQuestions = vocabs.Count;
+            session.OpponentPetIds = JsonSerializer.Serialize(ownedPets.Select(p => p.Id).ToList());
+
+            // Tạo BattleRounds
+            for (int i = 0; i < vocabs.Count; i++)
+            {
+                _db.BattleRounds.Add(new BattleRound
+                {
+                    BattleSessionId = session.Id,
+                    RoundIndex = i,
+                    VocabularyId = vocabs[i].Id,
+                    StartedAt = DateTime.UtcNow
+                });
+            }
+
+            await _db.SaveChangesAsync(ct);
+            _logger.LogInformation("User {U} joined PvP room {Code} (session {S})", userId, dto.RoomCode, session.Id);
+            return (session.Id, session.ChallengerUserId);
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // PVP – Start battle (cả 2 vào Hub)
+        // ═══════════════════════════════════════════════════════════
+
+        public async Task<BattleStartedDto?> StartPvpBattleAsync(
+            int sessionId, int userId, string connectionId, CancellationToken ct = default)
+        {
+            var session = await _db.BattleSessions
+                .Include(s => s.Rounds.OrderBy(r => r.RoundIndex))
+                .FirstOrDefaultAsync(s =>
+                    s.Id == sessionId &&
+                    s.Type == BattleType.PvP &&
+                    s.Status == BattleStatus.InProgress &&
+                    (s.ChallengerUserId == userId || s.OpponentUserId == userId), ct);
+
+            if (session == null) return null;
+
+            bool isChallenger = session.ChallengerUserId == userId;
+
+            // Cập nhật ConnectionId và Ready flag
+            if (isChallenger) { session.P1ConnectionId = connectionId; session.P1Ready = true; }
+            else { session.P2ConnectionId = connectionId; session.P2Ready = true; }
+
+            await _db.SaveChangesAsync(ct);
+
+            // Chưa đủ 2 bên ready
+            if (!session.P1Ready || !session.P2Ready) return null;
+
+            // Tạo BattlePetStates nếu chưa có
+            var existing = await _db.BattlePetStates
+                .Where(bps => bps.BattleSessionId == sessionId)
+                .ToListAsync(ct);
+
+            if (existing.Count == 0)
+            {
+                await InitPvpPetStatesAsync(session, sessionId, ct);
+            }
+
+            var petStates = await _db.BattlePetStates
+                .Where(bps => bps.BattleSessionId == sessionId)
+                .ToListAsync(ct);
+
+            var firstRound = session.Rounds.First();
+            var firstVocab = await _db.Vocabularies.FindAsync([firstRound.VocabularyId], ct);
+            var allVocabs = await _db.Vocabularies.AsNoTracking()
+                .Where(v => v.CEFRLevel == firstVocab!.CEFRLevel)
+                .ToListAsync(ct);
+
+            // Lấy thông tin opponent
+            int opponentId = isChallenger ? session.OpponentUserId!.Value : session.ChallengerUserId;
+            var opponent = await _db.Users.FindAsync([opponentId], ct);
+
+            return new BattleStartedDto
+            {
+                BattleSessionId = sessionId,
+                TotalRounds = session.TotalQuestions,
+                P1Pets = petStates.Where(p => p.PlayerIndex == 1).OrderBy(p => p.SlotIndex).Select(MapPetState).ToList(),
+                P2Pets = petStates.Where(p => p.PlayerIndex == 2).OrderBy(p => p.SlotIndex).Select(MapPetState).ToList(),
+                FirstQuestion = BuildRoundQuestion(firstRound, firstVocab!, allVocabs),
+                Opponent = new OpponentInfoDto
+                {
+                    Name = opponent?.Username ?? "",
+                    AvatarUrl = opponent?.AvatarUrl,
+                    IsBot = false
+                }
+            };
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // PVP – Submit Answer (buffer + resolve khi đủ 2)
+        // ═══════════════════════════════════════════════════════════
+
+        private record PvpPendingAnswer(string Answer, int ElapsedMs, DateTime SubmittedAt);
+
+        public async Task<SubmitAnswerResultWrapper?> SubmitPvpAnswerAsync(
+            SubmitRoundAnswerDto dto, int userId, CancellationToken ct = default)
+        {
+            var session = await _db.BattleSessions
+                .Include(s => s.Rounds.OrderBy(r => r.RoundIndex))
+                .FirstOrDefaultAsync(s =>
+                    s.Id == dto.BattleSessionId &&
+                    s.Type == BattleType.PvP &&
+                    s.Status == BattleStatus.InProgress &&
+                    (s.ChallengerUserId == userId || s.OpponentUserId == userId), ct);
+
+            if (session == null) return null;
+
+            var round = session.Rounds.FirstOrDefault(r => r.RoundIndex == dto.RoundIndex);
+            if (round == null || round.ResolvedAt.HasValue) return null;
+
+            bool isChallenger = session.ChallengerUserId == userId;
+            string cacheKey = $"pvp-{session.Id}-round-{dto.RoundIndex}-{(isChallenger ? "p1" : "p2")}";
+            string waitKey  = $"pvp-{session.Id}-round-{dto.RoundIndex}-{(isChallenger ? "p2" : "p1")}";
+
+            // Lưu câu trả lời vào cache (1 giờ TTL)
+            _cache.Set(cacheKey, new PvpPendingAnswer(dto.Answer, dto.ElapsedMs, DateTime.UtcNow),
+                TimeSpan.FromHours(1));
+
+            // Kiểm tra opponent đã submit chưa
+            if (!_cache.TryGetValue(waitKey, out PvpPendingAnswer? opponentAnswer) || opponentAnswer == null)
+            {
+                // Chưa đủ – báo WaitingOpponent cho caller (Hub sẽ handle)
+                return null;
+            }
+
+            // Cả 2 đã submit – xóa cache
+            _cache.Remove(cacheKey);
+            _cache.Remove(waitKey);
+
+            var vocab = await _db.Vocabularies.FindAsync([round.VocabularyId], ct)
+                ?? throw new KeyNotFoundException("Vocab không tồn tại.");
+
+            bool isFillIn = round.RoundIndex % 2 == 1
+                && !string.IsNullOrWhiteSpace(vocab.Description)
+                && vocab.Word != null
+                && vocab.Description.Contains(vocab.Word, StringComparison.OrdinalIgnoreCase);
+
+            string correctAnswer = isFillIn ? vocab.Word ?? "" : vocab.Meaning ?? "";
+
+            // P1 = Challenger, P2 = Opponent
+            PvpPendingAnswer p1Raw = isChallenger ? new(dto.Answer, dto.ElapsedMs, DateTime.UtcNow) : opponentAnswer;
+            PvpPendingAnswer p2Raw = isChallenger ? opponentAnswer : new(dto.Answer, dto.ElapsedMs, DateTime.UtcNow);
+
+            bool p1Correct = string.Equals(p1Raw.Answer.Trim(), correctAnswer.Trim(), StringComparison.OrdinalIgnoreCase);
+            bool p2Correct = string.Equals(p2Raw.Answer.Trim(), correctAnswer.Trim(), StringComparison.OrdinalIgnoreCase);
+            int p1Score = p1Correct ? CalculateScore(p1Raw.ElapsedMs) : 0;
+            int p2Score = p2Correct ? CalculateScore(p2Raw.ElapsedMs) : 0;
+
+            int scoreDiff = Math.Abs(p1Score - p2Score);
+            int damageMultiplier = dto.RoundIndex >= 14 ? 5 : (dto.RoundIndex >= 9 ? 2 : 1);
+            int baseDamage = scoreDiff == 0 ? 0 : Math.Clamp(scoreDiff / 10, 1, 20) * damageMultiplier;
+            int damagedPlayer = p1Score > p2Score ? 2 : (p2Score > p1Score ? 1 : 0);
+
+            // Type Effectiveness
+            var petStates = await _db.BattlePetStates
+                .Where(bps => bps.BattleSessionId == session.Id)
+                .ToListAsync(ct);
+
+            double typeMultiplier = 1.0;
+            string? typeEffectivenessText = null;
+            int damage = baseDamage;
+
+            if (baseDamage > 0 && damagedPlayer > 0)
+            {
+                int attackerIdx = damagedPlayer == 1 ? 2 : 1;
+                var attackerPet = petStates.Where(p => p.PlayerIndex == attackerIdx && !p.IsFainted).OrderBy(p => p.SlotIndex).FirstOrDefault();
+                var defenderPet = petStates.Where(p => p.PlayerIndex == damagedPlayer && !p.IsFainted).OrderBy(p => p.SlotIndex).FirstOrDefault();
+                if (attackerPet != null && defenderPet != null)
+                {
+                    typeMultiplier = WordSoul.Domain.DomainServices.TypeEffectivenessCalculator.Calculate(
+                        attackerPet.PetType, defenderPet.PetType, defenderPet.SecondaryPetType);
+                    if (typeMultiplier != 1.0)
+                        typeEffectivenessText = WordSoul.Domain.DomainServices.TypeEffectivenessCalculator.GetEffectivenessText(typeMultiplier);
+                    damage = (int)(baseDamage * typeMultiplier);
+                }
+                ApplyDamage(petStates, damagedPlayer, damage);
+            }
+
+            // Cập nhật Round
+            round.P1Score = p1Score; round.P1Answer = p1Raw.Answer; round.P1Correct = p1Correct; round.P1AnswerMs = p1Raw.ElapsedMs;
+            round.P2Score = p2Score; round.P2Answer = p2Raw.Answer; round.P2Correct = p2Correct; round.P2AnswerMs = p2Raw.ElapsedMs;
+            round.DamageDealt = damage; round.DamagedPlayer = damagedPlayer; round.TypeMultiplier = typeMultiplier;
+            round.ResolvedAt = DateTime.UtcNow;
+
+            if (p1Correct) session.ChallengerCorrect++;
+            if (p2Correct) session.OpponentCorrect++;
+            session.ChallengerTotalScore += p1Score;
+            session.OpponentTotalScore += p2Score;
+            session.CurrentRound = dto.RoundIndex + 1;
+
+            bool allP1Fainted = petStates.Where(p => p.PlayerIndex == 1).All(p => p.IsFainted);
+            bool allP2Fainted = petStates.Where(p => p.PlayerIndex == 2).All(p => p.IsFainted);
+            bool noMoreQ = dto.RoundIndex >= session.TotalQuestions - 1;
+
+            BattleEndedDto? battleEnded = null;
+            RoundQuestionDto? nextQuestion = null;
+
+            if (allP1Fainted || allP2Fainted || noMoreQ)
+            {
+                bool p1Won = allP2Fainted && !allP1Fainted ||
+                             (!allP1Fainted && !allP2Fainted && session.ChallengerTotalScore >= session.OpponentTotalScore);
+
+                session.ChallengerWon = p1Won;
+                session.Status = BattleStatus.Completed;
+                session.CompletedAt = DateTime.UtcNow;
+
+                // Apply ELO
+                var eloP1 = await ApplyEloAsync(session, p1Won, ct);
+
+                battleEnded = new BattleEndedDto
+                {
+                    BattleSessionId = session.Id,
+                    P1Won = p1Won,
+                    P1TotalScore = session.ChallengerTotalScore,
+                    P2TotalScore = session.OpponentTotalScore,
+                    P1CorrectCount = session.ChallengerCorrect,
+                    P2CorrectCount = session.OpponentCorrect,
+                    TotalRounds = dto.RoundIndex + 1,
+                    XpEarned = 0,
+                    EloResult = eloP1
+                };
+            }
+            else
+            {
+                var nextRound = session.Rounds.ElementAtOrDefault(dto.RoundIndex + 1);
+                if (nextRound != null)
+                {
+                    var nextVocab = await _db.Vocabularies.FindAsync([nextRound.VocabularyId], ct);
+                    var allVocabs = await _db.Vocabularies.AsNoTracking()
+                        .Where(v => v.CEFRLevel == nextVocab!.CEFRLevel).ToListAsync(ct);
+                    nextQuestion = BuildRoundQuestion(nextRound, nextVocab!, allVocabs);
+                }
+            }
+
+            await _db.SaveChangesAsync(ct);
+
+            return new SubmitAnswerResultWrapper
+            {
+                RoundResult = new RoundResultDto
+                {
+                    RoundIndex = dto.RoundIndex,
+                    VocabularyId = vocab.Id,
+                    CorrectAnswer = correctAnswer,
+                    P1Score = p1Score, P2Score = p2Score,
+                    P1Correct = p1Correct, P2Correct = p2Correct,
+                    P1AnswerMs = p1Raw.ElapsedMs, P2AnswerMs = p2Raw.ElapsedMs,
+                    P1Answer = p1Raw.Answer, P2Answer = p2Raw.Answer,
+                    DamageDealt = damage, DamagedPlayer = damagedPlayer,
+                    TypeMultiplier = typeMultiplier, TypeEffectivenessText = typeEffectivenessText,
+                    P1Pets = petStates.Where(p => p.PlayerIndex == 1).OrderBy(p => p.SlotIndex).Select(MapPetState).ToList(),
+                    P2Pets = petStates.Where(p => p.PlayerIndex == 2).OrderBy(p => p.SlotIndex).Select(MapPetState).ToList(),
+                    P1TotalScore = session.ChallengerTotalScore,
+                    P2TotalScore = session.OpponentTotalScore
+                },
+                NextQuestion = nextQuestion,
+                BattleEnded = battleEnded
+            };
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // PVP – Forfeit (disconnect)
+        // ═══════════════════════════════════════════════════════════
+
+        public async Task<BattleEndedDto?> ForfeitPvpBattleAsync(
+            string connectionId, CancellationToken ct = default)
+        {
+            var session = await _db.BattleSessions
+                .FirstOrDefaultAsync(s =>
+                    s.Type == BattleType.PvP &&
+                    s.Status == BattleStatus.InProgress &&
+                    (s.P1ConnectionId == connectionId || s.P2ConnectionId == connectionId), ct);
+
+            if (session == null) return null;
+
+            bool p1Forfeited = session.P1ConnectionId == connectionId;
+            bool p1Won = !p1Forfeited;
+
+            session.ChallengerWon = p1Won;
+            session.Status = BattleStatus.Completed;
+            session.CompletedAt = DateTime.UtcNow;
+
+            var eloResult = await ApplyEloAsync(session, p1Won, ct);
+
+            await _db.SaveChangesAsync(ct);
+
+            _logger.LogInformation("PvP session {S} forfeited by connection {C}", session.Id, connectionId);
+
+            return new BattleEndedDto
+            {
+                BattleSessionId = session.Id,
+                P1Won = p1Won,
+                P1TotalScore = session.ChallengerTotalScore,
+                P2TotalScore = session.OpponentTotalScore,
+                P1CorrectCount = session.ChallengerCorrect,
+                P2CorrectCount = session.OpponentCorrect,
+                TotalRounds = session.CurrentRound,
+                XpEarned = 0,
+                EloResult = eloResult
+            };
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // PVP – Get Rating
+        // ═══════════════════════════════════════════════════════════
+
+        public async Task<PvpRatingDto?> GetPvpRatingAsync(int userId, CancellationToken ct = default)
+        {
+            var user = await _db.Users.FindAsync([userId], ct);
+            if (user == null) return null;
+            return new PvpRatingDto
+            {
+                UserId = user.Id,
+                Username = user.Username ?? user.Email,
+                PvpRating = user.PvpRating,
+                PvpWins = user.PvpWins,
+                PvpLosses = user.PvpLosses,
+                Tier = GetTier(user.PvpRating)
+            };
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // PVP Helpers
+        // ═══════════════════════════════════════════════════════════
+
+        private static string GenerateRoomCode()
+        {
+            const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+            return new string(Enumerable.Range(0, 6).Select(_ => chars[_rng.Next(chars.Length)]).ToArray());
+        }
+
+        private static string GetTier(int rating) => rating switch
+        {
+            < 800  => "Bronze",
+            < 1000 => "Silver",
+            < 1200 => "Gold",
+            < 1400 => "Platinum",
+            _      => "Diamond"
+        };
+
+        private async Task<PvpEloResultDto> ApplyEloAsync(
+            BattleSession session, bool challengerWon, CancellationToken ct)
+        {
+            const int K = 32;
+            var p1 = await _db.Users.FindAsync([session.ChallengerUserId], ct);
+            var p2 = await _db.Users.FindAsync([session.OpponentUserId!.Value], ct);
+            if (p1 == null || p2 == null) return new PvpEloResultDto();
+
+            double expected1 = 1.0 / (1.0 + Math.Pow(10, (p2.PvpRating - p1.PvpRating) / 400.0));
+            double score1 = challengerWon ? 1.0 : 0.0;
+            double score2 = 1.0 - score1;
+            double expected2 = 1.0 - expected1;
+
+            int change1 = (int)Math.Round(K * (score1 - expected1));
+            int change2 = (int)Math.Round(K * (score2 - expected2));
+
+            p1.PvpRating = Math.Max(0, p1.PvpRating + change1);
+            p2.PvpRating = Math.Max(0, p2.PvpRating + change2);
+
+            if (challengerWon) { p1.PvpWins++; p2.PvpLosses++; }
+            else { p2.PvpWins++; p1.PvpLosses++; }
+
+            // Trả về kết quả ELO cho P1 (Challenger)
+            return new PvpEloResultDto
+            {
+                RatingChange = change1,
+                NewRating = p1.PvpRating,
+                NewTier = GetTier(p1.PvpRating)
+            };
+        }
+
+        private async Task InitPvpPetStatesAsync(
+            BattleSession session, int sessionId, CancellationToken ct)
+        {
+            var p1PetIds = JsonSerializer.Deserialize<List<int>>(session.ChallengerPetIds ?? "[]")!;
+            var p2PetIds = JsonSerializer.Deserialize<List<int>>(session.OpponentPetIds ?? "[]")!;
+
+            var allPetIds = p1PetIds.Concat(p2PetIds).Distinct().ToList();
+            var pets = await _db.UserOwnedPets
+                .Include(uop => uop.Pet)
+                .Where(uop => allPetIds.Contains(uop.Id))
+                .ToListAsync(ct);
+
+            for (int i = 0; i < p1PetIds.Count; i++)
+            {
+                var pet = pets.First(p => p.Id == p1PetIds[i]);
+                int maxHp = CalculateMaxHp(pet.Pet!.Rarity, pet.Level);
+                _db.BattlePetStates.Add(new BattlePetState
+                {
+                    BattleSessionId = sessionId, PlayerIndex = 1, SlotIndex = i,
+                    UserOwnedPetId = pet.Id, DisplayName = pet.Pet?.Name ?? "?",
+                    ImageUrl = pet.Pet?.ImageUrl, PetType = pet.Pet!.Type,
+                    SecondaryPetType = pet.Pet.SecondaryType, MaxHp = maxHp, CurrentHp = maxHp
+                });
+            }
+
+            for (int i = 0; i < p2PetIds.Count; i++)
+            {
+                var pet = pets.First(p => p.Id == p2PetIds[i]);
+                int maxHp = CalculateMaxHp(pet.Pet!.Rarity, pet.Level);
+                _db.BattlePetStates.Add(new BattlePetState
+                {
+                    BattleSessionId = sessionId, PlayerIndex = 2, SlotIndex = i,
+                    UserOwnedPetId = pet.Id, DisplayName = pet.Pet?.Name ?? "?",
+                    ImageUrl = pet.Pet?.ImageUrl, PetType = pet.Pet!.Type,
+                    SecondaryPetType = pet.Pet.SecondaryType, MaxHp = maxHp, CurrentHp = maxHp
+                });
+            }
+
+            await _db.SaveChangesAsync(ct);
+        }
+
+        private async Task<List<Vocabulary>> SelectPvpVocabsAsync(
+            int p1UserId, int p2UserId, CancellationToken ct)
+        {
+            int half = 15; // 15 từ / bên = 30 tổng
+            var states = new[] { "Learning", "Review", "Mastered" };
+
+            var p1Vocabs = await _db.UserVocabularyProgresses
+                .AsNoTracking()
+                .Where(uvp => uvp.UserId == p1UserId && states.Contains(uvp.MemoryState))
+                .Include(uvp => uvp.Vocabulary)
+                .OrderBy(_ => Guid.NewGuid())
+                .Take(half)
+                .Select(uvp => uvp.Vocabulary!)
+                .ToListAsync(ct);
+
+            var p2Vocabs = await _db.UserVocabularyProgresses
+                .AsNoTracking()
+                .Where(uvp => uvp.UserId == p2UserId && states.Contains(uvp.MemoryState))
+                .Include(uvp => uvp.Vocabulary)
+                .OrderBy(_ => Guid.NewGuid())
+                .Take(half)
+                .Select(uvp => uvp.Vocabulary!)
+                .ToListAsync(ct);
+
+            // Fallback nếu thiếu
+            var taken = p1Vocabs.Select(v => v.Id).ToHashSet();
+            if (p1Vocabs.Count < half)
+            {
+                var fill = await _db.Vocabularies.AsNoTracking()
+                    .Where(v => !taken.Contains(v.Id))
+                    .OrderBy(_ => Guid.NewGuid()).Take(half - p1Vocabs.Count).ToListAsync(ct);
+                p1Vocabs.AddRange(fill);
+            }
+
+            taken = p2Vocabs.Select(v => v.Id).Union(taken).ToHashSet();
+            if (p2Vocabs.Count < half)
+            {
+                var fill = await _db.Vocabularies.AsNoTracking()
+                    .Where(v => !taken.Contains(v.Id))
+                    .OrderBy(_ => Guid.NewGuid()).Take(half - p2Vocabs.Count).ToListAsync(ct);
+                p2Vocabs.AddRange(fill);
+            }
+
+            var combined = p1Vocabs.Concat(p2Vocabs).OrderBy(_ => Guid.NewGuid()).ToList();
+            return combined;
         }
     }
 }
