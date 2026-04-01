@@ -215,7 +215,6 @@ builder.Services.AddScoped<IUserInventoryService, UserInventoryService>();
 
 // Gym Leader Progression
 builder.Services.AddScoped<IGymLeaderService, GymLeaderService>();
-builder.Services.AddScoped<IBattleService, BattleService>();
 builder.Services.AddScoped<IArenaBattleService, ArenaBattleService>();
 
 // Configure Cloudinary

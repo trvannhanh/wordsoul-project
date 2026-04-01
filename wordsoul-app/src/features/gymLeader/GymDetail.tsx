@@ -205,7 +205,7 @@ export default function GymDetail() {
         )}
         {canBattle && (
           <button onClick={handleStart}
-            className="w-full py-4 rounded-xl font-pixel text-sm transition-all hover:scale-105 hover:shadow-lg"
+            className="w-full py-4 rounded-xl font-pixel text-sm transition-all hover:scale-105 hover:shadow-lg custom-cursor"
             style={{ background: color, color: '#000', boxShadow: `0 0 20px ${color}66` }}>
             ⚔️ CHALLENGE {gym.name.toUpperCase()}!
           </button>

@@ -34,7 +34,7 @@ const STATUS_STYLE: Record<GymStatus, { badge: string; border: string; opacity: 
 
 const STATUS_LABEL: Record<GymStatus, string> = {
   [GymStatus.Defeated]: '✅ Defeated',
-  [GymStatus.Unlocked]: '⚔️ Challenge!',
+  [GymStatus.Unlocked]: '⚔️ Challenge',
   [GymStatus.Locked]: '🔒 Locked',
 };
 
@@ -105,7 +105,7 @@ export default function GymMap() {
 
           return (
             <div key={gym.id}
-              className={`relative rounded-xl border-2 ${style.border} ${style.opacity} cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-lg overflow-hidden`}
+              className={`relative rounded-xl border-2 ${style.border} ${style.opacity} custom-cursor transition-all duration-300 hover:scale-105 hover:shadow-lg overflow-hidden`}
               style={{ background: 'rgba(15,23,42,0.95)', boxShadow: gym.status !== GymStatus.Locked ? `0 0 20px ${theme.color}44` : undefined }}
               onClick={() => gym.status !== GymStatus.Locked && navigate(`/gym/${gym.id}`)}>
 
@@ -150,10 +150,10 @@ export default function GymMap() {
                   disabled={gym.status === GymStatus.Locked}
                   onClick={e => { e.stopPropagation(); navigate(`/gym/${gym.id}`); }}
                   className={`w-full py-2 rounded font-pixel text-xs transition-all ${gym.status === GymStatus.Locked
-                      ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                      : gym.status === GymStatus.Defeated
-                        ? 'bg-green-700 hover:bg-green-600 text-white'
-                        : 'text-black hover:opacity-90'
+                    ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                    : gym.status === GymStatus.Defeated
+                      ? 'bg-green-700 hover:bg-green-600 text-white'
+                      : 'text-black hover:opacity-90 custom-cursor'
                     }`}
                   style={gym.status === GymStatus.Unlocked ? { background: theme.color } : undefined}>
                   {STATUS_LABEL[gym.status]}
