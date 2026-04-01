@@ -687,7 +687,7 @@ namespace WordSoul.Infrastructure.Persistence
                 .FirstOrDefaultAsync(s =>
                     s.Id == sessionId &&
                     s.Type == BattleType.PvP &&
-                    s.Status == BattleStatus.InProgress &&
+                    (s.Status == BattleStatus.InProgress || s.Status == BattleStatus.Waiting) &&
                     (s.ChallengerUserId == userId || s.OpponentUserId == userId), ct);
 
             if (session == null) return null;
@@ -700,8 +700,8 @@ namespace WordSoul.Infrastructure.Persistence
 
             await _db.SaveChangesAsync(ct);
 
-            // Chưa đủ 2 bên ready
-            if (!session.P1Ready || !session.P2Ready) return null;
+            // Chưa đủ 2 bên ready, hoặc P2 chưa join REST (session vẫn còn Waiting)
+            if (!session.P1Ready || !session.P2Ready || session.Status == BattleStatus.Waiting) return null;
 
             // Tạo BattlePetStates nếu chưa có
             var existing = await _db.BattlePetStates
@@ -734,6 +734,10 @@ namespace WordSoul.Infrastructure.Persistence
                 P1Pets = petStates.Where(p => p.PlayerIndex == 1).OrderBy(p => p.SlotIndex).Select(MapPetState).ToList(),
                 P2Pets = petStates.Where(p => p.PlayerIndex == 2).OrderBy(p => p.SlotIndex).Select(MapPetState).ToList(),
                 FirstQuestion = BuildRoundQuestion(firstRound, firstVocab!, allVocabs),
+                // P1ConnectionId: Hub dùng để gửi BattleStarted trực tiếp đến P1 khi P2 là người trigger
+                P1ConnectionId = session.P1ConnectionId,
+                // IsP1 sẽ được set ở Hub (false cho P2-caller, true cho P1 nhận qua Direct)
+                IsP1 = false,
                 Opponent = new OpponentInfoDto
                 {
                     Name = opponent?.Username ?? "",
@@ -862,7 +866,7 @@ namespace WordSoul.Infrastructure.Persistence
                 session.CompletedAt = DateTime.UtcNow;
 
                 // Apply ELO
-                var eloP1 = await ApplyEloAsync(session, p1Won, ct);
+                var (eloP1, eloP2) = await ApplyEloAsync(session, p1Won, ct);
 
                 battleEnded = new BattleEndedDto
                 {
@@ -874,7 +878,8 @@ namespace WordSoul.Infrastructure.Persistence
                     P2CorrectCount = session.OpponentCorrect,
                     TotalRounds = dto.RoundIndex + 1,
                     XpEarned = 0,
-                    EloResult = eloP1
+                    EloResult = eloP1,
+                    P2EloResult = eloP2
                 };
             }
             else
@@ -924,23 +929,34 @@ namespace WordSoul.Infrastructure.Persistence
             var session = await _db.BattleSessions
                 .FirstOrDefaultAsync(s =>
                     s.Type == BattleType.PvP &&
-                    s.Status == BattleStatus.InProgress &&
+                    (s.Status == BattleStatus.InProgress || s.Status == BattleStatus.Waiting) &&
                     (s.P1ConnectionId == connectionId || s.P2ConnectionId == connectionId), ct);
 
             if (session == null) return null;
 
+            // Nếu session chưa bắt đầu (Waiting) → đơn giản hủy phòng, không tính ELO
+            if (session.Status == BattleStatus.Waiting)
+            {
+                session.Status = BattleStatus.Abandoned;
+                session.CompletedAt = DateTime.UtcNow;
+                await _db.SaveChangesAsync(ct);
+                _logger.LogInformation("PvP room {S} cancelled by disconnect (was Waiting)", session.Id);
+                return null; // Không cần báo OpponentForfeited vì chưa có opponent trong Hub
+            }
+
             bool p1Forfeited = session.P1ConnectionId == connectionId;
-            bool p1Won = !p1Forfeited;
+            bool p1Won = !p1Forfeited; // người còn lại win
 
             session.ChallengerWon = p1Won;
             session.Status = BattleStatus.Completed;
             session.CompletedAt = DateTime.UtcNow;
 
-            var eloResult = await ApplyEloAsync(session, p1Won, ct);
+            var (eloP1, eloP2) = await ApplyEloAsync(session, p1Won, ct);
 
             await _db.SaveChangesAsync(ct);
 
-            _logger.LogInformation("PvP session {S} forfeited by connection {C}", session.Id, connectionId);
+            _logger.LogInformation("PvP session {S} forfeited by {Who} (conn {C}). Winner: P{W}",
+                session.Id, p1Forfeited ? "P1(Challenger)" : "P2(Opponent)", connectionId, p1Won ? 1 : 2);
 
             return new BattleEndedDto
             {
@@ -952,7 +968,8 @@ namespace WordSoul.Infrastructure.Persistence
                 P2CorrectCount = session.OpponentCorrect,
                 TotalRounds = session.CurrentRound,
                 XpEarned = 0,
-                EloResult = eloResult
+                EloResult = eloP1,
+                P2EloResult = eloP2
             };
         }
 
@@ -994,15 +1011,22 @@ namespace WordSoul.Infrastructure.Persistence
             _      => "Diamond"
         };
 
-        private async Task<PvpEloResultDto> ApplyEloAsync(
+        private async Task<(PvpEloResultDto P1, PvpEloResultDto P2)> ApplyEloAsync(
             BattleSession session, bool challengerWon, CancellationToken ct)
         {
             const int K = 32;
             var p1 = await _db.Users.FindAsync([session.ChallengerUserId], ct);
             var p2 = await _db.Users.FindAsync([session.OpponentUserId!.Value], ct);
-            if (p1 == null || p2 == null) return new PvpEloResultDto();
 
-            double expected1 = 1.0 / (1.0 + Math.Pow(10, (p2.PvpRating - p1.PvpRating) / 400.0));
+            var emptyElo = new PvpEloResultDto();
+            if (p1 == null || p2 == null) return (emptyElo, emptyElo);
+
+            int oldP1Rating = p1.PvpRating;
+            int oldP2Rating = p2.PvpRating;
+            string oldP1Tier = GetTier(oldP1Rating);
+            string oldP2Tier = GetTier(oldP2Rating);
+
+            double expected1 = 1.0 / (1.0 + Math.Pow(10, (oldP2Rating - oldP1Rating) / 400.0));
             double score1 = challengerWon ? 1.0 : 0.0;
             double score2 = 1.0 - score1;
             double expected2 = 1.0 - expected1;
@@ -1010,19 +1034,30 @@ namespace WordSoul.Infrastructure.Persistence
             int change1 = (int)Math.Round(K * (score1 - expected1));
             int change2 = (int)Math.Round(K * (score2 - expected2));
 
-            p1.PvpRating = Math.Max(0, p1.PvpRating + change1);
-            p2.PvpRating = Math.Max(0, p2.PvpRating + change2);
+            p1.PvpRating = Math.Max(0, oldP1Rating + change1);
+            p2.PvpRating = Math.Max(0, oldP2Rating + change2);
 
             if (challengerWon) { p1.PvpWins++; p2.PvpLosses++; }
             else { p2.PvpWins++; p1.PvpLosses++; }
 
-            // Trả về kết quả ELO cho P1 (Challenger)
-            return new PvpEloResultDto
-            {
-                RatingChange = change1,
-                NewRating = p1.PvpRating,
-                NewTier = GetTier(p1.PvpRating)
-            };
+            return (
+                new PvpEloResultDto
+                {
+                    OldRating = oldP1Rating,
+                    RatingChange = change1,
+                    NewRating = p1.PvpRating,
+                    OldTier = oldP1Tier,
+                    NewTier = GetTier(p1.PvpRating)
+                },
+                new PvpEloResultDto
+                {
+                    OldRating = oldP2Rating,
+                    RatingChange = change2,
+                    NewRating = p2.PvpRating,
+                    OldTier = oldP2Tier,
+                    NewTier = GetTier(p2.PvpRating)
+                }
+            );
         }
 
         private async Task InitPvpPetStatesAsync(

@@ -34,8 +34,10 @@ namespace WordSoul.Application.DTOs.Battle
     /// <summary>Thông tin ELO thay đổi sau PvP, đính kèm vào BattleEndedDto.</summary>
     public class PvpEloResultDto
     {
+        public int OldRating { get; set; }
         public int RatingChange { get; set; }   // dương = tăng, âm = giảm
         public int NewRating { get; set; }
+        public string OldTier { get; set; } = "";
         public string NewTier { get; set; } = "";
     }
 

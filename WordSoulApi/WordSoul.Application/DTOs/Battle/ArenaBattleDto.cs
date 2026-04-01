@@ -28,6 +28,17 @@ namespace WordSoul.Application.DTOs.Battle
         public List<PetStateDto> P2Pets { get; set; } = [];  // bot/opponent
         public RoundQuestionDto FirstQuestion { get; set; } = null!;
         public OpponentInfoDto Opponent { get; set; } = null!;
+        /// <summary>
+        /// true = client này là P1 (Challenger). false = client này là P2 (Opponent).
+        /// Dùng để frontend biết cách swap P1/P2 data khi hiển thị.
+        /// </summary>
+        public bool IsP1 { get; set; } = false;
+        /// <summary>
+        /// Chỉ dùng nội bộ Hub để gửi BattleStarted trực tiếp đến P1 connection.
+        /// Không serialize ra client.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string? P1ConnectionId { get; set; }
     }
 
     public class OpponentInfoDto
@@ -104,8 +115,10 @@ namespace WordSoul.Application.DTOs.Battle
         public bool BadgeEarned { get; set; }
         public string? BadgeName { get; set; }
         public string? BadgeImageUrl { get; set; }
-        /// <summary>Chỉ có giá trị khi trận đấu là PvP.</summary>
+        /// <summary>ELO của P1 (Challenger). Chỉ có giá trị khi trận đấu là PvP.</summary>
         public PvpEloResultDto? EloResult { get; set; }
+        /// <summary>ELO của P2 (Opponent). Chỉ có giá trị khi trận đấu là PvP.</summary>
+        public PvpEloResultDto? P2EloResult { get; set; }
     }
 
     // ── Wrapper returned by SubmitAnswerAsync ─────────────────────────────────

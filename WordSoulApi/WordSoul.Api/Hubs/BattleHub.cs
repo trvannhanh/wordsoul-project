@@ -83,7 +83,7 @@ namespace WordSoul.Api.Hubs
         // ═══════════════════════════════════════════════════════════
 
         /// <summary>
-        /// Player vào phòng PvP. Khi cả 2 ready → BattleStarted broadcast cho cả 2.
+        /// Player vào phòng PvP. Khi cả 2 ready → BattleStarted gửi tới cả 2 connection.
         /// </summary>
         public async Task PlayerReadyPvP(int battleSessionId)
         {
@@ -100,8 +100,17 @@ namespace WordSoul.Api.Hubs
             }
             else
             {
-                // Cả 2 đã sẵn sàng – broadcast BattleStarted cho toàn phòng
-                await Clients.Group(RoomGroup(battleSessionId)).SendAsync("BattleStarted", result);
+                // P2 vừa trigger → cả 2 đã sẵn sàng
+                // Gửi BattleStarted đến P2 (caller) với IsP1 = false (P2 là Opponent)
+                result.IsP1 = false;
+                await Clients.Caller.SendAsync("BattleStarted", result);
+
+                // Gửi BattleStarted đến P1 với IsP1 = true (P1 là Challenger)
+                if (!string.IsNullOrEmpty(result.P1ConnectionId))
+                {
+                    result.IsP1 = true;
+                    await Clients.Client(result.P1ConnectionId).SendAsync("BattleStarted", result);
+                }
             }
         }
 

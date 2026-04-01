@@ -65,7 +65,9 @@ export default function PvpBattleArena() {
     // Navigate to result
     useEffect(() => {
         if ((state.phase === 'ended' || state.phase === 'opponentLeft') && state.battleResult) {
-            navigate(`/pvp/arena/${sessionId}/result`, { state: { result: state.battleResult } });
+            navigate(`/pvp/arena/${sessionId}/result`, {
+                state: { result: state.battleResult }
+            });
         }
     }, [state.phase, state.battleResult, navigate, sessionId]);
 
@@ -345,6 +347,7 @@ export default function PvpBattleArena() {
                 <RoundResultOverlay
                     result={state.lastRoundResult}
                     onDone={() => setShowOverlay(false)}
+                    opponentLabel="OPPONENT"
                 />
             )}
         </div>
