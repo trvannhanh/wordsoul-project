@@ -22,6 +22,14 @@ namespace WordSoul.Domain.Entities
         public string? RefreshToken { get; set; } 
         public DateTime? RefreshTokenExpiryTime { get; set; }
 
+        // ── PvP Rating (ELO) ──────────────────────────────────
+        public int PvpRating { get; set; } = 1000;
+        public int PvpWins { get; set; } = 0;
+        public int PvpLosses { get; set; } = 0;
+
+        [MaxLength(300)]
+        public string? AvatarUrl { get; set; }
+
 
         public List<VocabularySet> CreatedVocabularySets { get; set; } = [];
         public List<LearningSession> LearningSessions { get; set; } = []; 

@@ -21,11 +21,13 @@ import CreateVocabularySet from './features/vocabularySet/CreateVocabularySet';
 import ProfilePage from './features/userProfile/ProfilePage';
 import GymMap from './features/gymLeader/GymMap';
 import GymDetail from './features/gymLeader/GymDetail';
-import GymBattle from './features/gymLeader/GymBattle';
 import GymResult from './features/gymLeader/GymResult';
 import PetSelector from './features/battle/PetSelector';
 import BattleArena from './features/battle/BattleArena';
 import BattleArenaResult from './features/battle/BattleArenaResult';
+import PvpLobby from './features/battle/PvpLobby';
+import PvpPetSelector from './features/battle/PvpPetSelector';
+import PvpBattleArena from './features/battle/PvpBattleArena';
 import { AuthProvider } from './store/AuthProvider';
 
 
@@ -52,11 +54,13 @@ const App: React.FC = () => {
           </Route>
 
           <Route path="/learningSession/:id" element={<LearningSession />} />
-          <Route path="/gym/battle/:sessionId" element={<GymBattle />} />
           <Route path="/gym/battle/:sessionId/result" element={<GymResult />} />
           <Route path="/gym/:gymId/pets" element={<PetSelector />} />
           <Route path="/arena/:sessionId" element={<BattleArena />} />
           <Route path="/arena/:sessionId/result" element={<BattleArenaResult />} />
+          <Route path="/pvp" element={<PvpLobby />} />
+          <Route path="/pvp/pets" element={<PvpPetSelector />} />
+          <Route path="/pvp/arena/:sessionId" element={<PvpBattleArena />} />
 
           <Route element={<NoFooterLayout />}>
             <Route path='/pets' element={<Pets />} />

@@ -28,5 +28,8 @@ namespace WordSoul.Domain.Entities
 
         /// <summary>Tốc độ trả lời trung bình của Bot (ms). Nhỏ hơn = nhanh hơn.</summary>
         public int BotAvgResponseMs { get; set; } = 5000;
+
+        /// <summary>Level của Bot Pet dùng để tính HP.</summary>
+        public int Level { get; set; } = 10;
     }
 }

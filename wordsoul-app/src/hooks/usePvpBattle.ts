@@ -3,8 +3,8 @@ import type { HubConnection } from '@microsoft/signalr';
 import {
     connectBattleHub,
     disconnectBattleHub,
-    sendPlayerReady,
-    sendSubmitAnswer,
+    sendPlayerReadyPvP,
+    sendSubmitPvpAnswer,
 } from '../services/battleHub';
 import type {
     BattleStartedDto,
@@ -16,10 +16,10 @@ import type {
 } from '../types/BattleArenaTypes';
 import { ACCESS_TOKEN_KEY, getToken } from '../helpers/authHelpers';
 
-type Phase = 'connecting' | 'battle' | 'roundResult' | 'ended' | 'error';
+type PvpPhase = 'connecting' | 'waiting' | 'battle' | 'roundResult' | 'ended' | 'error' | 'opponentLeft';
 
-interface BattleState {
-    phase: Phase;
+interface PvpBattleState {
+    phase: PvpPhase;
     sessionId: number;
     totalRounds: number;
     currentQuestion: RoundQuestionDto | null;
@@ -32,12 +32,13 @@ interface BattleState {
     errorMsg: string;
     answered: boolean;
     opponent: OpponentInfoDto | null;
+    waitingMessage: string;
 }
 
-export function useBattleArena(sessionId: number) {
+export function usePvpBattle(sessionId: number) {
     const connRef = useRef<HubConnection | null>(null);
 
-    const [state, setState] = useState<BattleState>({
+    const [state, setState] = useState<PvpBattleState>({
         phase: 'connecting',
         sessionId,
         totalRounds: 0,
@@ -51,6 +52,7 @@ export function useBattleArena(sessionId: number) {
         errorMsg: '',
         answered: false,
         opponent: null,
+        waitingMessage: 'Connecting to battle server...'
     });
 
     useEffect(() => {
@@ -58,6 +60,23 @@ export function useBattleArena(sessionId: number) {
         const token = getToken(ACCESS_TOKEN_KEY) ?? '';
 
         connectBattleHub(token, {
+            onWaitingOpponent: (data: { message: string }) => {
+                if (!mounted) return;
+                setState(s => ({ ...s, phase: 'waiting', waitingMessage: data.message }));
+            },
+
+            onOpponentJoined: (data: { opponentName: string; avatarUrl?: string; opponentRating: number }) => {
+                if (!mounted) return;
+                setState(s => ({
+                    ...s,
+                    opponent: {
+                        name: data.opponentName,
+                        avatarUrl: data.avatarUrl || '',
+                        isBot: false
+                    }
+                }));
+            },
+
             onBattleStarted: (data: BattleStartedDto) => {
                 if (!mounted) return;
                 setState(s => ({
@@ -102,6 +121,16 @@ export function useBattleArena(sessionId: number) {
                 setState(s => ({ ...s, phase: 'ended', battleResult: data }));
             },
 
+            onOpponentForfeited: (data: BattleEndedDto) => {
+                if (!mounted) return;
+                setState(s => ({
+                    ...s,
+                    phase: 'opponentLeft',
+                    battleResult: data,
+                    errorMsg: 'Opponent has disconnected.'
+                }));
+            },
+
             onError: (msg: string) => {
                 if (!mounted) return;
                 setState(s => ({ ...s, phase: 'error', errorMsg: msg }));
@@ -109,7 +138,8 @@ export function useBattleArena(sessionId: number) {
         }).then(conn => {
             if (!mounted) return;
             connRef.current = conn;
-            sendPlayerReady(conn, sessionId);
+            // Join PvP room
+            sendPlayerReadyPvP(conn, sessionId);
         }).catch(err => {
             if (!mounted) return;
             setState(s => ({ ...s, phase: 'error', errorMsg: String(err) }));
@@ -123,8 +153,8 @@ export function useBattleArena(sessionId: number) {
 
     const submitAnswer = useCallback((answer: string, elapsedMs: number) => {
         if (!connRef.current || !state.currentQuestion || state.answered) return;
-        setState(s => ({ ...s, answered: true }));
-        sendSubmitAnswer(connRef.current!, {
+        setState(s => ({ ...s, answered: true, phase: 'waiting', waitingMessage: 'Waiting for opponent to answer...' }));
+        sendSubmitPvpAnswer(connRef.current!, {
             battleSessionId: sessionId,
             roundIndex: state.currentQuestion!.roundIndex,
             vocabularyId: state.currentQuestion!.vocabularyId,

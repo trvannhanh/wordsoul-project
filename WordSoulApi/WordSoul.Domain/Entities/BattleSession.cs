@@ -39,9 +39,24 @@ namespace WordSoul.Domain.Entities
         public int OpponentTotalScore { get; set; } = 0;
         public bool? ChallengerWon { get; set; }            // null = chưa xong / hòa
 
-        // ── Real-time Pet selection (JSON) ─────────────────
+        // ── Real-time Pet selection (JSON) ────────────────────
         public string? ChallengerPetIds { get; set; }       // e.g. "[5,12,7]"  UserOwnedPet IDs
         public string? OpponentPetIds { get; set; }         // Bot: GymLeaderPet IDs
+
+        // ── PvP-specific ──────────────────────────────────────
+        /// <summary>6-char alphanumeric room code (PvP only).</summary>
+        [System.ComponentModel.DataAnnotations.MaxLength(10)]
+        public string? RoomCode { get; set; }
+
+        /// <summary>true khi P1/P2 đã vào BattleHub và sẵn sàng.</summary>
+        public bool P1Ready { get; set; } = false;
+        public bool P2Ready { get; set; } = false;
+
+        /// <summary>SignalR ConnectionId để xử lý disconnect.</summary>
+        [System.ComponentModel.DataAnnotations.MaxLength(200)]
+        public string? P1ConnectionId { get; set; }
+        [System.ComponentModel.DataAnnotations.MaxLength(200)]
+        public string? P2ConnectionId { get; set; }
 
         public List<BattleRound> Rounds { get; set; } = [];
         public List<BattlePetState> PetStates { get; set; } = [];

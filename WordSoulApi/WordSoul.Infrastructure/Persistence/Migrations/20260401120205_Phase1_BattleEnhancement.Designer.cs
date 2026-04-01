@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WordSoul.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using WordSoul.Infrastructure.Persistence;
 namespace WordSoul.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(WordSoulDbContext))]
-    partial class WordSoulDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260401120205_Phase1_BattleEnhancement")]
+    partial class Phase1_BattleEnhancement
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -307,24 +310,6 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
                     b.Property<int?>("OpponentUserId")
                         .HasColumnType("int");
-
-                    b.Property<string>("P1ConnectionId")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<bool>("P1Ready")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("P2ConnectionId")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<bool>("P2Ready")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("RoomCode")
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
 
                     b.Property<DateTime>("StartedAt")
                         .HasColumnType("datetime2");
@@ -772,10 +757,6 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.Property<int>("AP")
                         .HasColumnType("int");
 
-                    b.Property<string>("AvatarUrl")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -794,15 +775,6 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
-
-                    b.Property<int>("PvpLosses")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PvpRating")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PvpWins")
-                        .HasColumnType("int");
 
                     b.Property<string>("RefreshToken")
                         .HasMaxLength(200)

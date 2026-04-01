@@ -42,6 +42,8 @@ namespace WordSoul.Application.DTOs.Battle
         public int SlotIndex { get; set; }
         public string DisplayName { get; set; } = "";
         public string? ImageUrl { get; set; }
+        public string PetType { get; set; } = "Normal";
+        public string? SecondaryPetType { get; set; }
         public int MaxHp { get; set; } = 100;
         public int CurrentHp { get; set; } = 100;
         public bool IsFainted { get; set; }
@@ -79,6 +81,8 @@ namespace WordSoul.Application.DTOs.Battle
         // Damage
         public int DamageDealt { get; set; }
         public int DamagedPlayer { get; set; }  // 1=P1 bị, 2=P2 bị, 0=hòa
+        public double TypeMultiplier { get; set; } = 1.0;
+        public string? TypeEffectivenessText { get; set; }
 
         // Trạng thái mới
         public List<PetStateDto> P1Pets { get; set; } = [];
@@ -100,6 +104,8 @@ namespace WordSoul.Application.DTOs.Battle
         public bool BadgeEarned { get; set; }
         public string? BadgeName { get; set; }
         public string? BadgeImageUrl { get; set; }
+        /// <summary>Chỉ có giá trị khi trận đấu là PvP.</summary>
+        public PvpEloResultDto? EloResult { get; set; }
     }
 
     // ── Wrapper returned by SubmitAnswerAsync ─────────────────────────────────

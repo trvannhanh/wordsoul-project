@@ -157,6 +157,13 @@ const Header: React.FC = () => {
                                 </button>
                             </Link>
                         </div>
+                        <div>
+                            <Link to="/pvp">
+                                <button className="px-3 py-2 hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-md custom-cursor">
+                                    PvP Arena
+                                </button>
+                            </Link>
+                        </div>
                         <div className="relative">
                             <Link to="/community">
                                 <button className="flex items-center gap-1 px-3 py-2  hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-md custom-cursor">
@@ -244,6 +251,9 @@ const Header: React.FC = () => {
                         </Link>
                         <Link to="/gym" className="py-2 hover:text-blue-400" onClick={toggleMobileMenu}>
                             Gym Leaders
+                        </Link>
+                        <Link to="/pvp" className="py-2 hover:text-blue-400" onClick={toggleMobileMenu}>
+                            PvP Arena
                         </Link>
                         <Link to="/community" className="py-2 hover:text-blue-400" onClick={toggleMobileMenu}>
                             Cộng đồng
