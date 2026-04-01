@@ -36,6 +36,7 @@ export interface BattleStartedDto {
     p2Pets: PetStateDto[];
     firstQuestion: RoundQuestionDto;
     opponent: OpponentInfoDto;
+    isP1: boolean;  // true = client này là Challenger (P1 trong DB)
 }
 
 export interface RoundResultDto {
@@ -80,5 +81,6 @@ export interface BattleEndedDto {
     badgeEarned: boolean;
     badgeName?: string;
     badgeImageUrl?: string;
-    pvpEloResult?: PvpEloResultDto;
+    eloResult?: PvpEloResultDto;    // ELO của P1 (Challenger)
+    p2EloResult?: PvpEloResultDto;  // ELO của P2 (Opponent)
 }
