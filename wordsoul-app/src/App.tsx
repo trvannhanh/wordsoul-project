@@ -21,7 +21,6 @@ import CreateVocabularySet from './features/vocabularySet/CreateVocabularySet';
 import ProfilePage from './features/userProfile/ProfilePage';
 import GymMap from './features/gymLeader/GymMap';
 import GymDetail from './features/gymLeader/GymDetail';
-import GymBattle from './features/gymLeader/GymBattle';
 import GymResult from './features/gymLeader/GymResult';
 import PetSelector from './features/battle/PetSelector';
 import BattleArena from './features/battle/BattleArena';
@@ -52,7 +51,6 @@ const App: React.FC = () => {
           </Route>
 
           <Route path="/learningSession/:id" element={<LearningSession />} />
-          <Route path="/gym/battle/:sessionId" element={<GymBattle />} />
           <Route path="/gym/battle/:sessionId/result" element={<GymResult />} />
           <Route path="/gym/:gymId/pets" element={<PetSelector />} />
           <Route path="/arena/:sessionId" element={<BattleArena />} />

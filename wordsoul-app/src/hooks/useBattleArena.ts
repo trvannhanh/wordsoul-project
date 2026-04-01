@@ -12,6 +12,7 @@ import type {
     PetStateDto,
     RoundQuestionDto,
     RoundResultDto,
+    OpponentInfoDto
 } from '../types/BattleArenaTypes';
 import { ACCESS_TOKEN_KEY, getToken } from '../helpers/authHelpers';
 
@@ -30,6 +31,7 @@ interface BattleState {
     battleResult: BattleEndedDto | null;
     errorMsg: string;
     answered: boolean;
+    opponent: OpponentInfoDto | null;
 }
 
 export function useBattleArena(sessionId: number) {
@@ -48,6 +50,7 @@ export function useBattleArena(sessionId: number) {
         battleResult: null,
         errorMsg: '',
         answered: false,
+        opponent: null,
     });
 
     useEffect(() => {
@@ -65,6 +68,7 @@ export function useBattleArena(sessionId: number) {
                     p1Pets: data.p1Pets,
                     p2Pets: data.p2Pets,
                     answered: false,
+                    opponent: data.opponent,
                 }));
             },
 

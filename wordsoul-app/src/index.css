@@ -142,4 +142,41 @@ body {
   background-color: rgb(15, 23, 42);
 }
 
-
+/* Battle Arena Animations */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px) rotate(-2deg); }
+  50% { transform: translateX(4px) rotate(2deg); }
+  75% { transform: translateX(-2px) rotate(-1deg); }
+}
+@keyframes slideRight {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(20px); }
+  100% { transform: translateX(0); }
+}
+@keyframes slideLeft {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(-20px); }
+  100% { transform: translateX(0); }
+}
+@keyframes flashRed {
+  0%, 100% { filter: brightness(1) drop-shadow(0 0 0 red); }
+  50% { filter: brightness(1.5) sepia(1) hue-rotate(-50deg) saturate(5) drop-shadow(0 0 8px red); }
+}
+@keyframes faintDown {
+  0% { transform: translateY(0); opacity: 1; filter: grayscale(1); }
+  100% { transform: translateY(30px); opacity: 0; filter: grayscale(1); }
+}
+@keyframes slideFromLeft {
+  0% { transform: translateX(-50px); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideFromRight {
+  0% { transform: translateX(50px); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+@keyframes vsFlash {
+  0% { opacity: 0; transform: scale(1.5); }
+  50% { opacity: 1; transform: scale(1.1); filter: brightness(1.5); }
+  100% { opacity: 1; transform: scale(1); }
+}
