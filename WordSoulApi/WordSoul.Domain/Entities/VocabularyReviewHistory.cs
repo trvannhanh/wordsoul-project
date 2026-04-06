@@ -20,8 +20,6 @@ namespace WordSoul.Domain.Entities
 
         public int HintCount { get; set; } = 0; // Number of hints used during the review
 
-        public string QuestionType { get; set; } = string.Empty; // Type of question (e.g., Flashcard, MCQ, Typing)
-
         public int Grade { get; set; } = 0; // Grade inferred from the review (0-5, based on SM-2)
 
         public string? Notes { get; set; } // Optional notes for additional context (e.g., "User struggled with synonyms")

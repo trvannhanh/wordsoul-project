@@ -661,7 +661,6 @@ namespace WordSoul.Application.Services
                     IsCorrect = isCorrect,
                     ResponseTimeSeconds = request.ResponseTimeSeconds,
                     HintCount = request.HintCount,
-                    QuestionType = request.QuestionType.ToString(),
                     Grade = grade,
                     EaseFactorBefore = srsResult.OldEaseFactor,
                     EaseFactorAfter = srsResult.NewEaseFactor,
