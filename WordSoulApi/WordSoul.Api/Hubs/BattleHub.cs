@@ -100,16 +100,32 @@ namespace WordSoul.Api.Hubs
             }
             else
             {
-                // P2 vừa trigger → cả 2 đã sẵn sàng
-                // Gửi BattleStarted đến P2 (caller) với IsP1 = false (P2 là Opponent)
-                result.IsP1 = false;
-                await Clients.Caller.SendAsync("BattleStarted", result);
-
-                // Gửi BattleStarted đến P1 với IsP1 = true (P1 là Challenger)
-                if (!string.IsNullOrEmpty(result.P1ConnectionId))
+                // Cả 2 đã sẵn sàng. Caller là người trigger.
+                if (result.CallerIsChallenger)
                 {
+                    // P1 là người trigger (caller)
                     result.IsP1 = true;
-                    await Clients.Client(result.P1ConnectionId).SendAsync("BattleStarted", result);
+                    await Clients.Caller.SendAsync("BattleStarted", result);
+
+                    // Gửi đến P2
+                    if (!string.IsNullOrEmpty(result.P2ConnectionId))
+                    {
+                        result.IsP1 = false;
+                        await Clients.Client(result.P2ConnectionId).SendAsync("BattleStarted", result);
+                    }
+                }
+                else
+                {
+                    // P2 là người trigger (caller)
+                    result.IsP1 = false;
+                    await Clients.Caller.SendAsync("BattleStarted", result);
+
+                    // Gửi đến P1
+                    if (!string.IsNullOrEmpty(result.P1ConnectionId))
+                    {
+                        result.IsP1 = true;
+                        await Clients.Client(result.P1ConnectionId).SendAsync("BattleStarted", result);
+                    }
                 }
             }
         }

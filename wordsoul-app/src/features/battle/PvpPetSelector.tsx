@@ -60,12 +60,17 @@ export default function PvpPetSelector() {
             if (mode === 'create') {
                 const { sessionId, roomCode } = await createPvpSession(selected);
                 navigate(`/pvp/arena/${sessionId}?code=${roomCode}`);
-            } else {
+            } else if (mode === 'join') {
                 const { sessionId } = await joinPvpSession(roomCode, selected);
                 navigate(`/pvp/arena/${sessionId}`);
+            } else {
+                // mode === 'matchmaking': go to matchmaking screen
+                navigate('/pvp/matchmaking', { state: { selectedPetIds: selected } });
             }
-        } catch (err: any) {
-            setError(err?.response?.data?.error ?? 'Could not join PvP room.');
+        } catch (err: unknown) {
+            const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
+                ?? 'Could not start.';
+            setError(msg);
             setStarting(false);
         }
     };
@@ -85,10 +90,12 @@ export default function PvpPetSelector() {
             </button>
 
             <h1 className="font-press text-xl text-purple-400 mb-1 drop-shadow-[0_0_12px_rgba(168,85,247,0.6)]">
-                {mode === 'create' ? 'CREATE PvP ROOM' : `JOIN ROOM: ${roomCode}`}
+                {mode === 'create' ? 'CREATE PvP ROOM' : mode === 'matchmaking' ? 'SELECT YOUR TEAM' : `JOIN ROOM: ${roomCode}`}
             </h1>
             <p className="font-noto text-gray-400 text-sm mb-8 text-center max-w-sm">
-                Select exactly 3 Pokémon for this PvP match
+                {mode === 'matchmaking'
+                    ? 'Choose 3 Pokémon for matchmaking — you\'ll be matched with a player of similar rating'
+                    : 'Select exactly 3 Pokémon for this PvP match'}
             </p>
 
             {pets.length < 3 && (
@@ -151,7 +158,12 @@ export default function PvpPetSelector() {
           ${selected.length === 3 && !starting
                         ? 'bg-purple-500 text-white hover:bg-purple-400 hover:scale-105 shadow-[0_0_25px_rgba(168,85,247,0.5)]'
                         : 'bg-gray-800 text-gray-600 cursor-not-allowed border border-gray-700'}`}>
-                {starting ? 'PREPARING...' : selected.length === 3 ? (mode === 'create' ? 'CREATE ROOM' : 'JOIN ROOM') : `SELECT ${3 - selected.length} MORE`}
+                {starting ? 'PREPARING...' :
+                    selected.length === 3
+                        ? mode === 'create' ? 'CREATE ROOM'
+                            : mode === 'matchmaking' ? '🔍 FIND MATCH'
+                                : 'JOIN ROOM'
+                        : `SELECT ${3 - selected.length} MORE`}
             </button>
         </div>
     );

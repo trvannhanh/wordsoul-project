@@ -33,12 +33,20 @@ namespace WordSoul.Application.DTOs.Battle
         /// Dùng để frontend biết cách swap P1/P2 data khi hiển thị.
         /// </summary>
         public bool IsP1 { get; set; } = false;
-        /// <summary>
-        /// Chỉ dùng nội bộ Hub để gửi BattleStarted trực tiếp đến P1 connection.
-        /// Không serialize ra client.
-        /// </summary>
+
+        // ── Internal Hub routing (không serialize ra client) ───────────────
+        /// <summary>ConnectionId của P1 (Challenger). Dùng khi P2 là người trigger.</summary>
         [System.Text.Json.Serialization.JsonIgnore]
         public string? P1ConnectionId { get; set; }
+        /// <summary>ConnectionId của P2 (Opponent). Dùng khi P1 là người trigger.</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string? P2ConnectionId { get; set; }
+        /// <summary>
+        /// true = người trigger là Challenger (P1 gọi PlayerReadyPvP sau).
+        /// Hub dùng để biết gửi BattleStarted cho P2 (ngược lại với P1 trigger).
+        /// </summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public bool CallerIsChallenger { get; set; } = false;
     }
 
     public class OpponentInfoDto

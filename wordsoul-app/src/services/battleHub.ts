@@ -16,6 +16,9 @@ type EventCallbacks = {
     onOpponentJoined?: (data: { opponentName: string; avatarUrl?: string; opponentRating: number }) => void;
     onWaitingOpponent?: (data: { message: string }) => void;
     onOpponentForfeited?: (data: BattleEndedDto) => void;
+    // Matchmaking events
+    onMatchFound?: (data: { sessionId: number }) => void;
+    onMatchmakingError?: (data: { error: string }) => void;
 };
 
 let connection: signalR.HubConnection | null = null;
@@ -51,9 +54,52 @@ export async function connectBattleHub(
         connection.on('WaitingOpponent', callbacks.onWaitingOpponent);
     if (callbacks.onOpponentForfeited)
         connection.on('OpponentForfeited', callbacks.onOpponentForfeited);
+    // Matchmaking events
+    if (callbacks.onMatchFound)
+        connection.on('MatchFound', callbacks.onMatchFound);
+    if (callbacks.onMatchmakingError)
+        connection.on('MatchmakingError', callbacks.onMatchmakingError);
 
     await connection.start();
     return connection;
+}
+
+/// <summary>
+/// Minimal connection for matchmaking flow.
+/// Returns { conn, connectionId } after connecting.
+/// </summary>
+export async function connectMatchmakingHub(
+    token: string,
+    onMatchFound: (data: { sessionId: number }) => void,
+    onMatchmakingError: (data: { error: string }) => void,
+    onClose: () => void
+): Promise<{ conn: signalR.HubConnection; connectionId: string }> {
+    if (connection) await connection.stop();
+
+    const apiBase = (import.meta.env.VITE_API_URL || '').replace(/\/api$/, '');
+
+    connection = new signalR.HubConnectionBuilder()
+        .withUrl(`${apiBase}/battleHub`, {
+            accessTokenFactory: () => token,
+            transport: signalR.HttpTransportType.WebSockets,
+            skipNegotiation: false,
+        })
+        .withAutomaticReconnect()
+        .configureLogging(signalR.LogLevel.Warning)
+        .build();
+
+    connection.on('MatchFound', onMatchFound);
+    connection.on('MatchmakingError', onMatchmakingError);
+    connection.onclose(onClose);
+
+    await connection.start();
+
+    const connectionId = connection.connectionId ?? '';
+    return { conn: connection, connectionId };
+}
+
+export function getHubConnectionId(): string | null {
+    return connection?.connectionId ?? null;
 }
 
 export async function disconnectBattleHub() {
