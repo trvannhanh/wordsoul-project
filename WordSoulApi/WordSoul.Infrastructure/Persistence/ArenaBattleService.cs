@@ -223,10 +223,7 @@ namespace WordSoul.Infrastructure.Persistence
             var vocab = await _db.Vocabularies.FindAsync([round.VocabularyId], ct)
                 ?? throw new KeyNotFoundException("Vocab không tồn tại.");
 
-            bool isFillIn = round.RoundIndex % 2 == 1 && !string.IsNullOrWhiteSpace(vocab.Description)
-                && vocab.Word != null && vocab.Description.Contains(vocab.Word, StringComparison.OrdinalIgnoreCase);
-            
-            string correctAnswer = isFillIn ? vocab.Word ?? "" : vocab.Meaning ?? "";
+            string correctAnswer = vocab.Meaning ?? "";
 
             // 1. Chấm điểm P1
             bool p1Correct = string.Equals(dto.Answer.Trim(), correctAnswer.Trim(), StringComparison.OrdinalIgnoreCase);
@@ -242,12 +239,8 @@ namespace WordSoul.Infrastructure.Persistence
             // 3. Tính damage
             int scoreDiff = Math.Abs(p1Score - p2Score);
 
-            // SUDDEN DEATH MECHANIC
-            int damageMultiplier = 1;
-            if (dto.RoundIndex >= 14) damageMultiplier = 5; // Round 15+ x5
-            else if (dto.RoundIndex >= 9) damageMultiplier = 2; // Round 10+ x2
-
-            int baseDamage = scoreDiff == 0 ? 0 : Math.Clamp(scoreDiff / 10, 1, 20) * damageMultiplier;
+            // Constant higher average damage
+            int baseDamage = scoreDiff == 0 ? 0 : Math.Clamp(scoreDiff / 4, 10, 60);
             int damagedPlayer = p1Score > p2Score ? 2 : (p2Score > p1Score ? 1 : 0);
 
             // Load pet states up front for type effectiveness
@@ -505,32 +498,14 @@ namespace WordSoul.Infrastructure.Persistence
         private static RoundQuestionDto BuildRoundQuestion(
             BattleRound round, Vocabulary vocab, List<Vocabulary> allVocabs)
         {
-            bool isFillIn = round.RoundIndex % 2 == 1
-                && !string.IsNullOrWhiteSpace(vocab.Description)
-                && vocab.Word != null
-                && vocab.Description.Contains(vocab.Word, StringComparison.OrdinalIgnoreCase);
-
-            List<string>? options = null;
-            string? prompt = null;
-
-            if (!isFillIn)
-            {
-                var distractors = allVocabs
-                    .Where(v => !string.Equals(v.Meaning, vocab.Meaning, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(v.Meaning))
-                    .Select(v => v.Meaning!)
-                    .OrderBy(_ => _rng.Next())
-                    .Take(3)
-                    .ToList();
-                while (distractors.Count < 3) distractors.Add("—");
-                options = distractors.Append(vocab.Meaning ?? "").OrderBy(_ => _rng.Next()).ToList();
-            }
-            else
-            {
-                var pat = System.Text.RegularExpressions.Regex.Escape(vocab.Word!);
-                prompt = System.Text.RegularExpressions.Regex.Replace(
-                    vocab.Description!, pat, "___",
-                    System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-            }
+            var distractors = allVocabs
+                .Where(v => !string.Equals(v.Meaning, vocab.Meaning, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(v.Meaning))
+                .Select(v => v.Meaning!)
+                .OrderBy(_ => _rng.Next())
+                .Take(3)
+                .ToList();
+            while (distractors.Count < 3) distractors.Add("—");
+            var options = distractors.Append(vocab.Meaning ?? "").OrderBy(_ => _rng.Next()).ToList();
 
             return new RoundQuestionDto
             {
@@ -539,8 +514,8 @@ namespace WordSoul.Infrastructure.Persistence
                 Word = vocab.Word,
                 Meaning = vocab.Meaning,
                 Pronunciation = vocab.Pronunciation,
-                QuestionPrompt = prompt,
-                QuestionType = isFillIn ? "FillInBlank" : "MultipleChoice",
+                QuestionPrompt = null, // Không còn Fill In Blank
+                QuestionType = "MultipleChoice",
                 Options = options,
                 TimeLimitMs = 10000
             };
@@ -817,12 +792,7 @@ namespace WordSoul.Infrastructure.Persistence
             var vocab = await _db.Vocabularies.FindAsync([round.VocabularyId], ct)
                 ?? throw new KeyNotFoundException("Vocab không tồn tại.");
 
-            bool isFillIn = round.RoundIndex % 2 == 1
-                && !string.IsNullOrWhiteSpace(vocab.Description)
-                && vocab.Word != null
-                && vocab.Description.Contains(vocab.Word, StringComparison.OrdinalIgnoreCase);
-
-            string correctAnswer = isFillIn ? vocab.Word ?? "" : vocab.Meaning ?? "";
+            string correctAnswer = vocab.Meaning ?? "";
 
             // P1 = Challenger, P2 = Opponent
             PvpPendingAnswer p1Raw = isChallenger ? new(dto.Answer, dto.ElapsedMs, DateTime.UtcNow) : opponentAnswer;
@@ -834,8 +804,9 @@ namespace WordSoul.Infrastructure.Persistence
             int p2Score = p2Correct ? CalculateScore(p2Raw.ElapsedMs) : 0;
 
             int scoreDiff = Math.Abs(p1Score - p2Score);
-            int damageMultiplier = dto.RoundIndex >= 14 ? 5 : (dto.RoundIndex >= 9 ? 2 : 1);
-            int baseDamage = scoreDiff == 0 ? 0 : Math.Clamp(scoreDiff / 10, 1, 20) * damageMultiplier;
+            
+            // Tăng damage trung bình cho tất cả các round
+            int baseDamage = scoreDiff == 0 ? 0 : Math.Clamp(scoreDiff / 4, 10, 60);
             int damagedPlayer = p1Score > p2Score ? 2 : (p2Score > p1Score ? 1 : 0);
 
             // Type Effectiveness
