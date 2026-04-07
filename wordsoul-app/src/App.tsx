@@ -29,6 +29,7 @@ import PvpLobby from './features/battle/PvpLobby';
 import PvpPetSelector from './features/battle/PvpPetSelector';
 import PvpBattleArena from './features/battle/PvpBattleArena';
 import PvpBattleResult from './features/battle/PvpBattleResult';
+import PvpMatchmaking from './features/battle/PvpMatchmaking';
 import { AuthProvider } from './store/AuthProvider';
 
 
@@ -61,6 +62,7 @@ const App: React.FC = () => {
           <Route path="/arena/:sessionId/result" element={<BattleArenaResult />} />
           <Route path="/pvp" element={<PvpLobby />} />
           <Route path="/pvp/pets" element={<PvpPetSelector />} />
+          <Route path="/pvp/matchmaking" element={<PvpMatchmaking />} />
           <Route path="/pvp/arena/:sessionId" element={<PvpBattleArena />} />
           <Route path="/pvp/arena/:sessionId/result" element={<PvpBattleResult />} />
 

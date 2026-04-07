@@ -15,12 +15,28 @@ namespace WordSoul.Application.DTOs.Battle
         public List<int> SelectedPetIds { get; set; } = [];
     }
 
+    /// <summary>Yêu cầu vào hàng chờ matchmaking.</summary>
+    public class JoinQueueDto
+    {
+        /// <summary>3 UserOwnedPet IDs người chơi muốn dùng.</summary>
+        public List<int> SelectedPetIds { get; set; } = [];
+        /// <summary>ConnectionId của BattleHub hiện tại – server dùng để push MatchFound.</summary>
+        public string ConnectionId { get; set; } = "";
+    }
+
     // ── Outbound (Server → Client) ─────────────────────────────────────────────
 
     public class PvpRoomCreatedDto
     {
         public int SessionId { get; set; }
         public string RoomCode { get; set; } = "";
+    }
+
+    /// <summary>Response khi vào queue thành công.</summary>
+    public class QueueJoinedDto
+    {
+        public string QueueId { get; set; } = "";
+        public string Status { get; set; } = "queued"; // "queued"
     }
 
     /// <summary>Broadcast sang P1 khi P2 join phòng (qua REST API).</summary>

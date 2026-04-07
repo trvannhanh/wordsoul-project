@@ -694,14 +694,37 @@ namespace WordSoul.Infrastructure.Persistence
 
             bool isChallenger = session.ChallengerUserId == userId;
 
-            // Cập nhật ConnectionId và Ready flag
+            // ── Đọc trạng thái phía kia trước khi set của mình ───────────────
+            // Ghi nhận xem phía kia đã ready chưa TRƯỚC KHI mình set.
+            // "otherWasReady=true" → mình đến sau → mình là người trigger.
+            bool otherWasReady = isChallenger ? session.P2Ready : session.P1Ready;
+
+            // Set ConnectionId và Ready flag của mình
             if (isChallenger) { session.P1ConnectionId = connectionId; session.P1Ready = true; }
             else { session.P2ConnectionId = connectionId; session.P2Ready = true; }
 
             await _db.SaveChangesAsync(ct);
 
-            // Chưa đủ 2 bên ready, hoặc P2 chưa join REST (session vẫn còn Waiting)
-            if (!session.P1Ready || !session.P2Ready || session.Status == BattleStatus.Waiting) return null;
+            // Nếu phía kia chưa ready khi mình load → mình đến trước → return null,
+            // chờ phía kia đến sau và trigger.
+            // Cần reload để biết thực tế phía kia có arrive không (tránh race).
+            if (!otherWasReady)
+            {
+                await _db.Entry(session).ReloadAsync(ct);
+                // Nếu sau reload phía kia vẫn chưa ready → thực sự chưa đến → wait
+                bool otherNowReady = isChallenger ? session.P2Ready : session.P1Ready;
+                if (!otherNowReady) return null;
+                // Nếu phía kia đã ready sau reload → 2 bên đến cùng lúc;
+                // người isChallenger sẽ được ưu tiên trigger để tránh cả 2 trigger.
+                if (!isChallenger) return null; // P2 nhường P1
+            }
+
+            // Reload để lấy connectionId cập nhật nhất của cả 2 bên
+            await _db.Entry(session).ReloadAsync(ct);
+
+            // Status Waiting = P2 chưa join qua REST (shouldn't happen in matchmaking flow)
+            if (session.Status == BattleStatus.Waiting) return null;
+            if (!session.P1Ready || !session.P2Ready) return null;
 
             // Tạo BattlePetStates nếu chưa có
             var existing = await _db.BattlePetStates
@@ -734,16 +757,19 @@ namespace WordSoul.Infrastructure.Persistence
                 P1Pets = petStates.Where(p => p.PlayerIndex == 1).OrderBy(p => p.SlotIndex).Select(MapPetState).ToList(),
                 P2Pets = petStates.Where(p => p.PlayerIndex == 2).OrderBy(p => p.SlotIndex).Select(MapPetState).ToList(),
                 FirstQuestion = BuildRoundQuestion(firstRound, firstVocab!, allVocabs),
-                // P1ConnectionId: Hub dùng để gửi BattleStarted trực tiếp đến P1 khi P2 là người trigger
-                P1ConnectionId = session.P1ConnectionId,
-                // IsP1 sẽ được set ở Hub (false cho P2-caller, true cho P1 nhận qua Direct)
-                IsP1 = false,
                 Opponent = new OpponentInfoDto
                 {
                     Name = opponent?.Username ?? "",
                     AvatarUrl = opponent?.AvatarUrl,
                     IsBot = false
-                }
+                },
+                // IsP1 sẽ được set ở Hub 
+                IsP1 = false,
+                // Ai là người trigger (gọi second) → CallerIsChallenger = true nếu P1 trigger
+                CallerIsChallenger = isChallenger,
+                // Hub dùng hai connection ID này để route đúng BattleStarted đến player còn lại
+                P1ConnectionId = session.P1ConnectionId,
+                P2ConnectionId = session.P2ConnectionId,
             };
         }
 

@@ -217,6 +217,11 @@ builder.Services.AddScoped<IUserInventoryService, UserInventoryService>();
 builder.Services.AddScoped<IGymLeaderService, GymLeaderService>();
 builder.Services.AddScoped<IArenaBattleService, ArenaBattleService>();
 
+// PvP Matchmaking – Singleton vì queue phải dùng chung giữa requests
+builder.Services.AddSingleton<IMatchmakingQueueService, MatchmakingQueueService>();
+builder.Services.AddSingleton<IMatchmakingNotifier, MatchmakingNotifier>();
+builder.Services.AddHostedService<MatchmakingWorker>();
+
 // Configure Cloudinary
 builder.Services.AddSingleton<Cloudinary>(sp =>
 {
