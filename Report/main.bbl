@@ -130,6 +130,368 @@
       \verb 10.1126/science.1152408
       \endverb
     \endentry
+    \entry{Ebbinghaus1885}{book}{}{}
+      \name{author}{1}{}{%
+        {{hash=5d7a6e7e0e82bcc144f01ac47862fe2f}{%
+           family={Ebbinghaus},
+           familyi={E\bibinitperiod},
+           given={Hermann},
+           giveni={H\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Teachers College, Columbia University}%
+      }
+      \strng{namehash}{5d7a6e7e0e82bcc144f01ac47862fe2f}
+      \strng{fullhash}{5d7a6e7e0e82bcc144f01ac47862fe2f}
+      \strng{fullhashraw}{5d7a6e7e0e82bcc144f01ac47862fe2f}
+      \strng{bibnamehash}{5d7a6e7e0e82bcc144f01ac47862fe2f}
+      \strng{authorbibnamehash}{5d7a6e7e0e82bcc144f01ac47862fe2f}
+      \strng{authornamehash}{5d7a6e7e0e82bcc144f01ac47862fe2f}
+      \strng{authorfullhash}{5d7a6e7e0e82bcc144f01ac47862fe2f}
+      \strng{authorfullhashraw}{5d7a6e7e0e82bcc144f01ac47862fe2f}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Memory: A Contribution to Experimental Psychology}
+      \field{year}{1885}
+    \endentry
+    \entry{Deterding2011}{inproceedings}{}{}
+      \name{author}{4}{}{%
+        {{hash=4ad251c02d478d38f2fe79e126ae6bf1}{%
+           family={Deterding},
+           familyi={D\bibinitperiod},
+           given={Sebastian},
+           giveni={S\bibinitperiod}}}%
+        {{hash=77b7f2834ada9e806200ca66ed3767a4}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={Dan},
+           giveni={D\bibinitperiod}}}%
+        {{hash=6693a49677bd64d91668dccd98fe0d4e}{%
+           family={Khaled},
+           familyi={K\bibinitperiod},
+           given={Rilla},
+           giveni={R\bibinitperiod}}}%
+        {{hash=f8dcd6b16d5cfe0d1191e77e5f709c16}{%
+           family={Nacke},
+           familyi={N\bibinitperiod},
+           given={Lennart},
+           giveni={L\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {ACM}%
+      }
+      \strng{namehash}{74ba12e04f1a6f9417ee0406ccd7ba89}
+      \strng{fullhash}{5900b306a627b766e3160b1c23b117f2}
+      \strng{fullhashraw}{5900b306a627b766e3160b1c23b117f2}
+      \strng{bibnamehash}{74ba12e04f1a6f9417ee0406ccd7ba89}
+      \strng{authorbibnamehash}{74ba12e04f1a6f9417ee0406ccd7ba89}
+      \strng{authornamehash}{74ba12e04f1a6f9417ee0406ccd7ba89}
+      \strng{authorfullhash}{5900b306a627b766e3160b1c23b117f2}
+      \strng{authorfullhashraw}{5900b306a627b766e3160b1c23b117f2}
+      \field{sortinit}{7}
+      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proceedings of MindTrek 2011}
+      \field{title}{From game design elements to gamefulness: defining “gamification”}
+      \field{year}{2011}
+      \field{pages}{9\bibrangedash 15}
+      \range{pages}{7}
+    \endentry
+    \entry{Hamari2014}{inproceedings}{}{}
+      \name{author}{3}{}{%
+        {{hash=57c059873972ac3bb360bc05ba0a18f1}{%
+           family={Hamari},
+           familyi={H\bibinitperiod},
+           given={Juho},
+           giveni={J\bibinitperiod}}}%
+        {{hash=8094ef3cdc640cff0e290d32d85869c6}{%
+           family={Koivisto},
+           familyi={K\bibinitperiod},
+           given={Jonna},
+           giveni={J\bibinitperiod}}}%
+        {{hash=5dd89d1ebd375757b8466f2a4fc7f33f}{%
+           family={Sarsa},
+           familyi={S\bibinitperiod},
+           given={Harri},
+           giveni={H\bibinitperiod}}}%
+      }
+      \strng{namehash}{d0a428170cd0c96f6811c01b642b11bc}
+      \strng{fullhash}{d0a428170cd0c96f6811c01b642b11bc}
+      \strng{fullhashraw}{d0a428170cd0c96f6811c01b642b11bc}
+      \strng{bibnamehash}{d0a428170cd0c96f6811c01b642b11bc}
+      \strng{authorbibnamehash}{d0a428170cd0c96f6811c01b642b11bc}
+      \strng{authornamehash}{d0a428170cd0c96f6811c01b642b11bc}
+      \strng{authorfullhash}{d0a428170cd0c96f6811c01b642b11bc}
+      \strng{authorfullhashraw}{d0a428170cd0c96f6811c01b642b11bc}
+      \field{sortinit}{8}
+      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proceedings of the 47th Hawaii International Conference on System Sciences (HICSS)}
+      \field{title}{Does Gamification Work? — A Literature Review of Empirical Studies on Gamification}
+      \field{year}{2014}
+    \endentry
+    \entry{RyanDeci2017}{book}{}{}
+      \name{author}{2}{}{%
+        {{hash=49ad03aeb3155f395016c49dd507c027}{%
+           family={Ryan},
+           familyi={R\bibinitperiod},
+           given={Richard\bibnamedelima M.},
+           giveni={R\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=d733c22238af349bac296bb1e5b60deb}{%
+           family={Deci},
+           familyi={D\bibinitperiod},
+           given={Edward\bibnamedelima L.},
+           giveni={E\bibinitperiod\bibinitdelim L\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {New York, USA}%
+      }
+      \list{publisher}{1}{%
+        {Guilford Press}%
+      }
+      \strng{namehash}{b8fdaf35d2ee9a085c4bd58b7f47fcc4}
+      \strng{fullhash}{b8fdaf35d2ee9a085c4bd58b7f47fcc4}
+      \strng{fullhashraw}{b8fdaf35d2ee9a085c4bd58b7f47fcc4}
+      \strng{bibnamehash}{b8fdaf35d2ee9a085c4bd58b7f47fcc4}
+      \strng{authorbibnamehash}{b8fdaf35d2ee9a085c4bd58b7f47fcc4}
+      \strng{authornamehash}{b8fdaf35d2ee9a085c4bd58b7f47fcc4}
+      \strng{authorfullhash}{b8fdaf35d2ee9a085c4bd58b7f47fcc4}
+      \strng{authorfullhashraw}{b8fdaf35d2ee9a085c4bd58b7f47fcc4}
+      \field{sortinit}{9}
+      \field{sortinithash}{0a5ebc79d83c96b6579069544c73c7d4}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{isbn}{978-1-4625-2876-9}
+      \field{title}{Self-Determination Theory: Basic Psychological Needs in Motivation, Development, and Wellness}
+      \field{year}{2017}
+    \endentry
+    \entry{WerbachHunter2012}{book}{}{}
+      \name{author}{2}{}{%
+        {{hash=23013e615d774419d7e40f1e14594e57}{%
+           family={Werbach},
+           familyi={W\bibinitperiod},
+           given={Kevin},
+           giveni={K\bibinitperiod}}}%
+        {{hash=38e933ab6b32b05a2a8d54abe9c6303f}{%
+           family={Hunter},
+           familyi={H\bibinitperiod},
+           given={Dan},
+           giveni={D\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Philadelphia, PA}%
+      }
+      \list{publisher}{1}{%
+        {Wharton Digital Press}%
+      }
+      \strng{namehash}{7558792aae9c0f366a73672471be5579}
+      \strng{fullhash}{7558792aae9c0f366a73672471be5579}
+      \strng{fullhashraw}{7558792aae9c0f366a73672471be5579}
+      \strng{bibnamehash}{7558792aae9c0f366a73672471be5579}
+      \strng{authorbibnamehash}{7558792aae9c0f366a73672471be5579}
+      \strng{authornamehash}{7558792aae9c0f366a73672471be5579}
+      \strng{authorfullhash}{7558792aae9c0f366a73672471be5579}
+      \strng{authorfullhashraw}{7558792aae9c0f366a73672471be5579}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{For the Win: How Game Thinking Can Revolutionize Your Business}
+      \field{year}{2012}
+    \endentry
+    \entry{Limon2001}{article}{}{}
+      \name{author}{1}{}{%
+        {{hash=2d856a91a00a60640b5051abcbdafb20}{%
+           family={Limón},
+           familyi={L\bibinitperiod},
+           given={Margarita},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{2d856a91a00a60640b5051abcbdafb20}
+      \strng{fullhash}{2d856a91a00a60640b5051abcbdafb20}
+      \strng{fullhashraw}{2d856a91a00a60640b5051abcbdafb20}
+      \strng{bibnamehash}{2d856a91a00a60640b5051abcbdafb20}
+      \strng{authorbibnamehash}{2d856a91a00a60640b5051abcbdafb20}
+      \strng{authornamehash}{2d856a91a00a60640b5051abcbdafb20}
+      \strng{authorfullhash}{2d856a91a00a60640b5051abcbdafb20}
+      \strng{authorfullhashraw}{2d856a91a00a60640b5051abcbdafb20}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Learning and Instruction}
+      \field{number}{4-5}
+      \field{title}{On the cognitive conflict as a strategy to induce conceptual change: a critical appraisal}
+      \field{volume}{11}
+      \field{year}{2001}
+      \field{pages}{357\bibrangedash 380}
+      \range{pages}{24}
+      \verb{doi}
+      \verb 10.1016/S0959-4752(00)00037-2
+      \endverb
+    \endentry
+    \entry{Bjork2011}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=4740f5b87b04f37996baf79ed18548f1}{%
+           family={Bjork},
+           familyi={B\bibinitperiod},
+           given={Robert\bibnamedelima A.},
+           giveni={R\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+        {{hash=80bb8b6a9200defdc8f63fb637077aab}{%
+           family={Bjork},
+           familyi={B\bibinitperiod},
+           given={Elizabeth\bibnamedelima L.},
+           giveni={E\bibinitperiod\bibinitdelim L\bibinitperiod}}}%
+      }
+      \strng{namehash}{e2aa6f7d31a96e4a53b26744ea83c12e}
+      \strng{fullhash}{e2aa6f7d31a96e4a53b26744ea83c12e}
+      \strng{fullhashraw}{e2aa6f7d31a96e4a53b26744ea83c12e}
+      \strng{bibnamehash}{e2aa6f7d31a96e4a53b26744ea83c12e}
+      \strng{authorbibnamehash}{e2aa6f7d31a96e4a53b26744ea83c12e}
+      \strng{authornamehash}{e2aa6f7d31a96e4a53b26744ea83c12e}
+      \strng{authorfullhash}{e2aa6f7d31a96e4a53b26744ea83c12e}
+      \strng{authorfullhashraw}{e2aa6f7d31a96e4a53b26744ea83c12e}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Psychology and the Real World: Essays Illustrating Fundamental Contributions to Society}
+      \field{title}{Making Things Hard on Yourself, But in a Good Way: Creating Desirable Difficulties to Enhance Learning}
+      \field{year}{2011}
+      \field{pages}{56\bibrangedash 64}
+      \range{pages}{9}
+    \endentry
+    \entry{Carpenter2012}{article}{}{}
+      \name{author}{1}{}{%
+        {{hash=3351813a583ff1f1a84d00266f2ffb9e}{%
+           family={Carpenter},
+           familyi={C\bibinitperiod},
+           given={Shana\bibnamedelima K.},
+           giveni={S\bibinitperiod\bibinitdelim K\bibinitperiod}}}%
+      }
+      \strng{namehash}{3351813a583ff1f1a84d00266f2ffb9e}
+      \strng{fullhash}{3351813a583ff1f1a84d00266f2ffb9e}
+      \strng{fullhashraw}{3351813a583ff1f1a84d00266f2ffb9e}
+      \strng{bibnamehash}{3351813a583ff1f1a84d00266f2ffb9e}
+      \strng{authorbibnamehash}{3351813a583ff1f1a84d00266f2ffb9e}
+      \strng{authornamehash}{3351813a583ff1f1a84d00266f2ffb9e}
+      \strng{authorfullhash}{3351813a583ff1f1a84d00266f2ffb9e}
+      \strng{authorfullhashraw}{3351813a583ff1f1a84d00266f2ffb9e}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Current Directions in Psychological Science}
+      \field{number}{5}
+      \field{title}{Testing Enhances the Transfer of Learning}
+      \field{volume}{21}
+      \field{year}{2012}
+      \field{pages}{279\bibrangedash 283}
+      \range{pages}{5}
+      \verb{doi}
+      \verb 10.1177/0963721412452728
+      \endverb
+    \endentry
+    \entry{Johnson2009}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=16a4b0a311dad00a74757a8e02e6f524}{%
+           family={Johnson},
+           familyi={J\bibinitperiod},
+           given={David\bibnamedelima W.},
+           giveni={D\bibinitperiod\bibinitdelim W\bibinitperiod}}}%
+        {{hash=5e83cfa7d63338fb766e782b77255536}{%
+           family={Johnson},
+           familyi={J\bibinitperiod},
+           given={Roger\bibnamedelima T.},
+           giveni={R\bibinitperiod\bibinitdelim T\bibinitperiod}}}%
+      }
+      \strng{namehash}{b6c3c03f12225e7c653ad1d12c2fc00b}
+      \strng{fullhash}{b6c3c03f12225e7c653ad1d12c2fc00b}
+      \strng{fullhashraw}{b6c3c03f12225e7c653ad1d12c2fc00b}
+      \strng{bibnamehash}{b6c3c03f12225e7c653ad1d12c2fc00b}
+      \strng{authorbibnamehash}{b6c3c03f12225e7c653ad1d12c2fc00b}
+      \strng{authornamehash}{b6c3c03f12225e7c653ad1d12c2fc00b}
+      \strng{authorfullhash}{b6c3c03f12225e7c653ad1d12c2fc00b}
+      \strng{authorfullhashraw}{b6c3c03f12225e7c653ad1d12c2fc00b}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Educational Researcher}
+      \field{number}{5}
+      \field{title}{An Educational Psychology Success Story: Social Interdependence Theory and Cooperative Learning}
+      \field{volume}{38}
+      \field{year}{2009}
+      \field{pages}{365\bibrangedash 379}
+      \range{pages}{15}
+      \verb{doi}
+      \verb 10.3102/0013189X09339057
+      \endverb
+    \endentry
+    \entry{Csikszentmihalyi1990}{book}{}{}
+      \name{author}{1}{}{%
+        {{hash=4102f9749c0a86a4a970e9b54bfb1b29}{%
+           family={Csikszentmihalyi},
+           familyi={C\bibinitperiod},
+           given={Mihaly},
+           giveni={M\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {New York, USA}%
+      }
+      \list{publisher}{1}{%
+        {Harper \& Row}%
+      }
+      \strng{namehash}{4102f9749c0a86a4a970e9b54bfb1b29}
+      \strng{fullhash}{4102f9749c0a86a4a970e9b54bfb1b29}
+      \strng{fullhashraw}{4102f9749c0a86a4a970e9b54bfb1b29}
+      \strng{bibnamehash}{4102f9749c0a86a4a970e9b54bfb1b29}
+      \strng{authorbibnamehash}{4102f9749c0a86a4a970e9b54bfb1b29}
+      \strng{authornamehash}{4102f9749c0a86a4a970e9b54bfb1b29}
+      \strng{authorfullhash}{4102f9749c0a86a4a970e9b54bfb1b29}
+      \strng{authorfullhashraw}{4102f9749c0a86a4a970e9b54bfb1b29}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Flow: The Psychology of Optimal Experience}
+      \field{year}{1990}
+    \endentry
+    \entry{Prince2004}{article}{}{}
+      \name{author}{1}{}{%
+        {{hash=71c63558316d69896713798705e33c70}{%
+           family={Prince},
+           familyi={P\bibinitperiod},
+           given={Michael},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{71c63558316d69896713798705e33c70}
+      \strng{fullhash}{71c63558316d69896713798705e33c70}
+      \strng{fullhashraw}{71c63558316d69896713798705e33c70}
+      \strng{bibnamehash}{71c63558316d69896713798705e33c70}
+      \strng{authorbibnamehash}{71c63558316d69896713798705e33c70}
+      \strng{authornamehash}{71c63558316d69896713798705e33c70}
+      \strng{authorfullhash}{71c63558316d69896713798705e33c70}
+      \strng{authorfullhashraw}{71c63558316d69896713798705e33c70}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Engineering Education}
+      \field{number}{3}
+      \field{title}{Does Active Learning Work? A Review of the Research}
+      \field{volume}{93}
+      \field{year}{2004}
+      \field{pages}{223\bibrangedash 231}
+      \range{pages}{9}
+      \verb{doi}
+      \verb 10.1002/j.2168-9830.2004.tb00809.x
+      \endverb
+    \endentry
     \entry{DuolingoBlog2024}{misc}{}{}
       \name{author}{1}{}{%
         {{hash=45c074fa7b5b8e404ac9169be10ae777}{%
@@ -144,8 +506,8 @@
       \strng{authornamehash}{45c074fa7b5b8e404ac9169be10ae777}
       \strng{authorfullhash}{45c074fa7b5b8e404ac9169be10ae777}
       \strng{authorfullhashraw}{45c074fa7b5b8e404ac9169be10ae777}
-      \field{sortinit}{3}
-      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{howpublished}{\url{https://blog.duolingo.com/duolingo-101-how-to-learn-a-language-on-duolingo/}}
@@ -166,8 +528,8 @@
       \strng{authornamehash}{b13eb1d083589ff1d8332b80258d34a4}
       \strng{authorfullhash}{b13eb1d083589ff1d8332b80258d34a4}
       \strng{authorfullhashraw}{b13eb1d083589ff1d8332b80258d34a4}
-      \field{sortinit}{4}
-      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{howpublished}{\url{https://quizlet.com/features/learn}}
@@ -188,8 +550,8 @@
       \strng{authornamehash}{4e5688d8d725439331f8beb8a2eb3433}
       \strng{authorfullhash}{4e5688d8d725439331f8beb8a2eb3433}
       \strng{authorfullhashraw}{4e5688d8d725439331f8beb8a2eb3433}
-      \field{sortinit}{5}
-      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{howpublished}{\url{https://apps.ankiweb.net/}}
@@ -210,12 +572,250 @@
       \strng{authornamehash}{80620fc6e800d98aa171afbf3b1cde7a}
       \strng{authorfullhash}{80620fc6e800d98aa171afbf3b1cde7a}
       \strng{authorfullhashraw}{80620fc6e800d98aa171afbf3b1cde7a}
-      \field{sortinit}{5}
-      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{howpublished}{\url{https://memrise.zendesk.com/hc/en-us/articles/360015889057-How-does-the-spaced-repetition-system-work}}
       \field{title}{How does the spaced repetition system work?}
+      \field{year}{2024}
+    \endentry
+    \entry{MicrosoftASPNETCore2024}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=140864078aeca1c7c35b4beb33c53c34}{%
+           family={{Microsoft}},
+           familyi={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{fullhash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{fullhashraw}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{bibnamehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authorbibnamehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authornamehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authorfullhash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authorfullhashraw}{140864078aeca1c7c35b4beb33c53c34}
+      \field{extraname}{1}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://learn.microsoft.com/aspnet/core/introduction-to-aspnet-core}}
+      \field{note}{Truy cập: 2025-09-18}
+      \field{title}{Introduction to ASP.NET Core}
+      \field{year}{2024}
+    \endentry
+    \entry{KestrelDocs2024}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=140864078aeca1c7c35b4beb33c53c34}{%
+           family={{Microsoft}},
+           familyi={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{fullhash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{fullhashraw}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{bibnamehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authorbibnamehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authornamehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authorfullhash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authorfullhashraw}{140864078aeca1c7c35b4beb33c53c34}
+      \field{extraname}{2}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://learn.microsoft.com/aspnet/core/fundamentals/servers/kestrel}}
+      \field{note}{Truy cập: 2025-09-18}
+      \field{title}{Kestrel web server implementation in ASP.NET Core}
+      \field{year}{2024}
+    \endentry
+    \entry{MiddlewareDocs2024}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=140864078aeca1c7c35b4beb33c53c34}{%
+           family={{Microsoft}},
+           familyi={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{fullhash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{fullhashraw}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{bibnamehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authorbibnamehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authornamehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authorfullhash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authorfullhashraw}{140864078aeca1c7c35b4beb33c53c34}
+      \field{extraname}{3}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://learn.microsoft.com/aspnet/core/fundamentals/middleware/}}
+      \field{note}{Truy cập: 2025-09-18}
+      \field{title}{ASP.NET Core Middleware}
+      \field{year}{2024}
+    \endentry
+    \entry{MicrosoftEFCore2024}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=140864078aeca1c7c35b4beb33c53c34}{%
+           family={{Microsoft}},
+           familyi={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{fullhash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{fullhashraw}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{bibnamehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authorbibnamehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authornamehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authorfullhash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authorfullhashraw}{140864078aeca1c7c35b4beb33c53c34}
+      \field{extraname}{4}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://learn.microsoft.com/ef/core/}}
+      \field{note}{Truy cập: 2025-09-18}
+      \field{title}{Overview of Entity Framework Core}
+      \field{year}{2024}
+    \endentry
+    \entry{ReactDocs2024}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=b6755d218d5f4e1cef9cce9cc39aeda9}{%
+           family={{Meta}},
+           familyi={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{b6755d218d5f4e1cef9cce9cc39aeda9}
+      \strng{fullhash}{b6755d218d5f4e1cef9cce9cc39aeda9}
+      \strng{fullhashraw}{b6755d218d5f4e1cef9cce9cc39aeda9}
+      \strng{bibnamehash}{b6755d218d5f4e1cef9cce9cc39aeda9}
+      \strng{authorbibnamehash}{b6755d218d5f4e1cef9cce9cc39aeda9}
+      \strng{authornamehash}{b6755d218d5f4e1cef9cce9cc39aeda9}
+      \strng{authorfullhash}{b6755d218d5f4e1cef9cce9cc39aeda9}
+      \strng{authorfullhashraw}{b6755d218d5f4e1cef9cce9cc39aeda9}
+      \field{extraname}{1}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://react.dev/learn}}
+      \field{note}{Truy cập: 2025-09-18}
+      \field{title}{Introducing React}
+      \field{year}{2024}
+    \endentry
+    \entry{ReactVirtualDOM2024}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=b6755d218d5f4e1cef9cce9cc39aeda9}{%
+           family={{Meta}},
+           familyi={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{b6755d218d5f4e1cef9cce9cc39aeda9}
+      \strng{fullhash}{b6755d218d5f4e1cef9cce9cc39aeda9}
+      \strng{fullhashraw}{b6755d218d5f4e1cef9cce9cc39aeda9}
+      \strng{bibnamehash}{b6755d218d5f4e1cef9cce9cc39aeda9}
+      \strng{authorbibnamehash}{b6755d218d5f4e1cef9cce9cc39aeda9}
+      \strng{authornamehash}{b6755d218d5f4e1cef9cce9cc39aeda9}
+      \strng{authorfullhash}{b6755d218d5f4e1cef9cce9cc39aeda9}
+      \strng{authorfullhashraw}{b6755d218d5f4e1cef9cce9cc39aeda9}
+      \field{extraname}{2}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://react.dev/learn/render-and-commit}}
+      \field{note}{Truy cập: 2025-09-18}
+      \field{title}{Reconciliation and Virtual DOM in React}
+      \field{year}{2024}
+    \endentry
+    \entry{ViteDocs2024}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=a042461c16bcf41677588b24b855c1fd}{%
+           family={{Evan You et al.}},
+           familyi={E\bibinitperiod}}}%
+      }
+      \strng{namehash}{a042461c16bcf41677588b24b855c1fd}
+      \strng{fullhash}{a042461c16bcf41677588b24b855c1fd}
+      \strng{fullhashraw}{a042461c16bcf41677588b24b855c1fd}
+      \strng{bibnamehash}{a042461c16bcf41677588b24b855c1fd}
+      \strng{authorbibnamehash}{a042461c16bcf41677588b24b855c1fd}
+      \strng{authornamehash}{a042461c16bcf41677588b24b855c1fd}
+      \strng{authorfullhash}{a042461c16bcf41677588b24b855c1fd}
+      \strng{authorfullhashraw}{a042461c16bcf41677588b24b855c1fd}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://vitejs.dev/}}
+      \field{note}{Truy cập: 2025-09-18}
+      \field{title}{Vite: Next Generation Frontend Tooling}
+      \field{year}{2024}
+    \endentry
+    \entry{SQLServerDocs2024}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=140864078aeca1c7c35b4beb33c53c34}{%
+           family={{Microsoft}},
+           familyi={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{fullhash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{fullhashraw}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{bibnamehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authorbibnamehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authornamehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authorfullhash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authorfullhashraw}{140864078aeca1c7c35b4beb33c53c34}
+      \field{extraname}{5}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://learn.microsoft.com/sql/sql-server/what-is-sql-server}}
+      \field{note}{Truy cập: 2025-09-18}
+      \field{title}{What is SQL Server?}
+      \field{year}{2024}
+    \endentry
+    \entry{TechEmpower2024}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=3cec7f5fb2e0fddedf510680a6d25130}{%
+           family={{TechEmpower}},
+           familyi={T\bibinitperiod}}}%
+      }
+      \strng{namehash}{3cec7f5fb2e0fddedf510680a6d25130}
+      \strng{fullhash}{3cec7f5fb2e0fddedf510680a6d25130}
+      \strng{fullhashraw}{3cec7f5fb2e0fddedf510680a6d25130}
+      \strng{bibnamehash}{3cec7f5fb2e0fddedf510680a6d25130}
+      \strng{authorbibnamehash}{3cec7f5fb2e0fddedf510680a6d25130}
+      \strng{authornamehash}{3cec7f5fb2e0fddedf510680a6d25130}
+      \strng{authorfullhash}{3cec7f5fb2e0fddedf510680a6d25130}
+      \strng{authorfullhashraw}{3cec7f5fb2e0fddedf510680a6d25130}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://www.techempower.com/benchmarks/}}
+      \field{note}{Truy cập: 2025-09-18}
+      \field{title}{Web Framework Benchmarks}
+      \field{year}{2024}
+    \endentry
+    \entry{TypeScriptDocs2024}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=140864078aeca1c7c35b4beb33c53c34}{%
+           family={{Microsoft}},
+           familyi={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{fullhash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{fullhashraw}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{bibnamehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authorbibnamehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authornamehash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authorfullhash}{140864078aeca1c7c35b4beb33c53c34}
+      \strng{authorfullhashraw}{140864078aeca1c7c35b4beb33c53c34}
+      \field{extraname}{6}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://www.typescriptlang.org/}}
+      \field{note}{Truy cập: 2025-09-18}
+      \field{title}{TypeScript: JavaScript with syntax for types}
       \field{year}{2024}
     \endentry
   \enddatalist

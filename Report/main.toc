@@ -1,0 +1,66 @@
+\babel@toc {vietnamese}{}\relax 
+\contentsline {chapter}{\numberline {1}Giới thiệu}{1}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Lý do chọn đề tài}{1}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Mục tiêu đề tài}{1}{section.1.2}%
+\contentsline {section}{\numberline {1.3}Phạm vi đề tài}{2}{section.1.3}%
+\contentsline {section}{\numberline {1.4}Phương pháp tiếp cận}{2}{section.1.4}%
+\contentsline {section}{\numberline {1.5}Bố cục của khóa luận}{3}{section.1.5}%
+\contentsline {chapter}{\numberline {2}Cơ sở lý thuyết}{4}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Lý thuyết về học từ vựng và thuật toán lặp lại có khoảng cách}{4}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Lý thuyết Gamification và Động lực học tập}{5}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Vai trò của sự đối kháng và cạnh tranh}{6}{section.2.3}%
+\contentsline {section}{\numberline {2.4}Các công trình và ứng dụng liên quan}{7}{section.2.4}%
+\contentsline {section}{\numberline {2.5}Công nghệ sử dụng trong hệ thống}{8}{section.2.5}%
+\contentsline {subsection}{\numberline {2.5.1}ASP.NET Core}{8}{subsection.2.5.1}%
+\contentsline {subsection}{\numberline {2.5.2}ReactJS}{9}{subsection.2.5.2}%
+\contentsline {subsection}{\numberline {2.5.3}SQL Server}{9}{subsection.2.5.3}%
+\contentsline {subsection}{\numberline {2.5.4}Đánh giá chiến lược}{9}{subsection.2.5.4}%
+\contentsline {chapter}{\numberline {3}Hệ thống hỗ trợ học từ vựng tiếng Anh kết hợp Gamification}{10}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Phân tích yêu cầu}{10}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}Yêu cầu chức năng}{10}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}Yêu cầu phi chức năng}{11}{subsection.3.1.2}%
+\contentsline {section}{\numberline {3.2}Thiết kế hệ thống}{11}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Kiến trúc hệ thống tổng thể}{11}{subsection.3.2.1}%
+\contentsline {subsubsection}{Kiến trúc Frontend chi tiết — Component-Based Architecture}{12}{subsubsection*.4}%
+\contentsline {subsubsection}{Kiến trúc Backend chi tiết — Clean Architecture \& Design Patterns}{12}{subsubsection*.5}%
+\contentsline {subsection}{\numberline {3.2.2}Sơ đồ Use Case}{14}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.3}Sơ đồ tuần tự}{16}{subsection.3.2.3}%
+\contentsline {subsubsection}{Quy trình tạo bộ từ vựng}{16}{subsubsection*.6}%
+\contentsline {subsubsection}{Quy trình thực hiện trận đấu}{17}{subsubsection*.7}%
+\contentsline {subsubsection}{Quy trình học, ôn từ vựng và nhận thưởng}{18}{subsubsection*.8}%
+\contentsline {subsection}{\numberline {3.2.4}Sơ đồ hoạt động}{19}{subsection.3.2.4}%
+\contentsline {subsubsection}{Quy trình tạo bộ từ vựng}{20}{subsubsection*.9}%
+\contentsline {subsubsection}{Quy trình xử lý trận đấu}{21}{subsubsection*.10}%
+\contentsline {subsubsection}{Quy trình học, ôn tập từ vựng và nhận thưởng}{22}{subsubsection*.11}%
+\contentsline {subsection}{\numberline {3.2.5}Sơ đồ trạng thái}{23}{subsection.3.2.5}%
+\contentsline {subsubsection}{Trạng thái từ vựng trong phiên học}{23}{subsubsection*.12}%
+\contentsline {subsubsection}{Trạng thái từ vựng theo thuật toán SM-2}{24}{subsubsection*.13}%
+\contentsline {subsection}{\numberline {3.2.6}Sơ đồ lớp}{25}{subsection.3.2.6}%
+\contentsline {subsection}{\numberline {3.2.7}Lược đồ cơ sở dữ liệu vật lý}{26}{subsection.3.2.7}%
+\contentsline {section}{\numberline {3.3}Thiết kế giao diện}{27}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}Nhóm Dashboard và Quản lý người dùng}{27}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3.2}Nhóm Quản lý Bộ từ vựng}{29}{subsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.3.3}Nhóm Tương tác Thú ảo}{30}{subsection.3.3.3}%
+\contentsline {subsection}{\numberline {3.3.4}Nhóm Học và Ôn tập}{31}{subsection.3.3.4}%
+\contentsline {subsection}{\numberline {3.3.5}Nhóm Đối kháng (Battle Mode)}{32}{subsection.3.3.5}%
+\contentsline {section}{\numberline {3.4}Kết quả đạt được}{32}{section.3.4}%
+\contentsline {subsection}{\numberline {3.4.1}Phiên học và ôn tập từ vựng}{33}{subsection.3.4.1}%
+\contentsline {subsection}{\numberline {3.4.2}Tạo và quản lý bộ từ vựng}{34}{subsection.3.4.2}%
+\contentsline {subsection}{\numberline {3.4.3}Hệ thống thú ảo và cơ chế nâng cấp}{36}{subsection.3.4.3}%
+\contentsline {subsection}{\numberline {3.4.4}Dashboard và Phân tích tiến độ}{36}{subsection.3.4.4}%
+\contentsline {subsection}{\numberline {3.4.5}Hệ thống đối kháng PvP và PvE}{37}{subsection.3.4.5}%
+\contentsline {subsection}{\numberline {3.4.6}Đánh giá tổng thể hiệu năng}{39}{subsection.3.4.6}%
+\contentsline {chapter}{\numberline {4}Kết luận và Hướng phát triển}{40}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Kết luận}{40}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Hạn chế của đề tài}{41}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Hướng phát triển trong tương lai}{41}{section.4.3}%
+\contentsline {chapter}{Tài liệu tham khảo}{42}{section*.14}%
+\contentsline {chapter}{Phụ Lục}{43}{chapter*.15}%
+\contentsline {chapter}{\numberline {A}Triển Khai Kỹ Thuật và Mã Nguồn Trọng Tâm}{44}{appendix.A}%
+\contentsline {section}{\numberline {A.1}Kiến Trúc SignalR và Xử Lý Kết Nối Real-time}{44}{section.A.1}%
+\contentsline {section}{\numberline {A.2}Thuật Toán SRS (SuperMemo-2) Implementation}{48}{section.A.2}%
+\contentsline {chapter}{\numberline {B}Một Số Giao Diện Bổ Sung}{52}{appendix.B}%
+\contentsline {section}{\numberline {B.1}Giao diện Quản lý Danh sách Thú cưng}{52}{section.B.1}%
+\contentsline {section}{\numberline {B.2}Giao diện Chi tiết Bộ từ vựng và Điều hướng Học tập}{53}{section.B.2}%
+\contentsline {section}{\numberline {B.3}Giao diện Duyệt và Tìm kiếm Bộ học liệu}{54}{section.B.3}%
+\contentsline {section}{\numberline {B.4}Đánh giá Ý nghĩa và Vai trò đối với Trải nghiệm Người dùng}{55}{section.B.4}%
