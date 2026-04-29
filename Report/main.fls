@@ -386,7 +386,6 @@ INPUT .\images\the-forgetting-curve.png
 INPUT .\images\the-forgetting-curve.png
 INPUT .\images\the-forgetting-curve.png
 INPUT .\images\the-forgetting-curve.png
-INPUT C:\Users\Giidavibe\AppData\Local\Programs\MiKTeX\fonts\tfm\vntex\vnr\vnti10.tfm
 INPUT C:\Users\Giidavibe\AppData\Local\Programs\MiKTeX\fonts\tfm\jknappen\ec\tcrm1000.tfm
 INPUT .\Chapter3\chapter3.tex
 INPUT .\Chapter3\chapter3.tex
@@ -587,6 +586,20 @@ INPUT .\images\Final_Pvp_lobby.png
 INPUT .\images\Final_Pvp_lobby.png
 INPUT .\images\Final_Pvp_lobby.png
 INPUT .\images\Final_Pvp_lobby.png
+INPUT .\images\k6_dashboard_summary.png
+INPUT .\images\k6_dashboard_summary.png
+INPUT .\images\k6_dashboard_summary.png
+INPUT .\images\k6_dashboard_summary.png
+INPUT .\images\k6_dashboard_summary.png
+INPUT .\images\k6_dashboard_summary.png
+INPUT .\images\k6_dashboard_summary.png
+INPUT .\images\k6_throughput_graph.png
+INPUT .\images\k6_throughput_graph.png
+INPUT .\images\k6_throughput_graph.png
+INPUT .\images\k6_throughput_graph.png
+INPUT .\images\k6_throughput_graph.png
+INPUT .\images\k6_throughput_graph.png
+INPUT .\images\k6_throughput_graph.png
 INPUT .\Chapter4\chapter4.tex
 INPUT .\Chapter4\chapter4.tex
 OUTPUT Chapter4\chapter4.aux
@@ -594,6 +607,7 @@ INPUT .\Chapter4\chapter4.tex
 INPUT .\Chapter4\chapter4.tex
 INPUT Chapter4\chapter4.tex
 OUTPUT Chapter5\chapter5.aux
+INPUT C:\Users\Giidavibe\AppData\Local\Programs\MiKTeX\fonts\tfm\vntex\vnr\vnti10.tfm
 INPUT C:\Users\Giidavibe\AppData\Local\Programs\MiKTeX\fonts\tfm\vntex\vnr\vncsc10.tfm
 INPUT .\Appendix\appendix1.tex
 INPUT .\Appendix\appendix1.tex

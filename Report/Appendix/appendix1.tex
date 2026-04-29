@@ -10,7 +10,7 @@ Phụ lục này trình bày các chi tiết kỹ thuật chuyên sâu và các 
 
 Hệ thống sử dụng nền tảng \textbf{SignalR} nhằm thiết lập các persistent kết nối hai chiều giữa máy chủ và máy trạm, đáp ứng yêu cầu khắt khe về độ trễ trong các trận đấu PvP. \textbf{BattleHub} đóng vai trò là trung tâm điều phối, quản lý toàn bộ vòng đời của một phiên đấu từ lúc khởi tạo đến khi kết thúc hoặc xử lý các tình huống ngắt kết nối đột ngột.
 
-Cơ chế \textit{State Recovery} được thiết lập dựa trên việc lưu trữ trạng thái phiên đấu song song tại In-memory Cache và Database. Điều này cho phép người chơi có một khoảng thời gian chờ (30 giây) để thực hiện tái kết nối mà không làm mất dữ liệu HP hay điểm số hiện tại. Nếu quá thời gian này, hệ thống tự động áp dụng chính sách Timeout Policy để đảm bảo tính công bằng cho đối thủ.
+Cơ chế State Recovery được thiết lập dựa trên việc lưu trữ trạng thái phiên đấu song song tại In-memory Cache và Database. Điều này cho phép người chơi có một khoảng thời gian chờ (30 giây) để thực hiện tái kết nối mà không làm mất dữ liệu HP hay điểm số hiện tại. Nếu quá thời gian này, hệ thống tự động áp dụng chính sách Timeout Policy để đảm bảo tính công bằng cho đối thủ.
 
 % --- Cấu hình listings cho CSharp ---
 \lstdefinelanguage{CSharp}{
@@ -359,43 +359,39 @@ public class SRSAlgorithm
 
 Dưới đây là nội dung Phụ lục đã được biên tập lại hoàn toàn dưới dạng các đoạn văn nghị luận, đảm bảo tính học thuật, logic và loại bỏ các danh sách liệt kê không cần thiết theo đúng quy chuẩn khóa luận.
 
-\chapter{Một Số Giao Diện Bổ Sung}
+\chapter{Một Số Giao Diện Bổ Sung }
 
-Phụ lục này trình bày hệ thống các giao diện người dùng phụ trợ, đóng vai trò then chốt trong việc hiện thực hóa các chức năng như lọc, tìm kiếm, hiển thị chi tiết và điều hướng lộ trình học tập. Mặc dù các màn hình này không được mô tả chi tiết tại chương kết quả đạt được, chúng đóng vai trò thiết yếu trong việc tối ưu hóa trải nghiệm người dùng (UX) và duy trì tính nhất quán cho toàn bộ hệ sinh thái ứng dụng.
+Phụ lục này tổng hợp các phân hệ giao diện mang tính bổ trợ, góp phần hoàn thiện tính toàn vẹn của luồng trải nghiệm người dùng trong hệ thống. Các màn hình này tập trung vào việc tối ưu hóa khả năng truy xuất thông tin, điều hướng linh hoạt và trực quan hóa các thành phần trong hệ sinh thái học tập. Dù đóng vai trò phụ trợ, các giao diện này là mắt xích không thể thiếu để duy trì tính nhất quán về mặt thị giác và đảm bảo sự liền mạch trong quá trình tương tác của người học.
 
-\section{Giao diện Quản lý Danh sách Thú cưng}
+\section{Phân hệ Quản lý Bộ sưu tập Thú ảo}
 
-Giao diện danh sách thú cưng được thiết kế như một thư viện trực quan, cho phép người dùng bao quát toàn bộ hệ thống sinh vật ảo trong ứng dụng. Chức năng này tích hợp các bộ lọc nâng cao, hỗ trợ người học phân loại thực thể theo độ hiếm, thuộc tính nguyên tố hoặc trạng thái sở hữu cá nhân. Việc hiển thị trực quan cấp độ hiện tại cùng tiến trình tiến hóa không chỉ giúp người dùng quản lý bộ sưu tập một cách hiệu quả mà còn tạo ra động lực sưu tầm, từ đó gián tiếp thúc đẩy sự gắn kết dài hạn với các hoạt động học tập cốt lõi.
+Giao diện danh mục thú ảo được xây dựng dựa trên mô hình quản lý bộ sưu tập tập trung, cho phép người học có cái nhìn bao quát về toàn bộ hệ sinh thái sinh vật trong ứng dụng. Phân hệ này tích hợp các cơ chế lọc đa tiêu chí, hỗ trợ phân loại thực thể theo độ hiếm, thuộc tính nguyên tố hoặc trạng thái sở hữu thực tế. Việc hiển thị chi tiết các chỉ số tăng trưởng và lộ trình tiến hóa không chỉ hỗ trợ quản lý dữ liệu hiệu quả mà còn kích thích nhu cầu sưu tầm, từ đó tạo ra động lực gián tiếp giúp người dùng gắn bó lâu dài với các mục tiêu học tập cốt lõi.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=15cm]{images/Final_Pets.png}
-\caption{Màn hình danh sách thú cưng với hệ thống bộ lọc nâng cao.}
+\caption{Giao diện thư viện thú ảo tích hợp bộ lọc phân loại đa năng.}
 \label{fig_pet_list}
 \end{figure}
 
-\section{Giao diện Chi tiết Bộ từ vựng và Điều hướng Học tập}
+\section{Giao diện Đặc tả Học liệu và Điều hướng Lộ trình}
 
-Màn hình chi tiết bộ từ vựng đóng vai trò là trung tâm định hướng kiến thức, cung cấp cái nhìn toàn diện về cấu trúc của từng học liệu. Tại đây, hệ thống tổng hợp đầy đủ các siêu dữ liệu bao gồm tiêu đề, mô tả ngữ cảnh, độ khó và phần thưởng thú cưng tương ứng. Điểm đặc sắc của giao diện này nằm ở khả năng điều khiển trạng thái linh hoạt: nút đăng ký hoặc nút học sẽ tự động thay đổi dựa trên quyền sở hữu của người dùng, đồng thời danh sách từ vựng được trình bày kèm theo chỉ số thành thạo cá nhân. Thiết kế này giúp người học dễ dàng nhận diện khối lượng kiến thức đã chinh phục và đưa ra quyết định học tập tiếp theo một cách khoa học.
+Giao tiết chi tiết bộ học liệu đóng vai trò là trung tâm điều phối tri thức, cung cấp các siêu dữ liệu (metadata) cần thiết để người học đánh giá nội dung trước khi bắt đầu. Tại đây, mọi thông tin từ tiêu đề, mô tả ngữ cảnh đến cấp độ thử thách và phần thưởng tương ứng đều được trình bày minh bạch. Điểm nhấn kỹ thuật của giao diện này nằm ở khả năng thay đổi trạng thái tương tác động: các nút chức năng (Đăng ký/Bắt đầu học) sẽ tự động chuyển đổi dựa trên quyền truy cập của người dùng. Ngoài ra, việc tích hợp chỉ số thành thạo cá nhân ngay tại danh sách từ vựng giúp người học nhận biết trực quan các cột mốc tri thức đã chinh phục để đưa ra các quyết định ôn tập phù hợp.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=15cm]{images/IF_SetDetail.png}
-\caption{Giao diện hiển thị chi tiết và tiến trình ghi nhớ của bộ từ vựng.}
+\caption{Màn hình hiển thị cấu trúc học liệu và trạng thái ghi nhớ cá nhân.}
 \label{fig_set_detail}
 \end{figure}
 
-\section{Giao diện Duyệt và Tìm kiếm Bộ học liệu}
+\section{Cơ chế Duyệt và Truy vấn Kho dữ liệu học tập}
 
-Nhằm hỗ trợ quá trình tiếp cận nguồn tài nguyên đa dạng, giao diện danh sách bộ từ vựng được trang bị công cụ tìm kiếm và lọc theo chủ đề (Theme). Người dùng có thể nhanh chóng định vị các bộ học liệu phù hợp với nhu cầu chuyên biệt thông qua từ khóa hoặc mức độ thử thách. Hệ thống hiển thị tường minh trạng thái sở hữu và số lượng mục từ còn lại cần hoàn thành trong mỗi bộ, giúp tối ưu hóa quy trình quản lý thời gian và nâng cao tính minh bạch trong lộ trình học tập cá nhân.
+Để hỗ trợ khả năng tiếp cận nguồn tài nguyên học liệu đa dạng, giao diện danh sách bộ từ vựng được trang bị hệ thống truy vấn và lọc theo chủ đề (Theme). Người học có thể nhanh chóng định vị các nội dung chuyên biệt thông qua công cụ tìm kiếm hoặc phân loại theo mức độ khó. Sự minh bạch về trạng thái sở hữu cũng như tiến độ hoàn thành được hiển thị tường minh, giúp người dùng tối ưu hóa quy trình quản lý thời gian và xác định rõ ràng vị trí của mình trong lộ trình phát triển ngôn ngữ tổng thể.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=15cm]{images/IF_SetList.png}
-\caption{Giao diện quản lý và tìm kiếm danh mục bộ từ vựng.}
+\caption{Giao diện truy xuất và quản lý danh mục bộ học liệu.}
 \label{fig_set_list}
 \end{figure}
-
-\section{Đánh giá Ý nghĩa và Vai trò đối với Trải nghiệm Người dùng}
-
-Tổng thể các màn hình được trình bày trong phụ lục này minh chứng cho sự quan tâm sâu sắc của đề tài đối với khía cạnh trải nghiệm người dùng (UX). Việc tối ưu hóa quy trình điều hướng và hiển thị trạng thái sở hữu rõ ràng đã thúc đẩy mạnh mẽ tính cá nhân hóa, đồng thời tạo ra một hệ sinh thái học tập có tính gợi mở cao. Những thiết kế này không chỉ dừng lại ở mức hỗ trợ chức năng mà còn đặt nền móng cho khả năng mở rộng hệ thống trong tương lai, hướng tới việc xây dựng một nền tảng học tập cộng đồng có khả năng giữ chân người dùng thông qua sự minh bạch về tiến độ và niềm vui trong việc phát triển bộ sưu tập cá nhân.
