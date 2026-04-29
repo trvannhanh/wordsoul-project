@@ -63,14 +63,18 @@ namespace WordSoul.Api.Controllers
         {
             try
             {
+                // Người chơi B vào phòng bằng roomCode + chọn 3 pet.
                 var (sessionId, p1UserId) = await _arena.JoinPvpSessionAsync(dto, GetUserId());
 
+                // Lấy thông tin người chơi B
                 var opponentName = User.FindFirstValue(ClaimTypes.Name)
                     ?? User.FindFirstValue(ClaimTypes.Email)
                     ?? "Opponent";
 
+                // Lấy thông tin rating của người chơi B
                 var rating = await _arena.GetPvpRatingAsync(GetUserId());
 
+                // Gửi thông tin người chơi B cho người chơi A
                 await _hubContext.Clients
                     .Group($"battle-{sessionId}")
                     .SendAsync("OpponentJoined", new OpponentJoinedDto
@@ -103,12 +107,15 @@ namespace WordSoul.Api.Controllers
             if (dto.SelectedPetIds.Count != 3)
                 return BadRequest(new { error = "Bạn phải chọn đúng 3 Pokémon." });
 
+            // Kiểm tra ConnectionId
             if (string.IsNullOrWhiteSpace(dto.ConnectionId))
                 return BadRequest(new { error = "ConnectionId không hợp lệ. Hãy kết nối BattleHub trước." });
 
+            // Lấy thông tin rating của người chơi
             var rating = await _arena.GetPvpRatingAsync(userId);
             var pvpRating = rating?.PvpRating ?? 1000;
 
+            // Thêm người chơi vào hàng chờ
             var queueId = _queue.Enqueue(userId, pvpRating, dto.ConnectionId, dto.SelectedPetIds);
 
             _logger.LogInformation("User {U} (ELO {R}) joined matchmaking queue. QueueId={Q}", userId, pvpRating, queueId);

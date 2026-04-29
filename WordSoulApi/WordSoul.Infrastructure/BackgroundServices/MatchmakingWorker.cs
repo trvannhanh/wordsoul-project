@@ -30,17 +30,21 @@ namespace WordSoul.Infrastructure.BackgroundServices
             _logger = logger;
         }
 
+        // Hàm này sẽ chạy khi service được khởi động
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("MatchmakingWorker started.");
 
             while (!stoppingToken.IsCancellationRequested)
             {
+                // Chờ 5 giây
                 await Task.Delay(_interval, stoppingToken);
 
                 try
                 {
+                    // Lấy danh sách các cặp đã ghép
                     var matches = _queue.DrainMatches();
+                    // Nếu không có cặp nào thì bỏ qua
                     if (matches.Count == 0) continue;
 
                     _logger.LogInformation("Matchmaking: found {Count} pair(s).", matches.Count);
@@ -56,12 +60,14 @@ namespace WordSoul.Infrastructure.BackgroundServices
             }
         }
 
+        // Hàm này sẽ xử lý khi tìm thấy một cặp người chơi
         private async Task ProcessMatchAsync(MatchmakingEntry p1, MatchmakingEntry p2, CancellationToken ct)
         {
             try
             {
+                // Tạo scope để lấy service --- ?? Tại sao cần thao tác này, research sau
                 using var scope = _scopeFactory.CreateScope();
-                var arena = scope.ServiceProvider.GetRequiredService<IArenaBattleService>();
+                var arena = scope.ServiceProvider.GetRequiredService<IArenaBattleService>(); 
 
                 // P1 tạo session (Challenger)
                 var room = await arena.CreatePvpSessionAsync(
