@@ -43,55 +43,55 @@
 
 ## 🌟 Project Overview
 
-**Vocamon** is an innovative web application designed to solve the challenge of long-term English vocabulary retention. [cite_start]By integrating **Spaced Repetition Systems (SRS)** with a **Pokemon-inspired Gamification** model, Vocamon transforms the tedious process of memorization into an engaging journey of growth and competition.
+**Vocamon** is an innovative web application designed to solve the challenge of long-term English vocabulary retention. By integrating **Spaced Repetition Systems (SRS)** with a **Pokemon-inspired Gamification** model, Vocamon transforms the tedious process of memorization into an engaging journey of growth and competition.
 
-[cite_start]The project satisfies the three core psychological needs of **Self-Determination Theory (SDT)**: Competence, Autonomy, and Relatedness.
+The project satisfies the three core psychological needs of **Self-Determination Theory (SDT)**: Competence, Autonomy, and Relatedness.
 
 ---
 
 ## ✨ Key Features
 
 ### 🧠 Cognitive Learning
-- [cite_start]**SM-2 Algorithm Implementation**: Personalized review schedules based on memory strength and recall quality.
-- [cite_start]**4-Stage Learning Session**: A word progresses through Flashcard → Fill-in-the-Blank → Multiple Choice → Listening stages to ensure multi-sensory mastery.
-- [cite_start]**Active Recall Engine**: Forces the brain to retrieve information under time pressure for deeper memory traces.
+- **SM-2 Algorithm Implementation**: Personalized review schedules based on memory strength and recall quality.
+- **4-Stage Learning Session**: A word progresses through Flashcard → Fill-in-the-Blank → Multiple Choice → Listening stages to ensure multi-sensory mastery.
+- **Active Recall Engine**: Forces the brain to retrieve information under time pressure for deeper memory traces.
 
 ### 🎮 Gamification & Interaction
-- **Pet Ecosystem**: Catch, train, and evolve virtual pets. [cite_start]Your learning progress directly fuels your pet's evolution.
+- **Pet Ecosystem**: Catch, train, and evolve virtual pets. Your learning progress directly fuels your pet's evolution.
 - **Real-time Combat (Battle Mode)**:
-  - [cite_start]**PvE (Gym Circuit)**: Challenge AI leaders to test your vocabulary mastery.
-  - [cite_start]**PvP (Arena)**: Duel other learners in real-time matches using SignalR technology.
-- [cite_start]**Dynamic Reward System**: Earn Experience Points (XP) and Achievement Points (AP) with a 5x bonus for review sessions to encourage discipline.
+  - **PvE (Gym Circuit)**: Challenge AI leaders to test your vocabulary mastery.
+  - **PvP (Arena)**: Duel other learners in real-time matches using SignalR technology.
+- **Dynamic Reward System**: Earn Experience Points (XP) and Achievement Points (AP) with a 5x bonus for review sessions to encourage discipline.
 
 ---
 
 ## 🛠 Tech Stack
 
 ### Backend
-- [cite_start]**Framework**: .NET 8 / ASP.NET Core Web API
-- [cite_start]**Real-time**: SignalR for low-latency combat 
-- [cite_start]**ORM**: Entity Framework Core (Code First)
-- [cite_start]**Database**: SQL Server
+- **Framework**: .NET 8 / ASP.NET Core Web API
+- **Real-time**: SignalR for low-latency combat 
+- **ORM**: Entity Framework Core (Code First)
+- **Database**: SQL Server
 
 ### Frontend
-- [cite_start]**Library**: React 18 (Vite + TypeScript)
-- [cite_start]**Styling**: Tailwind CSS (Utility-first) 
-- [cite_start]**State Management**: Redux 
+- **Library**: React 18 (Vite + TypeScript)
+- **Styling**: Tailwind CSS (Utility-first) 
+- **State Management**: Redux 
 
 ### Infrastructure
-- [cite_start]**Media Storage**: Cloudinary (for pronunciation and images)
-- [cite_start]**Auth**: JWT (JSON Web Token) with Middleware Pipeline
+- **Media Storage**: Cloudinary (for pronunciation and images)
+- **Auth**: JWT (JSON Web Token) with Middleware Pipeline
 
 ---
 
 ## 🏗 System Architecture
 
-[cite_start]The system follows **Onion Architecture** (Clean Architecture) to decouple business logic from infrastructure.
+The system follows **Onion Architecture** (Clean Architecture) to decouple business logic from infrastructure.
 
-* [cite_start]**Domain Layer**: Core entities (User, Vocabulary, Pet) and SM-2 logic.
-* [cite_start]**Application Layer**: MediatR commands, DTOs, and mapping logic.
-* [cite_start]**Infrastructure Layer**: Data persistence, external service implementations.
-* [cite_start]**Presentation Layer**: RESTful Controllers and SignalR Hubs.
+* **Domain Layer**: Core entities (User, Vocabulary, Pet) and SM-2 logic.
+* **Application Layer**: MediatR commands, DTOs, and mapping logic.
+* **Infrastructure Layer**: Data persistence, external service implementations.
+* **Presentation Layer**: RESTful Controllers and SignalR Hubs.
 
 ---
 
@@ -99,12 +99,12 @@
 
 ### SuperMemo-2 (SM-2)
 Calculates the next review interval based on feedback quality ($q$ from 0-5):
-- [cite_start]**Easiness Factor (EF)**: $EF' = EF + (0.1 - (5-q) \times (0.08 + (5-q) \times 0.02)).
-- [cite_start]**Interval ($I$)**: $I(n) = I(n-1) \times EF$.
+- **Easiness Factor (EF)**: $EF' = EF + (0.1 - (5-q) \times (0.08 + (5-q) \times 0.02)).
+- **Interval ($I$)**: $I(n) = I(n-1) \times EF$.
 
 ### Battle Logic
-- [cite_start]**Elemental Matrix**: Damage multipliers based on type effectiveness (Fire > Grass > Water > Fire).
-- [cite_start]**Response Score**: Damage is calculated by combining answer accuracy with reaction time (ElapsedMs).
+- **Elemental Matrix**: Damage multipliers based on type effectiveness (Fire > Grass > Water > Fire).
+- **Response Score**: Damage is calculated by combining answer accuracy with reaction time (ElapsedMs).
 
 ---
 
