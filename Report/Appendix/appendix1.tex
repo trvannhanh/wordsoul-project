@@ -1,191 +1,397 @@
 
 \appendix
 
-\chapter{Mã nguồn một số phương thức quan trọng}
+\chapter{Triển Khai Kỹ Thuật và Mã Nguồn Trọng Tâm}
+\label{appendix_code}
 
-Phụ lục này trình bày một số phương thức tiêu biểu trong mã nguồn của hệ thống, được lựa chọn dựa trên mức độ quan trọng trong việc minh họa kiến trúc hệ thống và giải quyết các yêu cầu nghiệp vụ. Các API này không chỉ thực hiện các thao tác CRUD cơ bản mà còn bao hàm các thuật toán xử lý dữ liệu, cơ chế học tập theo \textit{spaced repetition}, cũng như yếu tố \textit{gamification} thông qua hệ thống thú cưng. 
+Phụ lục này trình bày các chi tiết kỹ thuật chuyên sâu và các đoạn mã nguồn then chốt cấu thành nên "trái tim" của hệ thống Vocamon. Việc tách biệt các nội dung này giúp phần nội dung chính của khóa luận tập trung vào tính logic và quy trình thiết kế, đồng thời cung cấp tài liệu tham cứu chi tiết cho các lập trình viên và người thẩm định hệ thống.
 
-Mục tiêu của phụ lục là cung cấp cho người đọc cái nhìn rõ ràng về cách hiện thực hoá các yêu cầu chức năng, thay vì liệt kê toàn bộ mã nguồn.
+\section{Kiến Trúc SignalR và Xử Lý Kết Nối Real-time}
 
-\section{API Quản lý Phiên Học}
+Hệ thống sử dụng nền tảng \textbf{SignalR} nhằm thiết lập các persistent kết nối hai chiều giữa máy chủ và máy trạm, đáp ứng yêu cầu khắt khe về độ trễ trong các trận đấu PvP. \textbf{BattleHub} đóng vai trò là trung tâm điều phối, quản lý toàn bộ vòng đời của một phiên đấu từ lúc khởi tạo đến khi kết thúc hoặc xử lý các tình huống ngắt kết nối đột ngột.
 
-\textbf{Mục đích:} Khởi tạo, quản lý và hoàn tất các phiên học hoặc ôn tập của người dùng. Đây là điểm vào (entry point) chính để bắt đầu luồng học.
+Cơ chế State Recovery được thiết lập dựa trên việc lưu trữ trạng thái phiên đấu song song tại In-memory Cache và Database. Điều này cho phép người chơi có một khoảng thời gian chờ (30 giây) để thực hiện tái kết nối mà không làm mất dữ liệu HP hay điểm số hiện tại. Nếu quá thời gian này, hệ thống tự động áp dụng chính sách Timeout Policy để đảm bảo tính công bằng cho đối thủ.
 
-\begin{lstlisting}[language=C, caption={Tạo một phiên học dựa trên bộ từ vựng đã chọn}]
-[Authorize(Roles = "User")]
-[HttpPost("{vocaSetId}")]
-public async Task<IActionResult> CreateLearningSession(int vocaSetId)
-{
-    var userId = User.GetUserId();
-    if (userId == 0) return Unauthorized();
-    if (vocaSetId <= 0) return BadRequest("Invalid VocabularySet ID");
-
-    try
-    {
-        var learningSessionDto = await _learningSessionService.CreateLearningSessionAsync(userId, vocaSetId);
-        return Ok(learningSessionDto);
-    }
-    catch (InvalidOperationException ex)
-    {
-        _logger.LogWarning(ex, "No unlearned vocabularies found.");
-        return NotFound(ex.Message);
-    }
+% --- Cấu hình listings cho CSharp ---
+\lstdefinelanguage{CSharp}{
+    morekeywords={abstract,as,base,bool,break,byte,case,catch,char,checked,class,const,continue,decimal,default,delegate,do,double,else,enum,event,explicit,extern,false,finally,fixed,float,for,foreach,goto,if,implicit,in,int,interface,internal,is,lock,long,namespace,new,null,object,operator,out,override,params,private,protected,public,readonly,ref,return,sbyte,sealed,short,sizeof,stackalloc,static,string,struct,switch,this,throw,true,try,typeof,uint,ulong,unchecked,unsafe,ushort,using,virtual,void,volatile,while,var,dynamic,get,set,value},
+    sensitive=true,
+    morecomment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]",
 }
-\end{lstlisting}
-
-API trên thể hiện rõ cách hệ thống:
-\begin{itemize}
-    \item Xác thực người dùng thông qua JWT và Role.
-    \item Kiểm tra quyền sở hữu bộ từ vựng.
-    \item Xử lý tình huống không còn từ để học và trả về mã lỗi phù hợp.
-\end{itemize}
-
-\section{Thuật Toán Cập Nhật Tiến Trình Học }
-
-\textbf{Mục đích:} Lưu kết quả trả lời và áp dụng cơ chế \textit{spaced repetition} để xác định thời điểm ôn tập tiếp theo.
-
-\begin{lstlisting}[language=C, caption={Cập nhật tiến trình học và tính ngày ôn tập}]
-progress.ProficiencyLevel = Math.Min(5, 
-    1 + (int)Math.Floor(Math.Log(Math.Max(1, progress.CorrectAttempt), 1.5)));
-
-int daysToAdd = progress.ProficiencyLevel switch
-{
-    1 => 1,
-    2 => 2,
-    3 => 4,
-    4 => 16,
-    _ => 256
-};
-
-progress.NextReviewTime = DateTime.UtcNow.AddDays(daysToAdd);
-\end{lstlisting}
-
-Đây là phần mang tính học thuật quan trọng, vì nó giúp hệ thống tối ưu tần suất xuất hiện của từ vựng, đảm bảo người học ghi nhớ lâu hơn mà không quá tải.
-
-\section{API Tạo Bộ Từ Vựng }
-
-\textbf{Mục đích:} Tạo bộ từ vựng mới và tự động gán thú cưng phần thưởng theo độ hiếm.
-
-\begin{lstlisting}[language=C, caption={Tự động gán Pet thưởng cho bộ từ vựng}]
-var petDistribution = new Dictionary<PetRarity, (int Count, double DropRate)>
-{
-    { PetRarity.Common, (10, 0.4) },
-    { PetRarity.Uncommon, (5, 0.25) },
-    { PetRarity.Rare, (3, 0.15) },
-    { PetRarity.Epic, (2, 0.05) },
-    { PetRarity.Legendary, (1, 0.01) }
-};
-
-foreach (var (rarity, (count, dropRate)) in petDistribution)
-{
-    var pets = await _petRepository.GetRandomPetsByRarityAsync(rarity, count);
-    vocabularySet.SetRewardPets.AddRange(pets.Select(pet => new SetRewardPet
-    {
-        PetId = pet.Id,
-        DropRate = dropRate
-    }));
+\lstset{
+    language=CSharp,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{gray},
+    stringstyle=\color{red},
+    numbers=left,
+    numberstyle=\tiny, 
+    stepnumber=1,
+    numbersep=5pt,
+    showstringspaces=false,
+    breaklines=true,
+    frame=single,
+    tabsize=2
 }
-\end{lstlisting}
 
-Đoạn mã này cho thấy cách hệ thống sử dụng logic xác suất để phân phối phần thưởng, góp phần tăng tính hấp dẫn của quá trình học.
-
-\section{API Nâng Cấp Thú Cưng}
-
-\textbf{Mục đích:} Xử lý logic tăng kinh nghiệm, tăng cấp độ và tiến hoá thú cưng, từ đó gắn kết yếu tố trò chơi vào hệ thống học.
-
-\begin{lstlisting}[language=C, caption={Nâng cấp và tiến hóa thú cưng}]
-while (userOwnedPet.Experience >= 100)
+\begin{lstlisting}[caption={Doan ma xu ly logic chinh trong BattleHub (SignalR)}, label={lst:battlehub}]
+public class BattleHub : Hub
 {
-    userOwnedPet.Level++;
-    userOwnedPet.Experience -= 100;
-    isLevelUp = true;
+    private readonly IArenaBattleService _arena;
+    private readonly ILogger<BattleHub> _logger;
 
-    if (currentPet.RequiredLevel != null && 
-        userOwnedPet.Level >= currentPet.RequiredLevel &&
-        currentPet.NextEvolutionId.HasValue)
+    public BattleHub(IArenaBattleService arena, ILogger<BattleHub> logger)
     {
-        var evolvedPet = await _petRepository.GetPetByIdAsync(currentPet.NextEvolutionId.Value);
-        if (evolvedPet != null)
+        _arena = arena;
+        _logger = logger;
+    }
+
+    // Helpers
+
+    private int GetUserId() =>
+        int.Parse(Context.User!.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+    private static string RoomGroup(int sessionId) => $"battle-{sessionId}";
+
+    // PvE - Gym Battle
+
+    /// <summary>
+    /// Player vao phong PvE battle. Bot san sang ngay -> battle bat dau ngay.
+    /// </summary>
+    public async Task PlayerReady(int battleSessionId)
+    {
+        var userId = GetUserId();
+        await Groups.AddToGroupAsync(Context.ConnectionId, RoomGroup(battleSessionId));
+        _logger.LogInformation("User {U} joined BattleHub room {S} (PvE)", userId, battleSessionId);
+
+        var result = await _arena.StartBattleAsync(battleSessionId, userId);
+        if (result != null)
         {
-            userOwnedPet.PetId = evolvedPet.Id;
-            isEvolve = true;
-            break;
+            await Clients.Caller.SendAsync("BattleStarted", result);
         }
     }
+
+    /// <summary>
+    /// Player gui cau tra loi cho mot round (PvE).
+    /// </summary>
+    public async Task SubmitAnswer(SubmitRoundAnswerDto dto)
+    {
+        var userId = GetUserId();
+        var roundResult = await _arena.SubmitAnswerAsync(dto, userId);
+
+        if (roundResult != null)
+        {
+            await Clients.Group(RoomGroup(dto.BattleSessionId))
+                .SendAsync("RoundResult", roundResult.RoundResult);
+
+            if (roundResult.BattleEnded != null)
+            {
+                await Clients.Group(RoomGroup(dto.BattleSessionId))
+                    .SendAsync("BattleEnded", roundResult.BattleEnded);
+                return;
+            }
+
+            await Task.Delay(2500);
+            if (roundResult.NextQuestion != null)
+            {
+                await Clients.Group(RoomGroup(dto.BattleSessionId))
+                    .SendAsync("NextQuestion", roundResult.NextQuestion);
+            }
+        }
+    }
+
+    // PvP - Player vs Player
+
+    /// <summary>
+    /// Player vao phong PvP. Khi ca 2 ready -> BattleStarted gui toi ca 2 connection.
+    /// </summary>
+    public async Task PlayerReadyPvP(int battleSessionId)
+    {
+        var userId = GetUserId();
+        await Groups.AddToGroupAsync(Context.ConnectionId, RoomGroup(battleSessionId));
+        _logger.LogInformation("User {U} joined BattleHub room {S} (PvP)", userId, battleSessionId);
+
+        var result = await _arena.StartPvpBattleAsync(battleSessionId, userId, Context.ConnectionId);
+
+        if (result == null)
+        {
+            // Chua du 2 nguoi - thong bao cho nguoi vua vao biet dang cho
+            await Clients.Caller.SendAsync("WaitingOpponent", new { message = "Dang cho doi thu vao phong..." });
+        }
+        else
+        {
+            // Ca 2 da san sang. Caller la nguoi trigger.
+            if (result.CallerIsChallenger)
+            {
+                // P1 la nguoi trigger (caller)
+                result.IsP1 = true;
+                await Clients.Caller.SendAsync("BattleStarted", result);
+
+                // Gui den P2
+                if (!string.IsNullOrEmpty(result.P2ConnectionId))
+                {
+                    result.IsP1 = false;
+                    await Clients.Client(result.P2ConnectionId).SendAsync("BattleStarted", result);
+                }
+            }
+            else
+            {
+                // P2 la nguoi trigger (caller)
+                result.IsP1 = false;
+                await Clients.Caller.SendAsync("BattleStarted", result);
+
+                // Gui den P1
+                if (!string.IsNullOrEmpty(result.P1ConnectionId))
+                {
+                    result.IsP1 = true;
+                    await Clients.Client(result.P1ConnectionId).SendAsync("BattleStarted", result);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Player gui cau tra loi PvP. Server buffer, khi du 2 ben moi resolve round.
+    /// </summary>
+    public async Task SubmitPvpAnswer(SubmitRoundAnswerDto dto)
+    {
+        var userId = GetUserId();
+        var result = await _arena.SubmitPvpAnswerAsync(dto, userId);
+
+        if (result == null)
+        {
+            // Chua du 2 ben - bao waiting cho nguoi submit truoc
+            await Clients.Caller.SendAsync("WaitingOpponent", new { message = "Chua du 2 ben - bao waiting cho nguoi submit truoc" });
+            return;
+        }
+
+        // Ca 2 da submit -> broadcast ket qua round
+        await Clients.Group(RoomGroup(dto.BattleSessionId))
+            .SendAsync("RoundResult", result.RoundResult);
+
+        if (result.BattleEnded != null)
+        {
+            await Clients.Group(RoomGroup(dto.BattleSessionId))
+                .SendAsync("BattleEnded", result.BattleEnded);
+            return;
+        }
+
+        // Gui cau hoi tiep theo sau 2.5 giay
+        await Task.Delay(2500);
+        if (result.NextQuestion != null)
+        {
+            await Clients.Group(RoomGroup(dto.BattleSessionId))
+                .SendAsync("NextQuestion", result.NextQuestion);
+        }
+    }
+
+    // Disconnect Handling
+
+    public override async Task OnDisconnectedAsync(Exception? exception)
+    {
+        _logger.LogWarning("BattleHub client {C} disconnected: {E}",
+            Context.ConnectionId, exception?.Message);
+
+        // Xu ly PvP forfeit khi disconnect
+        var battleEnded = await _arena.ForfeitPvpBattleAsync(Context.ConnectionId);
+        if (battleEnded != null)
+        {
+            await Clients.Group($"battle-{battleEnded.BattleSessionId}")
+                .SendAsync("OpponentForfeited", battleEnded);
+
+            _logger.LogInformation(
+                "PvP session {S} ended by forfeit (disconnect). P1Won={W}",
+                battleEnded.BattleSessionId, battleEnded.P1Won);
+        }
+
+        await base.OnDisconnectedAsync(exception);
+    }
 }
 \end{lstlisting}
 
-API này minh họa cách hệ thống quản lý trạng thái phức tạp của thú cưng, đồng thời đảm bảo tính nhất quán dữ liệu khi người dùng nâng cấp nhiều lần liên tiếp.
+\section{Thuật Toán SRS (SuperMemo-2) Implementation}
 
-\section{Nhận Xét Chung}
+Lớp xử lý \texttt{SRSAlgorithm} hiện thực hóa mô hình toán học SM-2 để tính toán khoảng cách ôn tập tối ưu. Mã nguồn dưới đây minh họa cách hệ thống cập nhật chỉ số độ dễ (Easiness Factor) và số lần lặp lại (Repetition) dựa trên điểm đánh giá chất lượng (Grade) từ người dùng.
 
-Các API trên thể hiện:
-\begin{itemize}
-    \item Cách hệ thống kết hợp giữa \textbf{xác thực – xử lý nghiệp vụ – lưu trữ dữ liệu}.
-    \item Việc áp dụng thuật toán học tập và gamification.
-    \item Thiết kế chuẩn RESTful, tách biệt Controller – Service – Repository, dễ mở rộng trong tương lai.
-\end{itemize}
+\begin{lstlisting}[caption={Hien thuc thuat toan SM-2 trong he thong}, label={lst:sm2algo}]
+public class SRSAlgorithm
+{
+    // Constants
+    private const double MIN_EASE_FACTOR = 1.3;
+    private const double DEFAULT_EASE_FACTOR = 2.5;
+    private const double MAX_EASE_FACTOR = 4.0;
 
-Các API CRUD cơ bản khác (xem/xoá/cập nhật Pet, tìm kiếm bộ từ vựng, quản lý người dùng) không được liệt kê ở đây để tránh trùng lặp và giữ tính cô đọng cho phụ lục.
+    /// <summary>
+    /// Calculate next review parameters based on SM-2
+    /// </summary>
+    /// <param name="grade">Quality of recall (0-5)</param>
+    /// <param name="currentEF">Current Easiness Factor</param>
+    /// <param name="currentInterval">Current interval in days</param>
+    /// <param name="currentRepetition">Current repetition count</param>
+    /// <returns>Updated SRS parameters</returns>
+    public SRSResult CalculateNext(
+        int grade,
+        double currentEF,
+        int currentInterval,
+        int currentRepetition)
+    {
+        // Validate input
+        if (grade < 0 || grade > 5)
+            throw new ArgumentException("Grade must be 0-5", nameof(grade));
 
+        var result = new SRSResult();
 
-\chapter{Một Số Màn Hình Bổ Sung}
+        // Step 1: Calculate new Easiness Factor
+        result.NewEaseFactor = CalculateNewEaseFactor(grade, currentEF);
 
-Phụ lục này giới thiệu thêm một số màn hình giao diện của hệ thống , minh hoạ các chức năng phụ trợ như lọc, tìm kiếm, xem chi tiết và điều hướng học tập. Các màn hình này không được mô tả chi tiết trong chương Kết quả đạt được nhưng đóng vai trò quan trọng trong việc nâng cao trải nghiệm người dùng.
+        // Step 2: Update Repetition count
+        if (grade >= 3)  // Passed (Good or better)
+        {
+            result.NewRepetition = currentRepetition + 1;
+        }
+        else  // Failed or struggled
+        {
+            result.NewRepetition = 0;  // Reset to start
+        }
 
-\section{Màn hình Danh sách Thú cưng}
+        // Step 3: Calculate new Interval
+        result.NewInterval = CalculateNewInterval(
+            result.NewRepetition,
+            currentInterval,
+            result.NewEaseFactor
+        );
+
+        // Step 4: Calculate next review date
+        result.NextReviewDate = DateTime.UtcNow.AddDays(result.NewInterval);
+
+        // Step 5: Determine memory state
+        result.MemoryState = DetermineMemoryState(
+            result.NewRepetition,
+            result.NewInterval
+        );
+
+        return result;
+    }
+
+    /// <summary>
+    /// SM-2 Easiness Factor calculation
+    /// EF' = EF + (0.1 - (5-q) * (0.08 + (5-q) * 0.02))
+    /// </summary>
+    private double CalculateNewEaseFactor(int grade, double currentEF)
+    {
+        // SM-2 formula
+        double change = 0.1 - (5 - grade) * (0.08 + (5 - grade) * 0.02);
+        double newEF = currentEF + change;
+
+        // Clamp between min and max
+        return Math.Max(MIN_EASE_FACTOR, Math.Min(MAX_EASE_FACTOR, newEF));
+    }
+
+    /// <summary>
+    /// SM-2 Interval calculation
+    /// </summary>
+    private int CalculateNewInterval(int repetition, int currentInterval, double easeFactor)
+    {
+        switch (repetition)
+        {
+            case 0:
+                return 0;  // Review immediately (same day or next session)
+
+            case 1:
+                return 1;  // Review after 1 day
+
+            case 2:
+                return 6;  // Review after 6 days
+
+            default:
+                // I(n) = I(n-1) * EF
+                return (int)Math.Ceiling(currentInterval * easeFactor);
+        }
+    }
+
+    /// <summary>
+    /// Determine memory state based on repetitions and interval
+    /// </summary>
+    private string DetermineMemoryState(int repetition, int interval)
+    {
+        if (repetition == 0)
+            return "Relearning";  // Failed -> need to relearn
+
+        if (repetition <= 2)
+            return "Learning";  // Just started
+
+        if (interval >= 21)
+            return "Mastered";  // 3+ weeks -> long-term memory
+
+        return "Review";  // In progress
+    }
+
+    /// <summary>
+    /// Calculate retention score (0-100%)
+    /// Combines accuracy with repetition strength
+    /// </summary>
+    public decimal CalculateRetentionScore(
+        int correctCount,
+        int wrongCount,
+        int repetition)
+    {
+        if (correctCount + wrongCount == 0)
+            return 0;
+
+        // Base accuracy (0-100)
+        decimal accuracy = (decimal)correctCount / (correctCount + wrongCount) * 100;
+
+        // Bonus for consecutive correct recalls (max +20)
+        decimal repetitionBonus = Math.Min(repetition * 2, 20);
+
+        // Combined score (capped at 100)
+        return Math.Min(accuracy + repetitionBonus, 100);
+    }
+
+    public string GetMemoryState(int repetition, int interval)
+    {
+        return DetermineMemoryState(repetition, interval);
+    }
+}
+\end{lstlisting}
+
+Dưới đây là nội dung Phụ lục đã được biên tập lại hoàn toàn dưới dạng các đoạn văn nghị luận, đảm bảo tính học thuật, logic và loại bỏ các danh sách liệt kê không cần thiết theo đúng quy chuẩn khóa luận.
+
+\chapter{Một Số Giao Diện Bổ Sung }
+
+Phụ lục này tổng hợp các phân hệ giao diện mang tính bổ trợ, góp phần hoàn thiện tính toàn vẹn của luồng trải nghiệm người dùng trong hệ thống. Các màn hình này tập trung vào việc tối ưu hóa khả năng truy xuất thông tin, điều hướng linh hoạt và trực quan hóa các thành phần trong hệ sinh thái học tập. Dù đóng vai trò phụ trợ, các giao diện này là mắt xích không thể thiếu để duy trì tính nhất quán về mặt thị giác và đảm bảo sự liền mạch trong quá trình tương tác của người học.
+
+\section{Phân hệ Quản lý Bộ sưu tập Thú ảo}
+
+Giao diện danh mục thú ảo được xây dựng dựa trên mô hình quản lý bộ sưu tập tập trung, cho phép người học có cái nhìn bao quát về toàn bộ hệ sinh thái sinh vật trong ứng dụng. Phân hệ này tích hợp các cơ chế lọc đa tiêu chí, hỗ trợ phân loại thực thể theo độ hiếm, thuộc tính nguyên tố hoặc trạng thái sở hữu thực tế. Việc hiển thị chi tiết các chỉ số tăng trưởng và lộ trình tiến hóa không chỉ hỗ trợ quản lý dữ liệu hiệu quả mà còn kích thích nhu cầu sưu tầm, từ đó tạo ra động lực gián tiếp giúp người dùng gắn bó lâu dài với các mục tiêu học tập cốt lõi.
+
 \begin{figure}[H]
 \centering
-\includegraphics[width=15cm]{images/IF_PetList.png}
-\caption{Màn hình danh sách thú cưng với bộ lọc nâng cao.}
+\includegraphics[width=15cm]{images/Final_Pets.png}
+\caption{Giao diện thư viện thú ảo tích hợp bộ lọc phân loại đa năng.}
 \label{fig_pet_list}
 \end{figure}
 
-Màn hình này hiển thị toàn bộ thú cưng trong hệ thống và hỗ trợ:
-\begin{itemize}
-    \item Lọc theo tên thú cưng hoặc chỉ hiển thị thú đã sở hữu.
-    \item Lọc theo độ hiếm (\textit{Common, Rare, Epic, Legendary}) và loại (\textit{Beast, Spirit, Machine,...}).
-    \item Hiển thị trực quan tình trạng sở hữu, cấp độ hiện tại và tiến trình tiến hoá.
-\end{itemize}
-Chức năng này giúp người học dễ dàng theo dõi bộ sưu tập, tăng động lực thu thập đầy đủ thú cưng.
+\section{Giao diện Đặc tả Học liệu và Điều hướng Lộ trình}
 
-\section{Màn hình Chi tiết Bộ từ vựng}
+Giao tiết chi tiết bộ học liệu đóng vai trò là trung tâm điều phối tri thức, cung cấp các siêu dữ liệu (metadata) cần thiết để người học đánh giá nội dung trước khi bắt đầu. Tại đây, mọi thông tin từ tiêu đề, mô tả ngữ cảnh đến cấp độ thử thách và phần thưởng tương ứng đều được trình bày minh bạch. Điểm nhấn kỹ thuật của giao diện này nằm ở khả năng thay đổi trạng thái tương tác động: các nút chức năng (Đăng ký/Bắt đầu học) sẽ tự động chuyển đổi dựa trên quyền truy cập của người dùng. Ngoài ra, việc tích hợp chỉ số thành thạo cá nhân ngay tại danh sách từ vựng giúp người học nhận biết trực quan các cột mốc tri thức đã chinh phục để đưa ra các quyết định ôn tập phù hợp.
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=15cm]{images/IF_SetDetail.png}
-\caption{Màn hình chi tiết bộ từ vựng.}
+\caption{Màn hình hiển thị cấu trúc học liệu và trạng thái ghi nhớ cá nhân.}
 \label{fig_set_detail}
 \end{figure}
 
-Màn hình này cung cấp thông tin toàn diện về một bộ từ:
-\begin{itemize}
-    \item Hiển thị tiêu đề, mô tả, ảnh minh họa, chủ đề, độ khó và thú cưng thưởng.
-    \item Nút \textbf{Đăng ký bộ từ vựng} (nếu người dùng chưa sở hữu) và nút \textbf{Học} (nếu đã sở hữu).
-    \item Nút \textbf{Đã hoàn thành} được disable khi người dùng đã học xong toàn bộ bộ từ.
-    \item Danh sách tất cả các từ trong bộ, kèm tiến trình (ví dụ: số lần đúng, mức độ thành thạo).
-\end{itemize}
-Màn hình này là trung tâm định hướng học tập, giúp người dùng quyết định đăng ký hoặc tiếp tục học.
+\section{Cơ chế Duyệt và Truy vấn Kho dữ liệu học tập}
 
-\section{Màn hình Danh sách Bộ từ vựng}
+Để hỗ trợ khả năng tiếp cận nguồn tài nguyên học liệu đa dạng, giao diện danh sách bộ từ vựng được trang bị hệ thống truy vấn và lọc theo chủ đề (Theme). Người học có thể nhanh chóng định vị các nội dung chuyên biệt thông qua công cụ tìm kiếm hoặc phân loại theo mức độ khó. Sự minh bạch về trạng thái sở hữu cũng như tiến độ hoàn thành được hiển thị tường minh, giúp người dùng tối ưu hóa quy trình quản lý thời gian và xác định rõ ràng vị trí của mình trong lộ trình phát triển ngôn ngữ tổng thể.
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=15cm]{images/IF_SetList.png}
-\caption{Màn hình danh sách bộ từ vựng.}
+\caption{Giao diện truy xuất và quản lý danh mục bộ học liệu.}
 \label{fig_set_list}
 \end{figure}
-
-Màn hình này cho phép duyệt và tìm kiếm bộ từ vựng:
-\begin{itemize}
-    \item Lọc theo \textbf{chủ đề} (Theme) và mức độ khó.
-    \item Tìm kiếm theo từ khóa để nhanh chóng tìm bộ từ liên quan.
-    \item Hiển thị trạng thái sở hữu và số lượng từ còn phải học trong từng bộ.
-\end{itemize}
-
-\section{Ý nghĩa và Vai trò}
-Các màn hình trong phụ lục này thể hiện sự quan tâm đến \textbf{trải nghiệm người dùng (UX)}:
-\begin{itemize}
-    \item Tối ưu quá trình điều hướng: người học dễ tìm bộ từ, chọn pet hoặc kiểm tra tiến trình.
-    \item Tăng tính cá nhân hóa: hiển thị rõ tình trạng sở hữu, tiến trình học, và khuyến khích hoàn thành.
-    \item Hỗ trợ việc mở rộng sau này: thêm bộ lọc nâng cao, sắp xếp theo mức độ phổ biến hoặc ngày tạo.
-\end{itemize}
-Những màn hình này đóng vai trò quan trọng trong việc biến hệ thống thành một nền tảng học tập có tính cộng đồng và khuyến khích người học quay lại hằng ngày.

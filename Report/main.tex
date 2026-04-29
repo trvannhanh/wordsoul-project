@@ -3,6 +3,13 @@
 \documentclass[oneside,a4paper,13pt]{extreport}
 
 % --- PHẦN PREAMBLE (CÁC GÓI LỆNH) ---
+% --- Cấu hình tiếng Việt cho nhãn hình, bảng, phụ lục ---
+\usepackage[vietnamese]{babel}
+\addto\captionsvietnamese{
+	\renewcommand{\figurename}{Hình}
+	\renewcommand{\tablename}{Bảng}
+	\renewcommand{\appendixname}{Phụ lục}
+}
 \usepackage[T5]{fontenc}
 \usepackage[utf8]{inputenc}
 \DeclareTextSymbolDefault{\DH}{T1}
@@ -42,12 +49,18 @@
 
 % --- HẾT PHẦN PREAMBLE ---
 
+
 \begin{document}
 
 \input{Title/title.tex}
 \pagenumbering{roman}
 
-% ... (Các phần Ý kiến GV, Lời cảm ơn, Mục lục giữ nguyên)
+
+% ... (Các phần Ý kiến GV giữ nguyên)
+\input{Appendix/thanks.tex}
+\tableofcontents
+
+\listoffigures
 
 \clearpage
 \pagenumbering{arabic} 

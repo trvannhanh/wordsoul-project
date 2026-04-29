@@ -1,0 +1,40 @@
+\babel@toc {vietnamese}{}\relax 
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Đường cong quên lãng.}}{4}{figure.2.1}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Kiến trúc Clean (Onion Architecture) triển khai trong hệ thống.}}{13}{figure.3.1}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Sơ đồ Use Case tổng thể của hệ thống.}}{15}{figure.3.2}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Sơ đồ tuần tự quy trình tạo bộ từ vựng.}}{17}{figure.3.3}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Sơ đồ tuần tự quy trình thực hiện trận đấu.}}{18}{figure.3.4}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces Sơ đồ tuần tự quy trình học, ôn tập từ vựng và nhận thưởng.}}{19}{figure.3.5}%
+\contentsline {figure}{\numberline {3.6}{\ignorespaces Sơ đồ luồng nghiệp vụ khởi tạo bộ từ vựng.}}{21}{figure.3.6}%
+\contentsline {figure}{\numberline {3.7}{\ignorespaces Sơ đồ luồng nghiệp vụ xử lý trận đấu thời gian thực.}}{22}{figure.3.7}%
+\contentsline {figure}{\numberline {3.8}{\ignorespaces Sơ đồ hoạt động quy trình học tập và cơ chế thúc đẩy hành vi.}}{23}{figure.3.8}%
+\contentsline {figure}{\numberline {3.9}{\ignorespaces Sơ đồ trạng thái từ vựng trong phiên học.}}{24}{figure.3.9}%
+\contentsline {figure}{\numberline {3.10}{\ignorespaces Sơ đồ trạng thái từ vựng theo thuật toán SM-2.}}{25}{figure.3.10}%
+\contentsline {figure}{\numberline {3.11}{\ignorespaces Cấu trúc sơ đồ lớp tổng quát của hệ thống.}}{26}{figure.3.11}%
+\contentsline {figure}{\numberline {3.12}{\ignorespaces Kiến trúc thực thể quan hệ (ERD) của hệ thống.}}{28}{figure.3.12}%
+\contentsline {figure}{\numberline {3.13}{\ignorespaces Bản phác thảo giao diện điều phối trung tâm (Dashboard).}}{29}{figure.3.13}%
+\contentsline {figure}{\numberline {3.14}{\ignorespaces Thiết kế giao diện hệ thống xếp hạng cộng đồng.}}{30}{figure.3.14}%
+\contentsline {figure}{\numberline {3.15}{\ignorespaces Cấu trúc thiết kế quản lý danh mục bộ học liệu.}}{31}{figure.3.15}%
+\contentsline {figure}{\numberline {3.16}{\ignorespaces Chi tiết thiết kế giao diện phát triển sinh vật ảo.}}{32}{figure.3.16}%
+\contentsline {figure}{\numberline {3.17}{\ignorespaces Thiết kế giao diện chu trình học tập và củng cố kiến thức.}}{32}{figure.3.17}%
+\contentsline {figure}{\numberline {3.18}{\ignorespaces Thiết kế giao diện Chiến đấu thời gian thực}}{33}{figure.3.18}%
+\contentsline {figure}{\numberline {3.19}{\ignorespaces Màn hình thực hiện phiên học từ vựng.}}{34}{figure.3.19}%
+\contentsline {figure}{\numberline {3.20}{\ignorespaces Màn hình thực hiện phiên ôn tập từ vựng.}}{35}{figure.3.20}%
+\contentsline {figure}{\numberline {3.21}{\ignorespaces Giao diện khởi tạo thuộc tính bộ từ vựng.}}{36}{figure.3.21}%
+\contentsline {figure}{\numberline {3.22}{\ignorespaces Quy trình tuyển chọn đơn vị kiến thức cho bộ từ.}}{37}{figure.3.22}%
+\contentsline {figure}{\numberline {3.23}{\ignorespaces Giao diện quản lý và nâng cấp thực thể ảo.}}{38}{figure.3.23}%
+\contentsline {figure}{\numberline {3.24}{\ignorespaces Tổng quan giao diện phân tích tiến độ người dùng.}}{39}{figure.3.24}%
+\contentsline {figure}{\numberline {3.25}{\ignorespaces Màn hình chiến đấu đối kháng.}}{40}{figure.3.25}%
+\contentsline {figure}{\numberline {3.26}{\ignorespaces Màn hình danh sách đối thủ PvE.}}{40}{figure.3.26}%
+\contentsline {figure}{\numberline {3.27}{\ignorespaces Màn hình sảnh chờ PvP.}}{41}{figure.3.27}%
+\contentsline {figure}{\numberline {3.28}{\ignorespaces Dashboard tổng quan kết quả kiểm thử hiệu năng API SubmitAnswer.}}{42}{figure.3.28}%
+\contentsline {figure}{\numberline {3.29}{\ignorespaces Biểu đồ biến thiên Throughput và đánh giá các ngưỡng điều kiện (Thresholds).}}{42}{figure.3.29}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {B.1}{\ignorespaces Giao diện thư viện thú ảo tích hợp bộ lọc phân loại đa năng.}}{56}{figure.B.1}%
+\contentsline {figure}{\numberline {B.2}{\ignorespaces Màn hình hiển thị cấu trúc học liệu và trạng thái ghi nhớ cá nhân.}}{57}{figure.B.2}%
+\contentsline {figure}{\numberline {B.3}{\ignorespaces Giao diện truy xuất và quản lý danh mục bộ học liệu.}}{58}{figure.B.3}%

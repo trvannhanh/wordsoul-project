@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WordSoul – Performance Test Report</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-dark: #0f1117;
+      --bg-card: #1a1d2e;
+      --bg-card2: #1e2235;
+      --accent-blue: #4f8ef7;
+      --accent-green: #22d3a5;
+      --accent-orange: #f97316;
+      --accent-red: #ef4444;
+      --accent-purple: #a78bfa;
+      --text-primary: #e2e8f0;
+      --text-secondary: #94a3b8;
+      --border: #2d3350;
+      --good: #22d3a5;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    header p {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    /* ── Upload Section ── */
+    #upload-section {
+      background: var(--bg-card);
+      border: 2px dashed var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      text-align: center;
+      margin-bottom: 32px;
+      transition: border-color 0.3s;
+      cursor: pointer;
+    }
+    #upload-section:hover { border-color: var(--accent-blue); }
+    #upload-section h2 { font-size: 18px; margin-bottom: 8px; }
+    #upload-section p { color: var(--text-secondary); font-size: 13px; margin-bottom: 16px; }
+    #file-input { display: none; }
+    .btn {
+      display: inline-block;
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn:hover { opacity: 0.85; transform: translateY(-1px); }
+    .btn-primary { background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); color: #fff; }
+    .btn-secondary { background: var(--bg-card2); color: var(--text-primary); border: 1px solid var(--border); }
+    .demo-btn { margin-left: 12px; }
+
+    /* ── KPI Cards ── */
+    #kpi-section { display: none; margin-bottom: 32px; }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 24px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .kpi-card.blue::before { background: var(--accent-blue); }
+    .kpi-card.green::before { background: var(--accent-green); }
+    .kpi-card.orange::before { background: var(--accent-orange); }
+    .kpi-card.red::before { background: var(--accent-red); }
+    .kpi-card.purple::before { background: var(--accent-purple); }
+
+    .kpi-label { font-size: 12px; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .kpi-value { font-size: 32px; font-weight: 700; margin-bottom: 4px; }
+    .kpi-sub { font-size: 12px; color: var(--text-secondary); }
+    .kpi-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 6px;
+    }
+    .badge-good { background: rgba(34,211,165,0.15); color: var(--good); }
+    .badge-warn { background: rgba(245,158,11,0.15); color: var(--warn); }
+    .badge-danger { background: rgba(239,68,68,0.15); color: var(--danger); }
+
+    /* ── Charts ── */
+    #charts-section { display: none; }
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .chart-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+    }
+    .chart-card.full-width { grid-column: 1 / -1; }
+    .chart-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .chart-subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+    canvas { max-height: 280px; }
+
+    /* ── Thresholds Table ── */
+    #thresholds-section { display: none; margin-top: 20px; }
+    .threshold-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .threshold-table th {
+      text-align: left;
+      padding: 10px 16px;
+      background: var(--bg-card2);
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .threshold-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+    .threshold-table tr:last-child td { border-bottom: none; }
+    .threshold-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .pass { color: var(--good); }
+    .fail { color: var(--danger); }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .charts-grid { grid-template-columns: 1fr; }
+      .chart-card.full-width { grid-column: 1; }
+      body { padding: 12px; }
+    }
+
+    /* Loading spinner */
+    .loader { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent-blue); border-radius: 50%; animation: spin 0.7s linear infinite; margin-right: 8px; vertical-align: middle; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🚀 WordSoul – Performance Test Report</h1>
+  <p>Kiểm thử hiệu năng API: <code>POST /api/learning-sessions/{sessionId}/answers</code></p>
+  <p style="margin-top:4px">100 VU đồng thời · Kịch bản 5 phút · k6 Load Test</p>
+</header>
+
+<!-- Upload Section -->
+<div id="upload-section" onclick="document.getElementById('file-input').click()">
+  <h2>📂 Tải kết quả k6 lên</h2>
+  <p>Kéo thả hoặc click để chọn file <strong>result_summary.json</strong> xuất từ k6</p>
+  <p style="margin-bottom:20px;font-size:12px">Lệnh xuất file: <code>k6 run --out json=result.json wordsoul_submit_answer_test.js</code><br>Sau đó dùng file <code>result_summary.json</code> được tạo tự động</p>
+  <button class="btn btn-primary" onclick="event.stopPropagation()"><span>📁 Chọn file JSON</span></button>
+  <button class="btn btn-secondary demo-btn" onclick="event.stopPropagation(); loadDemoData()">🎭 Xem Demo</button>
+  <input type="file" id="file-input" accept=".json" onchange="handleFileUpload(event)" />
+</div>
+
+<!-- KPI Cards -->
+<div id="kpi-section">
+  <div class="kpi-grid">
+    <div class="kpi-card blue">
+      <div class="kpi-label">⏱ Response Time (p50)</div>
+      <div class="kpi-value" id="kpi-p50">—</div>
+      <div class="kpi-sub">Median response time</div>
+    </div>
+    <div class="kpi-card purple">
+      <div class="kpi-label">📊 Response Time (p95)</div>
+      <div class="kpi-value" id="kpi-p95">—</div>
+      <div class="kpi-sub">95th percentile</div>
+      <div class="kpi-badge" id="kpi-p95-badge">—</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">⚡ Throughput</div>
+      <div class="kpi-value" id="kpi-rps">—</div>
+      <div class="kpi-sub">Requests / giây</div>
+    </div>
+    <div class="kpi-card orange">
+      <div class="kpi-label">📦 Total Requests</div>
+      <div class="kpi-value" id="kpi-total">—</div>
+      <div class="kpi-sub">Tổng số request SubmitAnswer</div>
+    </div>
+    <div class="kpi-card red">
+      <div class="kpi-label">❌ Error Rate</div>
+      <div class="kpi-value" id="kpi-errrate">—</div>
+      <div class="kpi-sub">Tỷ lệ request thất bại</div>
+      <div class="kpi-badge" id="kpi-err-badge">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts -->
+<div id="charts-section">
+  <div class="charts-grid">
+
+    <!-- Chart 1: Response Time Distribution (Bar) -->
+    <div class="chart-card">
+      <div class="chart-title">📈 Phân phối Response Time (ms)</div>
+      <div class="chart-subtitle">So sánh các percentile của thời gian phản hồi API SubmitAnswer</div>
+      <canvas id="chart-rt-dist"></canvas>
+    </div>
+
+    <!-- Chart 2: Error Rate (Doughnut) -->
+    <div class="chart-card">
+      <div class="chart-title">🎯 Tỷ lệ thành công / lỗi</div>
+      <div class="chart-subtitle">Phân tích Error Rate của toàn bộ request SubmitAnswer</div>
+      <canvas id="chart-errrate"></canvas>
+    </div>
+
+    <!-- Chart 3: Throughput Over Time (Line) -->
+    <div class="chart-card full-width">
+      <div class="chart-title">⚡ Throughput & Response Time theo thời gian</div>
+      <div class="chart-subtitle">Req/s và Response Time p95 trong suốt quá trình test (giả lập theo giai đoạn)</div>
+      <canvas id="chart-throughput"></canvas>
+    </div>
+
+  </div>
+</div>
+
+<!-- Thresholds Table -->
+<div id="thresholds-section">
+  <div class="chart-card">
+    <div class="chart-title">✅ Kết quả kiểm tra ngưỡng (Thresholds)</div>
+    <div class="chart-subtitle" style="margin-bottom:16px">Tiêu chí pass/fail theo chuẩn định nghĩa trong kịch bản k6</div>
+    <table class="threshold-table" id="thresholds-table">
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Điều kiện</th>
+          <th>Giá trị thực tế</th>
+          <th>Kết quả</th>
+        </tr>
+      </thead>
+      <tbody id="thresholds-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+//  Chart.js defaults
+// ─────────────────────────────────────────────────────────────
+Chart.defaults.color = '#94a3b8';
+Chart.defaults.font.family = 'Inter';
+
+let charts = {};
+
+// ─────────────────────────────────────────────────────────────
+//  File upload
+// ─────────────────────────────────────────────────────────────
+function handleFileUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      renderReport(data);
+    } catch (err) {
+      alert('Lỗi parse JSON: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+// Drag & drop
+const uploadSection = document.getElementById('upload-section');
+uploadSection.addEventListener('dragover', (e) => { e.preventDefault(); uploadSection.style.borderColor = '#4f8ef7'; });
+uploadSection.addEventListener('dragleave', () => { uploadSection.style.borderColor = '#2d3350'; });
+uploadSection.addEventListener('drop', (e) => {
+  e.preventDefault();
+  uploadSection.style.borderColor = '#2d3350';
+  const file = e.dataTransfer.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try { renderReport(JSON.parse(ev.target.result)); }
+      catch (err) { alert('Lỗi parse JSON: ' + err.message); }
+    };
+    reader.readAsText(file);
+  }
+});
+
+// ─────────────────────────────────────────────────────────────
+//  Demo Data (kết quả giả lập thực tế cho báo cáo)
+// ─────────────────────────────────────────────────────────────
+function loadDemoData() {
+  const demo = {
+    metrics: {
+      submit_answer_response_time: {
+        values: {
+          "p(50)": 142,
+          "p(90)": 387,
+          "p(95)": 512,
+          "p(99)": 843,
+          min: 38,
+          max: 1284,
+          avg: 198
+        }
+      },
+      submit_answer_error_rate: {
+        values: { rate: 0.0031 }
+      },
+      submit_answer_requests_total: {
+        values: { count: 28470 }
+      },
+      http_req_failed: {
+        values: { rate: 0.0042 }
+      },
+      login_error_rate: {
+        values: { rate: 0.01 }
+      }
+    },
+    state: {
+      testRunDurationMs: 330000
+    },
+    _isDemoData: true
+  };
+  renderReport(demo);
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Main render
+// ─────────────────────────────────────────────────────────────
+function renderReport(data) {
+  document.getElementById('upload-section').style.display = 'none';
+
+  const submitRT  = data.metrics?.submit_answer_response_time?.values || {};
+  const errRate   = data.metrics?.submit_answer_error_rate?.values?.rate ?? 0;
+  const totalReqs = data.metrics?.submit_answer_requests_total?.values?.count ?? 0;
+  const durationMs = data.state?.testRunDurationMs ?? 300000;
+  const rps = (totalReqs / (durationMs / 1000)).toFixed(2);
+
+  const p50  = submitRT["p(50)"] ?? 0;
+  const p90  = submitRT["p(90)"] ?? 0;
+  const p95  = submitRT["p(95)"] ?? 0;
+  const p99  = submitRT["p(99)"] ?? 0;
+  const avg  = submitRT.avg ?? 0;
+  const maxRT = submitRT.max ?? 0;
+
+  // ── KPI ──────────────────────────────────────────────────────
+  document.getElementById('kpi-p50').textContent = `${p50.toFixed(0)} ms`;
+  document.getElementById('kpi-p95').textContent = `${p95.toFixed(0)} ms`;
+  document.getElementById('kpi-rps').textContent = rps;
+  document.getElementById('kpi-total').textContent = totalReqs.toLocaleString();
+  document.getElementById('kpi-errrate').textContent = `${(errRate * 100).toFixed(2)}%`;
+
+  const p95Badge = document.getElementById('kpi-p95-badge');
+  if (p95 < 1000) { p95Badge.textContent = '✅ Đạt (<1s)'; p95Badge.className = 'kpi-badge badge-good'; }
+  else if (p95 < 2000) { p95Badge.textContent = '🟡 Chấp nhận (<2s)'; p95Badge.className = 'kpi-badge badge-warn'; }
+  else { p95Badge.textContent = '❌ Vượt ngưỡng (>2s)'; p95Badge.className = 'kpi-badge badge-danger'; }
+
+  const errBadge = document.getElementById('kpi-err-badge');
+  if (errRate < 0.01) { errBadge.textContent = '✅ Tốt (<1%)'; errBadge.className = 'kpi-badge badge-good'; }
+  else if (errRate < 0.05) { errBadge.textContent = '🟡 Chấp nhận (<5%)'; errBadge.className = 'kpi-badge badge-warn'; }
+  else { errBadge.textContent = '❌ Nguy hiểm (>5%)'; errBadge.className = 'kpi-badge badge-danger'; }
+
+  document.getElementById('kpi-section').style.display = 'block';
+
+  // ── Charts ───────────────────────────────────────────────────
+  document.getElementById('charts-section').style.display = 'block';
+  Object.values(charts).forEach(c => c.destroy());
+
+  // Chart 1: Response Time Distribution
+  charts.rtDist = new Chart(document.getElementById('chart-rt-dist'), {
+    type: 'bar',
+    data: {
+      labels: ['Min', 'Avg', 'p50 (Median)', 'p90', 'p95', 'p99', 'Max'],
+      datasets: [{
+        label: 'Response Time (ms)',
+        data: [
+          submitRT.min?.toFixed(0) ?? 0,
+          avg.toFixed(0),
+          p50.toFixed(0),
+          p90.toFixed(0),
+          p95.toFixed(0),
+          p99.toFixed(0),
+          maxRT.toFixed(0)
+        ],
+        backgroundColor: [
+          '#22d3a5cc', '#4f8ef7cc', '#a78bfacc',
+          '#f59e0bcc', '#f97316cc', '#ef4444cc', '#dc2626cc'
+        ],
+        borderRadius: 6,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: { label: ctx => ` ${ctx.raw} ms` }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: { color: '#2d3350' },
+          ticks: { callback: v => v + ' ms' }
+        },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Chart 2: Error Rate Doughnut
+  const successCount = totalReqs * (1 - errRate);
+  const failCount    = totalReqs * errRate;
+  charts.errRate = new Chart(document.getElementById('chart-errrate'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Thành công ✅', 'Lỗi ❌'],
+      datasets: [{
+        data: [successCount.toFixed(0), failCount.toFixed(0)],
+        backgroundColor: ['#22d3a5', '#ef4444'],
+        borderColor: '#1a1d2e',
+        borderWidth: 3,
+        hoverOffset: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      cutout: '65%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { padding: 20, usePointStyle: true }
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const pct = ((ctx.raw / totalReqs) * 100).toFixed(2);
+              return ` ${Number(ctx.raw).toLocaleString()} req (${pct}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // Chart 3: Throughput over time (simulate stages)
+  const timeLabels = [];
+  const rpsData    = [];
+  const p95Data    = [];
+  const totalSecs  = Math.round(durationMs / 1000);
+  const points     = 20;
+  const interval   = totalSecs / points;
+
+  for (let i = 0; i <= points; i++) {
+    const t = Math.round(i * interval);
+    timeLabels.push(`${t}s`);
+    // Simulate ramp-up / steady / ramp-down pattern
+    let vuFactor;
+    if (t < 30)              vuFactor = t / 30;
+    else if (t > totalSecs - 30) vuFactor = (totalSecs - t) / 30;
+    else                     vuFactor = 1;
+
+    const jitter = (Math.random() - 0.5) * 0.08;
+    rpsData.push(Math.max(0, (parseFloat(rps) * vuFactor * (1 + jitter))).toFixed(1));
+    p95Data.push(Math.max(50, (p95 * vuFactor * (1 + (Math.random() - 0.5) * 0.15))).toFixed(0));
+  }
+
+  charts.throughput = new Chart(document.getElementById('chart-throughput'), {
+    type: 'line',
+    data: {
+      labels: timeLabels,
+      datasets: [
+        {
+          label: 'Throughput (req/s)',
+          data: rpsData,
+          borderColor: '#22d3a5',
+          backgroundColor: 'rgba(34,211,165,0.1)',
+          fill: true,
+          tension: 0.4,
+          yAxisID: 'yRps',
+          pointRadius: 2,
+          borderWidth: 2
+        },
+        {
+          label: 'Response Time p95 (ms)',
+          data: p95Data,
+          borderColor: '#f97316',
+          backgroundColor: 'rgba(249,115,22,0.1)',
+          fill: false,
+          tension: 0.4,
+          yAxisID: 'yMs',
+          pointRadius: 2,
+          borderWidth: 2,
+          borderDash: [5, 3]
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'top', labels: { usePointStyle: true, padding: 20 } }
+      },
+      scales: {
+        yRps: {
+          type: 'linear', position: 'left',
+          grid: { color: '#2d3350' },
+          ticks: { callback: v => v + ' r/s' },
+          title: { display: true, text: 'req/s', color: '#22d3a5' }
+        },
+        yMs: {
+          type: 'linear', position: 'right',
+          grid: { drawOnChartArea: false },
+          ticks: { callback: v => v + ' ms' },
+          title: { display: true, text: 'ms', color: '#f97316' }
+        },
+        x: { grid: { color: '#1e2235' } }
+      }
+    }
+  });
+
+  // ── Thresholds Table ─────────────────────────────────────────
+  document.getElementById('thresholds-section').style.display = 'block';
+  const thresholds = [
+    {
+      metric: 'submit_answer_response_time',
+      condition: 'p(95) < 2000 ms',
+      actual: `${p95.toFixed(0)} ms`,
+      pass: p95 < 2000
+    },
+    {
+      metric: 'submit_answer_error_rate',
+      condition: 'rate < 1%',
+      actual: `${(errRate * 100).toFixed(2)}%`,
+      pass: errRate < 0.01
+    },
+    {
+      metric: 'http_req_failed',
+      condition: 'rate < 5%',
+      actual: `${((data.metrics?.http_req_failed?.values?.rate ?? 0) * 100).toFixed(2)}%`,
+      pass: (data.metrics?.http_req_failed?.values?.rate ?? 0) < 0.05
+    },
+    {
+      metric: 'login_error_rate',
+      condition: 'rate < 5%',
+      actual: `${((data.metrics?.login_error_rate?.values?.rate ?? 0) * 100).toFixed(2)}%`,
+      pass: (data.metrics?.login_error_rate?.values?.rate ?? 0) < 0.05
+    }
+  ];
+
+  const tbody = document.getElementById('thresholds-body');
+  tbody.innerHTML = thresholds.map(t => `
+    <tr>
+      <td><code>${t.metric}</code></td>
+      <td>${t.condition}</td>
+      <td>${t.actual}</td>
+      <td class="${t.pass ? 'pass' : 'fail'}">${t.pass ? '✅ PASS' : '❌ FAIL'}</td>
+    </tr>
+  `).join('');
+
+  if (data._isDemoData) {
+    document.querySelector('header p').innerHTML +=
+      ' &nbsp;<span style="background:#f59e0b22;color:#f59e0b;padding:2px 8px;border-radius:4px;font-size:11px;">🎭 DEMO DATA</span>';
+  }
+}
+</script>
+</body>
+</html>

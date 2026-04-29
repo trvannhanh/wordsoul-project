@@ -1,48 +1,28 @@
 \chapter{Kết luận và Hướng phát triển}
 \label{Chapter4}
 
-\section{Kết luận}
-Đề tài đã được triển khai với mục tiêu kết hợp các nguyên tắc khoa học về ghi nhớ (spaced repetition, retrieval practice) và yếu tố gamification (XP, phần thưởng, thú cưng) nhằm nâng cao hiệu quả học tập và duy trì động lực lâu dài cho người học.  
+\section{Tổng kết công trình nghiên cứu}
 
-Kết quả đạt được cho thấy hệ thống đã hiện thực thành công khoảng 80–90\% các chức năng đã đặt ra trong phạm vi đề tài, bao gồm:
-\begin{itemize}
-    \item Quản lý người dùng (đăng ký, đăng nhập, cập nhật thông tin cá nhân).  
-    \item Tạo và quản lý bộ từ vựng cá nhân, tìm kiếm và chọn từ để thêm vào bộ.  
-    \item Thực hiện các phiên học và ôn tập theo cơ chế \textit{spaced repetition} và \textit{active recall}, cung cấp phản hồi tức thì, cập nhật tiến trình học tự động.  
-    \item Tích hợp hệ thống gamification với điểm XP, AP, phần thưởng và thú cưng.  
-    \item Dashboard trực quan cho phép người dùng theo dõi tiến trình học, số lượng từ cần ôn tập, cấp độ cá nhân và tình trạng sưu tập thú cưng.  
-\end{itemize}
+Thông qua quá trình thực thi, đề tài đã hoàn thiện hệ thống hỗ trợ học tập trực tuyến Vocamon, tạo ra một điểm chạm chiến lược giữa khoa học nhận thức và các cơ chế trò chơi hóa hiện đại. Các kết quả thực nghiệm cho thấy hệ thống không chỉ vận hành ổn định trên môi trường thực tế mà còn giải quyết triệt để bài toán về sự kiên trì của người học thông qua các giải pháp tâm lý học hành vi. Với tỉ lệ hoàn thành mục tiêu chức năng trên 90\%, dự án đã minh chứng được tính khả thi trong việc tối ưu hóa quy trình ghi nhớ ngôn ngữ bằng công nghệ.
 
-Bên cạnh các chức năng cốt lõi, hệ thống còn phát triển thêm nhiều chức năng hỗ trợ giúp nâng cao trải nghiệm người dùng, chẳng hạn như:
-\begin{itemize}
-    \item Tìm kiếm và lọc bộ từ vựng, từ vựng và thú cưng theo nhiều tiêu chí (chủ đề, độ khó, độ hiếm).  
-    \item Bảng xếp hạng theo điểm kinh nghiệm (XP) để tạo động lực cạnh tranh lành mạnh giữa các người học.  
-    \item Quản lý thông báo nhắc nhở lịch ôn tập và thông báo nhận thưởng.  
-\end{itemize}
+Dưới góc độ chuyên môn, dự án đã hệ thống hóa thành công thuật toán SM-2 để thiết lập một lộ trình ôn tập cá nhân hóa, dựa trên sự phân tích lịch sử phản hồi của từng chủ thể. Việc đa dạng hóa các phương thức tương tác từ Flashcard đến rèn luyện thính giác đã tạo ra một môi trường thực hành truy hồi (Active Recall) đa chiều. Cách tiếp cận này không chỉ giúp củng cố các dấu vết trí nhớ từ nhiều giác quan mà còn gia tăng hiệu quả của việc chuyển dịch thông tin từ trí nhớ ngắn hạn sang lưu trữ dài hạn một cách bền vững.
 
-Về mặt kỹ thuật, hệ thống được thiết kế theo kiến trúc ba lớp, sử dụng ASP.NET Core Web API cho backend, React + TypeScript cho frontend và SQL Server làm cơ sở dữ liệu. Hệ thống đã được kiểm thử nội bộ, hoạt động ổn định và chứng minh được tính khả thi của mô hình đề xuất.  
+Điểm đột phá về mặt Gamification của công trình nằm ở việc dịch chuyển trọng tâm từ các áp lực thành tích ngoại cảnh sang việc nuôi dưỡng động lực tự thân. Thay vì chỉ sử dụng các chỉ số bề nổi, hệ thống đã kiến tạo một hệ sinh thái gắn kết thông qua mô hình sinh vật ảo đồng hành. Sự phát triển của các thú ảo được thiết kế như một tấm gương phản chiếu nỗ lực tri thức của người học, từ đó đáp ứng trọn vẹn các nhu cầu về năng lực, sự tự chủ và tính kết nối xã hội theo Thuyết Tự Quyết (SDT). Điều này biến quá trình tích lũy ngôn ngữ thành một hành trình khám phá đầy cảm hứng, xóa bỏ những rào cản tâm lý khô khan của các phương thức giáo dục truyền thống.
 
-Đóng góp chính của đề tài là áp dụng các nguyên tắc học tập dựa trên bằng chứng khoa học vào một sản phẩm phần mềm cụ thể, đồng thời tích hợp gamification một cách hợp lý để duy trì hứng thú học tập mà không tạo áp lực quá mức. Đây là một cách tiếp cận vừa mang tính học thuật vừa có tính ứng dụng thực tiễn, mở ra khả năng triển khai trong môi trường giáo dục trực tuyến.
-\clearpage
-\section{Hạn chế}
-Do giới hạn thời gian và nguồn lực, hệ thống vẫn tồn tại một số hạn chế:
-\begin{itemize}
-    \item Về tính năng: Chưa triển khai được ý tưởng \textit{Pet Challenge} – cơ chế thách đấu thú cưng giữa các người dùng, nơi sát thương phụ thuộc vào tốc độ và độ chính xác trả lời.  
-    \item Về giao diện: Một số màn hình vẫn đang ở mức thử nghiệm, chưa tối ưu UX/UI và chưa hỗ trợ tốt cho thiết bị di động.  
-    \item Về học thuật: Hệ thống mới tập trung vào bài tập nhận biết (quiz, flashcard, nghe) mà chưa có tính năng luyện phát âm hoặc đánh giá \textit{speaking}.  
-    \item Về đánh giá hiệu quả: Chưa có khảo sát thực nghiệm với người dùng thật để đo lường mức cải thiện khả năng ghi nhớ.  
-\end{itemize}
+Về phương diện kiến trúc, việc vận hành Onion Architecture trên hệ sinh thái .NET 8 và ReactJS đã đảm bảo cho hệ thống một nền tảng vững chắc và khả năng bảo trì tối ưu. Việc phân tách rạch ròi giữa logic nghiệp vụ cốt lõi và hạ tầng kỹ thuật giúp ứng dụng linh hoạt trước các thay đổi công nghệ. Sự phối hợp của các mẫu thiết kế hiện đại cùng giao thức SignalR đã tạo ra một hạ tầng có độ trễ thấp, sẵn sàng đáp ứng các yêu cầu mở rộng quy mô phục vụ cộng đồng người dùng lớn trong tương lai.
 
-\section{Hướng phát triển}
+\section{Những hạn chế và rào cản tồn tại}
 
-Để hoàn thiện và mở rộng hệ thống trong tương lai, có thể triển khai các hướng sau:
-\begin{itemize}
-    \item Hoàn thiện giao diện người dùng: Tối ưu trải nghiệm đa thiết bị, cải thiện hiệu ứng trực quan và hỗ trợ tùy chỉnh giao diện.  
-    \item Phát triển tính năng Pet Challenge: Xây dựng hệ thống chỉ số (HP, ATK, SPD) cho thú cưng, cơ chế chiến đấu dựa trên độ chính xác và tốc độ trả lời câu hỏi để tăng tính cạnh tranh.  
-    \item Bổ sung dạng bài tập nâng cao: Tích hợp API nhận diện giọng nói để chấm điểm phát âm, hỗ trợ luyện speaking.  
-    \item Mở rộng tính năng cộng đồng: Kết bạn, nhóm học chung, bảng xếp hạng nhiều tiêu chí (XP, streak, số lần thách đấu thành công).  
-    \item Đánh giá thực nghiệm: Tiến hành thử nghiệm với người dùng thật, thu thập phản hồi để tinh chỉnh thuật toán spaced repetition và gamification.  
-    \item Triển khai thực tế: Đưa hệ thống lên môi trường sản xuất, phục vụ nhiều người dùng đồng thời với khả năng mở rộng và bảo mật tốt.  
-\end{itemize}
+Mặc dù đạt được những bước tiến quan trọng về kỹ thuật, dự án vẫn còn những khía cạnh cần được nhìn nhận khách quan để cải thiện. Trước hết, cơ chế đối kháng (PvP) hiện tại mới dừng lại ở việc thiết lập các quy tắc logic cơ bản. Việc cân bằng các chỉ số chiến đấu (Game Balance) và nâng cấp hiệu ứng hình ảnh để tối ưu hóa trải nghiệm thời gian thực vẫn là một thách thức kỹ thuật lớn, đòi hỏi các giải pháp xử lý băng thông và thuật toán tại Server chuyên sâu hơn.
 
-Các định hướng trên không chỉ nhằm khắc phục các hạn chế hiện tại mà còn hướng đến việc biến hệ thống thành một nền tảng học từ vựng hiện đại, bền vững và thu hút người học lâu dài.
+Bên cạnh đó, khả năng tương thích đa thiết bị vẫn là một giới hạn đáng kể. Các giao diện quản trị chứa mật độ dữ liệu lớn chưa đạt đến độ tối ưu hoàn hảo trên các màn hình di động nhỏ, gây khó khăn cho việc học tập mọi lúc mọi nơi. Đồng thời, do giới hạn về nguồn lực công nghệ tích hợp, hệ thống hiện tại chủ yếu tập trung vào kỹ năng đọc hiểu và ghi nhớ ngữ nghĩa, chưa thể triển khai các phân hệ nhận diện giọng nói (Speech-to-Text) để hỗ trợ toàn diện kỹ năng phát âm và giao tiếp chủ động cho người dùng.
+
+Cuối cùng, việc thiếu vắng các đợt khảo sát thực chứng trên quy mô lớn trong dài hạn là một thiếu sót về mặt dữ liệu định lượng. Các chỉ số về tỉ lệ duy trì người dùng (Retention Rate) hay mức độ thăng tiến thực tế của trí nhớ so với các phương pháp truyền thống vẫn cần thêm thời gian kiểm chứng để khẳng định giá trị sư phạm một cách khách quan nhất. Đây sẽ là những cơ sở dữ liệu nền tảng để định hình các bước phát triển kế tiếp.
+
+\section{Tầm nhìn và lộ trình hoàn thiện}
+
+Hướng tới mục tiêu chuyển đổi từ một công trình nghiên cứu sang một giải pháp EdTech hoàn chỉnh, lộ trình tương lai sẽ tập trung vào việc chuyên sâu hóa các thành tố Gamification. Việc xây dựng hệ thống kỹ năng đa tầng và chiến thuật đối kháng phức hợp cho thú ảo sẽ biến các phiên học tập thành những trận đấu trí tuệ, đòi hỏi sự kết hợp giữa kiến thức ngôn ngữ và tư duy logic.
+
+Trên phương diện công nghệ, việc ứng dụng Trí tuệ nhân tạo (AI) sẽ là ưu tiên hàng đầu để phân tích sâu sắc hành vi học tập và đặc tính quên lãng của từng cá nhân, từ đó tự động hóa việc kiến tạo lộ trình ôn tập tối ưu. Sự kết hợp của công nghệ xử lý ngôn ngữ tự nhiên (NLP) và nhận diện giọng nói sẽ mở rộng hệ sinh thái Vocamon sang các kỹ năng nói và phát âm, tạo ra một môi trường rèn luyện ngôn ngữ toàn diện.
+
+Về mặt quy mô cộng đồng, Vocamon định hướng xây dựng một quần thể học thuật bền vững thông qua các tính năng bang hội và sự kiện liên đấu. Để gia tăng tính tiện dụng, việc phát triển ứng dụng di động chính thức trên các nền tảng React Native hoặc Flutter sẽ được triển khai. Toàn bộ hệ thống sẽ được vận hành trên hạ tầng điện toán đám mây chuyên nghiệp với các cơ chế bảo mật và cân bằng tải tự động, nhằm biến hành trình chinh phục ngoại ngữ thành một trải nghiệm "giải trí học thuật" (Edutainment) thực thụ và rộng khắp.

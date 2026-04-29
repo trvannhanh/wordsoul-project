@@ -40,23 +40,29 @@ namespace WordSoul.Infrastructure.Persistence
         public IReadOnlyList<(MatchmakingEntry P1, MatchmakingEntry P2)> DrainMatches()
         {
             var now = DateTime.UtcNow;
+            // Sắp xếp người chơi theo thời gian vào queue
             var candidates = _queue.Values.OrderBy(e => e.JoinedAt).ToList();
-            var matched = new HashSet<string>(); // queueIds đã được ghép
+            // Danh sách người chơi đã được ghép
+            var matched = new HashSet<string>();
+            // Danh sách các cặp đã ghép
             var result = new List<(MatchmakingEntry, MatchmakingEntry)>();
 
             for (int i = 0; i < candidates.Count; i++)
             {
                 var p1 = candidates[i];
+                // Nếu người chơi đã được ghép thì bỏ qua
                 if (matched.Contains(p1.QueueId)) continue;
 
-                // Expand range: +50 per 10s wait
+                // Mở rộng phạm vi: +50 mỗi 10s chờ
                 double waitSeconds = (now - p1.JoinedAt).TotalSeconds;
                 int maxDiff = 200 + (int)(waitSeconds / 10) * 50;
 
                 for (int j = i + 1; j < candidates.Count; j++)
                 {
                     var p2 = candidates[j];
+                    // Nếu người chơi đã được ghép thì bỏ qua
                     if (matched.Contains(p2.QueueId)) continue;
+                    // Nếu là cùng một người chơi thì bỏ qua
                     if (p1.UserId == p2.UserId) continue;
 
                     int eloDiff = Math.Abs(p1.PvpRating - p2.PvpRating);

@@ -2,47 +2,43 @@
 \label{Chapter1}
 
 \section{Lý do chọn đề tài}
-Trong thời kỳ hội nhập quốc tế, tiếng Anh trở thành một kỹ năng thiết yếu cho học tập, công việc và giao tiếp xuyên biên giới. Trong số các năng lực ngoại ngữ, vốn từ vựng đóng vai trò nền tảng và có mối quan hệ chặt chẽ với bốn kỹ năng nghe, nói, đọc, viết; do đó đầu tư vào việc học và quản lý từ vựng có tác động trực tiếp tới khả năng sử dụng ngôn ngữ \cite{Nation2001}.
 
-Tuy nhiên, thực tiễn học tập cho thấy nhiều người học gặp khó khăn trong việc ghi nhớ từ vựng lâu dài và duy trì thói quen học đều đặn. Các nghiên cứu tâm lý học đã chứng minh rằng kỹ thuật lặp lại có khoảng cách (spaced repetition) và thực hành truy hồi (retrieval practice) có hiệu quả rõ rệt trong việc củng cố trí nhớ dài hạn \cite{Cepeda2008, Karpicke2008}. Mặc dù các ứng dụng hiện nay như Anki hay Duolingo đã khai thác các nguyên lý này, nhưng vẫn tồn tại sự tách biệt giữa thuật toán ghi nhớ khô khan và cơ chế gắn kết cảm xúc lâu dài. Động lực ngoại tại (như chuỗi ngày học - streak) thường gây áp lực tâm lý thay vì tạo ra sự hứng thú nội tại thông qua sự phát triển cá nhân.
+Trong bối cảnh toàn cầu hóa hiện nay, năng lực sử dụng tiếng Anh đã trở thành một trong những tiêu chuẩn bắt buộc cho mọi hoạt động học tập và phát triển nghề nghiệp. Nền tảng của sự thông thạo ngôn ngữ này nằm ở việc xây dựng và duy trì một vốn từ vựng phong phú, bởi đây là yếu tố then chốt chi phối trực tiếp đến hiệu quả của cả bốn kỹ năng nghe, nói, đọc và viết \cite{Nation2001}. Tuy nhiên, thực trạng hiện nay cho thấy người học thường đối mặt với thách thức lớn trong việc chuyển dịch thông tin từ trí nhớ ngắn hạn sang dài hạn, dẫn đến sự đứt gãy trong lộ trình học tập do hiện tượng quên lãng tự nhiên.
 
-Bên cạnh đó, việc xây dựng một hệ thống học tập hiện đại đòi hỏi một nền tảng kỹ thuật vững chắc, có khả năng mở rộng và bảo trì cao. Từ những thực trạng trên, đề tài \textbf{“Xây dựng hệ thống học từ vựng tiếng Anh kết hợp gamification”} được lựa chọn nhằm mục tiêu: (1) Giải quyết bài toán ghi nhớ bằng thuật toán khoa học; (2) Duy trì động lực bền vững thông qua hệ thống thú ảo gắn liền với tiến trình học; và (3) Hiện thực hóa giải pháp trên một kiến trúc phần mềm tiên tiến (Clean Architecture) sử dụng hệ sinh thái .NET 8 và ReactJS.
+Mặc dù các cơ sở khoa học về nhận thức như kỹ thuật lặp lại có khoảng cách (Spaced Repetition) và thực hành truy hồi (Retrieval Practice) đã chứng minh được hiệu quả vượt trội trong việc củng cố dấu vết trí nhớ \cite{Cepeda2008, Karpicke2008}, nhưng việc ứng dụng chúng vào thực tế vẫn tồn tại những hạn chế nhất định. Các nền tảng phổ biến như Anki hay Duolingo thường tạo ra sự tách biệt giữa các thuật toán ghi nhớ khô khan và nhu cầu gắn kết cảm xúc của người dùng. Việc lạm dụng các động lực ngoại tại như chuỗi ngày học tập liên tục (streak) đôi khi gây ra áp lực tâm lý tiêu cực thay vì nuôi dưỡng niềm vui tự thân thông qua sự tăng trưởng cá nhân.
+
+Nhằm giải quyết những tồn tại này, khóa luận đã thực hiện đề tài \textbf{"Phát triển hệ thống hỗ trợ học từ vựng tiếng Anh sử dụng ASP.NET Core và ReactJS kết hợp gamification"} với tên gọi dự án là Vocamon. Đề tài được lựa chọn dựa trên ba trụ cột mục tiêu chiến lược: 
+(1) Chuẩn hóa quy trình ghi nhớ dựa trên nền tảng thuật toán SM-2 cải tiến; 
+(2) Kiến tạo sự gắn kết cảm xúc và động lực bền vững thông qua hệ thống thú ảo (Pet system) gắn liền với tiến trình tịnh tiến tri thức; 
+(3) Hiện thực hóa giải pháp trên một nền tảng kỹ thuật vững chắc theo kiến trúc hành tây (Onion Architecture) với hệ sinh thái .NET 8 và ReactJS để đảm bảo tính mở rộng và khả năng bảo trì cao.
 
 \section{Mục tiêu đề tài}
-Mục tiêu chính của đề tài là phát triển một hệ thống học từ vựng trực tuyến giúp người học ghi nhớ hiệu quả hơn và duy trì thói quen học lâu dài. Hệ thống áp dụng thuật toán SuperMemo-2 (SM-2) để tối ưu hóa lộ trình ôn tập cá nhân hóa. Đồng thời, các yếu tố Gamification chuyên sâu như hệ thống tiến hóa thú ảo (Pet System) được tích hợp để biến quá trình học thành một hành trình chinh phục, giúp thỏa mãn các nhu cầu tâm lý về năng lực và sự tự chủ của người học.
+Mục tiêu trọng tâm của đề tài là nghiên cứu và xây dựng một nền tảng học từ vựng trực tuyến toàn diện, hướng tới việc giải quyết triệt để hai thách thức lớn nhất trong việc tiếp thu ngôn ngữ: hiệu suất ghi nhớ dài hạn và khả năng duy trì động lực học tập bền vững. Để đạt được điều này, hệ thống hiện thực hóa thuật toán lặp lại ngắt quãng SuperMemo-2 (SM-2), một mô hình toán học tiên tiến cho phép cá nhân hóa hoàn toàn lộ trình ôn tập dựa trên khả năng phản hồi thực tế của từng cá nhân. Việc ứng dụng thuật toán này giúp tối ưu hóa "thời điểm vàng" để truy hồi kiến thức, từ đó hỗ trợ người học chuyển dịch thông tin từ trí nhớ ngắn hạn sang trí nhớ dài hạn một cách hiệu quả nhất.
 
-
+Bên cạnh giải pháp về mặt kỹ thuật nhận thức, đề tài còn tập trung nghiên cứu sự giao thoa giữa tâm lý học hành vi và phát triển phần mềm thông qua việc tích hợp các cơ chế trò chơi hóa (Gamification) chuyên sâu. Hệ thống không chỉ dừng lại ở các yếu tố bề nổi mà còn xây dựng một cấu trúc tương tác phức hợp, tiêu biểu là cơ chế nuôi dưỡng và tiến hóa thú ảo. Phương pháp tiếp cận này nhằm chuyển đổi quá trình học tập vốn dĩ khô khan thành một hành trình chinh phục đầy cảm hứng, qua đó thỏa mãn các nhu cầu tâm lý cốt lõi về sự tự chủ (Autonomy) và nhu cầu khẳng định năng lực (Competence) theo Thuyết Tự Quyết (Self-Determination Theory). Sự kết hợp hài hòa giữa cơ sở khoa học và trải nghiệm tương tác sinh động hứa hẹn sẽ tạo ra một môi trường học tập lý tưởng, giúp người học làm chủ vốn từ vựng một cách tự nhiên và bền bỉ.
 
 \section{Phạm vi đề tài}
-Đề tài tập trung vào việc xây dựng một ứng dụng web (Web Application) đa nền tảng hướng tới người học tiếng Anh ở trình độ cơ bản đến trung cấp.
-\begin{itemize}
-\item \textbf{Về chức năng:} Tập trung vào quản lý bộ từ cá nhân, thực hiện phiên học với 4 dạng tương tác (Flashcard, Fill-in-blank, Multiple Choice, Listening) và hệ thống quản lý thú ảo.
-\item \textbf{Về kỹ thuật:} Thiết kế và hiện thực hệ thống theo kiến trúc \textbf{Onion Architecture} (Clean Architecture), đảm bảo tính tách biệt giữa logic nghiệp vụ và hạ tầng công nghệ.
-\item \textbf{Giới hạn:} Đề tài không đi sâu vào việc giảng dạy ngữ pháp chuyên sâu hay giao tiếp thời gian thực, mà tập trung tối ưu hóa quy trình học và quản lý từ vựng.
-\end{itemize}
+
+Đề tài tập trung vào việc nghiên cứu và xây dựng một ứng dụng web (Web Application) có khả năng vận hành đa nền tảng, hướng tới đối tượng mục tiêu là người học tiếng Anh ở trình độ từ cơ bản đến trung cấp. Phạm vi của nghiên cứu được xác định cụ thể thông qua sự kết hợp giữa các tính năng nghiệp vụ sư phạm và các tiêu chuẩn kỹ thuật phần mềm hiện đại.
+
+Về mặt chức năng, hệ thống ưu tiên thiết lập các công cụ quản lý bộ từ vựng cá nhân hóa, cho phép người học chủ động trong việc xây dựng kho học liệu riêng. Quy trình học tập được hiện thực hóa thông qua bốn dạng tương tác cốt lõi bao gồm: Flashcard, Fill-in-blank (điền vào chỗ trống), Multiple Choice (trắc nghiệm) và Listening (nghe hiểu). Các phương thức này được thiết kế để bao quát các khía cạnh của trí nhớ ngôn ngữ từ nhận diện đến truy hồi kiến thức. Bên cạnh đó, đề tài chú trọng triển khai hệ thống quản lý thú ảo như một cơ chế trò chơi hóa chuyên sâu, đóng vai trò then chốt trong việc duy trì động lực và sự gắn kết của người học với nền tảng.
+
+Về phương diện kỹ thuật, đề tài tập trung vào việc thiết kế và hiện thực hóa hệ thống theo kiến trúc hành tây (Onion Architecture), hay còn gọi là Clean Architecture. Việc áp dụng mô hình kiến trúc này nhằm đảm bảo tính tách biệt tuyệt đối giữa các quy tắc nghiệp vụ (Business Logic) và tầng hạ tầng công nghệ (Infrastructure), từ đó tối ưu hóa khả năng kiểm thử, bảo trì và linh hoạt trong việc thay đổi các dịch vụ ngoại vi mà không làm ảnh hưởng đến lõi của hệ thống.
+
+Tuy nhiên, nhằm đảm bảo tính chuyên sâu và tập trung vào mục tiêu chính, đề tài giới hạn phạm vi nghiên cứu bằng cách không đi sâu vào việc giảng dạy các cấu trúc ngữ pháp chuyên sâu hay xây dựng các tính năng giao tiếp thời gian thực phức tạp. Thay vào đó, toàn bộ nguồn lực được ưu tiên cho việc tối ưu hóa quy trình học tập và quản lý từ vựng, giúp người dùng đạt được hiệu quả ghi nhớ cao nhất trong quá trình tiếp cận ngôn ngữ mới.
 
 \section{Phương pháp tiếp cận}
-Đề tài được thực hiện dựa trên quy trình xây dựng phần mềm chuyên nghiệp kết hợp nghiên cứu thực nghiệm:
 
-\begin{enumerate}
-\item \textbf{Nghiên cứu lý thuyết:} Tổng hợp tài liệu về đường cong quên lãng, thuật toán SM-2 và Thuyết Tự Quyết (SDT) để làm cơ sở thiết kế logic hệ thống.
-\item \textbf{Quy trình phát triển:} Áp dụng mô hình \textbf{Agile/Scrum} rút gọn để phát triển hệ thống theo từng giai đoạn, cho phép kiểm thử và tinh chỉnh liên tục các tính năng Gamification.
-\item \textbf{Thiết kế kiến trúc:} Sử dụng ngôn ngữ UML để mô hình hóa hệ thống. Backend được tổ chức theo mô hình \textbf{Onion Architecture} với các Design Patterns tiêu biểu như Repository, Unit of Work và DTO để đảm bảo tính dễ kiểm thử (Testability).
-\item \textbf{Hiện thực hóa (Tech Stack):}
-\begin{itemize}
-\item \textbf{Backend:} .NET 8, ASP.NET Core Web API, Entity Framework Core, SQL Server.
-\item \textbf{Frontend:} ReactJS, TypeScript, Vite, Tailwind CSS.
-\end{itemize}
-\item \textbf{Kiểm thử và Đánh giá:} Thực hiện Unit Test cho logic nghiệp vụ và kiểm thử chức năng trên các kịch bản thực tế để đối chiếu với các giả thuyết nghiên cứu ban đầu.
-\end{enumerate}
+Đề tài được triển khai dựa trên sự kết hợp giữa nghiên cứu lý thuyết nền tảng và quy trình xây dựng phần mềm thực nghiệm chuyên nghiệp. Giai đoạn đầu của nghiên cứu tập trung vào việc tổng hợp và phân tích các cơ sở khoa học về nhận thức và tâm lý học hành vi, tiêu biểu là lý thuyết đường cong quên lãng của Ebbinghaus, thuật toán tối ưu hóa lịch trình ôn tập SM-2 và Thuyết Tự Quyết (Self-Determination Theory). Đây là những nền tảng quan trọng để thiết lập các quy tắc nghiệp vụ và logic vận hành cho hệ thống, đảm bảo tính khoa học trong việc hỗ trợ người học ghi nhớ từ vựng hiệu quả.
+\newpage
+Về quy trình phát triển, dự án áp dụng mô hình Agile/Scrum rút gọn, cho phép phân tách quá trình thực hiện thành các giai đoạn ngắn để kiểm thử và tinh chỉnh liên tục. Phương pháp này đặc biệt hiệu quả trong việc phát triển các tính năng trò chơi hóa (Gamification), giúp hệ thống kịp thời thích ứng và tối ưu hóa trải nghiệm người dùng dựa trên các đánh giá thực tế.
+
+Trong khâu thiết kế kiến trúc, hệ thống được mô hình hóa bằng ngôn ngữ UML để đảm bảo tính minh bạch về cấu trúc và luồng dữ liệu. Tầng Backend được tổ chức theo kiến trúc hành tây (Onion Architecture), kết hợp với các mẫu thiết kế (Design Patterns) tiêu biểu như Repository, Unit of Work và DTO. Việc lựa chọn kiến trúc này nhằm hướng tới sự độc lập tối đa giữa logic nghiệp vụ và hạ tầng công nghệ, đồng thời gia tăng khả năng kiểm thử (Testability) cho toàn bộ hệ thống.
+
+Hiện thực hóa hệ thống được thực hiện trên một bộ khung công nghệ hiện đại và đồng bộ. Tầng Backend tận dụng sức mạnh của .NET 8 và ASP.NET Core Web API, kết hợp với Entity Framework Core và SQL Server để quản lý dữ liệu quan hệ bền vững. Tầng Frontend sử dụng ReactJS và TypeScript để xây dựng giao diện người dùng tương tác cao, với sự hỗ trợ từ Vite và Tailwind CSS nhằm tối ưu hóa hiệu suất phát triển và tốc độ phản hồi. Cuối cùng, công tác kiểm thử và đánh giá được thực hiện nghiêm ngặt thông qua các bản Unit Test cho logic cốt lõi và kiểm thử chức năng trên các kịch bản thực tế, từ đó đối chiếu và xác nhận tính đúng đắn của các giả thuyết nghiên cứu đã đặt ra.
 
 \section{Bố cục của khóa luận}
-Khóa luận được cấu trúc thành bốn chương chính:
 
-\textbf{Chương 1: Giới thiệu} - Trình bày bối cảnh, lý do chọn đề tài, mục tiêu, giả thuyết và phương pháp tiếp cận.
+Nội dung của khóa luận được phân bổ thành bốn giai đoạn then chốt, bám sát lộ trình từ xây dựng ý tưởng đến hoàn thiện sản phẩm thực tế. Khởi đầu bằng việc xác lập nền tảng, các chương đầu tập trung vào việc định hình bối cảnh nghiên cứu và hệ thống hóa tri thức về tâm lý học hành vi cùng cơ chế ghi nhớ của con người. Đây là bước đệm quan trọng để xác định rõ mục tiêu và những vấn đề mà hệ thống cần giải quyết.
 
-\textbf{Chương 2: Cơ sở lý thuyết và công trình liên quan} - Phân tích các nguyên lý khoa học về trí nhớ, tâm lý học hành vi và đánh giá các ứng dụng hiện có để chỉ ra khoảng trống nghiên cứu.
-
-\textbf{Chương 3: Phân tích, thiết kế và hiện thực hệ thống} - Đây là chương trọng tâm, mô tả chi tiết kiến trúc Onion, thiết kế UML, mô hình dữ liệu và trình bày kết quả triển khai thực tế (Demo) cùng các đánh giá kỹ thuật.
-
-\textbf{Chương 4: Kết luận và hướng phát triển} - Tổng kết kết quả đạt được đối chiếu với mục tiêu đề ra, tự đánh giá ưu khuyết điểm và đề xuất hướng mở rộng.
+Trọng tâm của báo cáo nằm ở phần triển khai kỹ thuật, nơi quy trình thiết kế kiến trúc Onion và các mô hình dữ liệu được cụ thể hóa. Giai đoạn này không chỉ dừng lại ở lý thuyết mà còn trình bày kết quả thực chứng qua các giao diện thực tế và phân tích logic hệ thống. Toàn bộ công trình khép lại bằng một cái nhìn tổng thể, đối soát lại những giá trị đã đạt được so với kỳ vọng ban đầu, từ đó nhìn nhận khách quan về các điểm hạn chế và vạch ra lộ trình nâng cấp cho hệ thống trong giai đoạn tiếp theo.
