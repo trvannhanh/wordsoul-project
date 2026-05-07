@@ -16,6 +16,7 @@ namespace WordSoul.Application.Services
         private readonly IGeminiAiService _geminiAiService;
         private readonly IAzureSpeechService _azureSpeechService;
         private readonly IUnsplashService _unsplashService;
+        private readonly IVocabularyAiCacheService _aiCache;
 
         // Thread-safe cache key tracking
         private readonly HashSet<string> _cacheKeys = [];
@@ -27,7 +28,8 @@ namespace WordSoul.Application.Services
             IMemoryCache cache,
             IGeminiAiService geminiAiService,
             IAzureSpeechService azureSpeechService,
-            IUnsplashService unsplashService)
+            IUnsplashService unsplashService,
+            IVocabularyAiCacheService aiCache)
         {
             _uow = uow;
             _logger = logger;
@@ -35,6 +37,7 @@ namespace WordSoul.Application.Services
             _geminiAiService = geminiAiService;
             _azureSpeechService = azureSpeechService;
             _unsplashService = unsplashService;
+            _aiCache = aiCache;
         }
 
         // ============================================================================
@@ -169,81 +172,92 @@ namespace WordSoul.Application.Services
                 .Where(w => !existingWordMap.ContainsKey(w))
                 .ToList();
 
-            var previewList = new List<VocabularyPreviewDto>();
+            var resultsMap = new Dictionary<string, VocabularyPreviewDto>();
 
-            // 1. Thêm các từ đã có vào danh sách preview
-            foreach (var word in normalizedWords)
+            // 1. Thêm các từ đã có vào map
+            foreach (var vocab in existingVocabs)
             {
-                if (existingWordMap.TryGetValue(word, out var vocab))
+                if (vocab.Word == null) continue;
+                resultsMap[vocab.Word.ToLowerInvariant()] = new VocabularyPreviewDto
                 {
-                    previewList.Add(new VocabularyPreviewDto
-                    {
-                        Id = vocab.Id,
-                        IsExisting = true,
-                        IsAiGenerated = false,
-                        Word = vocab.Word!,
-                        Meaning = vocab.Meaning ?? "",
-                        Pronunciation = vocab.Pronunciation ?? "",
-                        PartOfSpeech = vocab.PartOfSpeech?.ToString() ?? "",
-                        CefrLevel = vocab.CEFRLevel?.ToString() ?? "",
-                        Description = vocab.Description ?? "",
-                        ExampleSentence = vocab.ExampleSentence ?? ""
-                    });
-                }
+                    Id = vocab.Id,
+                    IsExisting = true,
+                    IsAiGenerated = false,
+                    Word = vocab.Word,
+                    Meaning = vocab.Meaning ?? "",
+                    Pronunciation = vocab.Pronunciation ?? "",
+                    PartOfSpeech = vocab.PartOfSpeech?.ToString() ?? "",
+                    CefrLevel = vocab.CEFRLevel?.ToString() ?? "",
+                    Description = vocab.Description ?? "",
+                    ExampleSentence = vocab.ExampleSentence ?? ""
+                };
             }
 
-            // 2. Gọi Gemini cho các từ thiếu (nếu UseAi = true)
-            if (missingWords.Count > 0)
+            // 2. Kiểm tra cache cho các từ còn thiếu
+            var wordsNotCached = new List<string>();
+            foreach (var word in missingWords)
             {
-                if (dto.UseAi)
+                var cached = await _aiCache.GetAsync(word, cancellationToken);
+                if (cached != null)
                 {
-                    var aiResults = await _geminiAiService.GenerateVocabularyMetadataAsync(missingWords, cancellationToken);
-                    var aiResultMap = aiResults.ToDictionary(r => r.Word.ToLowerInvariant(), r => r);
-
-                    foreach (var word in missingWords)
-                    {
-                        if (aiResultMap.TryGetValue(word, out var aiResult))
-                        {
-                            previewList.Add(new VocabularyPreviewDto
-                            {
-                                Id = null,
-                                IsExisting = false,
-                                IsAiGenerated = true,
-                                Word = aiResult.Word,
-                                Meaning = aiResult.Meaning ?? "",
-                                Pronunciation = aiResult.Pronunciation ?? "",
-                                PartOfSpeech = aiResult.PartOfSpeech ?? "",
-                                CefrLevel = aiResult.CefrLevel ?? "",
-                                Description = aiResult.Description ?? "",
-                                ExampleSentence = aiResult.ExampleSentence ?? ""
-                            });
-                        }
-                        else
-                        {
-                            // AI không trả về, tạo item rỗng để user tự điền
-                            previewList.Add(new VocabularyPreviewDto
-                            {
-                                Id = null,
-                                IsExisting = false,
-                                IsAiGenerated = false,
-                                Word = word
-                            });
-                        }
-                    }
+                    resultsMap[word] = cached;
                 }
                 else
                 {
-                    // UseAi = false: bỏ qua Gemini, để trống các từ thiếu cho user tự điền
-                    foreach (var word in missingWords)
+                    wordsNotCached.Add(word);
+                }
+            }
+
+            // 3. Gọi Gemini cho các từ thực sự chưa có (nếu UseAi = true)
+            if (wordsNotCached.Count > 0)
+            {
+                if (dto.UseAi)
+                {
+                    var aiResults = await _geminiAiService.GenerateVocabularyMetadataAsync(wordsNotCached, cancellationToken);
+                    
+                    foreach (var aiResult in aiResults)
                     {
-                        previewList.Add(new VocabularyPreviewDto
+                        var wordKey = aiResult.Word.ToLowerInvariant();
+                        var previewDto = new VocabularyPreviewDto
                         {
                             Id = null,
                             IsExisting = false,
-                            IsAiGenerated = false,
-                            Word = word
-                        });
+                            IsAiGenerated = true,
+                            Word = aiResult.Word,
+                            Meaning = aiResult.Meaning ?? "",
+                            Pronunciation = aiResult.Pronunciation ?? "",
+                            PartOfSpeech = aiResult.PartOfSpeech ?? "",
+                            CefrLevel = aiResult.CefrLevel ?? "",
+                            Description = aiResult.Description ?? "",
+                            ExampleSentence = aiResult.ExampleSentence ?? ""
+                        };
+                        
+                        resultsMap[wordKey] = previewDto;
+                        
+                        // Lưu vào cache để lần sau không gọi lại Gemini
+                        await _aiCache.SetAsync(wordKey, previewDto, cancellationToken);
                     }
+                }
+            }
+
+            // 4. Tổng hợp lại theo thứ tự normalizedWords ban đầu
+            var previewList = new List<VocabularyPreviewDto>();
+            foreach (var word in normalizedWords)
+            {
+                if (resultsMap.TryGetValue(word, out var res))
+                {
+                    previewList.Add(res);
+                }
+                else
+                {
+                    // Trường hợp AI không trả về hoặc UseAi = false
+                    previewList.Add(new VocabularyPreviewDto
+                    {
+                        Id = null,
+                        IsExisting = false,
+                        IsAiGenerated = false,
+                        Word = word
+                    });
                 }
             }
 

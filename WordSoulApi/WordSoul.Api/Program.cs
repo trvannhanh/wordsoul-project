@@ -155,6 +155,16 @@ builder.Services.AddSignalR(options =>
 builder.Services.AddMemoryCache();
 builder.Services.AddLogging();
 
+// Add Redis cache
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration["Redis:ConnectionString"];
+    options.InstanceName = "wordsoul:";
+});
+
+// Register Redis Cache Service
+builder.Services.AddSingleton<IVocabularyAiCacheService, VocabularyAiCacheService>();
+
 // Register repository and service (giữ nguyên như code bạn gửi)
 builder.Services.AddScoped<IVocabularyRepository, VocabularyRepository>();
 builder.Services.AddScoped<IVocabularyService, VocabularyService>();
