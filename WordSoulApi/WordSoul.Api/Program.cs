@@ -15,6 +15,7 @@ using WordSoul.Application.Services;
 using WordSoul.Application.Services.SRS;
 using WordSoul.Infrastructure.BackgroundServices;
 using WordSoul.Infrastructure.Common;
+using WordSoul.Infrastructure.ExternalServices;
 using WordSoul.Infrastructure.Persistence;
 
 
@@ -233,6 +234,11 @@ builder.Services.AddSingleton<Cloudinary>(sp =>
         cloudinarySettings["ApiSecret"]);
     return new Cloudinary(account);
 });
+
+// External AI & Media Services
+builder.Services.AddHttpClient<IGeminiAiService, GeminiAiService>();
+builder.Services.AddHttpClient<IUnsplashService, UnsplashService>();
+builder.Services.AddSingleton<IAzureSpeechService, AzureSpeechService>();
 
 
 var app = builder.Build();
