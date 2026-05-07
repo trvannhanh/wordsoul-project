@@ -4,8 +4,12 @@ export interface VocabularyDto{
   meaning: string;
   imageUrl: string | null;
   pronunciation: string | null;
+  pronunciationUrl: string | null;       // URL audio MP3 of the word
   partOfSpeech: string;
-  example: string | null;
+  cefrLevel: string | null;              // A1 | A2 | B1 | B2 | C1 | C2
+  description: string | null;           // English definition
+  exampleSentence: string | null;       // Example sentence (was 'example')
+  exampleSentenceAudioUrl: string | null; // URL audio MP3 of example sentence
 }
 
 export interface AdminVocabularyDto{

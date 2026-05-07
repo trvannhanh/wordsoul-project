@@ -1,4 +1,4 @@
-﻿using WordSoul.Application.DTOs.Vocabulary;
+using WordSoul.Application.DTOs.Vocabulary;
 using WordSoul.Domain.Enums;
 
 namespace WordSoul.Application.Interfaces.Services

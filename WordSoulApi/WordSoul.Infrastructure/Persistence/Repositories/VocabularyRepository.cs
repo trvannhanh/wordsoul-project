@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using WordSoul.Application.Interfaces.Repositories;
 using WordSoul.Domain.Entities;
@@ -58,7 +58,7 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
         }
 
         // Lấy các từ vựng theo danh sách từ
-        public async Task<List<Vocabulary>> GetVocabulariesByWordsAsync(List<string> words, CancellationToken cancellationToken = default)
+        public async Task<List<Vocabulary>> GetVocabulariesByWordsAsync(List<string> words, int? userId = null, CancellationToken cancellationToken = default)
         {
             if (words == null || !words.Any())
             {
@@ -67,9 +67,13 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
 
             var nomalizedWords = words.Select(w => w.ToLower()).Distinct().ToList();
 
-            return await _context.Vocabularies
-                .Where(v => nomalizedWords.Contains(v.Word.ToLower()))
-                .ToListAsync(cancellationToken);
+            var query = _context.Vocabularies
+                .Where(v => nomalizedWords.Contains(v.Word.ToLower()));
+
+            // Chỉ lấy các từ không phải custom, HOẶC từ do chính user đó tạo
+            query = query.Where(v => !v.IsCustom || v.CreatorId == userId);
+
+            return await query.ToListAsync(cancellationToken);
         }
 
         public async Task<List<Vocabulary>> GetVocabulariesByIdsAsync(

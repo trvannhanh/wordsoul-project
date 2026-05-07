@@ -60,3 +60,30 @@ export const VocabularySetThemeEnum = {
 
 
 export type VocabularySetThemeEnum = typeof VocabularySetThemeEnum[keyof typeof VocabularySetThemeEnum];
+
+/// Response từ API POST /api/vocabulary-sets/ai-create
+export interface AiCreateVocabularySetResultDto {
+  vocabularySet: VocabularySetDto;
+  totalWords: number;
+  newlyCreated: number;    // Số từ được AI tạo mới
+  alreadyExisted: number;  // Số từ lấy từ DB (đã có sẵn)
+  failedWords: string[];   // Từ AI không xử lý được
+}
+
+export interface VocabularyPreviewDto {
+  id: number | null;
+  isExisting: boolean;
+  isAiGenerated: boolean;
+  word: string;
+  meaning: string;
+  pronunciation: string;
+  partOfSpeech: string;
+  cefrLevel: string;
+  description: string;
+  exampleSentence: string;
+}
+
+export interface AiPreviewRequestDto {
+  words: string[];
+  useAi?: boolean;
+}

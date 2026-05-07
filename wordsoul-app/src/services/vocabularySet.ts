@@ -1,7 +1,6 @@
 import { AxiosError } from "axios";
 import api, { authApi, endpoints } from "./api";
-import type { VocabularySetDetailDto, VocabularySetDto } from "../types/VocabularySetDto";
-
+import type { VocabularySetDetailDto, VocabularySetDto, AiCreateVocabularySetResultDto, VocabularyPreviewDto } from "../types/VocabularySetDto";
 
 
 export const fetchVocabularySets = async (
@@ -106,6 +105,27 @@ export const createVocabularySet = async (formData: FormData): Promise<Vocabular
     headers: { 'Content-Type': 'multipart/form-data' },
   });
   return response.data;
+};
+
+export const aiPreviewVocabularySet = async (dto: { words: string[]; useAi?: boolean }): Promise<VocabularyPreviewDto[]> => {
+  const response = await authApi.post<VocabularyPreviewDto[]>(endpoints.aiPreviewVocabularySet, dto);
+  return response.data;
+};
+
+export const aiCreateVocabularySet = async (formData: FormData): Promise<AiCreateVocabularySetResultDto> => {
+  try {
+    const response = await authApi.post<AiCreateVocabularySetResultDto>(endpoints.aiCreateVocabularySet, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 300000, // Timeout dài (5 phút) vì AI xử lý batch có delay
+    });
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      const serverMessage = error.response.data?.message || error.response.data || error.message;
+      throw new Error(typeof serverMessage === 'string' ? serverMessage : JSON.stringify(serverMessage));
+    }
+    throw error;
+  }
 };
 
 export const updateVocabularySet = async (id: number, data: VocabularySetDto): Promise<void> => {

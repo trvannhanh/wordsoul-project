@@ -1,4 +1,4 @@
-﻿using WordSoul.Domain.Entities;
+using WordSoul.Domain.Entities;
 using WordSoul.Domain.Enums;
 
 namespace WordSoul.Application.Interfaces.Repositories
@@ -41,6 +41,7 @@ namespace WordSoul.Application.Interfaces.Repositories
         /// </summary>
         Task<List<Vocabulary>> GetVocabulariesByWordsAsync(
             List<string> words,
+            int? userId = null,
             CancellationToken cancellationToken = default);
 
         Task<List<Vocabulary>> GetVocabulariesByIdsAsync(

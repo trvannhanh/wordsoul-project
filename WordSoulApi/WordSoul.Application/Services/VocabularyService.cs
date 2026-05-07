@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using WordSoul.Application.DTOs.Vocabulary;
 using WordSoul.Application.Interfaces;
@@ -163,7 +163,7 @@ namespace WordSoul.Application.Services
                 return cached;
             }
 
-            var entities = await _uow.Vocabulary.GetVocabulariesByWordsAsync(orderedWords, cancellationToken);
+            var entities = await _uow.Vocabulary.GetVocabulariesByWordsAsync(orderedWords, null, cancellationToken);
 
             var dtos = entities.Select(MapToDto).ToList();
 
