@@ -11,6 +11,9 @@ namespace WordSoul.Domain.Enums
         Pronoun,
         Preposition,
         Conjunction,
-        Interjection
+        Interjection,
+        Determiner,   
+        AuxiliaryVerb,  
+        Particle
     }
 }
