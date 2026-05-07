@@ -1,4 +1,3 @@
-
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using WordSoul.Application.DTOs.VocabularySet;
@@ -14,6 +13,10 @@ namespace WordSoul.Application.Services
         private readonly IUnitOfWork _uow;
         private readonly ILogger<VocabularySetService> _logger;
         private readonly IMemoryCache _cache;
+        private readonly IGeminiAiService _geminiAiService;
+        private readonly IAzureSpeechService _azureSpeechService;
+        private readonly IUnsplashService _unsplashService;
+        private readonly IVocabularyAiCacheService _aiCache;
 
         // Thread-safe cache key tracking
         private readonly HashSet<string> _cacheKeys = [];
@@ -22,11 +25,19 @@ namespace WordSoul.Application.Services
         public VocabularySetService(
             IUnitOfWork uow,
             ILogger<VocabularySetService> logger,
-            IMemoryCache cache)
+            IMemoryCache cache,
+            IGeminiAiService geminiAiService,
+            IAzureSpeechService azureSpeechService,
+            IUnsplashService unsplashService,
+            IVocabularyAiCacheService aiCache)
         {
             _uow = uow;
             _logger = logger;
             _cache = cache;
+            _geminiAiService = geminiAiService;
+            _azureSpeechService = azureSpeechService;
+            _unsplashService = unsplashService;
+            _aiCache = aiCache;
         }
 
         // ============================================================================
@@ -131,6 +142,259 @@ namespace WordSoul.Application.Services
         }
 
         // ============================================================================
+        // AI-POWERED CREATE
+        // ============================================================================
+
+        /// <summary>
+        /// Sinh dữ liệu nháp qua AI cho danh sách từ vựng.
+        /// </summary>
+        public async Task<List<VocabularyPreviewDto>> AiPreviewVocabularySetAsync(
+            AiPreviewRequestDto dto,
+            int userId,
+            CancellationToken cancellationToken = default)
+        {
+            if (dto.Words == null || dto.Words.Count == 0)
+                throw new ArgumentException("At least one word is required.", nameof(dto.Words));
+
+            var normalizedWords = dto.Words
+                .Select(w => w.Trim().ToLowerInvariant())
+                .Where(w => !string.IsNullOrEmpty(w))
+                .Distinct()
+                .ToList();
+
+            // Lấy từ vựng hiện có (phân biệt System và Custom của chính user này)
+            var existingVocabs = await _uow.Vocabulary.GetVocabulariesByWordsAsync(normalizedWords, userId, cancellationToken);
+            var existingWordMap = existingVocabs
+                .Where(v => v.Word != null)
+                .ToDictionary(v => v.Word!.ToLowerInvariant(), v => v);
+
+            var missingWords = normalizedWords
+                .Where(w => !existingWordMap.ContainsKey(w))
+                .ToList();
+
+            var resultsMap = new Dictionary<string, VocabularyPreviewDto>();
+
+            // 1. Thêm các từ đã có vào map
+            foreach (var vocab in existingVocabs)
+            {
+                if (vocab.Word == null) continue;
+                resultsMap[vocab.Word.ToLowerInvariant()] = new VocabularyPreviewDto
+                {
+                    Id = vocab.Id,
+                    IsExisting = true,
+                    IsAiGenerated = false,
+                    Word = vocab.Word,
+                    Meaning = vocab.Meaning ?? "",
+                    Pronunciation = vocab.Pronunciation ?? "",
+                    PartOfSpeech = vocab.PartOfSpeech?.ToString() ?? "",
+                    CefrLevel = vocab.CEFRLevel?.ToString() ?? "",
+                    Description = vocab.Description ?? "",
+                    ExampleSentence = vocab.ExampleSentence ?? ""
+                };
+            }
+
+            // 2. Kiểm tra cache cho các từ còn thiếu
+            var wordsNotCached = new List<string>();
+            foreach (var word in missingWords)
+            {
+                var cached = await _aiCache.GetAsync(word, cancellationToken);
+                if (cached != null)
+                {
+                    resultsMap[word] = cached;
+                }
+                else
+                {
+                    wordsNotCached.Add(word);
+                }
+            }
+
+            // 3. Gọi Gemini cho các từ thực sự chưa có (nếu UseAi = true)
+            if (wordsNotCached.Count > 0)
+            {
+                if (dto.UseAi)
+                {
+                    var aiResults = await _geminiAiService.GenerateVocabularyMetadataAsync(wordsNotCached, cancellationToken);
+                    
+                    foreach (var aiResult in aiResults)
+                    {
+                        var wordKey = aiResult.Word.ToLowerInvariant();
+                        var previewDto = new VocabularyPreviewDto
+                        {
+                            Id = null,
+                            IsExisting = false,
+                            IsAiGenerated = true,
+                            Word = aiResult.Word,
+                            Meaning = aiResult.Meaning ?? "",
+                            Pronunciation = aiResult.Pronunciation ?? "",
+                            PartOfSpeech = aiResult.PartOfSpeech ?? "",
+                            CefrLevel = aiResult.CefrLevel ?? "",
+                            Description = aiResult.Description ?? "",
+                            ExampleSentence = aiResult.ExampleSentence ?? ""
+                        };
+                        
+                        resultsMap[wordKey] = previewDto;
+                        
+                        // Lưu vào cache để lần sau không gọi lại Gemini
+                        await _aiCache.SetAsync(wordKey, previewDto, cancellationToken);
+                    }
+                }
+            }
+
+            // 4. Tổng hợp lại theo thứ tự normalizedWords ban đầu
+            var previewList = new List<VocabularyPreviewDto>();
+            foreach (var word in normalizedWords)
+            {
+                if (resultsMap.TryGetValue(word, out var res))
+                {
+                    previewList.Add(res);
+                }
+                else
+                {
+                    // Trường hợp AI không trả về hoặc UseAi = false
+                    previewList.Add(new VocabularyPreviewDto
+                    {
+                        Id = null,
+                        IsExisting = false,
+                        IsAiGenerated = false,
+                        Word = word
+                    });
+                }
+            }
+
+            return previewList;
+        }
+
+        public async Task<AiCreateVocabularySetResultDto> AiCreateVocabularySetAsync(
+            AiCreateVocabularySetDto dto,
+            string? imageUrl,
+            int userId,
+            CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(dto.Title))
+                throw new ArgumentException("Title is required.", nameof(dto.Title));
+
+            if (dto.Vocabularies == null || dto.Vocabularies.Count == 0)
+                throw new ArgumentException("At least one word is required.", nameof(dto.Vocabularies));
+
+            _logger.LogInformation("User {UserId} starting AI-create vocabulary set '{Title}' with {Count} words",
+                userId, dto.Title, dto.Vocabularies.Count);
+
+            var newlyCreatedVocabs = new List<Vocabulary>();
+            var failedWords = new List<string>();
+            var allVocabIds = new List<int>();
+            int existedCount = 0;
+
+            foreach (var vocabPreview in dto.Vocabularies)
+            {
+                if (string.IsNullOrWhiteSpace(vocabPreview.Word)) continue;
+
+                var wordKey = vocabPreview.Word.ToLowerInvariant().Trim();
+
+                if (vocabPreview.IsExisting && vocabPreview.Id.HasValue)
+                {
+                    // Từ đã tồn tại
+                    var existingVocab = await _uow.Vocabulary.GetVocabularyByIdAsync(vocabPreview.Id.Value, cancellationToken);
+                    if (existingVocab != null)
+                    {
+                        allVocabIds.Add(existingVocab.Id);
+                        existedCount++;
+                    }
+                    continue;
+                }
+
+                // Từ mới -> Gọi API hình ảnh và âm thanh
+                try
+                {
+                    // Unsplash image
+                    var fetchedImageUrl = await _unsplashService.GetFirstImageUrlAsync(vocabPreview.Word, cancellationToken);
+
+                    // Azure TTS - word audio
+                    var wordAudioBlobName = $"{wordKey}-word.mp3";
+                    var wordAudioUrl = await _azureSpeechService.SynthesizeAndUploadAsync(
+                        vocabPreview.Word, wordAudioBlobName, cancellationToken);
+
+                    // Azure TTS - example sentence audio
+                    string? exampleAudioUrl = null;
+                    if (!string.IsNullOrWhiteSpace(vocabPreview.ExampleSentence))
+                    {
+                        var exampleBlobName = $"{wordKey}-example.mp3";
+                        exampleAudioUrl = await _azureSpeechService.SynthesizeAndUploadAsync(
+                            vocabPreview.ExampleSentence, exampleBlobName, cancellationToken);
+                    }
+
+                    var partOfSpeech = MapPartOfSpeech(vocabPreview.PartOfSpeech);
+                    var cefrLevel = MapCefrLevel(vocabPreview.CefrLevel);
+
+                    var vocabulary = new Vocabulary
+                    {
+                        Word = vocabPreview.Word.Trim(),
+                        Meaning = vocabPreview.Meaning?.Trim(),
+                        Pronunciation = vocabPreview.Pronunciation?.Trim(),
+                        PartOfSpeech = partOfSpeech,
+                        CEFRLevel = cefrLevel,
+                        Description = vocabPreview.Description?.Trim(),
+                        ExampleSentence = vocabPreview.ExampleSentence?.Trim(),
+                        ImageUrl = fetchedImageUrl,
+                        PronunciationUrl = wordAudioUrl,
+                        ExampleSentenceAudioUrl = exampleAudioUrl,
+                        IsCustom = !vocabPreview.IsAiGenerated, // Chỉ đánh dấu custom nếu user tự điền (không do AI sinh)
+                        CreatorId = userId
+                    };
+
+                    await _uow.Vocabulary.CreateVocabularyAsync(vocabulary, cancellationToken);
+                    newlyCreatedVocabs.Add(vocabulary);
+
+                    _logger.LogDebug("Created vocabulary: '{Word}' (image={HasImage}, audio={HasAudio}, exAudio={HasExAudio})",
+                        vocabPreview.Word, fetchedImageUrl != null, wordAudioUrl != null, exampleAudioUrl != null);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to process word '{Word}' — skipping", vocabPreview.Word);
+                    failedWords.Add(wordKey);
+                }
+            }
+
+            if (newlyCreatedVocabs.Count > 0)
+            {
+                await _uow.SaveChangesAsync(cancellationToken);
+                _logger.LogInformation("Created {Count} new vocabularies", newlyCreatedVocabs.Count);
+                allVocabIds.AddRange(newlyCreatedVocabs.Select(v => v.Id));
+            }
+
+            allVocabIds = allVocabIds.Distinct().ToList();
+
+            if (allVocabIds.Count == 0)
+                throw new InvalidOperationException("No vocabularies could be created or found. Please check the word list.");
+
+            // ── Create VocabularySet ─────────────────────────────────────
+            var createSetDto = new CreateVocabularySetDto
+            {
+                Title = dto.Title,
+                Theme = dto.Theme,
+                Description = dto.Description,
+                DifficultyLevel = dto.DifficultyLevel,
+                IsActive = dto.IsActive,
+                IsPublic = dto.IsPublic,
+                VocabularyIds = allVocabIds
+            };
+
+            var vocabularySetDto = await CreateVocabularySetAsync(createSetDto, imageUrl, userId, cancellationToken);
+
+            _logger.LogInformation(
+                "AI-create complete: Set={SetId}, Total={Total}, New={New}, Existed={Existed}, Failed={Failed}",
+                vocabularySetDto.Id, dto.Vocabularies.Count, newlyCreatedVocabs.Count, existedCount, failedWords.Count);
+
+            return new AiCreateVocabularySetResultDto
+            {
+                VocabularySet = vocabularySetDto,
+                TotalWords = dto.Vocabularies.Count,
+                NewlyCreated = newlyCreatedVocabs.Count,
+                AlreadyExisted = existedCount,
+                FailedWords = failedWords
+            };
+        }
+
+        // ============================================================================
         // READ
         // ============================================================================
 
@@ -162,11 +426,7 @@ namespace WordSoul.Application.Services
                 DifficultyLevel = set.DifficultyLevel,
                 IsActive = set.IsActive,
                 CreatedAt = set.CreatedAt,
-                //IsPublic = set.IsPublic,
-                //CreatedById = set.CreatedById,
-                //CreatedByUsername = set.CreatedBy?.Username,
                 VocabularyIds = set.SetVocabularies.OrderBy(sv => sv.Order).Select(sv => sv.VocabularyId).ToList(),
-                //TotalVocabularies = set.SetVocabularies.Count
             };
 
             CacheResult(cacheKey, dto, TimeSpan.FromMinutes(30));
@@ -397,5 +657,29 @@ namespace WordSoul.Application.Services
                     _logger.LogDebug("Invalidated {Count} cache keys with prefix {Prefix}", keys.Count, prefix);
             }
         }
+
+        private static WordSoul.Domain.Enums.PartOfSpeech MapPartOfSpeech(string pos) => pos?.ToLowerInvariant().Trim() switch
+        {
+            "noun" => WordSoul.Domain.Enums.PartOfSpeech.Noun,
+            "verb" => WordSoul.Domain.Enums.PartOfSpeech.Verb,
+            "adjective" => WordSoul.Domain.Enums.PartOfSpeech.Adjective,
+            "adverb" => WordSoul.Domain.Enums.PartOfSpeech.Adverb,
+            "pronoun" => WordSoul.Domain.Enums.PartOfSpeech.Pronoun,
+            "preposition" => WordSoul.Domain.Enums.PartOfSpeech.Preposition,
+            "conjunction" => WordSoul.Domain.Enums.PartOfSpeech.Conjunction,
+            "interjection" => WordSoul.Domain.Enums.PartOfSpeech.Interjection,
+            _ => WordSoul.Domain.Enums.PartOfSpeech.Noun
+        };
+
+        private static WordSoul.Domain.Enums.CEFRLevel MapCefrLevel(string level) => level?.ToUpperInvariant().Trim() switch
+        {
+            "A1" => WordSoul.Domain.Enums.CEFRLevel.A1,
+            "A2" => WordSoul.Domain.Enums.CEFRLevel.A2,
+            "B1" => WordSoul.Domain.Enums.CEFRLevel.B1,
+            "B2" => WordSoul.Domain.Enums.CEFRLevel.B2,
+            "C1" => WordSoul.Domain.Enums.CEFRLevel.C1,
+            "C2" => WordSoul.Domain.Enums.CEFRLevel.C2,
+            _ => WordSoul.Domain.Enums.CEFRLevel.A1
+        };
     }
 }

@@ -1,4 +1,4 @@
-﻿using WordSoul.Application.DTOs.VocabularySet;
+using WordSoul.Application.DTOs.VocabularySet;
 using WordSoul.Domain.Enums;
 
 namespace WordSoul.Application.Interfaces.Services
@@ -10,6 +10,23 @@ namespace WordSoul.Application.Interfaces.Services
         // ========================================================================
         Task<VocabularySetDto> CreateVocabularySetAsync(
             CreateVocabularySetDto dto,
+            string? imageUrl,
+            int userId,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Sinh dữ liệu nháp qua AI cho danh sách từ vựng.
+        /// </summary>
+        Task<List<VocabularyPreviewDto>> AiPreviewVocabularySetAsync(
+            AiPreviewRequestDto dto,
+            int userId,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Tạo bộ từ vựng với AI hỗ trợ: tự động sinh metadata, ảnh, audio cho từ chưa có trong DB.
+        /// </summary>
+        Task<AiCreateVocabularySetResultDto> AiCreateVocabularySetAsync(
+            AiCreateVocabularySetDto dto,
             string? imageUrl,
             int userId,
             CancellationToken cancellationToken = default);

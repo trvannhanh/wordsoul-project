@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WordSoul.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using WordSoul.Infrastructure.Persistence;
 namespace WordSoul.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(WordSoulDbContext))]
-    partial class WordSoulDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260505170216_AddExampleSentenceAudioUrlToVocabulary")]
+    partial class AddExampleSentenceAudioUrlToVocabulary
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1090,9 +1093,6 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.Property<int?>("CEFRLevel")
                         .HasColumnType("int");
 
-                    b.Property<int?>("CreatorId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
@@ -1104,9 +1104,6 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsCustom")
-                        .HasColumnType("bit");
 
                     b.Property<string>("Meaning")
                         .HasColumnType("nvarchar(max)");

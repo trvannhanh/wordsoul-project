@@ -15,6 +15,7 @@ using WordSoul.Application.Services;
 using WordSoul.Application.Services.SRS;
 using WordSoul.Infrastructure.BackgroundServices;
 using WordSoul.Infrastructure.Common;
+using WordSoul.Infrastructure.ExternalServices;
 using WordSoul.Infrastructure.Persistence;
 
 
@@ -154,6 +155,16 @@ builder.Services.AddSignalR(options =>
 builder.Services.AddMemoryCache();
 builder.Services.AddLogging();
 
+// Add Redis cache
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration["Redis:ConnectionString"];
+    options.InstanceName = "wordsoul:";
+});
+
+// Register Redis Cache Service
+builder.Services.AddSingleton<IVocabularyAiCacheService, VocabularyAiCacheService>();
+
 // Register repository and service (giữ nguyên như code bạn gửi)
 builder.Services.AddScoped<IVocabularyRepository, VocabularyRepository>();
 builder.Services.AddScoped<IVocabularyService, VocabularyService>();
@@ -233,6 +244,11 @@ builder.Services.AddSingleton<Cloudinary>(sp =>
         cloudinarySettings["ApiSecret"]);
     return new Cloudinary(account);
 });
+
+// External AI & Media Services
+builder.Services.AddHttpClient<IGeminiAiService, GeminiAiService>();
+builder.Services.AddHttpClient<IUnsplashService, UnsplashService>();
+builder.Services.AddSingleton<IAzureSpeechService, AzureSpeechService>();
 
 
 var app = builder.Build();

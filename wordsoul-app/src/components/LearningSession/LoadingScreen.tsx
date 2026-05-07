@@ -1,16 +1,20 @@
 import { useEffect, useRef } from "react";
 
-const LoadingScreen = () => {
+interface LoadingScreenProps {
+  disableAudio?: boolean;
+}
+
+const LoadingScreen: React.FC<LoadingScreenProps> = ({ disableAudio = false }) => {
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
-    if (audioRef.current) {
+    if (audioRef.current && !disableAudio) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       audioRef.current.play().catch((error: any) => {
         console.error("Audio playback failed:", error);
       });
     }
-  }, []);
+  }, [disableAudio]);
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center background-color pixelated font-mono">

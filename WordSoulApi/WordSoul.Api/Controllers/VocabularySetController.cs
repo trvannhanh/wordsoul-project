@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using WordSoul.Api.Extensions;
@@ -96,6 +96,102 @@ namespace WordSoul.Api.Controllers
                 //    _logger.LogDebug("Rolled back uploaded image {PublicId} for user {UserId}", publicId, userId);
                 //}
                 return StatusCode(500, new { Message = "An error occurred while creating the vocabulary set.", Error = ex.Message });
+            }
+        }
+
+        // POST: api/vocabulary-sets/ai-preview : Xem trước dữ liệu tạo từ vựng
+        [HttpPost("ai-preview")]
+        [Authorize(Roles = "Admin,User")]
+        public async Task<IActionResult> AiPreviewVocabularySet([FromBody] AiPreviewRequestDto dto)
+        {
+            if (dto == null || dto.Words == null || !dto.Words.Any())
+            {
+                return BadRequest("At least one word is required.");
+            }
+
+            if (dto.Words.Count > 50)
+            {
+                return BadRequest("Maximum 50 words per request.");
+            }
+
+            var userId = User.GetUserId();
+            if (userId == 0) return Unauthorized();
+
+            try
+            {
+                var result = await _vocabularySetService.AiPreviewVocabularySetAsync(dto, userId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in AiPreviewVocabularySet for user {UserId}", userId);
+                return StatusCode(500, "An error occurred while generating vocabulary preview.");
+            }
+        }
+
+        // POST: api/vocabulary-sets/ai-create : Tạo bộ từ vựng mới với AI hỗ trợ
+        [HttpPost("ai-create")]
+        [Authorize(Roles = "Admin,User")]
+        public async Task<IActionResult> AiCreateVocabularySet([FromForm] AiCreateVocabularySetDto createDto)
+        {
+            if (createDto == null)
+            {
+                _logger.LogWarning("AiCreateVocabularySet failed: DTO is null.");
+                return BadRequest("Vocabulary set data is required.");
+            }
+
+            if (createDto.Vocabularies == null || !createDto.Vocabularies.Any())
+            {
+                _logger.LogWarning("AiCreateVocabularySet failed: Vocabularies list is empty.");
+                return BadRequest("At least one word is required.");
+            }
+
+            if (createDto.Vocabularies.Count > 50)
+            {
+                return BadRequest("Maximum 50 words per request.");
+            }
+
+            var userId = User.GetUserId();
+            if (userId == 0) return Unauthorized();
+
+            try
+            {
+                string? imageUrl = null;
+
+                if (createDto.ImageFile != null && createDto.ImageFile.Length > 0)
+                {
+                    if (createDto.ImageFile.Length > 10 * 1024 * 1024)
+                        return BadRequest("Image file size exceeds 10MB.");
+                    if (!createDto.ImageFile.ContentType.StartsWith("image/"))
+                        return BadRequest("Only image files are allowed.");
+
+                    (imageUrl, _) = await _uploadAssetsService.UploadImageAsync(createDto.ImageFile, "vocabulary_sets");
+                }
+
+                _logger.LogInformation("User {UserId} starting AI-create for {Count} words", userId, createDto.Vocabularies.Count);
+
+                var result = await _vocabularySetService.AiCreateVocabularySetAsync(createDto, imageUrl, userId);
+
+                _logger.LogInformation(
+                    "AI-create done: Set={SetId}, New={New}, Existed={Existed}, Failed={Failed}",
+                    result.VocabularySet.Id, result.NewlyCreated, result.AlreadyExisted, result.FailedWords.Count);
+
+                return CreatedAtAction(nameof(GetVocabularySetById), new { id = result.VocabularySet.Id }, result);
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex, "Validation error in AiCreateVocabularySet for user {UserId}", userId);
+                return BadRequest(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Operation error in AiCreateVocabularySet for user {UserId}", userId);
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Internal error in AiCreateVocabularySet for user {UserId}", userId);
+                return StatusCode(500, new { Message = "An error occurred during AI vocabulary set creation.", Error = ex.Message });
             }
         }
 

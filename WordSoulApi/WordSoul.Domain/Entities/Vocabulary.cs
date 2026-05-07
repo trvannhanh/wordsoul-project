@@ -1,4 +1,4 @@
-﻿
+
 
 using WordSoul.Domain.Enums;
 
@@ -16,6 +16,10 @@ namespace WordSoul.Domain.Entities
         public string? ExampleSentence { get; set; }
         public string? ImageUrl { get; set; } 
         public string? PronunciationUrl { get; set; }
+        public string? ExampleSentenceAudioUrl { get; set; } // Audio MP3 of example sentence (Azure TTS)
+
+        public bool IsCustom { get; set; } = false; // Đánh dấu từ vựng do người dùng tạo
+        public int? CreatorId { get; set; } // Người tạo (nếu IsCustom = true)
 
         public List<SetVocabulary> SetVocabularies { get; set; } = []; // Collection of vocabulary sets associated with the vocabulary word
         public List<SessionVocabulary> SessionVocabularies { get; set; } = []; // Collection of learning sessions associated with the vocabulary word
