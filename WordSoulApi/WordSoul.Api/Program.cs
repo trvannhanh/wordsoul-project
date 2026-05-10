@@ -35,6 +35,9 @@ builder.Configuration
 builder.Services.AddControllers();
 // builder.Services.AddOpenApi();
 
+// HttpClient factory (dùng cho Google OAuth và các external HTTP calls)
+builder.Services.AddHttpClient();
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi(options =>
 {
@@ -248,6 +251,7 @@ builder.Services.AddSingleton<Cloudinary>(sp =>
 // External AI & Media Services
 builder.Services.AddHttpClient<IGeminiAiService, GeminiAiService>();
 builder.Services.AddHttpClient<IUnsplashService, UnsplashService>();
+builder.Services.AddScoped<IGoogleOAuthService, GoogleOAuthService>();
 builder.Services.AddSingleton<IAzureSpeechService, AzureSpeechService>();
 
 

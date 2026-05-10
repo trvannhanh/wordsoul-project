@@ -11,7 +11,15 @@ namespace WordSoul.Domain.Entities
         [MaxLength(100)]
         public required string Email { get; set; }
         [MaxLength(200)]
-        public required string PasswordHash { get; set; }
+        public string? PasswordHash { get; set; }
+
+        // ── External Login (Google, etc.) ─────────────────────────────────────
+        [MaxLength(50)]
+        public string? ExternalLoginProvider { get; set; }      // "Google", "Facebook", ...
+        [MaxLength(200)]
+        public string? ExternalLoginProviderKey { get; set; }   // Google sub (unique ID)
+        [MaxLength(200)]
+        public string? ExternalLoginEmail { get; set; }         // Email từ provider
         public int XP { get; set; } = 0; // Experience Points
         public int AP { get; set; } = 0; // Achivement Points
         public int HintBalance { get; set; } = 5; // Default 5 hints

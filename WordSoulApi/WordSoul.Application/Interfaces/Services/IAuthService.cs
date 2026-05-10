@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 using WordSoul.Application.DTOs.User;
 
@@ -23,5 +23,11 @@ namespace WordSoul.Application.Interfaces.Services
         /// Làm mới AccessToken bằng RefreshToken.
         /// </summary>
         Task<TokenResponseDto?> RefreshTokenAsync(RefreshTokenRequestDto request, CancellationToken ct = default);
+
+        /// <summary>
+        /// Xử lý luồng đăng nhập bằng Google OAuth (Authorization Code Flow).
+        /// Nhận code từ Google callback, exchange lấy token và profile, tìm/tạo user.
+        /// </summary>
+        Task<TokenResponseDto?> GoogleLoginAsync(string code, CancellationToken ct = default);
     }
 }
