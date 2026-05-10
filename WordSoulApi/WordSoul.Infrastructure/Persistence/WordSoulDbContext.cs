@@ -419,6 +419,13 @@ namespace WordSoul.Infrastructure.Persistence
                 .HasIndex(bs => new { bs.ChallengerUserId, bs.Status });
             modelBuilder.Entity<UserGymProgress>()
                 .HasIndex(ugp => new { ugp.UserId, ugp.Status });
+
+            // ── External Login ────────────────────────────────────
+            // Unique index chỉ áp dụng khi Provider không null (filtered index)
+            modelBuilder.Entity<User>()
+                .HasIndex(u => new { u.ExternalLoginProvider, u.ExternalLoginProviderKey })
+                .IsUnique()
+                .HasFilter("[ExternalLoginProvider] IS NOT NULL");
         }
 
 }   // class WordSoulDbContext

@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import VocabularySetDetail from './features/vocabularySet/VocabularySetDetail';
 import Login from './features/auth/Login';
 import Register from './features/auth/Register';
+import GoogleCallback from './features/auth/GoogleCallback';
 import VocabularySet from './features/vocabularySet/VocabularySet';
 import Pets from './features/pets/Pets';
 import Community from './features/community/Community';
@@ -42,6 +43,7 @@ const App: React.FC = () => {
           <Route element={<MainLayout />}>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/auth/callback" element={<GoogleCallback />} />
             <Route path="/" element={<Home />} />
 
             <Route path="/vocabularySet/:id" element={<VocabularySetDetail />} />

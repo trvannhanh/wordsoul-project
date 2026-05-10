@@ -1,4 +1,4 @@
-﻿using WordSoul.Domain.Entities;
+using WordSoul.Domain.Entities;
 
 namespace WordSoul.Application.Interfaces.Repositories
 {
@@ -30,6 +30,15 @@ namespace WordSoul.Application.Interfaces.Repositories
 
         Task<bool> EmailExistsAsync(
             string email,
+            CancellationToken cancellationToken = default);
+
+        Task<User?> GetUserByEmailAsync(
+            string email,
+            CancellationToken cancellationToken = default);
+
+        Task<User?> GetUserByExternalLoginAsync(
+            string provider,
+            string providerKey,
             CancellationToken cancellationToken = default);
     }
 }

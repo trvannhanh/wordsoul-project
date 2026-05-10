@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using WordSoul.Application.Interfaces.Repositories;
 using WordSoul.Domain.Entities;
 using WordSoul.Infrastructure.Persistence;
@@ -49,6 +49,20 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
         public async Task<bool> EmailExistsAsync(string email, CancellationToken cancellationToken = default)
         {
             return await _context.Users.AnyAsync(u => u.Email == email, cancellationToken);
+        }
+
+        public async Task<User?> GetUserByEmailAsync(string email, CancellationToken cancellationToken = default)
+        {
+            return await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
+        }
+
+        public async Task<User?> GetUserByExternalLoginAsync(string provider, string providerKey, CancellationToken cancellationToken = default)
+        {
+            return await _context.Users
+                .FirstOrDefaultAsync(u => u.ExternalLoginProvider == provider
+                                       && u.ExternalLoginProviderKey == providerKey,
+                                   cancellationToken);
         }
     }
 }

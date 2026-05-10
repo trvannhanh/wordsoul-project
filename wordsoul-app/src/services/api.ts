@@ -10,6 +10,7 @@ export const endpoints = {
   login: '/auth/login',
   register: '/auth/register',
   refreshToken: '/auth/refresh-token',
+  googleLogin: '/auth/google-login',    // Redirect đến Google Consent Screen
 
   // User
   users: '/users', // Tất cả user

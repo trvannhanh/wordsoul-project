@@ -781,6 +781,18 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("ExternalLoginEmail")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ExternalLoginProvider")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ExternalLoginProviderKey")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<int>("HintBalance")
                         .HasColumnType("int");
 
@@ -788,7 +800,6 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("PasswordHash")
-                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
@@ -819,6 +830,10 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ExternalLoginProvider", "ExternalLoginProviderKey")
+                        .IsUnique()
+                        .HasFilter("[ExternalLoginProvider] IS NOT NULL");
 
                     b.ToTable("Users");
                 });
