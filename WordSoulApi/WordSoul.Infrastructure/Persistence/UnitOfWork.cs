@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage;
 using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Repositories;
 using WordSoul.Infrastructure.Persistence.Repositories;
@@ -31,6 +31,7 @@ namespace WordSoul.Infrastructure.Persistence
         private IUserDailyQuestRepository? _userDailyQuest;
         private IDailyQuestRepository? _dailyQuest;
         private IUserItemRepository? _userItem;
+        private ISystemConfigurationRepository? _systemConfiguration;
 
         public UnitOfWork(WordSoulDbContext context)
         {
@@ -85,6 +86,9 @@ namespace WordSoul.Infrastructure.Persistence
 
         public IUserItemRepository UserItem => 
             _userItem ??= new UserItemRepository(_context);
+
+        public ISystemConfigurationRepository SystemConfiguration =>
+            _systemConfiguration ??= new SystemConfigurationRepository(_context);
 
         public async Task<int> SaveChangesAsync(CancellationToken ct = default)
         {

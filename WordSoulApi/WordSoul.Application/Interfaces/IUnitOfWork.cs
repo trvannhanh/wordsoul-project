@@ -1,4 +1,4 @@
-﻿
+
 
 using Microsoft.EntityFrameworkCore.Storage;
 using WordSoul.Application.Interfaces.Repositories;
@@ -29,6 +29,7 @@ namespace WordSoul.Application.Interfaces
         IUserDailyQuestRepository UserDailyQuest { get; }
         IDailyQuestRepository DailyQuest { get; }
         IUserItemRepository UserItem { get; }
+        ISystemConfigurationRepository SystemConfiguration { get; }
 
 
         Task<int> SaveChangesAsync(CancellationToken ct = default);
