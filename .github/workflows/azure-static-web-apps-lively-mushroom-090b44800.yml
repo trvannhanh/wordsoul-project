@@ -6,12 +6,14 @@ on:
       - main
     paths:
       - 'wordsoul-admin/**' # Chỉ chạy khi có thay đổi trong thư mục Admin
+      - '.github/workflows/azure-static-web-apps-lively-mushroom-090b44800.yml'
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
       - main
     paths:
-      - 'wordsoul-admin/**' # Chỉ chạy khi có thay đổi trong thư mục Admin
+      - 'wordsoul-admin/**'
+      - '.github/workflows/azure-static-web-apps-lively-mushroom-090b44800.yml'
 
 jobs:
   build_and_deploy_job:
