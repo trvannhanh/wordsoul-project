@@ -34,7 +34,7 @@ jobs:
           ###### Cấu hình Repository/Build ######
           app_location: "/wordsoul-admin"   # Thư mục gốc của project Next.js
           api_location: ""                 # Để trống nếu không dùng Azure Functions
-          output_location: "out"           # Thư mục chứa kết quả export của Next.js
+          output_location: ""              # BẮT BUỘC để trống ("") cho Next.js Hybrid apps
           ###### Kết thúc cấu hình ######
 
   close_pull_request_job:
