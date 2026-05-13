@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WordSoul.Api.Extensions;
 using WordSoul.Application.DTOs.Achievement;
@@ -30,7 +30,7 @@ namespace WordSoul.Api.Controllers
 
         // POST: api/achievements
         // Tạo achievement template mới (Admin)
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpPost]
         public async Task<ActionResult<AchievementDto>> CreateAchievement(
             [FromBody] CreateAchievementDto createDto,
@@ -55,7 +55,7 @@ namespace WordSoul.Api.Controllers
 
         // GET: api/achievements
         // Lấy danh sách achievement (Admin - có filter và phân trang)
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpGet]
         public async Task<ActionResult<List<AchievementDto>>> GetAchievements(
             [FromQuery] ConditionType? conditionType,
@@ -83,7 +83,7 @@ namespace WordSoul.Api.Controllers
 
         // GET: api/achievements/{achievementId}
         // Lấy chi tiết một achievement (Admin)
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpGet("{achievementId}")]
         public async Task<ActionResult<AchievementDto>> GetAchievementById(
             int achievementId,

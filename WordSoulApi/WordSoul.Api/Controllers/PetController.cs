@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using WordSoul.Api.Extensions;
@@ -11,7 +11,7 @@ namespace WordSoul.Api.Controllers
 {
     [Route("api/pets")]
     [ApiController]
-    [EnableCors("AllowLocalhost")]
+    [EnableCors("AllowFrontend")]
     public class PetController : ControllerBase
     {
         private readonly IPetService _petService;
@@ -30,7 +30,7 @@ namespace WordSoul.Api.Controllers
         //------------------------------ POST -----------------------------------
 
         // POST: api/pets : Tạo pet mới
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpPost]
         public async Task<IActionResult> CreatePet([FromForm] CreatePetDto petDto)
         {
@@ -71,7 +71,7 @@ namespace WordSoul.Api.Controllers
         }
 
         // POST: api/pets/bulk : Tạo nhiều pet
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpPost("bulk")]
         public async Task<IActionResult> CreatePetsBulk([FromBody] BulkCreatePetDto bulkDto)
         {
@@ -104,7 +104,7 @@ namespace WordSoul.Api.Controllers
 
         ////------------------------------ GET -----------------------------------
         // GET: api/pets : Lấy tất cả pet theo người dùng
-        [Authorize(Roles = "Admin,User")]
+        [Authorize(Roles = "Admin,SuperAdmin,User")]
         [HttpGet]
         public async Task<IActionResult> GetAllPets(
             string? name,
@@ -134,7 +134,7 @@ namespace WordSoul.Api.Controllers
         }
 
         // GET: api/pets/{id} : Lấy pet theo ID
-        [Authorize(Roles = "Admin,User")]
+        [Authorize(Roles = "Admin,SuperAdmin,User")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPetById(int id)
         {
@@ -172,7 +172,7 @@ namespace WordSoul.Api.Controllers
 
             var buff = await _petBuffService.GetActivePetBuffAsync(userId, cancellationToken);
             if (buff == null)
-                return Ok(null); // User chưa có active pet — frontend tự handle
+                return Ok(null); // User chua có active pet ở frontend tự handle
 
             return Ok(buff);
         }
@@ -181,7 +181,7 @@ namespace WordSoul.Api.Controllers
         //------------------------------ PUT -----------------------------------
 
         //PUT: api/pets/{id} : Cập nhật pet theo ID
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdatePet(int id, [FromForm] UpdatePetDto petDto)
         {
@@ -218,7 +218,7 @@ namespace WordSoul.Api.Controllers
         }
 
         // PUT: api/pets/bulk : Cập nhật nhiều pet
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpPut("bulk")]
         public async Task<IActionResult> UpdatePetsBulk([FromBody] List<UpdatePetDto> pets)
         {
@@ -245,7 +245,7 @@ namespace WordSoul.Api.Controllers
         //------------------------------ DELETE -----------------------------------
 
         // DELETE: api/pets/{id} : Xóa pet theo ID
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePet(int id)
         {
@@ -255,7 +255,7 @@ namespace WordSoul.Api.Controllers
         }
 
         // DELETE: api/pets/bulk : Xóa nhiều pet
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpDelete("bulk")]
         public async Task<IActionResult> DeletePetsBulk([FromBody] List<int> petIds)
         {
