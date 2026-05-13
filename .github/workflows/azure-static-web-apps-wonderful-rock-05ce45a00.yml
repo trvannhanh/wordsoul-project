@@ -4,10 +4,14 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'wordsoul-app/**' # Chỉ kích hoạt khi có thay đổi trong thư mục frontend cũ
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
       - main
+    paths:
+      - 'wordsoul-app/**' # Chỉ kích hoạt khi có thay đổi trong thư mục frontend cũ
 
 jobs:
   build_and_deploy_job:
@@ -29,6 +33,7 @@ jobs:
       - name: Install dependencies
         working-directory: ./wordsoul-app
         run: |
+          # Xóa lock file nếu cần để tránh xung đột phiên bản, sau đó cài đặt
           rm -f package-lock.json
           npm install
 
@@ -44,10 +49,10 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WONDERFUL_ROCK_05CE45A00 }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "./wordsoul-app/dist"  # trỏ thẳng vào thư mục đã build
+          app_location: "./wordsoul-app/dist"  # Đường dẫn tới thư mục chứa kết quả build của Vite
           api_location: ""
-          output_location: ""                  # trống vì app_location đã là dist rồi
-          skip_app_build: true
+          output_location: ""                  # Để trống vì app_location đã trỏ thẳng vào thư mục đích
+          skip_app_build: true                 # Bắt buộc là true vì bạn đã tự build ở step trên
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
