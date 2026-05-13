@@ -36,6 +36,8 @@ jobs:
           api_location: ""                 # Để trống nếu không dùng Azure Functions
           output_location: ""              # BẮT BUỘC để trống ("") cho Next.js Hybrid apps
           ###### Kết thúc cấu hình ######
+        env:
+          NEXT_PUBLIC_API_URL: https://wordsoul-api-dev-hybybqh9dhhzhped.southeastasia-01.azurewebsites.net/api
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
