@@ -10,7 +10,7 @@ namespace WordSoul.Api.Controllers
 {
     [Route("api/vocabulary-sets")]
     [ApiController]
-    [EnableCors("AllowLocalhost")]
+    [EnableCors("AllowFrontend")]
     public class VocabularySetController : ControllerBase
     {
         private readonly IVocabularySetService _vocabularySetService;
@@ -32,7 +32,7 @@ namespace WordSoul.Api.Controllers
 
         // POST: api/vocabulary-sets : Tạo bộ từ vựng mới
         [HttpPost]
-        [Authorize(Roles = "Admin,User")]
+        [Authorize(Roles = "Admin,SuperAdmin,User")]
         public async Task<IActionResult> CreateVocabularySet([FromForm] CreateVocabularySetDto createDto)
         {
             if (createDto == null)
@@ -101,7 +101,7 @@ namespace WordSoul.Api.Controllers
 
         // POST: api/vocabulary-sets/ai-preview : Xem trước dữ liệu tạo từ vựng
         [HttpPost("ai-preview")]
-        [Authorize(Roles = "Admin,User")]
+        [Authorize(Roles = "Admin,SuperAdmin,User")]
         public async Task<IActionResult> AiPreviewVocabularySet([FromBody] AiPreviewRequestDto dto)
         {
             if (dto == null || dto.Words == null || !dto.Words.Any())
@@ -131,7 +131,7 @@ namespace WordSoul.Api.Controllers
 
         // POST: api/vocabulary-sets/ai-create : Tạo bộ từ vựng mới với AI hỗ trợ
         [HttpPost("ai-create")]
-        [Authorize(Roles = "Admin,User")]
+        [Authorize(Roles = "Admin,SuperAdmin,User")]
         public async Task<IActionResult> AiCreateVocabularySet([FromForm] AiCreateVocabularySetDto createDto)
         {
             if (createDto == null)
@@ -323,7 +323,7 @@ namespace WordSoul.Api.Controllers
         //------------------------------ PUT -----------------------------------------
 
         // PUT: api/vocabulary-sets/{id} : Cập nhật bộ từ vựng theo ID
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateVocabularySet(int id, [FromBody] UpdateVocabularySetDto updateDto)
         {
@@ -354,7 +354,7 @@ namespace WordSoul.Api.Controllers
         //------------------------------ DELETE -----------------------------------------
 
         // DELETE: api/vocabulary-sets/{id} : Xóa bộ từ vựng theo ID
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteVocabularySet(int id)
         {

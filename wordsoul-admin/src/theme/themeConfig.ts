@@ -1,10 +1,5 @@
-import type { ThemeConfig } from 'antd';
+// Theme tokens are managed dynamically by ThemeContext.tsx
+// This file is kept for compatibility — the active ThemeConfig is
+// injected per render from ThemeContext based on the current color scheme.
 
-const theme: ThemeConfig = {
-  token: {
-    colorPrimary: '#1890ff',
-    fontFamily: 'inherit', // Use next/font
-  },
-};
-
-export default theme;
+export { } from './themeConfig';

@@ -1,25 +1,40 @@
 import axios, { AxiosError } from 'axios';
 
 // Get base URL from env, default to local backend
-export const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5246/api';
+export const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://localhost:63982/api';
 
 export const endpoints = {
   // Auth
   login: '/auth/login',
   refreshToken: '/auth/refresh-token',
-  
+
   // Dashboard & Analytics
   dashboard: '/admin/dashboard', // To be implemented in Backend
-  
+
   // System Configuration (SuperAdmin)
-  systemConfig: '/admin/system-configurations', // To be implemented in Backend
-  
+  systemConfig: '/admin/configurations',
+  systemHealth: '/admin/health',
+
   // Users
   users: '/users',
-  
+
   // Vocabularies
   vocabularySets: '/vocabulary-sets',
+  vocabularySetDetail: (id: number) => `/vocabulary-sets/${id}/details`,
+  aiPreview: '/vocabulary-sets/ai-preview',
+  aiCreate: '/vocabulary-sets/ai-create',
   vocabularies: '/vocabularies',
+
+  // Quests & Achievements
+  adminQuests: '/admin/quests-achievements/quests',
+  adminAchievements: '/admin/quests-achievements/achievements',
+
+  // Gyms
+  adminGyms: '/admin/gyms',
+
+  // Maintenance
+  redisFlush: '/admin/maintenance/redis-flush',
+  dbCleanup: '/admin/maintenance/db-cleanup',
 };
 
 const ACCESS_TOKEN_KEY = 'adminAccessToken';

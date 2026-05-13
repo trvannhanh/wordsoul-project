@@ -11,7 +11,7 @@ namespace WordSoul.Api.Controllers
 {
     [Route("api/users")]
     [ApiController]
-    [EnableCors("AllowLocalhost")]
+    [EnableCors("AllowFrontend")]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -36,7 +36,7 @@ namespace WordSoul.Api.Controllers
 
 
         // POST: api/users/{userId}/pets/{petId} : Gán pet cho user
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpPost("{userId}/pets/{petId}")]
         public async Task<IActionResult> AssignPetToUser(int userId, int petId, [FromBody] AssignPetDto assignDto)
         {
@@ -48,7 +48,7 @@ namespace WordSoul.Api.Controllers
         }
 
         // POST: api/users/me/hints/consume : Tiêu thụ 1 Hint của người dùng đang đăng nhập
-        [Authorize(Roles = "Admin,User")]
+        [Authorize(Roles = "Admin,SuperAdmin,User")]
         [HttpPost("me/hints/consume")]
         public async Task<IActionResult> ConsumeHint(CancellationToken cancellationToken)
         {
@@ -64,7 +64,7 @@ namespace WordSoul.Api.Controllers
         //------------------------------ GET -----------------------------------
 
         //GET: api/users : Lấy tất cả người dùng
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpGet]
         public async Task<IActionResult> GetAllUsers(string? name, string?email, UserRole? role, int pageNumber = 1, int pageSize = 10)
         {
@@ -73,7 +73,7 @@ namespace WordSoul.Api.Controllers
         }
 
         // GET: api/users/{id} : Lấy người dùng theo ID
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUserById(int id)
         {
@@ -83,7 +83,7 @@ namespace WordSoul.Api.Controllers
         }
 
         // GET: api/users/me : Lấy thông tin người dùng hiện tại
-        [Authorize(Roles = "Admin,User")]
+        [Authorize(Roles = "Admin,SuperAdmin,User")]
         [HttpGet("me")]
         public async Task<IActionResult> GetUserById()
         {
@@ -108,7 +108,7 @@ namespace WordSoul.Api.Controllers
 
 
         // GET: api/users/{userId}/activities : Lấy hoạt động của user
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpGet("{userId}/activities")]
         public async Task<IActionResult> GetUserActivities(int userId, int pageNumber = 1, int pageSize = 10)
         {
@@ -117,7 +117,7 @@ namespace WordSoul.Api.Controllers
         }
 
         // GET: api/activities : Lấy tất cả hoạt động hệ thống
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpGet("activities")]
         public async Task<IActionResult> GetAllActivities(string? action = null, DateTime? fromDate = null, int pageNumber = 1, int pageSize = 10)
         {
@@ -136,7 +136,7 @@ namespace WordSoul.Api.Controllers
         //------------------------------ PUT -----------------------------------
 
         // PUT: api/users/{id} : Cập nhật người dùng theo ID
-        [Authorize(Roles = "Admin,User")]
+        [Authorize(Roles = "Admin,SuperAdmin,User")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(int id, UpdateUserDto userDto, CancellationToken cancellationToken = default)
         {
@@ -147,7 +147,7 @@ namespace WordSoul.Api.Controllers
         }
 
         // PUT: api/users/{userId}/role : Gán role cho user
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpPut("{userId}/role")]
         public async Task<IActionResult> AssignRoleToUser(int userId, [FromBody] AssignRoleDto assignDto)
         {
@@ -159,7 +159,7 @@ namespace WordSoul.Api.Controllers
         //------------------------------ DELETE -----------------------------------
 
         // DELETE: api/users/{id} : Xóa người dùng theo ID
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
@@ -170,7 +170,7 @@ namespace WordSoul.Api.Controllers
         }
 
         // DELETE: api/users/{userId}/pets/{petId} : Xóa gán pet
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpDelete("{userId}/pets/{petId}")]
         public async Task<IActionResult> RemovePetFromUser(int userId, int petId)
         {
@@ -178,7 +178,7 @@ namespace WordSoul.Api.Controllers
             return result ? NoContent() : NotFound("Gán pet không tồn tại.");
         }
 
-        [Authorize(Roles = "Admin,User")]
+        [Authorize(Roles = "Admin,SuperAdmin,User")]
         [HttpGet("vocabulary-sets/{vocabularySetId}")]
         public async Task<IActionResult> GetUserVocabularySetProgress(int vocabularySetId)
         {

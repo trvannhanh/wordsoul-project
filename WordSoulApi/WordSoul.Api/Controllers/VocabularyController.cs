@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using WordSoul.Application.DTOs.Vocabulary;
@@ -9,7 +9,7 @@ namespace WordSoul.Api.Controllers
 {
     [Route("api/vocabularies")]
     [ApiController]
-    [EnableCors("AllowLocalhost")]
+    [EnableCors("AllowFrontend")]
     public class VocabularyController : ControllerBase
     {
         private readonly IVocabularyService _vocabularyService;
@@ -26,7 +26,7 @@ namespace WordSoul.Api.Controllers
 
         //------------------------------ POST -----------------------------------------
         // POST: api/vocabularies : Tạo từ vựng mới
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpPost]
         public async Task<IActionResult> CreateVocabulary([FromForm] CreateVocabularyDto vocabularyDto)
         {
@@ -67,7 +67,7 @@ namespace WordSoul.Api.Controllers
         }
 
         // POST: api/vocabulary-sets/{setId}/vocabularies : Thêm từ vựng vào bộ từ vựng
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpPost("{setId}/vocabularies")]
         public async Task<IActionResult> AddVocabularyToSet(int setId, [FromForm] CreateVocabularyInSetDto vocabularyDto)
         {
@@ -102,7 +102,7 @@ namespace WordSoul.Api.Controllers
         }
 
         // POST: api/vocabularies/search : Tìm kiếm từ vựng theo danh sách từ
-        [Authorize(Roles = "Admin,User")]
+        [Authorize(Roles = "Admin,SuperAdmin,User")]
         [HttpPost("search")]
         public async Task<IActionResult> SearchVocabularies(SearchVocabularyDto searchDto)
         {
@@ -116,7 +116,7 @@ namespace WordSoul.Api.Controllers
         //------------------------------ GET -----------------------------------------
 
         // GET: api/vocabularies : Lấy tất cả từ vựng
-        [Authorize(Roles = "Admin,User")]
+        [Authorize(Roles = "Admin,SuperAdmin,User")]
         [HttpGet]
         public async Task<IActionResult> GetAllVocabularies(string? word, string? meaning, PartOfSpeech? partOfSpeech, CEFRLevel? cEFRLevel, int pageNumber = 1, int pageSize = 10)
         {
@@ -125,7 +125,7 @@ namespace WordSoul.Api.Controllers
         }
 
         // GET: api/vocabularies/{id} : Lấy từ vựng theo ID
-        [Authorize(Roles = "Admin,User")]
+        [Authorize(Roles = "Admin,SuperAdmin,User")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetVocabularyById(int id)
         {
@@ -135,7 +135,7 @@ namespace WordSoul.Api.Controllers
         }
 
         // GET: api/vocabulary-sets/{setId}/vocabularies : Lấy danh sách từ vựng trong bộ từ vựng
-        [Authorize(Roles = "Admin,User")]
+        [Authorize(Roles = "Admin,SuperAdmin,User")]
         [HttpGet("{setId}/vocabularies")]
         public async Task<IActionResult> GetVocabulariesInSet(int setId, int pageNumber = 1, int pageSize = 10)
         {
@@ -150,7 +150,7 @@ namespace WordSoul.Api.Controllers
         //------------------------------ UPDATE -----------------------------------------
 
         // PUT: api/vocabularies/{id} : Cập nhật từ vựng theo ID
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateVocabulary(int id, [FromForm] CreateVocabularyDto vocabularyDto)
         {
@@ -192,7 +192,7 @@ namespace WordSoul.Api.Controllers
 
         //------------------------------ DELETE -----------------------------------------
         // DELETE: api/vocabularies/{id} : Xóa từ vựng theo ID
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteVocabulary(int id)
         {
@@ -203,7 +203,7 @@ namespace WordSoul.Api.Controllers
 
 
         // DELETE: api/vocabulary-sets/{setId}/vocabularies/{vocabId} : Xóa từ vựng khỏi bộ từ vựng
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpDelete("{setId}/vocabularies/{vocabId}")]
         public async Task<IActionResult> RemoveVocabularyFromSet(int setId, int vocabId)
         {

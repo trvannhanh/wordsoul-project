@@ -19,5 +19,10 @@ namespace WordSoul.Application.Interfaces.Services
         /// Gọi sau mỗi LearningSession hoàn thành.
         /// </summary>
         Task CheckAndUnlockGymsAsync(int userId, CancellationToken ct = default);
+        
+        // Admin Methods
+        Task<List<AdminGymLeaderDto>> AdminGetAllGymsAsync(CancellationToken ct = default);
+        Task<AdminGymLeaderDto> AdminUpdateGymAsync(int id, GymUpdateDto dto, CancellationToken ct = default);
+
     }
 }

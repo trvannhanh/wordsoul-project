@@ -120,6 +120,41 @@ namespace WordSoul.Infrastructure.Persistence
             if (changed) await _db.SaveChangesAsync(ct);
         }
 
+        public async Task<List<AdminGymLeaderDto>> AdminGetAllGymsAsync(CancellationToken ct = default)
+        {
+            var gyms = await _db.GymLeaders
+                .Include(g => g.GymLeaderPets)
+                    .ThenInclude(gp => gp.Pet)
+                .OrderBy(g => g.GymOrder)
+                .ToListAsync(ct);
+
+            return gyms.Select(MapToAdminDto).ToList();
+        }
+
+        public async Task<AdminGymLeaderDto> AdminUpdateGymAsync(int id, GymUpdateDto dto, CancellationToken ct = default)
+        {
+            var gym = await _db.GymLeaders
+                .Include(g => g.GymLeaderPets)
+                    .ThenInclude(gp => gp.Pet)
+                .FirstOrDefaultAsync(g => g.Id == id, ct);
+
+            if (gym == null) throw new KeyNotFoundException($"Gym Leader {id} not found");
+
+            gym.Name = dto.Name;
+            gym.Description = dto.Description;
+            gym.XpThreshold = dto.XpThreshold;
+            gym.PassRatePercent = dto.PassRatePercent;
+
+            foreach (var pet in gym.GymLeaderPets)
+            {
+                pet.BotAvgResponseMs = dto.AiReactionTimeMs;
+            }
+
+            await _db.SaveChangesAsync(ct);
+            return MapToAdminDto(gym);
+        }
+
+
         // ── Private Helpers ───────────────────────────────────────────────────
 
         private async Task<int> CountEligibleVocabsAsync(
@@ -177,6 +212,43 @@ namespace WordSoul.Infrastructure.Persistence
                 CooldownEndsAt = isOnCooldown ? cooldownEndsAt : null,
                 CurrentXp = userXp,
                 CurrentVocabCount = currentVocabCount,
+            };
+        }
+
+        private static AdminGymLeaderDto MapToAdminDto(Domain.Entities.GymLeader gym)
+        {
+            return new AdminGymLeaderDto
+            {
+                Id = gym.Id,
+                GymOrder = gym.GymOrder,
+                Name = gym.Name,
+                Title = gym.Title,
+                Description = gym.Description,
+                AvatarUrl = gym.AvatarUrl,
+                BadgeName = gym.BadgeName,
+                BadgeImageUrl = gym.BadgeImageUrl,
+                Theme = gym.Theme.ToString(),
+                RequiredCefrLevel = gym.RequiredCefrLevel.ToString(),
+                XpThreshold = gym.XpThreshold,
+                VocabThreshold = gym.VocabThreshold,
+                QuestionCount = gym.QuestionCount,
+                PassRatePercent = gym.PassRatePercent,
+                XpReward = gym.XpReward,
+                GymLeaderPets = gym.GymLeaderPets.Select(gp => new AdminGymLeaderPetDto
+                {
+                    Id = gp.Id,
+                    SlotIndex = gp.SlotIndex,
+                    Nickname = gp.Nickname,
+                    BotAccuracy = gp.BotAccuracy,
+                    BotAvgResponseMs = gp.BotAvgResponseMs,
+                    Level = gp.Level,
+                    Pet = gp.Pet == null ? null : new AdminPetDto
+                    {
+                        Id = gp.Pet.Id,
+                        Name = gp.Pet.Name,
+                        ImageUrl = gp.Pet.ImageUrl
+                    }
+                }).ToList()
             };
         }
     }

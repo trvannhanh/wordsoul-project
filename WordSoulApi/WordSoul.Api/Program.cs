@@ -100,7 +100,7 @@ builder.Services.AddDbContext<WordSoulDbContext>(options =>
 // Thêm dịch vụ CORS
 var allowedOrigins = builder.Configuration["AllowedOrigins"]?
     .Split(",", StringSplitOptions.RemoveEmptyEntries)
-    ?? ["http://localhost:5173"];
+    ?? ["http://localhost:5173", "http://localhost:3000"];
 
 builder.Services.AddCors(options =>
 {
@@ -205,6 +205,7 @@ builder.Services.AddScoped<IUserAchievementRepository, UserAchievementRepository
 builder.Services.AddScoped<IUserAchievementService, UserAchievementService>();
 
 builder.Services.AddScoped<IPetBuffService, PetBuffService>();
+builder.Services.AddScoped<ISystemConfigurationService, SystemConfigurationService>();
 
 // Upload Assests
 builder.Services.AddScoped<IUploadAssetsService, UploadAssetsService>();

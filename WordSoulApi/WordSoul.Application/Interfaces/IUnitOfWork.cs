@@ -32,6 +32,7 @@ namespace WordSoul.Application.Interfaces
         ISystemConfigurationRepository SystemConfiguration { get; }
 
 
+
         Task<int> SaveChangesAsync(CancellationToken ct = default);
         Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken ct = default);
     }

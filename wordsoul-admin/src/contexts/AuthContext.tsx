@@ -33,13 +33,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (token) {
       try {
         const decoded: any = jwtDecode(token);
+        const userRole = decoded.role || decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+
         // Only allow Admin or SuperAdmin
-        if (decoded.role === 'Admin' || decoded.role === 'SuperAdmin') {
+        if (userRole === 'Admin' || userRole === 'SuperAdmin') {
           setUser({
-            id: decoded.nameid || decoded.sub,
-            name: decoded.unique_name || decoded.name,
+            id: decoded.nameid || decoded.sub || decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'],
+            name: decoded.unique_name || decoded.name || decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
             email: decoded.email,
-            role: decoded.role,
+            role: userRole,
           });
         } else {
           // Unauthorized role
@@ -61,12 +63,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const login = (token: string) => {
     const decoded: any = jwtDecode(token);
-    if (decoded.role === 'Admin' || decoded.role === 'SuperAdmin') {
+    const userRole = decoded.role || decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+
+    if (userRole === 'Admin' || userRole === 'SuperAdmin') {
       setUser({
-        id: decoded.nameid || decoded.sub,
-        name: decoded.unique_name || decoded.name,
+        id: decoded.nameid || decoded.sub || decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'],
+        name: decoded.unique_name || decoded.name || decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
         email: decoded.email,
-        role: decoded.role,
+        role: userRole,
       });
       // Set cookie in browser
       document.cookie = `adminAccessToken=${token};path=/;max-age=86400`;
