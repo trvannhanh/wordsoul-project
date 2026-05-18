@@ -16,7 +16,8 @@ namespace WordSoul.Application.DTOs.VocabularySet
         public int? Id { get; set; } // Có ID nếu từ này đã tồn tại trong DB
         public bool IsExisting { get; set; } // true: Đã có trong DB, false: Mới sinh bằng AI
         public bool IsAiGenerated { get; set; } // true: Được AI sinh thành công, false: Sinh lỗi/User tự điền
-        
+        public bool IsCustom { get; set; } // true: Từ do người dùng tự thêm thủ công (không qua AI)
+
         [Required(ErrorMessage = "Word is required")]
         public string Word { get; set; } = "";
         

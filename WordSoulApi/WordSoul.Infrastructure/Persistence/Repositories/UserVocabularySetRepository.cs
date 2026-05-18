@@ -48,5 +48,17 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
             _context.UserVocabularySets.Update(userVocabularySet);
             await Task.CompletedTask;
         }
+
+        //-------------------------------------DELETE-------------------------------------------
+
+        // Hủy đăng ký bộ từ vựng
+        public async Task<bool> RemoveUserVocabularySetAsync(int userId, int vocabularySetId, CancellationToken cancellationToken = default)
+        {
+            var entity = await _context.UserVocabularySets
+                .FirstOrDefaultAsync(uvs => uvs.UserId == userId && uvs.VocabularySetId == vocabularySetId, cancellationToken);
+            if (entity == null) return false;
+            _context.UserVocabularySets.Remove(entity);
+            return true;
+        }
     }
 }

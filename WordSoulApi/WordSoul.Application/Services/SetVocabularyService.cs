@@ -1,5 +1,4 @@
-﻿using CloudinaryDotNet.Actions;
-using Microsoft.Extensions.Caching.Memory;
+using CloudinaryDotNet.Actions;
 using Microsoft.Extensions.Logging;
 using WordSoul.Application.DTOs;
 using WordSoul.Application.DTOs.Vocabulary;
@@ -14,20 +13,13 @@ namespace WordSoul.Application.Services
     {
         private readonly IUnitOfWork _uow;
         private readonly ILogger<SetVocabularyService> _logger;
-        private readonly IMemoryCache _cache;
-
-        // Theo dõi các key cache để xóa theo prefix (thread-safe)
-        private readonly HashSet<string> _cacheKeys = new();
-        private readonly object _lockObject = new();
 
         public SetVocabularyService(
             IUnitOfWork uow,
-            ILogger<SetVocabularyService> logger,
-            IMemoryCache cache)
+            ILogger<SetVocabularyService> logger)
         {
             _uow = uow;
             _logger = logger;
-            _cache = cache;
         }
 
         // ============================================================================
@@ -89,9 +81,6 @@ namespace WordSoul.Application.Services
             await _uow.SetVocabulary.CreateSetVocabularyAsync(setVocabulary, cancellationToken);
             await _uow.SaveChangesAsync(cancellationToken);
 
-            // Xóa cache liên quan
-            InvalidateCacheByPrefix($"VocabulariesInSet_{setId}_");
-            InvalidateCacheByPrefix($"VocabularySetFull_{setId}_");
 
             _logger.LogInformation("Successfully added vocabulary ID {VocabId} to set ID {SetId}", vocabulary.Id, setId);
 
@@ -110,12 +99,49 @@ namespace WordSoul.Application.Services
             };
         }
 
+        /// <summary>
+        /// Thêm một từ vựng đã có sẵn (theo vocabId) vào bộ từ vựng. Chỉ owner được thực hiện.
+        /// </summary>
+        public async Task<bool> AddExistingVocabularyToSetAsync(
+            int setId,
+            int vocabId,
+            int requestingUserId,
+            CancellationToken cancellationToken = default)
+        {
+            var set = await _uow.VocabularySet.GetVocabularySetByIdAsync(setId, cancellationToken)
+                ?? throw new KeyNotFoundException("Bộ từ vựng không tồn tại.");
+
+            if (set.CreatedById != requestingUserId)
+                throw new UnauthorizedAccessException("Bạn không có quyền chỉnh sửa bộ từ vựng này.");
+
+            var vocab = await _uow.Vocabulary.GetVocabularyByIdAsync(vocabId, cancellationToken)
+                ?? throw new KeyNotFoundException("Từ vựng không tồn tại.");
+
+            // Kiểm tra đã có trong bộ chưa
+            var existing = await _uow.SetVocabulary.GetSetVocabularyAsync(vocabId, setId, cancellationToken);
+            if (existing != null)
+                throw new ArgumentException("Từ vựng đã có trong bộ này.");
+
+            var maxOrder = await _uow.SetVocabulary.GetVocabularyOrderMaxAsync(setId, cancellationToken);
+            var link = new SetVocabulary
+            {
+                VocabularySetId = setId,
+                VocabularyId = vocabId,
+                Order = maxOrder + 1
+            };
+            await _uow.SetVocabulary.CreateSetVocabularyAsync(link, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation("Existing vocab {VocabId} added to set {SetId} by user {UserId}", vocabId, setId, requestingUserId);
+            return true;
+        }
+
         // ============================================================================
         // READ
         // ============================================================================
 
         /// <summary>
-        /// Lấy danh sách từ vựng trong một bộ với phân trang (có cache 15 phút).
+        /// Lấy danh sách từ vựng trong một bộ với phân trang.
         /// </summary>
         public async Task<PagedResult<VocabularyDto>> GetVocabulariesInSetAsync(
             int setId,
@@ -124,14 +150,6 @@ namespace WordSoul.Application.Services
             CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("Get vocabularies in set {SetId} - Page {Page}/{PageSize}", setId, pageNumber, pageSize);
-
-            var cacheKey = $"VocabulariesInSet_{setId}_{pageNumber}_{pageSize}";
-
-            if (_cache.TryGetValue(cacheKey, out PagedResult<VocabularyDto> cached))
-            {
-                _logger.LogDebug("Cache HIT: {CacheKey}", cacheKey);
-                return cached;
-            }
 
             // Kiểm tra bộ có tồn tại
             var setExists = await _uow.VocabularySet.GetVocabularySetByIdAsync(setId, cancellationToken)
@@ -162,19 +180,11 @@ namespace WordSoul.Application.Services
                 TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
             };
 
-            //Cache kết quả
-            lock (_lockObject)
-            {
-                _cache.Set(cacheKey, result, TimeSpan.FromMinutes(15));
-                _cacheKeys.Add(cacheKey);
-            }
-
-            _logger.LogDebug("Cache MISS & STORED: {CacheKey}", cacheKey);
             return result;
         }
 
         /// <summary>
-        /// Lấy thông tin chi tiết đầy đủ của bộ từ vựng kèm danh sách từ (có phân trang + cache).
+        /// Lấy thông tin chi tiết đầy đủ của bộ từ vựng kèm danh sách từ (có phân trang).
         /// </summary>
         public async Task<VocabularySetFullDetailDto?> GetVocabularySetFullDetailsAsync(
             int id,
@@ -182,13 +192,6 @@ namespace WordSoul.Application.Services
             int pageSize = 10,
             CancellationToken cancellationToken = default)
         {
-            var cacheKey = $"VocabularySetFull_{id}_{page}_{pageSize}";
-
-            if (_cache.TryGetValue(cacheKey, out VocabularySetFullDetailDto cached))
-            {
-                _logger.LogDebug("Cache HIT: {CacheKey}", cacheKey);
-                return cached;
-            }
 
             var vocabularySet = await _uow.SetVocabulary.GetVocabularySetFullDetailsAsync(id, page, pageSize, cancellationToken);
             if (vocabularySet == null)
@@ -205,29 +208,181 @@ namespace WordSoul.Application.Services
                 Description = vocabularySet.Description,
                 DifficultyLevel = vocabularySet.DifficultyLevel.ToString(),
                 IsActive = vocabularySet.IsActive,
+                IsPublic = vocabularySet.IsPublic,
+                CreatedById = vocabularySet.CreatedById,
+                CreatedByUsername = vocabularySet.CreatedBy?.Username,
                 CreatedAt = vocabularySet.CreatedAt,
                 TotalVocabularies = totalVocabularies,
                 CurrentPage = page,
                 PageSize = pageSize,
+                // Override fields ưu tiên cao hơn giá trị gốc từ Vocabulary
                 Vocabularies = vocabularySet.SetVocabularies.Select(sv => new VocabularyDetailDto
                 {
                     Id = sv.VocabularyId,
                     Word = sv.Vocabulary.Word,
-                    Meaning = sv.Vocabulary.Meaning,
+                    Meaning = sv.OverrideMeaning ?? sv.Vocabulary.Meaning,
                     ImageUrl = sv.Vocabulary.ImageUrl,
-                    Pronunciation = sv.Vocabulary.Pronunciation,
-                    PartOfSpeech = sv.Vocabulary.PartOfSpeech.ToString()
+                    Pronunciation = sv.OverridePronunciation ?? sv.Vocabulary.Pronunciation,
+                    PronunciationUrl = sv.Vocabulary.PronunciationUrl,
+                    ExampleSentenceAudioUrl = sv.Vocabulary.ExampleSentenceAudioUrl,
+                    PartOfSpeech = sv.Vocabulary.PartOfSpeech.ToString(),
+                    ExampleSentence = sv.OverrideExampleSentence ?? sv.Vocabulary.ExampleSentence,
+                    Description = sv.OverrideDescription ?? sv.Vocabulary.Description,
+                    IsCustomEdited = sv.OverrideMeaning != null || sv.OverrideExampleSentence != null
+                                  || sv.OverridePronunciation != null || sv.OverrideDescription != null,
+                    OriginalMeaning = sv.OverrideMeaning != null ? sv.Vocabulary.Meaning : null
                 }).ToList()
             };
 
-            lock (_lockObject)
+            return result;
+        }
+
+        // ============================================================================
+        // UPDATE
+        // ============================================================================
+
+        /// <summary>
+        /// Cập nhật Override fields của một từ vựng trong bộ.
+        /// Chỉ ghi vào SetVocabulary — không đụng bảng Vocabulary gốc.
+        /// </summary>
+        public async Task<VocabularyDetailDto?> UpdateVocabularyInSetAsync(
+            int setId,
+            int vocabId,
+            UpdateVocabularyInSetDto dto,
+            int requestingUserId,
+            CancellationToken cancellationToken = default)
+        {
+            _logger.LogInformation("UpdateVocabularyInSet: set={SetId}, vocab={VocabId}, user={UserId}", setId, vocabId, requestingUserId);
+
+            // Lấy bộ từ vựng để validate owner
+            var vocabularySet = await _uow.VocabularySet.GetVocabularySetByIdAsync(setId, cancellationToken)
+                ?? throw new KeyNotFoundException($"Bộ từ vựng {setId} không tồn tại.");
+
+            if (vocabularySet.CreatedById != requestingUserId)
+                throw new UnauthorizedAccessException("Bạn không có quyền chỉnh sửa bộ từ vựng này.");
+
+            var link = await _uow.SetVocabulary.GetSetVocabularyAsync(vocabId, setId, cancellationToken);
+            if (link == null)
             {
-                _cache.Set(cacheKey, result, TimeSpan.FromMinutes(15));
-                _cacheKeys.Add(cacheKey);
+                _logger.LogWarning("SetVocabulary link not found: vocab={VocabId} in set={SetId}", vocabId, setId);
+                return null;
             }
 
-            _logger.LogDebug("Cache MISS & STORED: {CacheKey}", cacheKey);
-            return result;
+            // Ghi Override — null nghĩa là xóa override (reset về giá trị gốc)
+            link.OverrideMeaning = dto.OverrideMeaning;
+            link.OverrideExampleSentence = dto.OverrideExampleSentence;
+            link.OverridePronunciation = dto.OverridePronunciation;
+            link.OverrideDescription = dto.OverrideDescription;
+
+            await _uow.SetVocabulary.UpdateSetVocabularyAsync(link, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation("Override updated for vocab={VocabId} in set={SetId}", vocabId, setId);
+
+            var vocab = link.Vocabulary!;
+            return new VocabularyDetailDto
+            {
+                Id = link.VocabularyId,
+                Word = vocab.Word,
+                Meaning = link.OverrideMeaning ?? vocab.Meaning,
+                ImageUrl = vocab.ImageUrl,
+                Pronunciation = link.OverridePronunciation ?? vocab.Pronunciation,
+                PronunciationUrl = vocab.PronunciationUrl,
+                ExampleSentenceAudioUrl = vocab.ExampleSentenceAudioUrl,
+                PartOfSpeech = vocab.PartOfSpeech.ToString(),
+                ExampleSentence = link.OverrideExampleSentence ?? vocab.ExampleSentence,
+                Description = link.OverrideDescription ?? vocab.Description,
+                IsCustomEdited = link.OverrideMeaning != null || link.OverrideExampleSentence != null
+                              || link.OverridePronunciation != null || link.OverrideDescription != null,
+                OriginalMeaning = link.OverrideMeaning != null ? vocab.Meaning : null
+            };
+        }
+
+        // ============================================================================
+        // GET PROGRESS
+        // ============================================================================
+
+        /// <summary>
+        /// Lấy thống kê tiến trình học của user với bộ từ vựng chỉ định.
+        /// </summary>
+        public async Task<VocabularySetProgressDto?> GetVocabularySetProgressAsync(
+            int setId,
+            int userId,
+            CancellationToken cancellationToken = default)
+        {
+            _logger.LogInformation("GetVocabularySetProgress: set={SetId}, user={UserId}", setId, userId);
+
+            // Lấy UserVocabularySet
+            var userSet = await _uow.UserVocabularySet.GetUserVocabularySetAsync(userId, setId, cancellationToken);
+
+            // Lấy toàn bộ VocabularyId trong bộ
+            var vocabIds = await _uow.SetVocabulary.GetVocabularyIdsInSetAsync(setId, cancellationToken);
+            if (vocabIds.Count == 0) return null;
+
+            // Lấy tất cả tiến trình của user với các từ trong bộ
+            var allProgress = await _uow.UserVocabularyProgress.GetAllUserVocabularyProgressByUserAsync(userId, cancellationToken);
+            var progressInSet = allProgress.Where(p => vocabIds.Contains(p.VocabularyId)).ToList();
+
+            // Phân loại theo MemoryState
+            var masteredCount   = progressInSet.Count(p => p.MemoryState == "Mastered");
+            var reviewCount     = progressInSet.Count(p => p.MemoryState == "Review");
+            var learningCount   = progressInSet.Count(p => p.MemoryState == "Learning");
+            // New = từ trong bộ chưa có progress record
+            var newCount = vocabIds.Count - progressInSet.Count;
+
+            // Tính trung bình
+            var avgRetention = progressInSet.Count > 0
+                ? (double)progressInSet.Average(p => p.RetentionScore)
+                : 0;
+            var totalCorrect = progressInSet.Sum(p => p.CorrectCount);
+            var totalWrong   = progressInSet.Sum(p => p.WrongCount);
+            var correctRate  = (totalCorrect + totalWrong) > 0
+                ? (double)totalCorrect / (totalCorrect + totalWrong) * 100
+                : 0;
+
+            // Heatmap: nhóm VocabularyReviewHistory
+            var heatmapDays = await GetConfigIntAsync("VocabSet.HeatmapDays", 30, cancellationToken);
+            var since = DateTime.UtcNow.AddDays(-heatmapDays);
+            var reviewHistories = await _uow.VocabularyReviewHistory.GetReviewHistoryForVocabsAsync(
+                userId, vocabIds, since, cancellationToken);
+
+            var heatmap = reviewHistories
+                .GroupBy(r => DateOnly.FromDateTime(r.ReviewTime))
+                .Select(g => new ActivityDay { Date = g.Key, ReviewCount = g.Count() })
+                .OrderBy(a => a.Date)
+                .ToList();
+
+            // Top từ yếu nhất (RetentionScore thấp, đã học)
+            var weakLimit = await GetConfigIntAsync("VocabSet.WeakWordsLimit", 5, cancellationToken);
+            var weakVocabs = progressInSet
+                .OrderBy(p => p.RetentionScore)
+                .Take(weakLimit)
+                .Select(p => new WeakVocabularyDto
+                {
+                    Id = p.VocabularyId,
+                    Word = p.Vocabulary?.Word,
+                    Meaning = p.Vocabulary?.Meaning,
+                    RetentionScore = p.RetentionScore,
+                    MemoryState = p.MemoryState
+                })
+                .ToList();
+
+            return new VocabularySetProgressDto
+            {
+                TotalVocabularies = vocabIds.Count,
+                MasteredCount = masteredCount,
+                ReviewCount = reviewCount,
+                LearningCount = learningCount,
+                NewCount = newCount < 0 ? 0 : newCount,
+                OverallRetentionScore = Math.Round(avgRetention, 1),
+                CorrectRate = Math.Round(correctRate, 1),
+                TotalCompletedSession = userSet?.TotalCompletedSession ?? 0,
+                StartedAt = userSet?.CreatedAt,
+                IsCompleted = userSet?.IsCompleted ?? false,
+                ActivityHeatmap = heatmap,
+                WeakVocabularies = weakVocabs,
+                VocabMemoryStates = progressInSet.ToDictionary(p => p.VocabularyId, p => p.MemoryState ?? "Learning")
+            };
         }
 
         // ============================================================================
@@ -256,11 +411,6 @@ namespace WordSoul.Application.Services
             if (success)
             {
                 await _uow.SaveChangesAsync(cancellationToken);
-
-                // Xóa cache liên quan
-                InvalidateCacheByPrefix($"VocabulariesInSet_{setId}_");
-                InvalidateCacheByPrefix($"VocabularySetFull_{setId}_");
-
                 _logger.LogInformation("Successfully removed vocabulary {VocabId} from set {SetId}", vocabId, setId);
             }
 
@@ -269,23 +419,24 @@ namespace WordSoul.Application.Services
 
         // ============================================================================
         // PRIVATE HELPERS
+        // HELPERS
         // ============================================================================
 
-        /// <summary>
-        /// Xóa tất cả các key cache có tiền tố nhất định (thread-safe).
-        /// </summary>
-        private void InvalidateCacheByPrefix(string prefix)
+        private async Task<int> GetConfigIntAsync(string key, int defaultValue, CancellationToken ct)
         {
-            lock (_lockObject)
+            try
             {
-                var keysToRemove = _cacheKeys.Where(k => k.StartsWith(prefix)).ToList();
-                foreach (var key in keysToRemove)
+                var config = await _uow.SystemConfiguration.GetByKeyAsync(key, ct);
+                if (config != null && int.TryParse(config.Value, out var val))
                 {
-                    _cache.Remove(key);
-                    _cacheKeys.Remove(key);
-                    _logger.LogDebug("Invalidated cache key: {Key}", key);
+                    return val;
                 }
             }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Lỗi khi lấy SystemConfiguration key={Key}", key);
+            }
+            return defaultValue;
         }
     }
 }

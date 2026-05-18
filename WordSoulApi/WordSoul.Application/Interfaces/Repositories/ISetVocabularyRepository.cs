@@ -1,4 +1,4 @@
-﻿using WordSoul.Domain.Entities;
+using WordSoul.Domain.Entities;
 
 namespace WordSoul.Application.Interfaces.Repositories
 {
@@ -73,6 +73,14 @@ namespace WordSoul.Application.Interfaces.Repositories
             SetVocabulary setVocabulary,
             CancellationToken cancellationToken = default);
 
+        // ----------------------------- UPDATE -----------------------------
+        /// <summary>
+        /// Cập nhật thông tin SetVocabulary (bao gồm Override fields).
+        /// </summary>
+        Task<SetVocabulary> UpdateSetVocabularyAsync(
+            SetVocabulary setVocabulary,
+            CancellationToken cancellationToken = default);
+
         // ----------------------------- OTHER -----------------------------
         /// <summary>
         /// Kiểm tra xem một từ (word) đã tồn tại trong bộ từ vựng hay chưa.
@@ -87,6 +95,13 @@ namespace WordSoul.Application.Interfaces.Repositories
         /// </summary>
         Task<int> CountVocabulariesInSetAsync(
             int vocabularySetId,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Lấy danh sách VocabularyId của tất cả từ vựng trong bộ (dùng để query progress).
+        /// </summary>
+        Task<List<int>> GetVocabularyIdsInSetAsync(
+            int setId,
             CancellationToken cancellationToken = default);
     }
 }

@@ -35,5 +35,24 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
                 .OrderByDescending(vrh => vrh.ReviewTime)
                 .ToListAsync(cancellationToken);
         }
+
+        /// <summary>
+        /// Lấy lịch sử ôn tập của user cho các từ trong một bộ, trong 30 ngày gần nhất.
+        /// Được dùng để tạo Heatmap hoạt động học tập.
+        /// </summary>
+        public async Task<List<VocabularyReviewHistory>> GetReviewHistoryForVocabsAsync(
+            int userId,
+            List<int> vocabIds,
+            DateTime since,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.VocabularyReviewHistories
+                .AsNoTracking()
+                .Where(vrh => vrh.UserId == userId
+                           && vocabIds.Contains(vrh.VocabularyId)
+                           && vrh.ReviewTime >= since)
+                .OrderBy(vrh => vrh.ReviewTime)
+                .ToListAsync(cancellationToken);
+        }
     }
 }

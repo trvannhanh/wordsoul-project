@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 using WordSoul.Domain.Enums;
 
@@ -40,7 +40,11 @@ namespace WordSoul.Application.DTOs.Vocabulary
         public string? PronunciationUrl { get; set; }
     }
 
-    public class UpdateVocabularyInSetDto
+    /// <summary>
+    /// DTO dùng cho Admin cập nhật toàn bộ thông tin một từ vựng trong bộ (Admin full update).
+    /// Khác với UpdateVocabularyInSetDto trong namespace VocabularySet (User override fields).
+    /// </summary>
+    public class AdminUpdateVocabularyInSetDto
     {
         [Required(ErrorMessage = "Word is required")]
         public required string Word { get; set; }

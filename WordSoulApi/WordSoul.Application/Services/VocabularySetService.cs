@@ -1,5 +1,5 @@
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using WordSoul.Application.DTOs.Vocabulary;
 using WordSoul.Application.DTOs.VocabularySet;
 using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
@@ -12,20 +12,14 @@ namespace WordSoul.Application.Services
     {
         private readonly IUnitOfWork _uow;
         private readonly ILogger<VocabularySetService> _logger;
-        private readonly IMemoryCache _cache;
         private readonly IGeminiAiService _geminiAiService;
         private readonly IAzureSpeechService _azureSpeechService;
         private readonly IUnsplashService _unsplashService;
         private readonly IVocabularyAiCacheService _aiCache;
 
-        // Thread-safe cache key tracking
-        private readonly HashSet<string> _cacheKeys = [];
-        private readonly object _cacheLock = new();
-
         public VocabularySetService(
             IUnitOfWork uow,
             ILogger<VocabularySetService> logger,
-            IMemoryCache cache,
             IGeminiAiService geminiAiService,
             IAzureSpeechService azureSpeechService,
             IUnsplashService unsplashService,
@@ -33,7 +27,6 @@ namespace WordSoul.Application.Services
         {
             _uow = uow;
             _logger = logger;
-            _cache = cache;
             _geminiAiService = geminiAiService;
             _azureSpeechService = azureSpeechService;
             _unsplashService = unsplashService;
@@ -80,7 +73,11 @@ namespace WordSoul.Application.Services
                 Title = dto.Title.Trim(),
                 Theme = dto.Theme,
                 ImageUrl = imageUrl,
-                Description = dto.Description?.Trim(),
+                Description = dto.Description != null
+                    ? dto.Description.Trim().Length > 300
+                        ? dto.Description.Trim()[..300]
+                        : dto.Description.Trim()
+                    : null,
                 DifficultyLevel = dto.DifficultyLevel,
                 IsActive = dto.IsActive,
                 IsPublic = dto.IsPublic,
@@ -132,9 +129,6 @@ namespace WordSoul.Application.Services
             await _uow.UserVocabularySet.AddVocabularySetToUserAsync(userSetLink, cancellationToken);
 
             await _uow.SaveChangesAsync(cancellationToken);
-
-            InvalidateCachePrefix("VocabularySets_");
-            InvalidateCachePrefix($"VocabularySet_{vocabularySet.Id}");
 
             _logger.LogInformation("Vocabulary set created: ID {SetId} by User {UserId}", vocabularySet.Id, userId);
 
@@ -337,7 +331,7 @@ namespace WordSoul.Application.Services
                         ImageUrl = fetchedImageUrl,
                         PronunciationUrl = wordAudioUrl,
                         ExampleSentenceAudioUrl = exampleAudioUrl,
-                        IsCustom = !vocabPreview.IsAiGenerated, // Chỉ đánh dấu custom nếu user tự điền (không do AI sinh)
+                        IsCustom = vocabPreview.IsCustom || !vocabPreview.IsAiGenerated, // Tự điền thủ công hoặc AI không sinh được
                         CreatorId = userId
                     };
 
@@ -405,14 +399,6 @@ namespace WordSoul.Application.Services
             int id,
             CancellationToken cancellationToken = default)
         {
-            var cacheKey = $"VocabularySet_{id}";
-
-            if (_cache.TryGetValue(cacheKey, out VocabularySetDetailDto cached))
-            {
-                _logger.LogDebug("Cache HIT: {CacheKey}", cacheKey);
-                return cached;
-            }
-
             var set = await _uow.VocabularySet.GetVocabularySetByIdAsync(id, cancellationToken);
             if (set == null) return null;
 
@@ -425,11 +411,10 @@ namespace WordSoul.Application.Services
                 Description = set.Description,
                 DifficultyLevel = set.DifficultyLevel,
                 IsActive = set.IsActive,
+                CreatedById = set.CreatedById,
                 CreatedAt = set.CreatedAt,
                 VocabularyIds = set.SetVocabularies.OrderBy(sv => sv.Order).Select(sv => sv.VocabularyId).ToList(),
             };
-
-            CacheResult(cacheKey, dto, TimeSpan.FromMinutes(30));
             return dto;
         }
 
@@ -447,21 +432,10 @@ namespace WordSoul.Application.Services
             int pageSize = 20,
             CancellationToken cancellationToken = default)
         {
-            var cacheKey = $"VocabularySets_{title ?? "∅"}_{theme}_{difficulty}_{createdAfter:yyyyMMdd}_{isOwned}_{userId ?? 0}_{pageNumber}_{pageSize}";
-
-            if (_cache.TryGetValue(cacheKey, out IEnumerable<VocabularySetDto> cached))
-            {
-                _logger.LogDebug("Cache HIT: {CacheKey}", cacheKey);
-                return cached;
-            }
-
             var sets = await _uow.VocabularySet.GetAllVocabularySetsAsync(
                 title, theme, difficulty, createdAfter, isOwned, userId, pageNumber, pageSize, cancellationToken);
 
-            var dtos = sets.Select(s => MapToDto(s, userId)).ToList();
-
-            CacheResult(cacheKey, dtos, TimeSpan.FromMinutes(15));
-            return dtos;
+            return sets.Select(s => MapToDto(s, userId)).ToList();
         }
 
         /// <summary>
@@ -474,19 +448,11 @@ namespace WordSoul.Application.Services
             int limitPerTheme = 6,
             CancellationToken cancellationToken = default)
         {
-            var cacheKey = $"VocabularySetsGrouped_{title ?? "∅"}_{userId ?? 0}_{limitPerTheme}";
-
-            if (_cache.TryGetValue(cacheKey, out Dictionary<string, List<VocabularySetDto>> cached))
-            {
-                _logger.LogDebug("Cache HIT: {CacheKey}", cacheKey);
-                return cached;
-            }
-
-            // Fetch all matching sets without pagination
+            var maxLimit = await GetConfigIntAsync("VocabularySets.MaxGroupedLimit", 1000, cancellationToken);
             var allSets = await _uow.VocabularySet.GetAllVocabularySetsAsync(
-                title, null, null, null, null, userId, 1, 1000, cancellationToken);
+                title, null, null, null, null, userId, 1, maxLimit, cancellationToken);
 
-            var groupedDtos = allSets
+            return allSets
                 .GroupBy(s => s.Theme.ToString())
                 .ToDictionary(
                     g => g.Key,
@@ -494,9 +460,6 @@ namespace WordSoul.Application.Services
                           .Take(limitPerTheme)
                           .ToList()
                 );
-
-            CacheResult(cacheKey, groupedDtos, TimeSpan.FromMinutes(15));
-            return groupedDtos;
         }
 
         // ============================================================================
@@ -504,28 +467,26 @@ namespace WordSoul.Application.Services
         // ============================================================================
 
         /// <summary>
-        /// Cập nhật bộ từ vựng (chỉ chủ sở hữu hoặc admin).
+        /// Cập nhật bộ từ vựng (chỉ chủ sở hữu mới được cập nhật).
+        /// Admin không cần kiểm tra owner (truyền null).
         /// </summary>
         public async Task<VocabularySetDto?> UpdateVocabularySetAsync(
             int id,
             UpdateVocabularySetDto dto,
+            int? requestingUserId = null,
             CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(dto.Title))
                 throw new ArgumentException("Title is required.", nameof(dto.Title));
 
-            _logger.LogInformation("Updating vocabulary set ID {SetId}", id);
+            _logger.LogInformation("Updating vocabulary set ID {SetId} by user {UserId}", id, requestingUserId);
 
             var set = await _uow.VocabularySet.GetVocabularySetByIdAsync(id, cancellationToken)
                 ?? throw new KeyNotFoundException($"Vocabulary set {id} not found.");
 
-            // Validate vocabularies
-            var uniqueIds = dto.VocabularyIds.Distinct().ToList();
-            foreach (var vid in uniqueIds)
-            {
-                if (await _uow.Vocabulary.GetVocabularyByIdAsync(vid, cancellationToken) == null)
-                    throw new KeyNotFoundException($"Vocabulary ID {vid} not found.");
-            }
+            // Validate owner nếu không phải admin (requestingUserId != null)
+            if (requestingUserId.HasValue && set.CreatedById != requestingUserId.Value)
+                throw new UnauthorizedAccessException($"User {requestingUserId} is not the owner of set {id}.");
 
             // Update fields
             set.Title = dto.Title.Trim();
@@ -534,21 +495,27 @@ namespace WordSoul.Application.Services
             set.DifficultyLevel = dto.DifficultyLevel;
             set.IsActive = dto.IsActive;
 
-            // Replace vocabularies
-            set.SetVocabularies = uniqueIds
-                .Select((vid, idx) => new SetVocabulary
+            // Replace vocabularies only when caller explicitly provides IDs (non-empty list)
+            if (dto.VocabularyIds.Count > 0)
+            {
+                var uniqueIds = dto.VocabularyIds.Distinct().ToList();
+                foreach (var vid in uniqueIds)
                 {
-                    VocabularySetId = id,
-                    VocabularyId = vid,
-                    Order = idx + 1
-                })
-                .ToList();
+                    if (await _uow.Vocabulary.GetVocabularyByIdAsync(vid, cancellationToken) == null)
+                        throw new KeyNotFoundException($"Vocabulary ID {vid} not found.");
+                }
+                set.SetVocabularies = uniqueIds
+                    .Select((vid, idx) => new SetVocabulary
+                    {
+                        VocabularySetId = id,
+                        VocabularyId = vid,
+                        Order = idx + 1
+                    })
+                    .ToList();
+            }
 
             await _uow.VocabularySet.UpdateVocabularySetAsync(set, cancellationToken);
             await _uow.SaveChangesAsync(cancellationToken);
-
-            InvalidateCachePrefix($"VocabularySet_{id}");
-            InvalidateCachePrefix("VocabularySets_");
 
             _logger.LogInformation("Vocabulary set {SetId} updated successfully", id);
             return MapToDto(set);
@@ -559,24 +526,60 @@ namespace WordSoul.Application.Services
         // ============================================================================
 
         /// <summary>
-        /// Xóa bộ từ vựng (chỉ chủ sở hữu hoặc admin).
+        /// Xóa bộ từ vựng. Chỉ chủ sở hữu mới được xóa bộ của mình (requestingUserId != null).
+        /// Admin không cần kiểm tra owner (requestingUserId = null).
         /// </summary>
         public async Task<bool> DeleteVocabularySetAsync(
             int id,
+            int? requestingUserId = null,
             CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation("Deleting vocabulary set ID {SetId}", id);
+            _logger.LogInformation("Deleting vocabulary set ID {SetId} by user {UserId}", id, requestingUserId);
+
+            if (requestingUserId.HasValue)
+            {
+                var set = await _uow.VocabularySet.GetVocabularySetByIdAsync(id, cancellationToken)
+                    ?? throw new KeyNotFoundException($"Vocabulary set {id} not found.");
+                if (set.CreatedById != requestingUserId.Value)
+                    throw new UnauthorizedAccessException($"User {requestingUserId} is not the owner of set {id}.");
+            }
 
             var success = await _uow.VocabularySet.DeleteVocabularySetAsync(id, cancellationToken);
             if (success)
             {
                 await _uow.SaveChangesAsync(cancellationToken);
-                InvalidateCachePrefix($"VocabularySet_{id}");
-                InvalidateCachePrefix("VocabularySets_");
                 _logger.LogInformation("Vocabulary set {SetId} deleted", id);
             }
 
             return success;
+        }
+
+        /// <summary>
+        /// Chuyển bộ từ vựng từ private sang public.
+        /// Chỉ cho phép một chiều (private -> public). Chỉ chủ sở hữu được thực hiện.
+        /// </summary>
+        public async Task<VocabularySetDto?> PublishVocabularySetAsync(
+            int id,
+            int requestingUserId,
+            CancellationToken cancellationToken = default)
+        {
+            _logger.LogInformation("Publishing vocabulary set {SetId} by user {UserId}", id, requestingUserId);
+
+            var set = await _uow.VocabularySet.GetVocabularySetByIdAsync(id, cancellationToken)
+                ?? throw new KeyNotFoundException($"Vocabulary set {id} not found.");
+
+            if (set.CreatedById != requestingUserId)
+                throw new UnauthorizedAccessException("Bạn không có quyền publish bộ từ vựng này.");
+
+            if (set.IsPublic)
+                throw new InvalidOperationException("Bộ từ vựng đã ở trạng thái public.");
+
+            set.IsPublic = true;
+            await _uow.VocabularySet.UpdateVocabularySetAsync(set, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation("Vocabulary set {SetId} published successfully", id);
+            return MapToDto(set);
         }
 
         // ============================================================================
@@ -630,32 +633,167 @@ namespace WordSoul.Application.Services
             //TotalVocabularies = set.SetVocabularies.Count
         };
 
-        private void CacheResult<T>(string key, T value, TimeSpan expiration)
-        {
-            var options = new MemoryCacheEntryOptions()
-                .SetAbsoluteExpiration(expiration)
-                .SetSize(1);
 
-            lock (_cacheLock)
+        // ============================================================================
+        // HELPERS
+        // ============================================================================
+
+        // ============================================================================
+
+        /// <summary>
+        /// Tạo từ vựng mới (với ảnh Unsplash + audio Azure TTS) và thêm ngay vào bộ. Chỉ owner mới được gọi.
+        /// </summary>
+        public async Task<AdminVocabularyDto> AddNewVocabularyToSetAsync(
+            int setId,
+            VocabularyPreviewDto dto,
+            int userId,
+            CancellationToken cancellationToken = default)
+        {
+            var set = await _uow.VocabularySet.GetVocabularySetByIdAsync(setId, cancellationToken)
+                ?? throw new KeyNotFoundException("Bộ từ vựng không tồn tại.");
+
+            if (set.CreatedById != userId)
+                throw new UnauthorizedAccessException("Bạn không có quyền chỉnh sửa bộ từ vựng này.");
+
+            if (string.IsNullOrWhiteSpace(dto.Word))
+                throw new ArgumentException("Từ vựng không được để trống.");
+
+            var wordKey = dto.Word.Trim().ToLowerInvariant();
+
+            var imageUrl = await _unsplashService.GetFirstImageUrlAsync(dto.Word, cancellationToken);
+
+            var wordAudioUrl = await _azureSpeechService.SynthesizeAndUploadAsync(
+                dto.Word, $"{wordKey}-word.mp3", cancellationToken);
+
+            string? exampleAudioUrl = null;
+            if (!string.IsNullOrWhiteSpace(dto.ExampleSentence))
             {
-                _cache.Set(key, value, options);
-                _cacheKeys.Add(key);
+                exampleAudioUrl = await _azureSpeechService.SynthesizeAndUploadAsync(
+                    dto.ExampleSentence, $"{wordKey}-example.mp3", cancellationToken);
             }
+
+            var vocabulary = new Vocabulary
+            {
+                Word = dto.Word.Trim(),
+                Meaning = dto.Meaning?.Trim(),
+                Pronunciation = dto.Pronunciation?.Trim(),
+                PartOfSpeech = MapPartOfSpeech(dto.PartOfSpeech ?? ""),
+                CEFRLevel = MapCefrLevel(dto.CefrLevel ?? ""),
+                Description = dto.Description?.Trim(),
+                ExampleSentence = dto.ExampleSentence?.Trim(),
+                ImageUrl = imageUrl,
+                PronunciationUrl = wordAudioUrl,
+                ExampleSentenceAudioUrl = exampleAudioUrl,
+                IsCustom = true,
+                CreatorId = userId,
+            };
+
+            await _uow.Vocabulary.CreateVocabularyAsync(vocabulary, cancellationToken);
+            // ← Save first so EF assigns vocabulary.Id before we use it as FK
+            await _uow.SaveChangesAsync(cancellationToken);
+
+            var maxOrder = await _uow.SetVocabulary.GetVocabularyOrderMaxAsync(setId, cancellationToken);
+            var setVocabulary = new SetVocabulary
+            {
+                VocabularySetId = setId,
+                VocabularyId = vocabulary.Id,
+                Order = maxOrder + 1,
+            };
+            await _uow.SetVocabulary.CreateSetVocabularyAsync(setVocabulary, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation("User {UserId} added new vocab '{Word}' (ID {VocabId}) to set {SetId}",
+                userId, vocabulary.Word, vocabulary.Id, setId);
+
+            return new AdminVocabularyDto
+            {
+                Id = vocabulary.Id,
+                Word = vocabulary.Word,
+                Meaning = vocabulary.Meaning,
+                Pronunciation = vocabulary.Pronunciation,
+                PartOfSpeech = vocabulary.PartOfSpeech?.ToString(),
+                CEFRLevel = vocabulary.CEFRLevel?.ToString(),
+                Description = vocabulary.Description,
+                ExampleSentence = vocabulary.ExampleSentence,
+                ImageUrl = vocabulary.ImageUrl,
+                PronunciationUrl = vocabulary.PronunciationUrl,
+            };
         }
 
-        private void InvalidateCachePrefix(string prefix)
+        /// <summary>
+        /// Cập nhật core fields của từ vựng do user tạo (word, meaning, pronunciation, example, description, ảnh).
+        /// Chỉ owner bộ từ được gọi; chỉ áp dụng với từ do chính user đó tạo (CreatorId == userId).
+        /// </summary>
+        public async Task<AdminVocabularyDto> UpdateVocabularyCoreAsync(
+            int setId,
+            int vocabId,
+            UpdateVocabularyCoreDto dto,
+            int userId,
+            CancellationToken cancellationToken = default)
         {
-            lock (_cacheLock)
+            var set = await _uow.VocabularySet.GetVocabularySetByIdAsync(setId, cancellationToken)
+                ?? throw new KeyNotFoundException("Bộ từ vựng không tồn tại.");
+
+            if (set.CreatedById != userId)
+                throw new UnauthorizedAccessException("Bạn không có quyền chỉnh sửa bộ từ vựng này.");
+
+            var vocab = await _uow.Vocabulary.GetVocabularyByIdAsync(vocabId, cancellationToken)
+                ?? throw new KeyNotFoundException("Từ vựng không tồn tại.");
+
+            if (vocab.CreatorId != userId)
+                throw new UnauthorizedAccessException("Bạn chỉ có thể chỉnh sửa từ vựng do chính mình tạo.");
+
+            // Cập nhật các trường được cung cấp
+            if (!string.IsNullOrWhiteSpace(dto.Word))
+                vocab.Word = dto.Word.Trim();
+            if (dto.Meaning != null)
+                vocab.Meaning = dto.Meaning.Trim();
+            if (dto.Pronunciation != null)
+                vocab.Pronunciation = dto.Pronunciation.Trim();
+            if (dto.ExampleSentence != null)
+                vocab.ExampleSentence = dto.ExampleSentence.Trim();
+            if (dto.Description != null)
+                vocab.Description = dto.Description.Trim();
+
+            // Cập nhật ảnh nếu controller đã upload lên Cloudinary
+            if (!string.IsNullOrWhiteSpace(dto.ImageUrl))
+                vocab.ImageUrl = dto.ImageUrl;
+
+            await _uow.Vocabulary.UpdateVocabularyAsync(vocab, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation("User {UserId} updated core of vocab {VocabId} in set {SetId}", userId, vocabId, setId);
+
+            return new AdminVocabularyDto
             {
-                var keys = _cacheKeys.Where(k => k.StartsWith(prefix)).ToList();
-                foreach (var key in keys)
+                Id = vocab.Id,
+                Word = vocab.Word,
+                Meaning = vocab.Meaning,
+                Pronunciation = vocab.Pronunciation,
+                PartOfSpeech = vocab.PartOfSpeech?.ToString(),
+                CEFRLevel = vocab.CEFRLevel?.ToString(),
+                Description = vocab.Description,
+                ExampleSentence = vocab.ExampleSentence,
+                ImageUrl = vocab.ImageUrl,
+                PronunciationUrl = vocab.PronunciationUrl,
+            };
+        }
+
+        private async Task<int> GetConfigIntAsync(string key, int defaultValue, CancellationToken ct)
+        {
+            try
+            {
+                var config = await _uow.SystemConfiguration.GetByKeyAsync(key, ct);
+                if (config != null && int.TryParse(config.Value, out var val))
                 {
-                    _cache.Remove(key);
-                    _cacheKeys.Remove(key);
+                    return val;
                 }
-                if (keys.Any())
-                    _logger.LogDebug("Invalidated {Count} cache keys with prefix {Prefix}", keys.Count, prefix);
             }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Lỗi khi lấy SystemConfiguration key={Key}", key);
+            }
+            return defaultValue;
         }
 
         private static WordSoul.Domain.Enums.PartOfSpeech MapPartOfSpeech(string pos) => pos?.ToLowerInvariant().Trim() switch

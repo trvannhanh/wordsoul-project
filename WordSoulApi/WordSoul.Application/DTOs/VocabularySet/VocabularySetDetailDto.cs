@@ -11,6 +11,7 @@ namespace WordSoul.Application.DTOs.VocabularySet
         public string? Description { get; set; }
         public VocabularyDifficultyLevel DifficultyLevel { get; set; }
         public bool IsActive { get; set; }
+        public int? CreatedById { get; set; }
         public DateTime CreatedAt { get; set; }
         public List<int> VocabularyIds { get; set; } = [];
     }
