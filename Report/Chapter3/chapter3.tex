@@ -55,6 +55,30 @@ Lớp hạ tầng (Infrastructure Layer) chịu trách nhiệm hiện thực hó
 
 Tóm lại, sự phối hợp giữa cấu trúc Frontend dựa trên thành phần và Backend theo kiến trúc Onion đã tạo nên một đơn vị phần mềm vững chắc. Sự kết hợp này không chỉ đáp ứng trọn vẹn các yêu cầu chức năng về học tập và Gamification mà còn thiết lập một nền tảng kỹ thuật chuẩn mực, đảm bảo khả năng vận hành ổn định và sẵn sàng cho các giai đoạn phát triển mở rộng trong thực tế.
 
+\subsection{Thiết kế phân quyền theo vai trò}
+
+Việc bảo vệ các tài nguyên nhạy cảm của hệ thống được giải quyết thông qua mô hình phân quyền dựa trên vai trò (Role-Based Access Control — RBAC). Thay vì kiểm tra quyền tại từng phương thức riêng lẻ, ASP.NET Core cho phép khai báo chính sách bảo mật tập trung ngay tại cấp độ lớp bằng thuộc tính \texttt{[Authorize(Roles = "...")]}, sau đó Middleware Pipeline xác thực JWT tự động thực thi chính sách này trước khi bất kỳ luồng nghiệp vụ nào được khởi chạy \cite{MiddlewareDocs2024}.
+
+Hệ thống phân định ba cấp độ vai trò với phạm vi quyền tăng dần. Vai trò \textbf{User} là mức mặc định dành cho người học, giới hạn trong phạm vi các endpoint học tập, đối kháng và quản lý tài sản cá nhân. Vai trò \textbf{Admin} mở rộng quyền ra các tác vụ quản trị nội dung — quản lý từ vựng, nhiệm vụ hàng ngày, thành tích và cấu hình Gym Leader. Vai trò \textbf{SuperAdmin} ở cấp cao nhất, kế thừa toàn bộ quyền của Admin đồng thời có quyền độc quyền truy cập vào các endpoint vận hành hạ tầng: cấu hình hệ thống, kiểm tra sức khỏe (Health Check) và bảo trì tự động (xả Redis cache, dọn dẹp cơ sở dữ liệu cũ).
+
+\begin{table}[H]
+\centering
+\caption{Ánh xạ quyền truy cập theo vai trò lên các nhóm Controller.}
+\label{tab:rbac}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Nhóm Controller} & \textbf{User} & \textbf{Admin} & \textbf{SuperAdmin} \\ \hline
+Learning, Battle, Pet, Quest (User) & \checkmark & & \\ \hline
+VocabularySet, Achievement (Admin) & & \checkmark & \checkmark \\ \hline
+GymLeader (Admin) & & \checkmark & \checkmark \\ \hline
+Quests \& Achievements (Admin) & & \checkmark & \checkmark \\ \hline
+System Config, Health, Maintenance & & & \checkmark \\ \hline
+\end{tabular}
+\end{table}
+
+Thông tin vai trò được ASP.NET Core Identity ghi vào JWT dưới dạng claim chuẩn tại thời điểm đăng nhập. Phía ứng dụng quản trị, thông tin này được đọc trực tiếp từ token bằng thư viện \texttt{jwtDecode} nhằm điều chỉnh động giao diện điều hướng — người dùng với vai trò \textbf{SuperAdmin} sẽ thấy thêm mục System Health so với \textbf{Admin} thông thường. Mọi yêu cầu vào hệ thống đều phải thông qua lớp kiểm tra claim này; bất kỳ token nào không thuộc hai vai trò trên sẽ bị từ chối ngay tại bước khởi tạo phiên.
+
 \subsection{Mô hình hóa chức năng qua sơ đồ Use Case}
 
 Kiến trúc chức năng của hệ thống được trực quan hóa thông qua sơ đồ Use Case tại Hình~\ref{fig_uc}. Đây là tài liệu kỹ thuật quan trọng nhằm xác lập ranh giới vận hành và các luồng tương tác giữa các chủ thể tham gia vào hệ thống. Việc xây dựng mô hình này không chỉ giúp định hình phạm vi nghiệp vụ mà còn đảm bảo sự giao thoa hài hòa giữa các nguyên lý giáo dục hiện đại và cơ chế trò chơi hóa, tạo tiền đề vững chắc cho công tác thiết kế cấu trúc dữ liệu ở các giai đoạn tiếp theo.
@@ -232,18 +256,64 @@ Song song với trục học thuật, hệ thống Gamification được vận h
 
 Lược đồ cơ sở dữ liệu vật lý là bản hiện thực hóa các thực thể logic thành các cấu trúc lưu trữ cụ thể trên hệ quản trị SQL Server. Kiến trúc này được thiết kế với mục tiêu tối thượng là bảo toàn tính toàn vẹn dữ liệu thông qua mạng lưới khóa chính (PK) và khóa ngoại (FK) chặt chẽ, đồng thời tạo ra một cấu trúc tối ưu cho các tác vụ truy xuất lịch sử học tập và điều phối dữ liệu trận đấu thời gian thực với độ trễ thấp nhất.
 
+Nhằm đảm bảo tính dễ đọc khi in ấn và phục vụ cho việc tra cứu chi tiết cột, kiểu dữ liệu và ràng buộc khóa ngoại, lược đồ cơ sở dữ liệu vật lý được phân rã thành năm nhóm sub-diagram độc lập theo phạm vi nghiệp vụ tương ứng.
+
+\subsubsection{Nhóm Quản lý người dùng và Xác thực}
+
 \begin{figure}[H]
 \centering
-\includegraphics[width=15cm]{images/FinalDB.png}
-\caption{Kiến trúc thực thể quan hệ (ERD) của hệ thống.}
-\label{fig_db}
+\includegraphics[width=14cm]{images/FinalDB.png}
+\caption{Lược đồ ERD nhóm quản lý người dùng và xác thực.}
+\label{fig_erd_users}
 \end{figure}
 
-Hệ thống lưu trữ được định hình với bảng \textbf{Users} đóng vai trò là điểm hội tụ dữ liệu, thiết lập các liên kết một-nhiều tới các phân hệ thông báo, nhật ký tương tác và quản lý phiên. Đối với lớp nội dung học thuật, kiến trúc phân tầng được thể hiện qua \textbf{Vocabularies} và \textbf{VocabularySets}; trong đó, bảng trung gian \textbf{SetVocabularies} được triển khai để giải quyết triệt để mối quan hệ nhiều-nhiều, cho phép các đơn vị tri thức được tổ chức linh hoạt theo nhiều chủ đề khác nhau. 
+Bảng \textbf{Users} là điểm hội tụ trung tâm của toàn bộ lược đồ, lưu trữ định danh, thông tin bảo mật và các thông số tăng trưởng của người học gồm điểm kinh nghiệm (XP), điểm thành tích (AP), chuỗi rèn luyện (StreakCount), số gợi ý còn lại (HintBalance) và cấp độ hiện tại (Level). Bảng \textbf{RefreshTokens} quản lý vòng đời của các mã làm mới JWT, hỗ trợ cơ chế luân phiên token an toàn. Bảng \textbf{Notifications} ghi nhận các sự kiện thông báo đẩy thời gian thực với trường \texttt{IsRead} và liên kết khóa ngoại chặt chẽ tới \textbf{Users}, đảm bảo tính toàn vẹn khi xóa tài khoản theo quy tắc Cascade Delete.
 
-Tiến trình tương tác của người dùng được ghi nhận một cách hệ thống qua \textbf{LearningSessions} và \textbf{AnswerRecords}, tạo thành nguồn dữ liệu thô phục vụ cho việc phân tích hành vi và hiệu suất học tập. Để vận hành thuật toán Spaced Repetition, bảng \textbf{UserVocabularyProgresses} giữ nhiệm vụ lưu trữ các tham số tính toán tức thời, trong khi \textbf{VocabularyReviewHistories} đóng vai trò là kho dữ liệu thứ cấp, giúp hệ thống có cái nhìn xuyên suốt về quá trình tịnh tiến tri thức của cá nhân.
+\subsubsection{Nhóm Từ vựng và Nội dung học liệu}
 
-Phân hệ thúc đẩy hành vi được cấu trúc hóa qua nhóm bảng quản lý thực thể ảo (\textbf{Pets}, \textbf{UserOwnedPets}) và hệ thống nhiệm vụ (\textbf{DailyQuests}, \textbf{Achievements}). Một điểm khác biệt chiến lược trong thiết kế là cách thức tổ chức dữ liệu đối kháng thông qua các bảng \textbf{BattleSessions}, \textbf{BattleRounds} và \textbf{BattlePetStates}. Việc phân rã dữ liệu theo từng vòng đấu và trạng thái động của sinh vật ảo giúp hệ thống kiểm soát chặt chẽ các biến số trong trận đấu, từ đó ngăn chặn các rủi ro về sai lệch dữ liệu và gian lận. Ngoài ra, các quy tắc ràng buộc như Cascade Delete hay Set Null được thiết lập một cách có chủ đích nhằm đảm bảo sự nhất quán tuyệt đối của cơ sở dữ liệu trong mọi tình huống vận hành. Tổng thể lược đồ này không chỉ đáp ứng các tiêu chuẩn lưu trữ hiện hành mà còn thiết lập một nền tảng dữ liệu sạch, sẵn sàng cho các bài toán phân tích chuyên sâu hoặc mở rộng tính năng xã hội trong tương lai.
+\begin{figure}[H]
+\centering
+\includegraphics[width=14cm]{images/FinalDB.png}
+\caption{Lược đồ ERD nhóm từ vựng và nội dung học liệu.}
+\label{fig_erd_vocab}
+\end{figure}
+
+Bảng \textbf{Vocabularies} chi tiết hóa các đặc tính ngôn ngữ của từng mục từ, bao gồm phiên âm IPA, nghĩa, câu ví dụ, cấp độ CEFR, từ loại, URL hình ảnh minh họa và đường dẫn tệp âm thanh được tổng hợp bởi Azure Speech Services. Bảng \textbf{VocabularySets} đóng vai trò là các "container" tri thức, định danh chủ đề (Theme), ngưỡng cấp độ yêu cầu và trạng thái công khai. Mối quan hệ nhiều-nhiều giữa hai thực thể này được giải quyết thông qua bảng trung gian \textbf{SetVocabularies}. Bảng \textbf{UserVocabularySets} ghi nhận việc người dùng đăng ký sử dụng bộ từ, đồng thời lưu số lần hoàn thành (Milestone) — thông số then chốt điều phối xác suất phần thưởng thú ảo hiếm theo cơ chế leo thang.
+
+\subsubsection{Nhóm Lịch sử học tập và Thuật toán SRS}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=14cm]{images/FinalDB.png}
+\caption{Lược đồ ERD nhóm lịch sử học tập và thuật toán SRS.}
+\label{fig_erd_srs}
+\end{figure}
+
+Bảng \textbf{LearningSessions} theo dõi từng phiên tương tác với các trường trạng thái, loại phiên (học mới hoặc ôn tập), thời gian bắt đầu và kết thúc. Mỗi câu trả lời được ghi nhận chi tiết trong \textbf{AnswerRecords} với các trường \texttt{IsCorrect}, \texttt{ElapsedMs} và loại câu hỏi, cung cấp nguồn dữ liệu thô cho các phân tích hiệu suất sau này. Hai bảng cốt lõi cho thuật toán SM-2 là \textbf{UserVocabularyProgresses} và \textbf{VocabularyReviewHistories}: bảng trước lưu trạng thái tức thời của từng từ vựng bao gồm chỉ số Easiness Factor (EF), khoảng cách ôn tập hiện tại (Interval), số lần lặp (RepetitionCount) và thời điểm ôn tập kế tiếp (NextReviewTime); bảng sau giữ vai trò nhật ký dài hạn, giúp phân tích xu hướng ghi nhớ và phát hiện các mẫu quên lãng theo thời gian.
+
+\subsubsection{Nhóm Gamification — Thú ảo, Vật phẩm và Nhiệm vụ}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=14cm]{images/FinalDB.png}
+\caption{Lược đồ ERD nhóm Gamification, thú ảo và hệ thống nhiệm vụ.}
+\label{fig_erd_gamification}
+\end{figure}
+
+Bảng \textbf{Pets} định nghĩa mẫu thiết kế của các sinh vật ảo với các thuộc tính PetType, PetRarity, DropRate và chuỗi tiến hóa (NextEvolutionId tự tham chiếu). Bảng \textbf{UserOwnedPets} thể hiện quan hệ sở hữu, lưu trữ cấp độ, XP hiện tại, trạng thái kích hoạt và chỉ số sinh tồn của từng thú ảo. Hệ thống vật phẩm được quản lý qua cặp bảng \textbf{Items} và \textbf{UserItems}, trong đó \textbf{UserItems} áp dụng ràng buộc duy nhất trên cặp (UserId, ItemId) để đảm bảo tính nhất quán tồn kho. Các bảng \textbf{DailyQuests} và \textbf{UserDailyQuests} điều phối hệ thống nhiệm vụ hàng ngày với trạng thái hoàn thành và nhận thưởng; cặp \textbf{Achievements} và \textbf{UserAchievements} theo dõi tiến độ thành tích dài hạn thông qua trường \texttt{ProgressValue} so sánh với ngưỡng \texttt{ConditionValue}.
+
+\subsubsection{Nhóm Hệ thống Đối kháng}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=14cm]{images/FinalDB.png}
+\caption{Lược đồ ERD nhóm hệ thống đối kháng.}
+\label{fig_erd_battle}
+\end{figure}
+
+Dữ liệu chiến đấu được phân rã thành ba cấp độ chi tiết tăng dần. Bảng \textbf{BattleSessions} đại diện cho một phiên đấu đầy đủ, lưu trữ loại đối kháng (PvP/PvE), trạng thái, điểm ELO thay đổi và thời điểm kết thúc. Bảng \textbf{BattleRounds} ghi nhận từng vòng câu hỏi với bộ từ vựng sử dụng và kết quả vòng đó. Bảng \textbf{BattlePetStates} duy trì trạng thái động của từng thú ảo trong mỗi vòng đấu, bao gồm HP hiện tại và thuộc tính hệ — thiết kế này cho phép khôi phục chính xác trạng thái nếu kết nối WebSocket bị gián đoạn và phải tái kết nối. Đối với chế độ PvE, bảng \textbf{GymLeaders} định nghĩa thông số của các đối thủ hệ thống với bộ từ vựng và ngưỡng HP riêng biệt theo từng cấp thử thách.
+
+Tổng thể lược đồ này không chỉ đáp ứng các tiêu chuẩn lưu trữ hiện hành mà còn thiết lập một nền tảng dữ liệu sạch, sẵn sàng cho các bài toán phân tích chuyên sâu hoặc mở rộng tính năng xã hội trong tương lai.
 
 \section{Thiết kế hệ thống giao diện người dùng}
 
@@ -315,6 +385,24 @@ Phân hệ đối kháng được thiết kế để chuyển hóa việc kiểm
 \end{figure}
 
 Tổng thể bộ giao diện đã bao quát toàn diện các kịch bản sử dụng quan trọng, đảm bảo tính khả thi cao khi triển khai kỹ thuật. Bố cục trực quan phối hợp cùng các cơ chế phản hồi tức thì tạo nên một hệ thống không chỉ mạnh mẽ về chức năng mà còn hấp dẫn về mặt trải nghiệm, góp phần duy trì thói quen học tập bền vững cho người dùng.
+
+\subsection{Bảng điều phối quản trị viên}
+
+Song song với ứng dụng học tập dành cho người dùng đầu cuối, hệ thống triển khai một ứng dụng quản trị độc lập trên nền tảng Next.js (App Router) — \textbf{wordsoul-admin} — hoạt động như một giao diện điều hành tập trung cho đội ngũ vận hành. Việc tách biệt ứng dụng quản trị khỏi ứng dụng học tập không chỉ giảm thiểu bề mặt tấn công mà còn cho phép triển khai độc lập và thiết lập chính sách bảo mật riêng biệt theo từng ứng dụng.
+
+Quy trình xác thực được thực thi theo hai tầng. Tại tầng máy chủ (Backend), \texttt{AdminController} và các controller quản trị liên quan được bảo vệ bởi thuộc tính \texttt{[Authorize(Roles = "Admin,SuperAdmin")]}. Tại tầng giao diện (Frontend), \texttt{AuthContext} đọc JWT được lưu trong Cookie của trình duyệt, giải mã claim vai trò và kiểm tra ngay tại khởi động ứng dụng — bất kỳ token nào không mang vai trò \textbf{Admin} hoặc \textbf{SuperAdmin} sẽ bị xóa Cookie và chuyển hướng về trang đăng nhập. Để duy trì phiên làm việc không gián đoạn, luồng làm mới token (Refresh Token Rotation) được tích hợp trực tiếp vào Axios interceptor: khi nhận phản hồi HTTP 401, hệ thống tự động gọi endpoint \texttt{/auth/refresh-token}, cập nhật Access Token mới và thực hiện lại yêu cầu gốc mà không yêu cầu quản trị viên đăng nhập lại.
+
+Giao diện điều hướng của ứng dụng được thiết kế theo nguyên tắc hiển thị điều kiện dựa trên vai trò. Thanh bên (Sidebar) hiển thị năm mục điều hướng dành cho tất cả quản trị viên: Bảng điều khiển (Dashboard), Quản lý người dùng, Kho từ vựng, Nhiệm vụ \& Thành tích, và Vận hành Gym. Mục thứ sáu là \textbf{System Health \& Config} chỉ xuất hiện với các tài khoản mang vai trò \textbf{SuperAdmin}, cung cấp giao diện trực tiếp để chỉnh sửa tham số hệ thống, xem trạng thái cơ sở dữ liệu và thực thi các lệnh bảo trì hạ tầng như xả bộ nhớ đệm Redis.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=15cm]{images/Final_IF_Static.png}
+\caption{Giao diện bảng điều phối quản trị viên (wordsoul-admin).}
+\label{fig:ch3_admin}
+\end{figure}
+
+Nhờ sự phối hợp giữa kiểm soát truy cập tầng API và lớp điều hướng phía giao diện, hệ thống đảm bảo rằng quyền hạn của từng vai trò được thực thi nhất quán ở cả hai phía — ngay cả khi quản trị viên cố tình truy cập trực tiếp URL bị hạn chế, yêu cầu tương ứng vẫn sẽ bị Backend từ chối do không đáp ứng điều kiện claim.
+
 \section{Đánh giá kết quả thực thi dự án}
 
 Sau chu trình khép kín từ phân tích, thiết kế đến thực thi kỹ thuật, hệ thống đã hoàn tất việc chuyển đổi các mục tiêu nghiên cứu thành một giải pháp phần mềm có tính ứng dụng cao. Kết quả đạt được ghi nhận sự tương thích tuyệt đối giữa các module nghiệp vụ phức hợp với hệ thống yêu cầu chức năng đã xác lập ban đầu. Không dừng lại ở các mô hình lý thuyết, sản phẩm hiện tại đã đạt tới trạng thái sẵn sàng cho các kịch bản triển khai thực tế trên diện rộng, đánh dấu sự thành công trong việc tích hợp các quy tắc Gamification vào một nền tảng học thuật chính thống.
@@ -485,4 +573,61 @@ Song song đó, qua khảo sát trải nghiệm người dùng thử nghiệm, g
     \caption{Biểu đồ biến thiên Throughput và đánh giá các ngưỡng điều kiện (Thresholds).}
     \label{fig:k6_graph}
 \end{figure}
+
+\subsection{Tích hợp trí tuệ nhân tạo và tự động hóa nội dung học liệu}
+
+Một trong những điểm kỹ thuật nổi bật của hệ thống là khả năng tự động hóa quá trình biên soạn từ vựng thông qua tích hợp đồng thời ba dịch vụ bên ngoài: Google Gemini API, Unsplash API và bộ nhớ đệm Redis phân tán.
+
+Khi quản trị viên nhập danh sách từ vựng thô vào hệ thống, \texttt{GeminiAiService} sẽ gọi Gemini API (mô hình \texttt{gemini-2.5-flash}) để sinh tự động toàn bộ metadata bao gồm phiên âm IPA, nghĩa tiếng Việt, câu ví dụ ngữ cảnh, phân loại từ loại và cấp độ CEFR tương ứng. Nhằm tuân thủ giới hạn tần suất của API, dữ liệu được xử lý theo từng lô (batch) với kích thước mặc định là 10 từ và khoảng dừng 5.000 ms giữa các lô, đảm bảo tính ổn định khi xử lý danh sách từ vựng lớn. Song song với việc sinh metadata, \texttt{UnsplashService} truy vấn Unsplash API để lấy URL hình ảnh minh họa phù hợp theo ngữ nghĩa của từng từ, giúp kích thích khả năng liên tưởng hình ảnh trong quá trình học tập.
+
+Điểm then chốt về hiệu năng trong luồng này là lớp \texttt{VocabularyAiCacheService}, được triển khai dựa trên \texttt{IDistributedCache} — giao diện tiêu chuẩn của ASP.NET Core ánh xạ tới Redis trong môi trường thực tế. Mỗi kết quả AI cho một từ vựng được lưu cache với khóa có tiền tố \texttt{vocab-ai-preview:} và thời gian tồn tại (TTL) là 7 ngày. Chiến lược này cho phép hệ thống bỏ qua hoàn toàn lần gọi Gemini API đối với các từ đã được xử lý trước đó, giảm thiểu chi phí vận hành và độ trễ phản hồi đáng kể. Quan trọng hơn, lớp cache được thiết kế theo nguyên tắc \textit{graceful degradation}: nếu Redis không khả dụng, luồng xử lý vẫn tiếp tục bình thường bằng cách gọi Gemini API trực tiếp, tránh tình trạng cascading failure.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=15cm]{images/Final_IF_Set1.png}
+\caption{Giao diện sinh metadata từ vựng tự động bằng Gemini AI.}
+\label{fig:ch3_ai_generate}
+\end{figure}
+
+\subsection{Dịch vụ tổng hợp âm thanh và câu hỏi nghe hiểu}
+
+Nhằm hỗ trợ toàn diện kỹ năng nghe hiểu (Listening) — một trong bốn dạng tương tác cốt lõi của phiên học — hệ thống tích hợp Azure AI Speech SDK để tổng hợp giọng đọc tiếng Anh chuẩn và lưu trữ kết quả trên Azure Blob Storage.
+
+Luồng xử lý được vận hành bởi \texttt{AzureSpeechService}: khi một từ vựng mới được thêm vào hệ thống, phương thức \texttt{SynthesizeAndUploadAsync} gọi Azure Cognitive Services với giọng đọc \texttt{en-US-AndrewNeural} và định dạng đầu ra MP3 (Audio16Khz32KBitRateMonoMp3). Tệp âm thanh sau khi được tổng hợp sẽ được tải lên Azure Blob Storage và URL công khai sẽ được ghi vào trường \texttt{AudioUrl} của bản ghi \textbf{Vocabularies} trong cơ sở dữ liệu. Trong phiên học, khi người dùng gặp câu hỏi dạng Listening, Frontend trực tiếp phát tệp MP3 từ URL Blob Storage — không cần gọi lại API tổng hợp, đảm bảo độ trễ phát âm thanh ở mức tối thiểu.
+
+Sự lựa chọn Azure Blob Storage thay vì các giải pháp lưu trữ nội bộ xuất phát từ hai lý do kỹ thuật chính: thứ nhất, mô hình CDN tích hợp của Azure cho phép phân phối tệp âm thanh tới người dùng với độ trễ thấp bất kể vị trí địa lý; thứ hai, khả năng mở rộng tự động loại bỏ rủi ro về giới hạn dung lượng khi quy mô kho từ vựng tăng trưởng.
+
+\subsection{Hệ thống nhiệm vụ hàng ngày, thành tích và tồn kho vật phẩm}
+
+Bên cạnh vòng lặp học tập chính, hệ thống duy trì hai cơ chế thúc đẩy hành vi dài hạn song song: nhiệm vụ hàng ngày (Daily Quest) và hệ thống thành tích (Achievement).
+
+Mỗi khi người dùng đăng nhập vào ngày mới, \texttt{DailyQuestService} kiểm tra xem nhiệm vụ trong ngày đã được tạo chưa — nếu chưa, hệ thống sẽ sinh ngẫu nhiên một tập hợp nhiệm vụ từ danh sách các mẫu đang kích hoạt (Active Quest Templates) và gán cho người dùng. Mỗi nhiệm vụ có loại phần thưởng riêng biệt: XP, vật phẩm hoặc thú ảo. Khi người dùng đạt đủ tiến độ và nhận thưởng, \texttt{ClaimRewardAsync} điều phối luồng xử lý phần thưởng tương ứng thông qua các service chuyên biệt.
+
+Song song với nhiệm vụ ngắn hạn, \texttt{UserAchievementService} theo dõi tiến độ thành tích dài hạn. Phương thức \texttt{UpdateAchievementProgressAsync} được gọi sau mỗi sự kiện nghiệp vụ quan trọng — hoàn thành phiên học, mở khóa thú ảo, đạt chuỗi rèn luyện — nhằm cập nhật \texttt{ProgressValue} cho tất cả thành tích có \texttt{ConditionType} tương ứng. Khi tiến độ vượt ngưỡng, thành tích được đánh dấu hoàn thành và người dùng có thể nhận vật phẩm phần thưởng. Toàn bộ các thao tác cập nhật thành tích được bọc trong giao dịch cơ sở dữ liệu (\texttt{BeginTransactionAsync}) để đảm bảo tính nguyên tử.
+
+Hệ thống tồn kho được bảo vệ khỏi tranh chấp đồng thời (race condition) thông qua cơ chế khóa cấp người dùng trong \texttt{UserInventoryService}: mỗi \texttt{userId} được ánh xạ tới một \texttt{SemaphoreSlim(1,1)} riêng biệt. Điều này đảm bảo rằng khi nhiều yêu cầu thêm/bớt vật phẩm xảy ra đồng thời cho cùng một người dùng — ví dụ hoàn thành nhiệm vụ và nhận thưởng trận đấu trong cùng thời điểm — số lượng tồn kho luôn được cập nhật chính xác mà không cần khóa ở tầng cơ sở dữ liệu.
+
+\subsection{Cơ chế buff từ thú ảo và mô hình cân bằng trò chơi}
+
+Hệ thống đã hiện thực hóa một mô hình cân bằng trò chơi hai tầng: buff thuộc tính từ thú ảo đang kích hoạt và cơ chế leo thang xác suất phần thưởng theo cột mốc.
+
+\texttt{PetBuffService} tính toán các chỉ số buff dựa trên sự giao thoa giữa PetType và PetRarity của thú ảo đang kích hoạt. Mỗi kiểu nguyên tố cung cấp một loại buff đặc thù: ví dụ, hệ Fire tăng hệ số nhân XP, hệ Water tăng xác suất bắt thú ảo (Catch Bonus), hệ Grass cung cấp lá chắn gợi ý (Hint Shield), hệ Electric giảm hình phạt khi trả lời sai. Bên cạnh đó, độ hiếm của thú ảo nhân thêm hệ số khuếch đại vào toàn bộ buff: Common (1.0×), Uncommon (1.2×), Rare (1.4×), Epic (1.7×) và Legendary (2.0×). Nếu thú ảo sở hữu thuộc tính phụ (SecondaryType), các buff sẽ được tổng hợp theo nguyên tắc cộng dồn, tạo ra những tổ hợp sức mạnh độc đáo thúc đẩy chiến lược sưu tầm và lựa chọn thú ảo.
+
+Tầng thứ hai của mô hình cân bằng nằm ở cơ chế phần thưởng thú ảo sau phiên học, được điều phối bởi \texttt{SetRewardPetService}. Thay vì xác suất cố định, hệ thống áp dụng hệ số nhân leo thang tỷ lệ thuận với số lần hoàn thành bộ từ (Milestone): dưới 5 lần (hệ số 1×), từ 5 đến 10 lần (5×), từ 10 đến 20 lần (10×), từ 20 đến 50 lần (20×) và từ 50 lần trở lên (50×). Điều này có nghĩa là những thú ảo Legendary vốn có xác suất rất thấp sẽ dần trở nên khả dụng hơn đối với những người học kiên trì, tạo ra một vòng lặp động lực dài hạn: nỗ lực học thuật tích lũy không chỉ cải thiện năng lực ngôn ngữ mà còn trực tiếp mở ra các phần thưởng giải trí xứng đáng.
+
+\begin{table}[H]
+\centering
+\caption{Hệ số nhân xác suất phần thưởng thú ảo hiếm theo cột mốc hoàn thành.}
+\label{tab:milestone_multiplier}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|c|c|l|}
+\hline
+\textbf{Số lần hoàn thành (Milestone)} & \textbf{Hệ số nhân (RarityMultiplier)} & \textbf{Ý nghĩa} \\ \hline
+$< 5$ & 1× & Xác suất cơ bản, chưa có ưu đãi. \\ \hline
+$5 \leq m < 10$ & 5× & Bắt đầu thưởng cho người học chăm chỉ. \\ \hline
+$10 \leq m < 20$ & 10× & Thú ảo Rare trở nên dễ tiếp cận hơn. \\ \hline
+$20 \leq m < 50$ & 20× & Thú ảo Epic trong tầm với. \\ \hline
+$m \geq 50$ & 50× & Thú ảo Legendary khả dụng cho người học bền bỉ. \\ \hline
+\end{tabular}
+\end{table}
 

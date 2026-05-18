@@ -29,6 +29,7 @@
 
 % Chèn và định dạng mã giả, bảng biểu, tiêu đề...
 \usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{algorithm}
 \usepackage[noend]{algpseudocode}
 \usepackage{titlesec}
@@ -38,6 +39,7 @@
 \usepackage{tikz}
 \usetikzlibrary{calc}      
 \usepackage[hidelinks]{hyperref}
+\usepackage{longtable}
 
 % --- SỬA LỖI TẠI ĐÂY ---
 % 1. Lệnh \includeonly PHẢI nằm ở đây (trước \begin{document}).
@@ -61,6 +63,8 @@
 \tableofcontents
 
 \listoffigures
+
+\input{Appendix/abbreviations.tex}
 
 \clearpage
 \pagenumbering{arabic} 
