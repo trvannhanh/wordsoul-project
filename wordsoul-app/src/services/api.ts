@@ -32,6 +32,10 @@ export const endpoints = {
   vocabularySet: (vocabularySetId: number) => `/vocabulary-sets/${vocabularySetId}`, // Bộ từ vựng chỉ định
   fetchGroupedVocabularySets: '/vocabulary-sets/grouped', // Gom nhóm bộ từ vựng
   vocabularySetDetail: (vocabularySetId: number) => `/vocabulary-sets/${vocabularySetId}/details`, // Chi tiết bộ từ vựng
+  vocabularySetPublish: (id: number) => `/vocabulary-sets/${id}/publish`, // Publish bộ private → public
+  vocabularySetVocabOverride: (setId: number, vocabId: number) => `/vocabulary-sets/${setId}/vocabularies/${vocabId}`, // Override từ trong bộ
+  vocabularySetMyProgress: (id: number) => `/vocabulary-sets/${id}/my-progress`, // Tiến trình học của user
+  vocabularySetUnregister: (id: number) => `/vocabulary-sets/${id}/user`, // Hủy đăng ký bộ từ vựng
 
   // Vocabulary
   vocabularies: '/vocabularies', // Tất cả từ vựng

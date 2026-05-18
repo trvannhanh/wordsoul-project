@@ -21,6 +21,7 @@
   --border-color: rgb(2, 6, 23);
   --review-box-background: url("https://res.cloudinary.com/dqpkxxzaf/image/upload/v1759252607/1089608_vq7ah8.png");
   --sidebar-background-color: #e5e7eb; 
+  --text-stroke-color: #ffffff;
 }
 
 .dark {
@@ -31,6 +32,7 @@
   --border-color: #374151;
   --review-box-background: url("https://res.cloudinary.com/dqpkxxzaf/image/upload/v1757662431/wp7159979-anime-pixel-art-wallpapers_kxhy41.png");
   --sidebar-background-color: #101828; 
+  --text-stroke-color: #000000;
 }
 
 body {
@@ -95,6 +97,16 @@ body {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+}
+
+.pixel-text-outline {
+  color: var(--text-color);
+
+  text-shadow:
+    -1px -1px 0 var(--text-stroke-color),
+     1px -1px 0 var(--text-stroke-color),
+    -1px  1px 0 var(--text-stroke-color),
+     1px  1px 0 var(--text-stroke-color);
 }
 
 .pixel-art {

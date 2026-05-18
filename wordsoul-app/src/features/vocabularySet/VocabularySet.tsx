@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDebounce } from 'use-debounce';
-import { fetchGroupedVocabularySets, fetchUserVocabularySets, fetchVocabularySets } from '../../services/vocabularySet';
+import { deleteVocabularySet, fetchGroupedVocabularySets, fetchUserVocabularySets, fetchVocabularySets } from '../../services/vocabularySet';
 import Card from '../../components/Card';
 import Skeleton from '../../components/Skeleton';
 import { useNavigate } from 'react-router-dom';
@@ -9,13 +9,6 @@ import { useAuth } from '../../hooks/Auth/useAuth';
 import WorldMap, { HOTSPOTS } from './WorldMap';
 
 type ViewTab = 'list' | 'map';
-
-// Theme tier groups for the list view
-const THEME_TIERS = [
-    { label: '🌱 Daily Learning', subtitle: 'Cuộc sống · Thiên nhiên · Thời tiết · Ẩm thực', themes: ['DailyLife', 'Nature', 'Weather', 'Food'] },
-    { label: '⚡ Intermediate', subtitle: 'Công nghệ · Du lịch · Sức khỏe · Thể thao', themes: ['Technology', 'Travel', 'Health', 'Sports'] },
-    { label: '🔥 Advanced & Specialized', subtitle: 'Kinh doanh · Khoa học · Nghệ thuật · Bí ẩn · ...', themes: ['Business', 'Science', 'Art', 'Mystery', 'Dark', 'Custom', 'Challenge', 'Poison'] },
-] as const;
 
 const Spinner = () => (
     <div className="absolute right-2 top-1/2 -translate-y-1/2">
@@ -26,24 +19,114 @@ const Spinner = () => (
     </div>
 );
 
-const CardGrid = ({ items }: { items: VocabularySetDto[] }) => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-        {items.map((item) => (
-            <Card
-                key={item.id}
-                title={item.title}
-                description={item.description || 'Không có mô tả'}
-                theme={item.theme}
-                difficultyLevel={item.difficultyLevel}
-                image={item.imageUrl || ''}
-                vocabularySetid={item.id}
-                isPublic={item.isPublic}
-                isOwned={item.isOwned}
-                createdByUsername={item.createdByUsername || 'Unknown'}
-            />
-        ))}
-    </div>
-);
+// Horizontal fade-in slider — flex layout, always-visible nav buttons
+const CardSlider = ({ items, onDelete, prefixSlot, currentUserId }: {
+    items: VocabularySetDto[];
+    onDelete?: (id: number) => void;
+    prefixSlot?: React.ReactNode;
+    currentUserId?: number;
+}) => {
+    const trackRef = useRef<HTMLDivElement>(null);
+    const [canPrev, setCanPrev] = useState(false);
+    const [canNext, setCanNext] = useState(false);
+
+    const CARD_W = 288; // card width
+
+    const scroll = (dir: 1 | -1) => {
+        trackRef.current?.scrollBy({ left: dir * CARD_W * 2, behavior: 'smooth' });
+    };
+
+    const checkScroll = () => {
+        const el = trackRef.current;
+        if (!el) return;
+        setCanPrev(el.scrollLeft > 4);
+        setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+    };
+
+    useEffect(() => {
+        const el = trackRef.current;
+        if (!el) return;
+        // defer so layout is complete
+        const t = setTimeout(checkScroll, 50);
+        el.addEventListener('scroll', checkScroll, { passive: true });
+        return () => { clearTimeout(t); el.removeEventListener('scroll', checkScroll); };
+    }, [items]);
+
+    const NavBtn = ({ dir }: { dir: 1 | -1 }) => {
+        const active = dir === -1 ? canPrev : canNext;
+        return (
+            <button
+                onClick={() => scroll(dir)}
+                disabled={!active}
+                className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center border transition-all self-center
+                    ${active
+                        ? 'bg-gray-700 hover:bg-gray-600 border-gray-500 text-white cursor-pointer shadow'
+                        : 'bg-gray-900 border-gray-700 text-gray-600 cursor-default'}`}
+            >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                        d={dir === -1 ? 'M15 19l-7-7 7-7' : 'M9 5l7 7-7 7'} />
+                </svg>
+            </button>
+        );
+    };
+
+    return (
+        <div className="flex items-center gap-2">
+            <NavBtn dir={-1} />
+            {/* Track */}
+            <div
+                ref={trackRef}
+                className="flex-1 flex gap-4 overflow-x-auto pb-2 items-stretch"
+                style={{ scrollSnapType: 'x mandatory', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+                {prefixSlot}
+                {items.map((item, idx) => (
+                    <div
+                        key={item.id}
+                        className="flex-shrink-0 w-64 sm:w-72 self-stretch"
+                        style={{
+                            scrollSnapAlign: 'start',
+                            animation: `fadeSlideIn 0.3s ease both`,
+                            animationDelay: `${idx * 0.05}s`,
+                        }}
+                    >
+                        <Card
+                            title={item.title}
+                            description={item.description || 'Không có mô tả'}
+                            theme={item.theme}
+                            difficultyLevel={item.difficultyLevel}
+                            image={item.imageUrl || ''}
+                            vocabularySetid={item.id}
+                            isPublic={item.isPublic}
+                            isOwned={item.isOwned}
+                            createdByUsername={item.createdByUsername || 'Unknown'}
+                            onDelete={onDelete && item.createdById != null && item.createdById === currentUserId ? () => onDelete(item.id) : undefined}
+                        />
+                    </div>
+                ))}
+            </div>
+            <NavBtn dir={1} />
+            <style>{`
+                @keyframes fadeSlideIn {
+                    from { opacity: 0; transform: translateX(20px); }
+                    to   { opacity: 1; transform: translateX(0); }
+                }
+            `}</style>
+        </div>
+    );
+};
+
+// Label map for themes
+const THEME_LABELS: Record<string, string> = {
+    DailyLife: 'Đời sống hằng ngày', Nature: 'Thiên Nhiên, cây cỏ, động vật', Food: 'Ẩm thực & Nấu ăn',
+    Weather: 'Thời tiết', Technology: 'Công nghệ, điện tử', Travel: 'Địa lý, du lịch',
+    Health: 'Sức khỏe, y tế', Sports: 'Thể thao', Business: 'Kinh doanh, công nghiệp, tài chính',
+    Science: 'Khoa học', Art: 'Nghệ thuật', Communication: 'Giao tiếp, mạng lưới xã hội',
+    Mystery: 'Bí ẩn, tâm linh, truyền thuyết', Dark: 'Góc tối xã hội', Academic: 'Học thuật, chuyên ngành',
+    Challenge: 'Luyện thi, từ vựng khó', TrapWords: 'Từ dễ gây nhầm lẫn', System: 'Hệ thống vĩ mô, chính trị, luật lệ cổ đại',
+    Custom: 'Khác',
+};
 
 const VocabularySetsPage = () => {
     const { user } = useAuth();
@@ -54,8 +137,23 @@ const VocabularySetsPage = () => {
     // --- List tab state ---
     const [tierSets, setTierSets] = useState<Record<string, VocabularySetDto[]>>({});
     const [mySets, setMySets] = useState<VocabularySetDto[]>([]);
+    const [refreshKey, setRefreshKey] = useState(0);
+    const [mySetFilter, setMySetFilter] = useState<'all' | 'owned'>('all');
 
-    // --- Map tab state ---
+    const handleDeleteSet = async (id: number) => {
+        try {
+            await deleteVocabularySet(id);
+            setMySets(prev => prev.filter(s => s.id !== id));
+            setTierSets(prev => {
+                const updated: Record<string, VocabularySetDto[]> = {};
+                for (const key of Object.keys(prev)) updated[key] = prev[key].filter(s => s.id !== id);
+                return updated;
+            });
+            // Signal other tabs/windows to refresh
+            localStorage.setItem('vocabSetListDirty', Date.now().toString());
+        } catch { /* silently fail */ }
+    };
+
     const [activeTheme, setActiveTheme] = useState<string | null>(null);
     const [themeSets, setThemeSets] = useState<VocabularySetDto[]>([]);
     const [themeLoading, setThemeLoading] = useState(false);
@@ -91,7 +189,16 @@ const VocabularySetsPage = () => {
             }
         };
         loadListData();
-    }, [debouncedSearchTitle, user]);
+    }, [debouncedSearchTitle, user, refreshKey]);
+
+    // Listen for external "dirty" signal (after create / delete from other pages)
+    useEffect(() => {
+        const onStorage = (e: StorageEvent) => {
+            if (e.key === 'vocabSetListDirty') setRefreshKey(k => k + 1);
+        };
+        window.addEventListener('storage', onStorage);
+        return () => window.removeEventListener('storage', onStorage);
+    }, []);
 
     // Load map-view theme sets when activeTheme changes
     useEffect(() => {
@@ -117,9 +224,6 @@ const VocabularySetsPage = () => {
     }, []);
 
     const activeSpot = HOTSPOTS.find(h => h.theme === activeTheme);
-
-    const getTierSets = (themes: readonly string[]) =>
-        themes.flatMap(t => tierSets[t] ?? []);
 
     const SearchBar = (
         <div className="mb-6 relative flex-grow">
@@ -172,7 +276,7 @@ const VocabularySetsPage = () => {
                                 : 'text-gray-400 hover:text-white hover:bg-gray-700'
                                 }`}
                         >
-                            {tab === 'list' ? '📚 Danh sách' : '🗺️ Bản đồ'}
+                            {tab === 'list' ? 'Danh sách' : 'Bản đồ'}
                         </button>
                     ))}
                 </div>
@@ -182,47 +286,66 @@ const VocabularySetsPage = () => {
                     <>
                         {/* My Sets */}
                         {user && (
-                            <section className="mb-12">
-                                <h2 className="text-xl sm:text-2xl font-bold mb-4">Bộ từ vựng của tôi</h2>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-                                    <div
-                                        onClick={() => navigate('/vocabulary-sets/create')}
-                                        className="border border-gray-300 rounded-md p-4 bg-transparent flex items-center justify-center cursor-pointer hover:border-blue-500 hover:scale-105 transition-all duration-300"
-                                    >
-                                        <span className="text-3xl sm:text-4xl">+</span>
+                            <section className="mb-10">
+                                <div className="flex items-center gap-3 mb-4 flex-wrap">
+                                    <h2 className="pixel-text-outline font-pixel text-xl sm:text-2xl font-bold">Bộ từ vựng của tôi</h2>
+                                    <div className="flex rounded-lg font-pixel overflow-hidden border border-gray-600 text-xs">
+                                        <button
+                                            onClick={() => setMySetFilter('all')}
+                                            className={`px-3 py-1 transition-colors ${mySetFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}
+                                        >Tất cả</button>
+                                        <button
+                                            onClick={() => setMySetFilter('owned')}
+                                            className={`px-3 py-1 transition-colors ${mySetFilter === 'owned' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}
+                                        >Do tôi tạo</button>
                                     </div>
-                                    {mySets.length > 0
-                                        ? mySets.map((item) => (
-                                            <Card
-                                                key={item.id}
-                                                title={item.title}
-                                                description={item.description || 'Không có mô tả'}
-                                                theme={item.theme}
-                                                difficultyLevel={item.difficultyLevel}
-                                                image={item.imageUrl || ''}
-                                                vocabularySetid={item.id}
-                                                isPublic={item.isPublic}
-                                                isOwned={item.isOwned}
-                                                createdByUsername={item.createdByUsername || 'Unknown'}
-                                            />
-                                        ))
-                                        : <p className="text-sm text-gray-500 col-span-2">Bạn chưa sở hữu bộ từ vựng nào.</p>
-                                    }
                                 </div>
+                                {(() => {
+                                    const displayedSets = mySetFilter === 'owned'
+                                        ? mySets.filter(s => s.createdById != null && s.createdById === user.id)
+                                        : mySets;
+                                    return displayedSets.length === 0 ? (
+                                        <div
+                                            onClick={() => navigate('/vocabulary-sets/create')}
+                                            className="inline-flex items-center gap-2 border border-dashed border-gray-500 rounded-xl px-6 py-4 cursor-pointer hover:border-blue-500 hover:text-blue-400 transition-all"
+                                        >
+                                            <span className="text-2xl">+</span>
+                                            <span className="text-sm text-gray-400">Tạo bộ từ vựng mới</span>
+                                        </div>
+                                    ) : (
+                                        <CardSlider
+                                            items={displayedSets}
+                                            currentUserId={user.id}
+                                            onDelete={(id) => handleDeleteSet(id)}
+                                            prefixSlot={
+                                                <div
+                                                    onClick={() => navigate('/vocabulary-sets/create')}
+                                                    className="flex-shrink-0 w-64 sm:w-72 border border-dashed border-gray-500 rounded-xl flex items-center justify-center gap-2 cursor-pointer hover:border-blue-500 hover:text-blue-400 transition-all min-h-[160px]"
+                                                    style={{ scrollSnapAlign: 'start' }}
+                                                >
+                                                    <span className="text-2xl">+</span>
+                                                </div>
+                                            }
+                                        />
+                                    );
+                                })()}
                             </section>
                         )}
 
-                        {/* Tier sections */}
-                        {THEME_TIERS.map(tier => {
-                            const sets = getTierSets(tier.themes);
+                        {/* Per-theme sections */}
+                        {Object.keys(tierSets).map(theme => {
+                            const sets = tierSets[theme] ?? [];
+                            if (sets.length === 0) return null;
                             return (
-                                <section key={tier.label} className="mb-12">
-                                    <h2 className="text-xl sm:text-2xl font-bold mb-1">{tier.label}</h2>
-                                    <p className="text-sm text-gray-400 mb-4">{tier.subtitle}</p>
-                                    {sets.length === 0
-                                        ? <p className="text-sm text-gray-500">Không tìm thấy bộ từ vựng.</p>
-                                        : <CardGrid items={sets} />
-                                    }
+                                <section key={theme} className="mb-10">
+                                    <h2 className="pixel-text-outline font-pixel text-lg sm:text-xl font-bold mb-3">
+                                        {THEME_LABELS[theme] ?? theme}
+                                    </h2>
+                                    <CardSlider
+                                        items={sets}
+                                        currentUserId={user?.id}
+                                        onDelete={user ? (id) => handleDeleteSet(id) : undefined}
+                                    />
                                 </section>
                             );
                         })}
@@ -247,7 +370,7 @@ const VocabularySetsPage = () => {
                                         ? <Skeleton type="cards" />
                                         : themeSets.length === 0
                                             ? <p className="text-sm text-gray-500">Chưa có bộ từ vựng nào ở khu vực này.</p>
-                                            : <CardGrid items={themeSets} />
+                                            : <CardSlider items={themeSets} />
                                     }
                                 </>
                             ) : (

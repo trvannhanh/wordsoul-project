@@ -74,6 +74,7 @@ export interface VocabularyPreviewDto {
   id: number | null;
   isExisting: boolean;
   isAiGenerated: boolean;
+  isCustom?: boolean;
   word: string;
   meaning: string;
   pronunciation: string;
@@ -86,4 +87,51 @@ export interface VocabularyPreviewDto {
 export interface AiPreviewRequestDto {
   words: string[];
   useAi?: boolean;
-}
+}
+
+export interface UpdateVocabularyInSetDto {
+  overrideMeaning?: string | null;
+  overrideExampleSentence?: string | null;
+  overridePronunciation?: string | null;
+  overrideDescription?: string | null;
+}
+
+export interface VocabularySetProgressDto {
+  totalVocabularies: number;
+  masteredCount: number;
+  reviewCount: number;
+  learningCount: number;
+  newCount: number;
+  overallRetentionScore: number;
+  correctRate: number;
+  totalCompletedSession: number;
+  startedAt: string | null;
+  isCompleted: boolean;
+  activityHeatmap: { date: string; reviewCount: number }[];
+  weakVocabularies: { id: number; word: string; meaning: string; retentionScore: number; memoryState: string }[];
+  vocabMemoryStates: Record<number, string>;
+}
+
+export interface VocabularyDetailDto {
+  id: number;
+  word: string;
+  meaning: string;
+  imageUrl: string | null;
+  pronunciation: string | null;
+  pronunciationUrl: string | null;
+  exampleSentenceAudioUrl: string | null;
+  partOfSpeech: string;
+  exampleSentence: string | null;
+  description: string | null;
+  isCustomEdited: boolean;
+  originalMeaning: string | null;
+}
+
+export interface UpdateVocabularyCoreDto {
+  word?: string;
+  meaning?: string;
+  pronunciation?: string;
+  exampleSentence?: string;
+  description?: string;
+  // imageFile is sent as FormData, not in this interface
+}

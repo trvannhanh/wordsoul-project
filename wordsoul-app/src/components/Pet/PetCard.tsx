@@ -38,7 +38,7 @@ const PetCard: React.FC<PetCardProps> = ({ pet }) => {
 
   return (
     <div
-      className={`${backgroundClass} ${borderClass} border-8 border-solid bg-no-repeat bg-cover bg-center p-4 rounded-md shadow-md text-black h-50 relative`}
+      className={`${backgroundClass} ${borderClass} border-8 border-solid bg-no-repeat bg-cover bg-center p-4 rounded-md shadow-md text-black h-50 relative custom-cursor`}
       onClick={handleClick}
     >
       <img
@@ -46,7 +46,7 @@ const PetCard: React.FC<PetCardProps> = ({ pet }) => {
         alt={pet.name}
         className="w-full h-32 object-contain rounded-md mb-2 transform hover:scale-105 transition-transform duration-300"
       />
-      <h3 className="text-lg font-bold text-center text-yellow-400">{pet.name.trim()}</h3>
+      <h3 className="text-sm font-bold text-center text-yellow-400 font-pixel">{pet.name.trim()}</h3>
       <span className="text-xl font-pixel absolute top-0">#{pet.order}</span>
     </div>
   );

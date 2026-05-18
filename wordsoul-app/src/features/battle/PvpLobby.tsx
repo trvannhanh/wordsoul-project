@@ -49,11 +49,11 @@ export default function PvpLobby() {
 
             {/* Header */}
             <div className="flex flex-col items-center mb-8 z-10">
-                <h1 className="font-press text-4xl text-purple-400 mb-2"
+                <h1 className="font-pixel text-6xl text-purple-400 mb-2"
                     style={{ textShadow: '0 0 30px rgba(168,85,247,0.7)' }}>
-                    PvP ARENA
+                    Đấu Trường
                 </h1>
-                <p className="font-noto text-gray-400 text-sm">Battle players in real-time · ELO matchmaking</p>
+                {/* <p className="font-noto text-gray-400 text-sm">Battle players in real-time · ELO matchmaking</p> */}
             </div>
 
             {/* Rating Card */}

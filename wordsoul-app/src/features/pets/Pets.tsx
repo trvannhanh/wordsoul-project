@@ -150,7 +150,7 @@ const Pets: React.FC = () => {
               onChange={(e) => setRarityFilter(e.target.value)}
               className="p-2 border rounded-md w-full background-color custom-cursor"
             >
-              <option value="" >Chọn Rarity</option>
+              <option value="" >Chọn Độ Hiếm</option>
               {rarityOptions.map((rarity) => (
                 <option key={rarity} value={rarity} >
                   {rarity}
@@ -165,7 +165,7 @@ const Pets: React.FC = () => {
               onChange={(e) => setTypeFilter(e.target.value)}
               className="p-2 border rounded-md w-full background-color custom-cursor"
             >
-              <option value="">Chọn Type</option>
+              <option value="">Chọn Loại</option>
               {typeOptions.map((type) => (
                 <option key={type} value={type}>
                   {type}
