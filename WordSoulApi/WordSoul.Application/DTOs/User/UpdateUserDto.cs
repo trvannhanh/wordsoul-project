@@ -12,4 +12,10 @@ namespace WordSoul.Application.DTOs.User
         [Required]
         public string RoleName { get; set; } = string.Empty;  // "Admin", "User", v.v.
     }
+
+    public class UpdateUserStatusDto
+    {
+        [Required]
+        public bool IsActive { get; set; }
+    }
 }

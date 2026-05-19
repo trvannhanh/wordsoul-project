@@ -156,6 +156,16 @@ namespace WordSoul.Api.Controllers
             return Ok("Role assigned successfully.");
         }
 
+        // PUT: api/users/{userId}/status : Ban / Unban người dùng
+        [Authorize(Roles = "Admin,SuperAdmin")]
+        [HttpPut("{userId}/status")]
+        public async Task<IActionResult> UpdateUserStatus(int userId, [FromBody] UpdateUserStatusDto statusDto)
+        {
+            var result = await _userService.UpdateUserStatusAsync(userId, statusDto.IsActive);
+            if (!result) return BadRequest("User not found or action not permitted (cannot ban a SuperAdmin).");
+            return Ok(new { Message = statusDto.IsActive ? "User unbanned successfully." : "User banned successfully." });
+        }
+
         //------------------------------ DELETE -----------------------------------
 
         // DELETE: api/users/{id} : Xóa người dùng theo ID

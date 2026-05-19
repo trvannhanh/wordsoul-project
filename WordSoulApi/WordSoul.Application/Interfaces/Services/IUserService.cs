@@ -90,6 +90,19 @@ namespace WordSoul.Application.Interfaces.Services
         Task<bool> ConsumeHintAsync(int userId, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Cập nhật trạng thái hoạt động (ban/unban) của người dùng.
+        /// Không cho phép ban SuperAdmin.
+        /// </summary>
+        /// <param name="userId">ID người dùng.</param>
+        /// <param name="isActive">true để unban, false để ban.</param>
+        /// <param name="cancellationToken">Token để hủy thao tác.</param>
+        /// <returns>true nếu cập nhật thành công; false nếu user không tồn tại.</returns>
+        Task<bool> UpdateUserStatusAsync(
+            int userId,
+            bool isActive,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Gán vai trò cho người dùng (Admin/User).
         /// Lưu log hoạt động khi phân quyền thành công.
         /// </summary>

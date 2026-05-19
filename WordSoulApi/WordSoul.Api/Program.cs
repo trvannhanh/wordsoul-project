@@ -236,6 +236,9 @@ builder.Services.AddScoped<IUserInventoryService, UserInventoryService>();
 builder.Services.AddScoped<IGymLeaderService, GymLeaderService>();
 builder.Services.AddScoped<IArenaBattleService, ArenaBattleService>();
 
+// User Groups
+builder.Services.AddScoped<IUserGroupService, UserGroupService>();
+
 // PvP Matchmaking – Singleton vì queue phải dùng chung giữa requests
 builder.Services.AddSingleton<IMatchmakingQueueService, MatchmakingQueueService>();
 builder.Services.AddSingleton<IMatchmakingNotifier, MatchmakingNotifier>();

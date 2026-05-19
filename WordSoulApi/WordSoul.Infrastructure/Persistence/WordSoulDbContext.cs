@@ -38,7 +38,9 @@ namespace WordSoul.Infrastructure.Persistence
 
         // ── System Configuration ──────────────────────────────
         public DbSet<SystemConfiguration> SystemConfigurations { get; set; }
-
+        // ── User Groups ──────────────────────────────────
+        public DbSet<UserGroup> UserGroups { get; set; }
+        public DbSet<UserGroupMember> UserGroupMembers { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -429,7 +431,30 @@ namespace WordSoul.Infrastructure.Persistence
                 .HasIndex(u => new { u.ExternalLoginProvider, u.ExternalLoginProviderKey })
                 .IsUnique()
                 .HasFilter("[ExternalLoginProvider] IS NOT NULL");
+            // ── User Groups ─────────────────────────────────────────
+            modelBuilder.Entity<UserGroupMember>()
+                .HasKey(m => new { m.UserGroupId, m.UserId });
 
+            modelBuilder.Entity<UserGroupMember>()
+                .HasOne(m => m.UserGroup)
+                .WithMany(g => g.Members)
+                .HasForeignKey(m => m.UserGroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserGroupMember>()
+                .HasOne(m => m.User)
+                .WithMany()
+                .HasForeignKey(m => m.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserGroup>()
+                .HasOne(g => g.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(g => g.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<UserGroup>()
+                .HasIndex(g => g.Name);
             // ── System Configuration Seeding ─────────────────────────────────
             var seedTime = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             modelBuilder.Entity<SystemConfiguration>().HasData(

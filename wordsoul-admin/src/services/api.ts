@@ -17,6 +17,9 @@ export const endpoints = {
 
   // Users
   users: '/users',
+  userDetail: (id: number) => `/users/${id}`,
+  userStatus: (id: number) => `/users/${id}/status`,
+  userActivities: (id: number) => `/users/${id}/activities`,
 
   // Vocabularies
   vocabularySets: '/vocabulary-sets',
@@ -35,6 +38,12 @@ export const endpoints = {
   // Maintenance
   redisFlush: '/admin/maintenance/redis-flush',
   dbCleanup: '/admin/maintenance/db-cleanup',
+
+  // User Groups
+  adminGroups: '/admin/groups',
+  adminGroupDetail: (id: number) => `/admin/groups/${id}`,
+  adminGroupMembers: (id: number) => `/admin/groups/${id}/members`,
+  adminGroupMember: (groupId: number, userId: number) => `/admin/groups/${groupId}/members/${userId}`,
 };
 
 const ACCESS_TOKEN_KEY = 'adminAccessToken';

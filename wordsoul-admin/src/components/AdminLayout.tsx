@@ -5,6 +5,8 @@ import { Dropdown, Avatar, Tooltip } from 'antd';
 import {
   DashboardOutlined,
   UserOutlined,
+  SafetyOutlined,
+  TeamOutlined,
   BookOutlined,
   SettingOutlined,
   LogoutOutlined,
@@ -20,22 +22,49 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useRouter, usePathname } from 'next/navigation';
 
 // ── Nav definition ────────────────────────────────────────────────────────────
-const NAV_ITEMS = [
-  { key: '/dashboard',     icon: <DashboardOutlined />, label: 'Dashboard' },
-  { key: '/users',         icon: <UserOutlined />,      label: 'Users' },
-  { key: '/vocabularies',  icon: <BookOutlined />,      label: 'Vocabulary Library' },
-  { key: '/quests',        icon: <AimOutlined />,       label: 'Quests & Achievements' },
-  { key: '/gyms',          icon: <TrophyOutlined />,    label: 'Gym Operations' },
-];
+type NavGroup = {
+  section?: string;
+  items: { key: string; icon: React.ReactNode; label: string }[];
+  superAdminOnly?: boolean;
+};
 
-const SUPERADMIN_ITEMS = [
-  { key: '/system-health', icon: <SettingOutlined />,   label: 'System Health' },
+const NAV_GROUPS: NavGroup[] = [
+  {
+    items: [
+      { key: '/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
+    ],
+  },
+  {
+    section: 'User Management',
+    items: [
+      { key: '/users', icon: <UserOutlined />,   label: 'All Users' },
+      { key: '/roles', icon: <SafetyOutlined />, label: 'Roles' },
+      { key: '/groups', icon: <TeamOutlined />, label: 'User Groups' },
+    ],
+  },
+  {
+    section: 'Content',
+    items: [
+      { key: '/vocabularies', icon: <BookOutlined />, label: 'Vocabulary Library' },
+      { key: '/quests',       icon: <AimOutlined />,  label: 'Quests & Achievements' },
+      { key: '/gyms',         icon: <TrophyOutlined />, label: 'Gym Operations' },
+    ],
+  },
+  {
+    section: 'System',
+    superAdminOnly: true,
+    items: [
+      { key: '/system-health', icon: <SettingOutlined />, label: 'System Health' },
+    ],
+  },
 ];
 
 // ── Page titles (for header breadcrumb) ──────────────────────────────────────
 const PAGE_TITLES: Record<string, string> = {
   '/dashboard':    'Dashboard',
   '/users':        'User Management',
+  '/roles':         'Role Management',
+  '/groups':        'User Groups',
   '/vocabularies': 'Vocabulary Library',
   '/quests':       'Quests & Achievements',
   '/gyms':         'Gym Operations',
@@ -83,7 +112,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (isLoading || !user) return null;
 
   const isSuperAdmin = user.role === 'SuperAdmin';
-  const allNavItems = isSuperAdmin ? [...NAV_ITEMS, ...SUPERADMIN_ITEMS] : NAV_ITEMS;
+  const visibleGroups = NAV_GROUPS.filter(g => !g.superAdminOnly || isSuperAdmin);
+  const allKeys = visibleGroups.flatMap(g => g.items.map(i => i.key));
 
   // Match active key: handle sub-routes like /vocabularies/123
   const activeKey = Object.keys(PAGE_TITLES).find(k =>
@@ -149,19 +179,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Nav */}
         <nav className="sidebar-nav">
-          {!collapsed && (
-            <div className="sidebar-section-label">Navigation</div>
-          )}
-          {allNavItems.map(item => (
-            <NavItem
-              key={item.key}
-              navKey={item.key}
-              icon={item.icon}
-              label={item.label}
-              collapsed={collapsed}
-              isActive={activeKey === item.key}
-              onClick={() => router.push(item.key)}
-            />
+          {visibleGroups.map((group, gi) => (
+            <React.Fragment key={gi}>
+              {group.section && !collapsed && (
+                <div className="sidebar-section-label">{group.section}</div>
+              )}
+              {group.items.map(item => (
+                <NavItem
+                  key={item.key}
+                  navKey={item.key}
+                  icon={item.icon}
+                  label={item.label}
+                  collapsed={collapsed}
+                  isActive={activeKey === item.key}
+                  onClick={() => router.push(item.key)}
+                />
+              ))}
+            </React.Fragment>
           ))}
         </nav>
 

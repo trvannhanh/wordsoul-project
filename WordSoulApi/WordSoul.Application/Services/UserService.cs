@@ -87,7 +87,9 @@ namespace WordSoul.Application.Services
                 PetCount = user.UserOwnedPets?.Count ?? 0,
                 AvatarUrl = activePet?.Pet.ImageUrl,
                 PetActiveId = activePet?.PetId,
-                //PetActiveName = activePet?.Pet.Name
+                PvpRating = user.PvpRating,
+                PvpWins = user.PvpWins,
+                PvpLosses = user.PvpLosses,
             };
         }
 
@@ -157,6 +159,47 @@ namespace WordSoul.Application.Services
                 CreatedAt = user.CreatedAt,
                 IsActive = user.IsActive
             };
+        }
+
+        /// <summary>
+        /// Cập nhật trạng thái hoạt động (ban/unban) của người dùng.
+        /// </summary>
+        public async Task<bool> UpdateUserStatusAsync(
+            int userId,
+            bool isActive,
+            CancellationToken cancellationToken = default)
+        {
+            var user = await _uow.User.GetUserByIdAsync(userId, cancellationToken);
+            if (user == null)
+            {
+                _logger.LogWarning("Attempt to update status for non-existent user ID {UserId}", userId);
+                return false;
+            }
+
+            if (user.Role == UserRole.SuperAdmin)
+            {
+                _logger.LogWarning("Attempt to ban SuperAdmin user ID {UserId} was rejected", userId);
+                return false;
+            }
+
+            user.IsActive = isActive;
+
+            // Invalidate refresh token when banning to force logout
+            if (!isActive)
+            {
+                user.RefreshToken = null;
+                user.RefreshTokenExpiryTime = null;
+            }
+
+            await _uow.User.UpdateUserAsync(user, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
+
+            var action = isActive ? "UserUnbanned" : "UserBanned";
+            await _activityLogService.CreateActivityLogAsync(
+                userId, action, $"User {user.Username} was {(isActive ? "unbanned" : "banned")}", cancellationToken);
+
+            _logger.LogInformation("User {UserId} status set to IsActive={IsActive}", userId, isActive);
+            return true;
         }
 
         /// <summary>

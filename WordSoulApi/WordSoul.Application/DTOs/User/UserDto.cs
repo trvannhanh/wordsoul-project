@@ -24,6 +24,9 @@ namespace WordSoul.Application.DTOs.User
         public int PetCount { get; set; }
         public int? PetActiveId { get; set; }
         public string? AvatarUrl { get; set; }
+        public int PvpRating { get; set; }
+        public int PvpWins { get; set; }
+        public int PvpLosses { get; set; }
     }
 
    
