@@ -21,6 +21,7 @@ import {
   SunOutlined,
   MoonOutlined,
   HeartOutlined,
+  BellOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -57,6 +58,13 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    section: 'System',
+    items: [
+      { key: '/notifications', icon: <BellOutlined />, label: 'Notifications' },
+    ],
+    superAdminOnly: true,
+  },
+  {
     section: 'Settings',
     superAdminOnly: true,
     items: [
@@ -78,6 +86,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/quests':       'Quests & Achievements',
   '/gyms':         'Gym Operations',
   '/pets':          'Pet Management',
+  '/notifications':  'Notification Broadcast',
   '/system-health':           'System Health',
   '/settings/system-config':  'System Configuration',
   '/settings/logs':           'Activity Logs',

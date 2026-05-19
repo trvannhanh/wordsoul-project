@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using WordSoul.Application.DTOs.Admin;
 using WordSoul.Application.Interfaces.Services;
+using WordSoul.Api.Extensions;
 using WordSoul.Domain.Entities;
 
 namespace WordSoul.Api.Controllers
@@ -17,6 +18,7 @@ namespace WordSoul.Api.Controllers
         private readonly IActivityLogService _activityLogService;
         private readonly IAdminDashboardService _dashboardService;
         private readonly IUserService _userService;
+        private readonly INotificationService _notificationService;
         private readonly ILogger<AdminController> _logger;
 
         public AdminController(
@@ -24,12 +26,14 @@ namespace WordSoul.Api.Controllers
             IActivityLogService activityLogService,
             IAdminDashboardService dashboardService,
             IUserService userService,
+            INotificationService notificationService,
             ILogger<AdminController> logger)
         {
             _systemConfigService = systemConfigService;
             _activityLogService = activityLogService;
             _dashboardService = dashboardService;
             _userService = userService;
+            _notificationService = notificationService;
             _logger = logger;
         }
 
@@ -145,6 +149,27 @@ namespace WordSoul.Api.Controllers
             {
                 _logger.LogError(ex, "Error adjusting balance for user {UserId}", id);
                 return StatusCode(500, "An error occurred while adjusting the balance.");
+            }
+        }
+
+        // POST: api/admin/notifications/broadcast
+        [HttpPost("notifications/broadcast")]
+        public async Task<IActionResult> BroadcastNotification(
+            [FromBody] BroadcastNotificationDto dto,
+            CancellationToken ct = default)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            try
+            {
+                var adminUserId = User.GetUserId();
+                var result = await _notificationService.BroadcastAsync(dto, adminUserId, ct);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error broadcasting notification");
+                return StatusCode(500, "An error occurred while sending the broadcast.");
             }
         }
     }

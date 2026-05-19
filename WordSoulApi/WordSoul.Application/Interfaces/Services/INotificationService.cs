@@ -1,4 +1,5 @@
-﻿using WordSoul.Application.DTOs.Notification;
+﻿using WordSoul.Application.DTOs.Admin;
+using WordSoul.Application.DTOs.Notification;
 using WordSoul.Domain.Enums;
 
 namespace WordSoul.Application.Interfaces.Services
@@ -7,7 +8,10 @@ namespace WordSoul.Application.Interfaces.Services
     {
         //-------------------------------------CREATE-----------------------------------------
         // Tạo mới thông báo
-        Task CreateNotificationAsync(int userId, string title, string message, NotificationType type);
+        Task CreateNotificationAsync(int userId, string title, string message, NotificationType type, CancellationToken ct = default);
+
+        // Broadcast thông báo tới nhiều user (hoặc tất cả)
+        Task<BroadcastResultDto> BroadcastAsync(BroadcastNotificationDto dto, int adminUserId, CancellationToken ct = default);
 
         //-------------------------------------READ-------------------------------------------
         // Lấy tất cả thông báo của người dùng, sắp xếp theo thời gian tạo mới nhất
@@ -16,15 +20,15 @@ namespace WordSoul.Application.Interfaces.Services
 
         //-------------------------------------UPDATE-----------------------------------------
         // Đánh dấu tất cả thông báo của người dùng đã đọc
-        Task MarkAllAsReadAsync(int userId);
+        Task MarkAllAsReadAsync(int userId, CancellationToken ct = default);
         // Đánh dấu thông báo đã đọc
-        Task MarkAsReadNotificationAsync(int id);
+        Task MarkAsReadNotificationAsync(int id, CancellationToken ct = default);
 
 
 
         //-------------------------------------DELETE-----------------------------------------
         // Xóa thông báo
-        Task DeleteNotificationAsync(int id, int currentUserId);
+        Task DeleteNotificationAsync(int id, int currentUserId, CancellationToken ct = default);
 
 
     }
