@@ -44,6 +44,9 @@ export const endpoints = {
   adminGroupDetail: (id: number) => `/admin/groups/${id}`,
   adminGroupMembers: (id: number) => `/admin/groups/${id}/members`,
   adminGroupMember: (groupId: number, userId: number) => `/admin/groups/${groupId}/members/${userId}`,
+
+  // Settings — Logs
+  adminLogs: '/admin/logs',
 };
 
 const ACCESS_TOKEN_KEY = 'adminAccessToken';

@@ -25,5 +25,11 @@ namespace WordSoul.Domain.Entities
         
         [MaxLength(100)]
         public string? LastUpdatedBy { get; set; } // Username của SuperAdmin sửa đổi
+
+        /// <summary>
+        /// Nhóm cấu hình: "SRS", "GAME_BALANCE", "GENERAL"
+        /// </summary>
+        [MaxLength(50)]
+        public string? Category { get; set; }
     }
 }

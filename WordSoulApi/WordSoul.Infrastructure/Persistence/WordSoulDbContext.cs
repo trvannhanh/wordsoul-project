@@ -458,12 +458,17 @@ namespace WordSoul.Infrastructure.Persistence
             // ── System Configuration Seeding ─────────────────────────────────
             var seedTime = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             modelBuilder.Entity<SystemConfiguration>().HasData(
-                new SystemConfiguration { Key = "SrsMinEf", Value = "1.3", DataType = "Float", Description = "Minimum Ease Factor for SM-2 Algorithm", LastUpdatedBy = "System", LastUpdatedAt = seedTime },
-                new SystemConfiguration { Key = "SrsInitialInterval1", Value = "1", DataType = "Integer", Description = "First interval (days) for SM-2", LastUpdatedBy = "System", LastUpdatedAt = seedTime },
-                new SystemConfiguration { Key = "SrsInitialInterval2", Value = "6", DataType = "Integer", Description = "Second interval (days) for SM-2", LastUpdatedBy = "System", LastUpdatedAt = seedTime },
-                new SystemConfiguration { Key = "CatchRateWrongPenalty", Value = "0.05", DataType = "Float", Description = "Penalty applied to catch rate for each wrong answer (e.g. 0.05 = 5%)", LastUpdatedBy = "System", LastUpdatedAt = seedTime },
-                new SystemConfiguration { Key = "XpRewardNewSession", Value = "20", DataType = "Integer", Description = "XP rewarded for completing a learning session with new words", LastUpdatedBy = "System", LastUpdatedAt = seedTime },
-                new SystemConfiguration { Key = "XpRewardReviewSession", Value = "100", DataType = "Integer", Description = "XP rewarded for completing a review session", LastUpdatedBy = "System", LastUpdatedAt = seedTime }
+                new SystemConfiguration { Key = "SrsMinEf",              Value = "1.3",   DataType = "Float",   Category = "SRS",          Description = "Minimum Ease Factor for SM-2 Algorithm",                                             LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "SrsInitialInterval1",   Value = "1",     DataType = "Integer", Category = "SRS",          Description = "First interval (days) for SM-2",                                                    LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "SrsInitialInterval2",   Value = "6",     DataType = "Integer", Category = "SRS",          Description = "Second interval (days) for SM-2",                                                   LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "CatchRateWrongPenalty", Value = "0.05",  DataType = "Float",   Category = "GAME_BALANCE", Description = "Penalty applied to catch rate for each wrong answer (e.g. 0.05 = 5%)",           LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "XpRewardNewSession",    Value = "20",    DataType = "Integer", Category = "GAME_BALANCE", Description = "XP rewarded for completing a learning session with new words",                  LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "XpRewardReviewSession", Value = "100",   DataType = "Integer", Category = "GAME_BALANCE", Description = "XP rewarded for completing a review session",                                   LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                // General Settings
+                new SystemConfiguration { Key = "AllowRegistration",     Value = "true",  DataType = "Boolean", Category = "GENERAL",      Description = "Allow new users to register on the platform",                                 LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "MaintenanceMode",       Value = "false", DataType = "Boolean", Category = "GENERAL",      Description = "Show maintenance notice to regular users (does not affect admins)",           LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "MaxGroupSize",          Value = "50",    DataType = "Integer", Category = "GENERAL",      Description = "Maximum number of members allowed in a single user group",                    LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "AppDisplayName",        Value = "VocaMon", DataType = "String", Category = "GENERAL",     Description = "Application display name shown to users in the UI",                          LastUpdatedBy = "System", LastUpdatedAt = seedTime }
             );
         }
 

@@ -13,11 +13,16 @@ namespace WordSoul.Api.Controllers
     public class AdminController : ControllerBase
     {
         private readonly ISystemConfigurationService _systemConfigService;
+        private readonly IActivityLogService _activityLogService;
         private readonly ILogger<AdminController> _logger;
 
-        public AdminController(ISystemConfigurationService systemConfigService, ILogger<AdminController> logger)
+        public AdminController(
+            ISystemConfigurationService systemConfigService,
+            IActivityLogService activityLogService,
+            ILogger<AdminController> logger)
         {
             _systemConfigService = systemConfigService;
+            _activityLogService = activityLogService;
             _logger = logger;
         }
 
@@ -80,6 +85,29 @@ namespace WordSoul.Api.Controllers
             _logger.LogInformation("SuperAdmin requested DB cleanup (archiving old records).");
             // Placeholder for logic to archive AnswerRecords > 1 year old
             return Ok(new { Message = "Database cleanup routine started in background." });
+        }
+
+        // GET: api/admin/logs
+        [HttpGet("logs")]
+        public async Task<IActionResult> GetLogs(
+            [FromQuery] string? action = null,
+            [FromQuery] int? userId = null,
+            [FromQuery] DateTime? from = null,
+            [FromQuery] DateTime? to = null,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 20,
+            CancellationToken ct = default)
+        {
+            var (items, total) = await _activityLogService.GetAdminLogsAsync(
+                action, userId, from, to, pageNumber, pageSize, ct);
+
+            return Ok(new
+            {
+                Items = items,
+                TotalCount = total,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+            });
         }
     }
 }

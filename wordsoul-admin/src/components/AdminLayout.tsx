@@ -9,6 +9,10 @@ import {
   TeamOutlined,
   BookOutlined,
   SettingOutlined,
+  MonitorOutlined,
+  ControlOutlined,
+  FileTextOutlined,
+  GlobalOutlined,
   LogoutOutlined,
   TrophyOutlined,
   AimOutlined,
@@ -51,10 +55,13 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    section: 'System',
+    section: 'Settings',
     superAdminOnly: true,
     items: [
-      { key: '/system-health', icon: <SettingOutlined />, label: 'System Health' },
+      { key: '/system-health',          icon: <MonitorOutlined />,  label: 'System Health' },
+      { key: '/settings/system-config', icon: <ControlOutlined />,  label: 'System Config' },
+      { key: '/settings/logs',          icon: <FileTextOutlined />, label: 'Logs' },
+      { key: '/settings/generals',      icon: <GlobalOutlined />,   label: 'Generals' },
     ],
   },
 ];
@@ -68,7 +75,10 @@ const PAGE_TITLES: Record<string, string> = {
   '/vocabularies': 'Vocabulary Library',
   '/quests':       'Quests & Achievements',
   '/gyms':         'Gym Operations',
-  '/system-health':'System Health & Config',
+  '/system-health':           'System Health',
+  '/settings/system-config':  'System Configuration',
+  '/settings/logs':           'Activity Logs',
+  '/settings/generals':       'General Settings',
 };
 
 // ── Sub-component: NavItem ────────────────────────────────────────────────────
