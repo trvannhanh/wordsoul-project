@@ -6,5 +6,6 @@ namespace WordSoul.Application.Interfaces.Services
     {
         Task<DashboardStatsDto> GetDashboardStatsAsync(CancellationToken ct = default);
         Task<PvpLeaderboardDto> GetPvpLeaderboardAsync(int top = 50, CancellationToken ct = default);
+        Task<UserLearningProgressDto> GetUserLearningProgressAsync(int userId, CancellationToken ct = default);
     }
 }

@@ -183,5 +183,15 @@ namespace WordSoul.Api.Controllers
             var result = await _dashboardService.GetPvpLeaderboardAsync(top, ct);
             return Ok(result);
         }
+
+        // GET: api/admin/users/{id}/learning-progress
+        [HttpGet("users/{id:int}/learning-progress")]
+        public async Task<IActionResult> GetUserLearningProgress(
+            int id,
+            CancellationToken ct = default)
+        {
+            var result = await _dashboardService.GetUserLearningProgressAsync(id, ct);
+            return Ok(result);
+        }
     }
 }

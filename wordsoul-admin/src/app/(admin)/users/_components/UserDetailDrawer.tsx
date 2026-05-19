@@ -4,11 +4,12 @@ import React, { useState, useEffect } from 'react';
 import {
   App, Button, Drawer, Form, Input, InputNumber,
   Modal, Tabs, Avatar, Spin, Empty,
-  Descriptions, Timeline, Badge, Statistic, Row, Col,
+  Descriptions, Timeline, Badge, Statistic, Row, Col, Progress, Table, Tag,
 } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import {
   UserOutlined, TrophyOutlined, ThunderboltOutlined,
-  StarOutlined, HistoryOutlined, HeartOutlined, EditOutlined,
+  StarOutlined, HistoryOutlined, HeartOutlined, EditOutlined, BookOutlined,
 } from '@ant-design/icons';
 import { authApi, endpoints } from '@/services/api';
 import dayjs from 'dayjs';
@@ -39,6 +40,30 @@ interface ActivityLog {
   timestamp: string;
 }
 
+interface StruggleWord {
+  word: string;
+  meaning?: string;
+  wrongCount: number;
+  retentionScore: number;
+}
+
+interface LearningProgress {
+  newCount: number;
+  learningCount: number;
+  reviewCount: number;
+  masteredCount: number;
+  totalVocabularies: number;
+  dueForReviewCount: number;
+  nextReviewTime?: string;
+  totalCorrect: number;
+  totalWrong: number;
+  accuracyRate: number;
+  averageRetentionScore: number;
+  totalSessions: number;
+  completedSessions: number;
+  struggleWords: StruggleWord[];
+}
+
 const ROLE_COLOR: Record<string, string> = {
   SuperAdmin: 'var(--accent)',
   Admin: '#0369A1',
@@ -63,11 +88,14 @@ export default function UserDetailDrawer({
   const [activeTab, setActiveTab] = useState('profile');
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [adjusting, setAdjusting] = useState(false);
+  const [learningProgress, setLearningProgress] = useState<LearningProgress | null>(null);
+  const [loadingProgress, setLoadingProgress] = useState(false);
 
   useEffect(() => {
     if (!open || !userId) return;
     setDetail(null);
     setActivities([]);
+    setLearningProgress(null);
     setActiveTab('profile');
 
     setLoadingDetail(true);
@@ -103,6 +131,15 @@ export default function UserDetailDrawer({
       .get(`${endpoints.userActivities(userId)}?pageNumber=1&pageSize=30`)
       .then((r) => setActivities(r.data))
       .finally(() => setLoadingActivity(false));
+  };
+
+  const fetchLearningProgress = () => {
+    if (!userId || learningProgress) return;
+    setLoadingProgress(true);
+    authApi
+      .get(endpoints.userLearningProgress(userId))
+      .then((r) => setLearningProgress(r.data))
+      .finally(() => setLoadingProgress(false));
   };
 
   const pvpTotal = (detail?.pvpWins ?? 0) + (detail?.pvpLosses ?? 0);
@@ -185,6 +222,7 @@ export default function UserDetailDrawer({
             onChange={(k) => {
               setActiveTab(k);
               if (k === 'activity') fetchActivities();
+              if (k === 'learning') fetchLearningProgress();
             }}
             size="small"
             style={{ padding: '0 16px' }}
@@ -317,7 +355,7 @@ export default function UserDetailDrawer({
                         style={{ paddingTop: 8 }}
                         items={activities.map((a) => ({
                           key: a.id,
-                          children: (
+                          content: (
                             <div>
                               <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{a.action}</div>
                               {a.details && (
@@ -330,6 +368,103 @@ export default function UserDetailDrawer({
                           ),
                         }))}
                       />
+                    )}
+                  </div>
+                ),
+              },
+              {
+                key: 'learning',
+                label: (
+                  <span style={{ fontSize: 12 }}>
+                    <BookOutlined style={{ marginRight: 4 }} />
+                    Learning
+                  </span>
+                ),
+                children: (
+                  <div style={{ padding: '16px 8px' }}>
+                    {loadingProgress ? (
+                      <div style={{ textAlign: 'center', padding: 32 }}><Spin size="small" /></div>
+                    ) : !learningProgress ? (
+                      <Empty description="No learning data" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                    ) : (
+                      <>
+                        {/* Memory State bar */}
+                        <div
+                          style={{
+                            background: 'var(--bg-surface)',
+                            border: '1px solid var(--border)',
+                            borderRadius: 8,
+                            padding: '12px 16px',
+                            marginBottom: 12,
+                          }}
+                        >
+                          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10 }}>
+                            Memory State — {learningProgress.totalVocabularies} words
+                          </div>
+                          {[
+                            { label: 'New',      count: learningProgress.newCount,      color: '#6b7280' },
+                            { label: 'Learning', count: learningProgress.learningCount, color: '#3b82f6' },
+                            { label: 'Review',   count: learningProgress.reviewCount,   color: '#f59e0b' },
+                            { label: 'Mastered', count: learningProgress.masteredCount, color: '#10b981' },
+                          ].map(({ label, count, color }) => (
+                            <div key={label} style={{ marginBottom: 6 }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 2 }}>
+                                <span style={{ color }}>{label}</span>
+                                <span style={{ color: 'var(--text-muted)' }}>{count}</span>
+                              </div>
+                              <Progress
+                                percent={learningProgress.totalVocabularies > 0
+                                  ? Math.round(count / learningProgress.totalVocabularies * 100)
+                                  : 0}
+                                strokeColor={color}
+                                showInfo={false}
+                                size="small"
+                              />
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Stats row */}
+                        <Row gutter={[10, 10]} style={{ marginBottom: 12 }}>
+                          {[
+                            { label: 'Due for Review', value: learningProgress.dueForReviewCount, color: '#f59e0b' },
+                            { label: 'Accuracy',       value: `${learningProgress.accuracyRate}%`, color: '#10b981' },
+                            { label: 'Avg Retention',  value: `${learningProgress.averageRetentionScore}%`, color: '#3b82f6' },
+                          ].map(({ label, value, color }) => (
+                            <Col span={8} key={label}>
+                              <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', textAlign: 'center' }}>
+                                <div style={{ fontSize: 15, fontWeight: 700, color }}>{value}</div>
+                                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{label}</div>
+                              </div>
+                            </Col>
+                          ))}
+                        </Row>
+
+                        {/* Session summary */}
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>
+                          Sessions (last 30 days): <strong style={{ color: 'var(--text-primary)' }}>{learningProgress.completedSessions}</strong> completed / {learningProgress.totalSessions} total
+                        </div>
+
+                        {/* Struggle words */}
+                        {learningProgress.struggleWords.length > 0 && (
+                          <>
+                            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
+                              Top Struggle Words
+                            </div>
+                            <Table<StruggleWord>
+                              dataSource={learningProgress.struggleWords}
+                              rowKey="word"
+                              size="small"
+                              pagination={false}
+                              columns={[
+                                { title: 'Word', dataIndex: 'word', key: 'word', render: (w) => <strong>{w}</strong> },
+                                { title: 'Meaning', dataIndex: 'meaning', key: 'meaning', ellipsis: true, render: (m) => m ?? '—' },
+                                { title: '✗', dataIndex: 'wrongCount', key: 'wrongCount', width: 44, align: 'center', render: (n) => <Tag color="red" style={{ fontSize: 10, margin: 0 }}>{n}</Tag> },
+                              ] as ColumnsType<StruggleWord>}
+                            />
+                          </>
+                        )}
+                      </>
                     )}
                   </div>
                 ),
@@ -348,39 +483,39 @@ export default function UserDetailDrawer({
         confirmLoading={adjusting}
         okText="Apply"
       >
-        {detail && (
-          <Form form={adjustForm} layout="vertical" style={{ marginTop: 8 }}>
-            <Row gutter={12}>
-              <Col span={8}>
-                <Form.Item name="xpDelta" label="XP Delta" initialValue={0}>
-                  <InputNumber style={{ width: '100%' }} />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item name="apDelta" label="AP Delta" initialValue={0}>
-                  <InputNumber style={{ width: '100%' }} />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item name="hintDelta" label="Hint Delta" initialValue={0}>
-                  <InputNumber style={{ width: '100%' }} />
-                </Form.Item>
-              </Col>
-            </Row>
-            <Form.Item
-              name="reason"
-              label="Reason"
-              rules={[{ required: true, message: 'Reason is required' }, { max: 300 }]}
-            >
-              <Input.TextArea rows={2} placeholder="e.g. Compensation for bug" maxLength={300} showCount />
-            </Form.Item>
+        <Form form={adjustForm} layout="vertical" style={{ marginTop: 8 }}>
+          <Row gutter={12}>
+            <Col span={8}>
+              <Form.Item name="xpDelta" label="XP Delta" initialValue={0}>
+                <InputNumber style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item name="apDelta" label="AP Delta" initialValue={0}>
+                <InputNumber style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item name="hintDelta" label="Hint Delta" initialValue={0}>
+                <InputNumber style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Form.Item
+            name="reason"
+            label="Reason"
+            rules={[{ required: true, message: 'Reason is required' }, { max: 300 }]}
+          >
+            <Input.TextArea rows={2} placeholder="e.g. Compensation for bug" maxLength={300} showCount />
+          </Form.Item>
+          {detail && (
             <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
               Preview — XP: <strong>{detail.totalXP}</strong> → <strong>{Math.max(0, detail.totalXP + (adjustForm.getFieldValue('xpDelta') || 0))}</strong>
               {' · '}AP: <strong>{detail.totalAP}</strong> → <strong>{Math.max(0, detail.totalAP + (adjustForm.getFieldValue('apDelta') || 0))}</strong>
               {' · '}Hints: <strong>{detail.hintBalance}</strong> → <strong>{Math.max(0, detail.hintBalance + (adjustForm.getFieldValue('hintDelta') || 0))}</strong>
             </div>
-          </Form>
-        )}
+          )}
+        </Form>
       </Modal>
     </Drawer>
   );

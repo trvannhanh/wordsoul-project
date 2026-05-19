@@ -13,6 +13,74 @@ namespace WordSoul.Infrastructure.Persistence
             _db = db;
         }
 
+        public async Task<UserLearningProgressDto> GetUserLearningProgressAsync(int userId, CancellationToken ct = default)
+        {
+            var now = DateTime.UtcNow;
+            var since30d = now.AddDays(-30);
+
+            var progress = await _db.UserVocabularyProgresses
+                .Where(p => p.UserId == userId)
+                .Include(p => p.Vocabulary)
+                .ToListAsync(ct);
+
+            var newCount      = progress.Count(p => p.MemoryState == "New");
+            var learningCount = progress.Count(p => p.MemoryState == "Learning");
+            var reviewCount   = progress.Count(p => p.MemoryState == "Review");
+            var masteredCount = progress.Count(p => p.MemoryState == "Mastered");
+
+            var dueCount      = progress.Count(p => p.NextReviewTime <= now);
+            var nextReview    = progress
+                .Where(p => p.NextReviewTime > now)
+                .Select(p => (DateTime?)p.NextReviewTime)
+                .OrderBy(d => d)
+                .FirstOrDefault();
+
+            var totalCorrect = progress.Sum(p => p.CorrectCount);
+            var totalWrong   = progress.Sum(p => p.WrongCount);
+            var totalAnswers = totalCorrect + totalWrong;
+            var accuracyRate = totalAnswers == 0 ? 0 :
+                Math.Round((double)totalCorrect / totalAnswers * 100, 1);
+
+            var avgRetention = progress.Count == 0 ? 0 :
+                Math.Round((double)progress.Average(p => (double)p.RetentionScore), 1);
+
+            var struggleWords = progress
+                .Where(p => p.WrongCount > 0)
+                .OrderByDescending(p => p.WrongCount)
+                .Take(10)
+                .Select(p => new StruggleWordEntry
+                {
+                    Word           = p.Vocabulary?.Word ?? string.Empty,
+                    Meaning        = p.Vocabulary?.Meaning,
+                    WrongCount     = p.WrongCount,
+                    RetentionScore = (double)p.RetentionScore,
+                })
+                .ToList();
+
+            var sessions = await _db.LearningSessions
+                .Where(s => s.UserId == userId && s.StartTime >= since30d)
+                .ToListAsync(ct);
+
+            return new UserLearningProgressDto
+            {
+                UserId                = userId,
+                NewCount              = newCount,
+                LearningCount         = learningCount,
+                ReviewCount           = reviewCount,
+                MasteredCount         = masteredCount,
+                TotalVocabularies     = progress.Count,
+                DueForReviewCount     = dueCount,
+                NextReviewTime        = nextReview,
+                TotalCorrect          = totalCorrect,
+                TotalWrong            = totalWrong,
+                AccuracyRate          = accuracyRate,
+                AverageRetentionScore = avgRetention,
+                TotalSessions         = sessions.Count,
+                CompletedSessions     = sessions.Count(s => s.IsCompleted),
+                StruggleWords         = struggleWords,
+            };
+        }
+
         public async Task<PvpLeaderboardDto> GetPvpLeaderboardAsync(int top = 50, CancellationToken ct = default)
         {
             var activePlayers = await _db.Users
