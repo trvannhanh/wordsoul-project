@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using WordSoul.Application.DTOs.Admin;
 using WordSoul.Application.DTOs.User;
 using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
@@ -254,6 +255,40 @@ namespace WordSoul.Application.Services
 
             _logger.LogInformation("Role assigned to user {UserId}: {Role}", userId, role);
             return true;
+        }
+
+        /// <summary>
+        /// Điều chỉnh XP, AP, HintBalance của user bởi admin.
+        /// Clamp về 0 nếu kết quả âm. Ghi audit log.
+        /// </summary>
+        public async Task<AdjustBalanceResultDto> AdjustUserBalanceAsync(
+            int userId,
+            AdjustBalanceDto dto,
+            CancellationToken cancellationToken = default)
+        {
+            var user = await _uow.User.GetUserByIdAsync(userId, cancellationToken)
+                ?? throw new KeyNotFoundException($"User with ID {userId} not found.");
+
+            user.XP = Math.Max(0, user.XP + dto.XpDelta);
+            user.AP = Math.Max(0, user.AP + dto.ApDelta);
+            user.HintBalance = Math.Max(0, user.HintBalance + dto.HintDelta);
+
+            await _uow.User.UpdateUserAsync(user, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
+
+            var logDetails = $"XP {(dto.XpDelta >= 0 ? "+" : "")}{dto.XpDelta}, AP {(dto.ApDelta >= 0 ? "+" : "")}{dto.ApDelta}, Hint {(dto.HintDelta >= 0 ? "+" : "")}{dto.HintDelta}. Reason: {dto.Reason}";
+            await _activityLogService.CreateActivityLogAsync(
+                userId, "ADMIN_BALANCE_ADJUST", logDetails, cancellationToken);
+
+            _logger.LogInformation("Balance adjusted for user {UserId}: {Details}", userId, logDetails);
+
+            return new AdjustBalanceResultDto
+            {
+                UserId = userId,
+                NewXP = user.XP,
+                NewAP = user.AP,
+                NewHintBalance = user.HintBalance,
+            };
         }
 
         // ============================================================================

@@ -162,7 +162,7 @@ export default function GeneralsPage() {
     return (
       <div style={{ maxWidth: 480, margin: '40px auto' }}>
         <Alert
-          message="Access Restricted"
+          title="Access Restricted"
           description="This page is only accessible to SuperAdmins."
           type="error"
           showIcon

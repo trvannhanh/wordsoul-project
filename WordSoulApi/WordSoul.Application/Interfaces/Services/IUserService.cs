@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using WordSoul.Application.DTOs.Admin;
 using WordSoul.Application.DTOs.User;
 using WordSoul.Domain.Enums;
 
@@ -113,6 +114,15 @@ namespace WordSoul.Application.Interfaces.Services
         Task<bool> AssignRoleToUserAsync(
             int userId,
             string roleName,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Điều chỉnh XP, AP, HintBalance của user (dành riêng cho admin).
+        /// Clamp về 0 nếu kết quả âm. Ghi audit log với lý do.
+        /// </summary>
+        Task<AdjustBalanceResultDto> AdjustUserBalanceAsync(
+            int userId,
+            AdjustBalanceDto dto,
             CancellationToken cancellationToken = default);
 
         // ============================================================================

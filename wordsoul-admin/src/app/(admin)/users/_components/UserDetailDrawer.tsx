@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  Drawer, Tabs, Avatar, Tag, Spin, Empty,
+  App, Button, Drawer, Form, Input, InputNumber,
+  Modal, Tabs, Avatar, Spin, Empty,
   Descriptions, Timeline, Badge, Statistic, Row, Col,
 } from 'antd';
 import {
   UserOutlined, TrophyOutlined, ThunderboltOutlined,
-  StarOutlined, HistoryOutlined, HeartOutlined,
+  StarOutlined, HistoryOutlined, HeartOutlined, EditOutlined,
 } from '@ant-design/icons';
 import { authApi, endpoints } from '@/services/api';
 import dayjs from 'dayjs';
@@ -53,11 +54,15 @@ export default function UserDetailDrawer({
   open: boolean;
   onClose: () => void;
 }) {
+  const { message } = App.useApp();
+  const [adjustForm] = Form.useForm();
   const [detail, setDetail] = useState<UserDetail | null>(null);
   const [activities, setActivities] = useState<ActivityLog[]>([]);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [loadingActivity, setLoadingActivity] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
+  const [adjustOpen, setAdjustOpen] = useState(false);
+  const [adjusting, setAdjusting] = useState(false);
 
   useEffect(() => {
     if (!open || !userId) return;
@@ -71,6 +76,25 @@ export default function UserDetailDrawer({
       .then((r) => setDetail(r.data))
       .finally(() => setLoadingDetail(false));
   }, [open, userId]);
+
+  const handleAdjust = async () => {
+    if (!detail) return;
+    try {
+      const values = await adjustForm.validateFields();
+      setAdjusting(true);
+      await authApi.patch(endpoints.userBalance(detail.id), values);
+      const updated = await authApi.get(endpoints.userDetail(detail.id));
+      setDetail(updated.data);
+      setAdjustOpen(false);
+      adjustForm.resetFields();
+      message.success('Balance adjusted successfully');
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'errorFields' in err) return;
+      message.error('Failed to adjust balance');
+    } finally {
+      setAdjusting(false);
+    }
+  };
 
   const fetchActivities = () => {
     if (!userId || activities.length > 0) return;
@@ -89,11 +113,10 @@ export default function UserDetailDrawer({
       title={null}
       open={open}
       onClose={onClose}
-      width={440}
       styles={{
         body: { padding: 0, background: 'var(--bg-base)' },
         header: { display: 'none' },
-        wrapper: { boxShadow: '-4px 0 24px rgba(0,0,0,0.08)' },
+        wrapper: { width: 440, boxShadow: '-4px 0 24px rgba(0,0,0,0.08)' },
       }}
     >
       {loadingDetail ? (
@@ -202,6 +225,17 @@ export default function UserDetailDrawer({
                       ))}
                     </Row>
 
+                    {/* Adjust Balance button */}
+                    <div style={{ textAlign: 'right', marginBottom: 12 }}>
+                      <Button
+                        size="small"
+                        icon={<EditOutlined />}
+                        onClick={() => { adjustForm.resetFields(); setAdjustOpen(true); }}
+                      >
+                        Adjust Balance
+                      </Button>
+                    </div>
+
                     {/* Details */}
                     <Descriptions
                       column={1}
@@ -239,14 +273,14 @@ export default function UserDetailDrawer({
                           <Statistic
                             title={<span style={{ fontSize: 11 }}>Rating</span>}
                             value={detail.pvpRating}
-                            valueStyle={{ fontSize: 16, fontWeight: 700 }}
+                            styles={{ content: { fontSize: 16, fontWeight: 700 } }}
                           />
                         </Col>
                         <Col span={8}>
                           <Statistic
                             title={<span style={{ fontSize: 11 }}>W / L</span>}
                             value={`${detail.pvpWins} / ${detail.pvpLosses}`}
-                            valueStyle={{ fontSize: 14, fontWeight: 700 }}
+                            styles={{ content: { fontSize: 14, fontWeight: 700 } }}
                           />
                         </Col>
                         <Col span={8}>
@@ -254,7 +288,7 @@ export default function UserDetailDrawer({
                             title={<span style={{ fontSize: 11 }}>Win Rate</span>}
                             value={winRate}
                             suffix="%"
-                            valueStyle={{ fontSize: 16, fontWeight: 700, color: winRate >= 50 ? 'var(--success)' : 'var(--danger)' }}
+                            styles={{ content: { fontSize: 16, fontWeight: 700, color: winRate >= 50 ? 'var(--success)' : 'var(--danger)' } }}
                           />
                         </Col>
                       </Row>
@@ -304,6 +338,50 @@ export default function UserDetailDrawer({
           />
         </>
       ) : null}
+
+      {/* Adjust Balance Modal */}
+      <Modal
+        title="Adjust User Balance"
+        open={adjustOpen}
+        onOk={handleAdjust}
+        onCancel={() => { setAdjustOpen(false); adjustForm.resetFields(); }}
+        confirmLoading={adjusting}
+        okText="Apply"
+      >
+        {detail && (
+          <Form form={adjustForm} layout="vertical" style={{ marginTop: 8 }}>
+            <Row gutter={12}>
+              <Col span={8}>
+                <Form.Item name="xpDelta" label="XP Delta" initialValue={0}>
+                  <InputNumber style={{ width: '100%' }} />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item name="apDelta" label="AP Delta" initialValue={0}>
+                  <InputNumber style={{ width: '100%' }} />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item name="hintDelta" label="Hint Delta" initialValue={0}>
+                  <InputNumber style={{ width: '100%' }} />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Form.Item
+              name="reason"
+              label="Reason"
+              rules={[{ required: true, message: 'Reason is required' }, { max: 300 }]}
+            >
+              <Input.TextArea rows={2} placeholder="e.g. Compensation for bug" maxLength={300} showCount />
+            </Form.Item>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+              Preview — XP: <strong>{detail.totalXP}</strong> → <strong>{Math.max(0, detail.totalXP + (adjustForm.getFieldValue('xpDelta') || 0))}</strong>
+              {' · '}AP: <strong>{detail.totalAP}</strong> → <strong>{Math.max(0, detail.totalAP + (adjustForm.getFieldValue('apDelta') || 0))}</strong>
+              {' · '}Hints: <strong>{detail.hintBalance}</strong> → <strong>{Math.max(0, detail.hintBalance + (adjustForm.getFieldValue('hintDelta') || 0))}</strong>
+            </div>
+          </Form>
+        )}
+      </Modal>
     </Drawer>
   );
 }

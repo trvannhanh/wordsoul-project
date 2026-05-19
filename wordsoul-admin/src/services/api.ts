@@ -51,6 +51,9 @@ export const endpoints = {
   // Pets
   pets: '/pets',
   petDetail: (id: number) => `/pets/${id}`,
+
+  // User Balance Adjustment (SuperAdmin)
+  userBalance: (id: number) => `/admin/users/${id}/balance`,
 };
 
 const ACCESS_TOKEN_KEY = 'adminAccessToken';
