@@ -193,5 +193,16 @@ namespace WordSoul.Api.Controllers
             var result = await _dashboardService.GetUserLearningProgressAsync(id, ct);
             return Ok(result);
         }
+
+        // GET: api/admin/analytics/sessions?days=30
+        [HttpGet("analytics/sessions")]
+        public async Task<IActionResult> GetSessionAnalytics(
+            [FromQuery] int days = 30,
+            CancellationToken ct = default)
+        {
+            if (days < 1 || days > 365) days = 30;
+            var result = await _dashboardService.GetSessionAnalyticsAsync(days, ct);
+            return Ok(result);
+        }
     }
 }
