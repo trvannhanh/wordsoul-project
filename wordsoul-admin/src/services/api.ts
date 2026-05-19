@@ -24,6 +24,10 @@ export const endpoints = {
   // PvP
   pvpLeaderboard: '/admin/pvp/leaderboard',
 
+  // Items
+  items: '/items',
+  itemDetail: (id: number) => `/items/${id}`,
+
   // Vocabulary Sets
   vocabularySets: '/vocabulary-sets',
   vocabularySetDetail: (id: number) => `/vocabulary-sets/${id}/details`,

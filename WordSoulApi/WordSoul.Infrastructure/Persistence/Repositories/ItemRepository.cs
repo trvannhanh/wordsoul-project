@@ -23,7 +23,27 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
         //-------------------------READ----------------------
         public async Task<List<Item>> GetItemAsync(CancellationToken cancellationToken = default)
         {
-            return await _context.Items.ToListAsync(cancellationToken);
+            return await _context.Items.OrderBy(i => i.Type).ThenBy(i => i.Name).ToListAsync(cancellationToken);
+        }
+
+        public async Task<Item?> GetItemByIdAsync(int id, CancellationToken cancellationToken = default)
+        {
+            return await _context.Items.FindAsync([id], cancellationToken);
+        }
+
+        //------------------------UPDATE---------------------
+        public Task UpdateItemAsync(Item item, CancellationToken cancellationToken = default)
+        {
+            _context.Items.Update(item);
+            return Task.CompletedTask;
+        }
+
+        //------------------------DELETE---------------------
+        public async Task DeleteItemAsync(int id, CancellationToken cancellationToken = default)
+        {
+            var item = await _context.Items.FindAsync([id], cancellationToken);
+            if (item != null)
+                _context.Items.Remove(item);
         }
     }
 }

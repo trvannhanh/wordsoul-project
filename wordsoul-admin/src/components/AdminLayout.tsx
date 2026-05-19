@@ -23,6 +23,7 @@ import {
   HeartOutlined,
   BellOutlined,
   ThunderboltOutlined,
+  GiftOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -56,6 +57,7 @@ const NAV_GROUPS: NavGroup[] = [
       { key: '/quests',       icon: <AimOutlined />,  label: 'Quests & Achievements' },
       { key: '/gyms',         icon: <TrophyOutlined />, label: 'Gym Operations' },
       { key: '/pets',         icon: <HeartOutlined />,  label: 'Pets' },
+      { key: '/items',        icon: <GiftOutlined />,   label: 'Items' },
     ],
   },
   {
@@ -88,6 +90,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/quests':       'Quests & Achievements',
   '/gyms':         'Gym Operations',
   '/pets':          'Pet Management',
+  '/items':          'Item Management',
   '/notifications':  'Notification Broadcast',
   '/pvp':             'PvP Leaderboard',
   '/system-health':           'System Health',
