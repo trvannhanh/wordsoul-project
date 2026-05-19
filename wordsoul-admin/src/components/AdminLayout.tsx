@@ -22,6 +22,7 @@ import {
   MoonOutlined,
   HeartOutlined,
   BellOutlined,
+  ThunderboltOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -60,7 +61,8 @@ const NAV_GROUPS: NavGroup[] = [
   {
     section: 'System',
     items: [
-      { key: '/notifications', icon: <BellOutlined />, label: 'Notifications' },
+      { key: '/notifications', icon: <BellOutlined />,       label: 'Notifications' },
+      { key: '/pvp',           icon: <ThunderboltOutlined />, label: 'PvP Leaderboard' },
     ],
     superAdminOnly: true,
   },
@@ -87,6 +89,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/gyms':         'Gym Operations',
   '/pets':          'Pet Management',
   '/notifications':  'Notification Broadcast',
+  '/pvp':             'PvP Leaderboard',
   '/system-health':           'System Health',
   '/settings/system-config':  'System Configuration',
   '/settings/logs':           'Activity Logs',

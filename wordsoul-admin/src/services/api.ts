@@ -21,6 +21,9 @@ export const endpoints = {
   userStatus: (id: number) => `/users/${id}/status`,
   userActivities: (id: number) => `/users/${id}/activities`,
 
+  // PvP
+  pvpLeaderboard: '/admin/pvp/leaderboard',
+
   // Vocabulary Sets
   vocabularySets: '/vocabulary-sets',
   vocabularySetDetail: (id: number) => `/vocabulary-sets/${id}/details`,

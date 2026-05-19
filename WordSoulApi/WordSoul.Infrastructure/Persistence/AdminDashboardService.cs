@@ -13,6 +13,49 @@ namespace WordSoul.Infrastructure.Persistence
             _db = db;
         }
 
+        public async Task<PvpLeaderboardDto> GetPvpLeaderboardAsync(int top = 50, CancellationToken ct = default)
+        {
+            var activePlayers = await _db.Users
+                .Where(u => u.PvpWins > 0 || u.PvpLosses > 0)
+                .CountAsync(ct);
+
+            var avgRating = activePlayers == 0 ? 0 :
+                await _db.Users
+                    .Where(u => u.PvpWins > 0 || u.PvpLosses > 0)
+                    .AverageAsync(u => (double)u.PvpRating, ct);
+
+            var highest = activePlayers == 0 ? 0 :
+                await _db.Users
+                    .Where(u => u.PvpWins > 0 || u.PvpLosses > 0)
+                    .MaxAsync(u => u.PvpRating, ct);
+
+            var entries = await _db.Users
+                .OrderByDescending(u => u.PvpRating)
+                .ThenByDescending(u => u.PvpWins)
+                .Take(top)
+                .Select(u => new PvpLeaderboardEntryDto
+                {
+                    UserId = u.Id,
+                    UserName = u.Username ?? u.Email,
+                    AvatarUrl = u.AvatarUrl,
+                    PvpRating = u.PvpRating,
+                    Wins = u.PvpWins,
+                    Losses = u.PvpLosses,
+                })
+                .ToListAsync(ct);
+
+            for (int i = 0; i < entries.Count; i++)
+                entries[i].Rank = i + 1;
+
+            return new PvpLeaderboardDto
+            {
+                Entries = entries,
+                TotalActivePlayers = activePlayers,
+                AverageRating = Math.Round(avgRating, 0),
+                HighestRating = highest,
+            };
+        }
+
         public async Task<DashboardStatsDto> GetDashboardStatsAsync(CancellationToken ct = default)
         {
             var today = DateTime.UtcNow.Date;

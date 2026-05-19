@@ -172,5 +172,16 @@ namespace WordSoul.Api.Controllers
                 return StatusCode(500, "An error occurred while sending the broadcast.");
             }
         }
+
+        // GET: api/admin/pvp/leaderboard?top=50
+        [HttpGet("pvp/leaderboard")]
+        public async Task<IActionResult> GetPvpLeaderboard(
+            [FromQuery] int top = 50,
+            CancellationToken ct = default)
+        {
+            if (top < 1 || top > 200) top = 50;
+            var result = await _dashboardService.GetPvpLeaderboardAsync(top, ct);
+            return Ok(result);
+        }
     }
 }
