@@ -60,6 +60,9 @@ namespace WordSoul.Application.Interfaces.Services
             string connectionId,
             CancellationToken ct = default);
 
+        /// <summary>Xử lý khi người chơi PvE (Gym) disconnect – đánh dấu session InProgress là Abandoned.</summary>
+        Task ForfeitPveBattleAsync(int userId, CancellationToken ct = default);
+
         /// <summary>Lấy PvP rating của user.</summary>
         Task<PvpRatingDto?> GetPvpRatingAsync(int userId, CancellationToken ct = default);
     }

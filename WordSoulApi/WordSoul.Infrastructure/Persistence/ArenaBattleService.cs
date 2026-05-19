@@ -971,6 +971,34 @@ namespace WordSoul.Infrastructure.Persistence
         }
 
         // ═══════════════════════════════════════════════════════════
+        // PVE – Forfeit (disconnect)
+        // ═══════════════════════════════════════════════════════════
+
+        public async Task ForfeitPveBattleAsync(int userId, CancellationToken ct = default)
+        {
+            var sessions = await _db.BattleSessions
+                .Where(s =>
+                    s.Type == BattleType.GymBattle &&
+                    s.Status == BattleStatus.InProgress &&
+                    s.ChallengerUserId == userId)
+                .ToListAsync(ct);
+
+            if (sessions.Count == 0) return;
+
+            foreach (var session in sessions)
+            {
+                session.Status = BattleStatus.Abandoned;
+                session.CompletedAt = DateTime.UtcNow;
+            }
+
+            await _db.SaveChangesAsync(ct);
+
+            _logger.LogInformation(
+                "PvE session(s) [{Ids}] marked Abandoned – user {U} disconnected",
+                string.Join(",", sessions.Select(s => s.Id)), userId);
+        }
+
+        // ═══════════════════════════════════════════════════════════
         // PVP – Get Rating
         // ═══════════════════════════════════════════════════════════
 

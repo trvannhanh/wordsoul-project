@@ -17,5 +17,7 @@ namespace WordSoul.Application.Interfaces.Services
             int? userId, string? type, string? status,
             CancellationToken ct = default);
         Task<BattleReplayDto?> GetBattleReplayAsync(int sessionId, CancellationToken ct = default);
+        /// <summary>Marks an InProgress/Waiting battle as Abandoned. Returns false if not found or already ended.</summary>
+        Task<bool> AbandonBattleAsync(int sessionId, CancellationToken ct = default);
     }
 }

@@ -67,6 +67,7 @@ export const endpoints = {
   userReviewHistory: (id: number) => `/admin/users/${id}/review-history`,
   adminBattles: '/admin/battles',
   adminBattleReplay: (id: number) => `/admin/battles/${id}`,
+  adminBattleAbandon: (id: number) => `/admin/battles/${id}/abandon`,
   sessionAnalytics: '/admin/analytics/sessions',
 
   // Notification Broadcast (SuperAdmin)

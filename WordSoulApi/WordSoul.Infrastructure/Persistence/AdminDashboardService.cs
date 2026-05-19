@@ -94,6 +94,22 @@ namespace WordSoul.Infrastructure.Persistence
             };
         }
 
+        public async Task<bool> AbandonBattleAsync(int sessionId, CancellationToken ct = default)
+        {
+            var session = await _db.BattleSessions
+                .Where(b => b.Id == sessionId &&
+                    (b.Status == WordSoul.Domain.Enums.BattleStatus.InProgress ||
+                     b.Status == WordSoul.Domain.Enums.BattleStatus.Waiting))
+                .FirstOrDefaultAsync(ct);
+
+            if (session == null) return false;
+
+            session.Status = WordSoul.Domain.Enums.BattleStatus.Abandoned;
+            session.CompletedAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync(ct);
+            return true;
+        }
+
         public async Task<BattleSessionPageDto> GetBattleSessionsAsync(
             int page, int pageSize,
             int? userId, string? type, string? status,

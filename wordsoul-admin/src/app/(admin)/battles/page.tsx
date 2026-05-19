@@ -2,13 +2,13 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import {
-  Button, Col, DatePicker, Drawer, Empty, Input, Row, Select,
+  App, Button, Col, DatePicker, Drawer, Empty, Input, Popconfirm, Row, Select,
   Spin, Table, Tag, Typography,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
   CheckCircleOutlined, CloseCircleOutlined,
-  EyeOutlined, FireOutlined, ReloadOutlined,
+  EyeOutlined, FireOutlined, ReloadOutlined, StopOutlined,
 } from '@ant-design/icons';
 import { authApi, endpoints } from '@/services/api';
 import dayjs from 'dayjs';
@@ -75,7 +75,11 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 // ── Columns ───────────────────────────────────────────────────────────────────
-function buildColumns(onReplay: (id: number) => void): ColumnsType<BattleSession> {
+function buildColumns(
+  onReplay: (id: number) => void,
+  onStop: (id: number) => void,
+  stoppingId: number | null,
+): ColumnsType<BattleSession> {
   return [
     {
       title: 'ID',
@@ -156,15 +160,36 @@ function buildColumns(onReplay: (id: number) => void): ColumnsType<BattleSession
     {
       title: '',
       key: 'actions',
-      width: 80,
+      width: 130,
       render: (_, r) => (
-        <Button
-          size="small"
-          icon={<EyeOutlined />}
-          onClick={() => onReplay(r.id)}
-        >
-          Replay
-        </Button>
+        <div style={{ display: 'flex', gap: 4 }}>
+          <Button
+            size="small"
+            icon={<EyeOutlined />}
+            onClick={() => onReplay(r.id)}
+          >
+            Replay
+          </Button>
+          {r.status === 'InProgress' && (
+            <Popconfirm
+              title="Force stop this battle?"
+              description="Battle will be marked as Abandoned."
+              onConfirm={() => onStop(r.id)}
+              okText="Stop"
+              okButtonProps={{ danger: true }}
+              cancelText="Cancel"
+            >
+              <Button
+                size="small"
+                danger
+                icon={<StopOutlined />}
+                loading={stoppingId === r.id}
+              >
+                Stop
+              </Button>
+            </Popconfirm>
+          )}
+        </div>
       ),
     },
   ];
@@ -256,6 +281,7 @@ const roundColumns: ColumnsType<BattleRound> = [
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function BattlesPage() {
+  const { message } = App.useApp();
   const [page, setPage]         = useState(1);
   const [pageSize]              = useState(20);
   const [data, setData]         = useState<BattleSessionPage | null>(null);
@@ -270,6 +296,9 @@ export default function BattlesPage() {
   const [replayOpen,   setReplayOpen]   = useState(false);
   const [replay,       setReplay]       = useState<BattleReplay | null>(null);
   const [loadingReplay, setLoadingReplay] = useState(false);
+
+  // Stop battle
+  const [stoppingId, setStoppingId] = useState<number | null>(null);
 
   const load = useCallback(async (p = page) => {
     setLoading(true);
@@ -299,6 +328,19 @@ export default function BattlesPage() {
       setReplay(res.data);
     } finally {
       setLoadingReplay(false);
+    }
+  };
+
+  const handleStop = async (id: number) => {
+    setStoppingId(id);
+    try {
+      await authApi.post(endpoints.adminBattleAbandon(id));
+      message.success(`Battle #${id} has been stopped.`);
+      load(page);
+    } catch {
+      message.error('Failed to stop battle.');
+    } finally {
+      setStoppingId(null);
     }
   };
 
@@ -355,7 +397,7 @@ export default function BattlesPage() {
 
       {/* ── Table ── */}
       <Table<BattleSession>
-        columns={buildColumns(openReplay)}
+        columns={buildColumns(openReplay, handleStop, stoppingId)}
         dataSource={data?.items ?? []}
         rowKey="id"
         loading={loading}

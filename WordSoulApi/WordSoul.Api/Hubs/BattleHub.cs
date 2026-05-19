@@ -186,6 +186,14 @@ namespace WordSoul.Api.Hubs
                     battleEnded.BattleSessionId, battleEnded.P1Won);
             }
 
+            // Xử lý PvE (Gym) forfeit khi disconnect – đánh dấu session InProgress là Abandoned
+            if (int.TryParse(
+                    Context.User?.FindFirstValue(ClaimTypes.NameIdentifier),
+                    out var userId))
+            {
+                await _arena.ForfeitPveBattleAsync(userId);
+            }
+
             await base.OnDisconnectedAsync(exception);
         }
     }

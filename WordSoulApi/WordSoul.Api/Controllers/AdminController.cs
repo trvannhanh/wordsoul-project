@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using WordSoul.Application.DTOs.Admin;
 using WordSoul.Application.Interfaces.Services;
 using WordSoul.Api.Extensions;
+using WordSoul.Api.Hubs;
 using WordSoul.Domain.Entities;
 
 namespace WordSoul.Api.Controllers
@@ -19,6 +21,7 @@ namespace WordSoul.Api.Controllers
         private readonly IAdminDashboardService _dashboardService;
         private readonly IUserService _userService;
         private readonly INotificationService _notificationService;
+        private readonly IHubContext<BattleHub> _battleHub;
         private readonly ILogger<AdminController> _logger;
 
         public AdminController(
@@ -27,6 +30,7 @@ namespace WordSoul.Api.Controllers
             IAdminDashboardService dashboardService,
             IUserService userService,
             INotificationService notificationService,
+            IHubContext<BattleHub> battleHub,
             ILogger<AdminController> logger)
         {
             _systemConfigService = systemConfigService;
@@ -34,6 +38,7 @@ namespace WordSoul.Api.Controllers
             _dashboardService = dashboardService;
             _userService = userService;
             _notificationService = notificationService;
+            _battleHub = battleHub;
             _logger = logger;
         }
 
@@ -244,6 +249,26 @@ namespace WordSoul.Api.Controllers
             var result = await _dashboardService.GetBattleReplayAsync(sessionId, ct);
             if (result == null) return NotFound($"Battle session {sessionId} not found.");
             return Ok(result);
+        }
+
+        // POST: api/admin/battles/{sessionId}/abandon
+        [HttpPost("battles/{sessionId:int}/abandon")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
+        public async Task<IActionResult> AbandonBattle(int sessionId, CancellationToken ct = default)
+        {
+            var abandoned = await _dashboardService.AbandonBattleAsync(sessionId, ct);
+            if (!abandoned)
+                return BadRequest($"Battle {sessionId} is not in an active state or does not exist.");
+
+            // Notify connected players via SignalR
+            await _battleHub.Clients
+                .Group($"battle-{sessionId}")
+                .SendAsync("AdminForcedAbandoned",
+                    new { sessionId, message = "This battle was stopped by an administrator." },
+                    ct);
+
+            _logger.LogInformation("Admin force-abandoned battle session {SessionId}", sessionId);
+            return Ok(new { sessionId, status = "Abandoned" });
         }
     }
 }
