@@ -4,12 +4,13 @@ import React, { useState, useEffect } from 'react';
 import {
   App, Button, Drawer, Form, Input, InputNumber,
   Modal, Tabs, Avatar, Spin, Empty,
-  Descriptions, Timeline, Badge, Statistic, Row, Col, Progress, Table, Tag,
+  Descriptions, Timeline, Badge, Statistic, Row, Col, Progress, Table, Tag, DatePicker,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
   UserOutlined, TrophyOutlined, ThunderboltOutlined,
   StarOutlined, HistoryOutlined, HeartOutlined, EditOutlined, BookOutlined,
+  CheckCircleOutlined, CloseCircleOutlined, ReadOutlined,
 } from '@ant-design/icons';
 import { authApi, endpoints } from '@/services/api';
 import dayjs from 'dayjs';
@@ -64,6 +65,36 @@ interface LearningProgress {
   struggleWords: StruggleWord[];
 }
 
+interface ReviewHistoryItem {
+  reviewId: number;
+  vocabularyId: number;
+  word: string;
+  meaning: string;
+  questionType: string;
+  reviewTime: string;
+  isCorrect: boolean;
+  responseTimeSeconds: number;
+  hintCount: number;
+  grade: number;
+  easeFactorBefore: number;
+  easeFactorAfter: number;
+  intervalBefore: number;
+  intervalAfter: number;
+  nextReviewBefore?: string;
+  nextReviewAfter?: string;
+  notes?: string;
+}
+
+interface ReviewHistoryPage {
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  items: ReviewHistoryItem[];
+  accuracyPercent: number;
+  avgGrade: number;
+  avgResponseTimeSeconds: number;
+}
+
 const ROLE_COLOR: Record<string, string> = {
   SuperAdmin: 'var(--accent)',
   Admin: '#0369A1',
@@ -90,6 +121,10 @@ export default function UserDetailDrawer({
   const [adjusting, setAdjusting] = useState(false);
   const [learningProgress, setLearningProgress] = useState<LearningProgress | null>(null);
   const [loadingProgress, setLoadingProgress] = useState(false);
+  const [reviewHistory, setReviewHistory] = useState<ReviewHistoryPage | null>(null);
+  const [loadingReview, setLoadingReview] = useState(false);
+  const [reviewPage, setReviewPage] = useState(1);
+  const [reviewDateRange, setReviewDateRange] = useState<[string, string] | null>(null);
 
   useEffect(() => {
     if (!open || !userId) return;
@@ -97,6 +132,9 @@ export default function UserDetailDrawer({
     setActivities([]);
     setLearningProgress(null);
     setActiveTab('profile');
+    setReviewHistory(null);
+    setReviewPage(1);
+    setReviewDateRange(null);
 
     setLoadingDetail(true);
     authApi
@@ -140,6 +178,17 @@ export default function UserDetailDrawer({
       .get(endpoints.userLearningProgress(userId))
       .then((r) => setLearningProgress(r.data))
       .finally(() => setLoadingProgress(false));
+  };
+
+  const fetchReviewHistory = (page = reviewPage, dateRange = reviewDateRange) => {
+    if (!userId) return;
+    setLoadingReview(true);
+    const params: Record<string, unknown> = { page, pageSize: 30 };
+    if (dateRange) { params.from = dateRange[0]; params.to = dateRange[1]; }
+    authApi
+      .get(endpoints.userReviewHistory(userId), { params })
+      .then((r) => setReviewHistory(r.data))
+      .finally(() => setLoadingReview(false));
   };
 
   const pvpTotal = (detail?.pvpWins ?? 0) + (detail?.pvpLosses ?? 0);
@@ -223,6 +272,7 @@ export default function UserDetailDrawer({
               setActiveTab(k);
               if (k === 'activity') fetchActivities();
               if (k === 'learning') fetchLearningProgress();
+              if (k === 'reviews') fetchReviewHistory(1, null);
             }}
             size="small"
             style={{ padding: '0 16px' }}
@@ -465,6 +515,145 @@ export default function UserDetailDrawer({
                           </>
                         )}
                       </>
+                    )}
+                  </div>
+                ),
+              },
+              {
+                key: 'reviews',
+                label: (
+                  <span style={{ fontSize: 12 }}>
+                    <ReadOutlined style={{ marginRight: 4 }} />
+                    Reviews
+                  </span>
+                ),
+                children: (
+                  <div style={{ padding: '16px 8px' }}>
+                    {/* Date filter */}
+                    <div style={{ marginBottom: 12 }}>
+                      <DatePicker.RangePicker
+                        size="small"
+                        style={{ width: '100%' }}
+                        onChange={(_, strings) => {
+                          const range = strings[0] && strings[1]
+                            ? strings as [string, string]
+                            : null;
+                          setReviewDateRange(range);
+                          setReviewPage(1);
+                          fetchReviewHistory(1, range);
+                        }}
+                      />
+                    </div>
+
+                    {/* Summary stat cards */}
+                    {reviewHistory && (
+                      <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
+                        {[
+                          { label: 'Total Reviews', value: reviewHistory.totalCount, color: '#6366f1' },
+                          { label: 'Accuracy',      value: `${reviewHistory.accuracyPercent}%`, color: '#10b981' },
+                          { label: 'Avg Grade',     value: reviewHistory.avgGrade,  color: '#f59e0b' },
+                          { label: 'Avg Time',      value: `${reviewHistory.avgResponseTimeSeconds}s`, color: '#3b82f6' },
+                        ].map(({ label, value, color }) => (
+                          <Col span={6} key={label}>
+                            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 8px', textAlign: 'center' }}>
+                              <div style={{ fontSize: 13, fontWeight: 700, color }}>{value}</div>
+                              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>{label}</div>
+                            </div>
+                          </Col>
+                        ))}
+                      </Row>
+                    )}
+
+                    {loadingReview ? (
+                      <div style={{ textAlign: 'center', padding: 32 }}><Spin size="small" /></div>
+                    ) : !reviewHistory ? (
+                      <Empty description="Select a date range or switch to this tab to load" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                    ) : reviewHistory.items.length === 0 ? (
+                      <Empty description="No review history found" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                    ) : (
+                      <Table<ReviewHistoryItem>
+                        dataSource={reviewHistory.items}
+                        rowKey="reviewId"
+                        size="small"
+                        scroll={{ x: 480 }}
+                        pagination={{
+                          current: reviewHistory.pageNumber,
+                          pageSize: reviewHistory.pageSize,
+                          total: reviewHistory.totalCount,
+                          size: 'small',
+                          showSizeChanger: false,
+                          onChange: (p) => {
+                            setReviewPage(p);
+                            fetchReviewHistory(p, reviewDateRange);
+                          },
+                        }}
+                        columns={[
+                          {
+                            title: 'Word',
+                            dataIndex: 'word',
+                            key: 'word',
+                            width: 90,
+                            render: (w, r) => (
+                              <div>
+                                <strong style={{ fontSize: 12 }}>{w}</strong>
+                                <div style={{ fontSize: 10, color: 'var(--text-muted)', maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.meaning}</div>
+                              </div>
+                            ),
+                          },
+                          {
+                            title: 'Result',
+                            dataIndex: 'isCorrect',
+                            key: 'isCorrect',
+                            width: 60,
+                            align: 'center',
+                            render: (v) => v
+                              ? <CheckCircleOutlined style={{ color: '#10b981', fontSize: 14 }} />
+                              : <CloseCircleOutlined style={{ color: '#ef4444', fontSize: 14 }} />,
+                          },
+                          {
+                            title: 'Grade',
+                            dataIndex: 'grade',
+                            key: 'grade',
+                            width: 52,
+                            align: 'center',
+                            render: (g) => {
+                              const color = g >= 4 ? '#10b981' : g >= 2 ? '#f59e0b' : '#ef4444';
+                              return <Tag color={color === '#ef4444' ? 'red' : color === '#f59e0b' ? 'orange' : 'green'} style={{ fontSize: 10, margin: 0 }}>{g}</Tag>;
+                            },
+                          },
+                          {
+                            title: 'EF',
+                            key: 'ef',
+                            width: 80,
+                            render: (_, r) => (
+                              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                                {r.easeFactorBefore.toFixed(2)} → {r.easeFactorAfter.toFixed(2)}
+                              </span>
+                            ),
+                          },
+                          {
+                            title: 'Interval',
+                            key: 'interval',
+                            width: 80,
+                            render: (_, r) => (
+                              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                                {r.intervalBefore}d → {r.intervalAfter}d
+                              </span>
+                            ),
+                          },
+                          {
+                            title: 'Time',
+                            key: 'reviewTime',
+                            dataIndex: 'reviewTime',
+                            width: 100,
+                            render: (t) => (
+                              <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+                                {dayjs(t).format('MM-DD HH:mm')}
+                              </span>
+                            ),
+                          },
+                        ] as ColumnsType<ReviewHistoryItem>}
+                      />
                     )}
                   </div>
                 ),

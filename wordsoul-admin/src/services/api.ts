@@ -64,6 +64,9 @@ export const endpoints = {
   // User Balance Adjustment (SuperAdmin)
   userBalance: (id: number) => `/admin/users/${id}/balance`,
   userLearningProgress: (id: number) => `/admin/users/${id}/learning-progress`,
+  userReviewHistory: (id: number) => `/admin/users/${id}/review-history`,
+  adminBattles: '/admin/battles',
+  adminBattleReplay: (id: number) => `/admin/battles/${id}`,
   sessionAnalytics: '/admin/analytics/sessions',
 
   // Notification Broadcast (SuperAdmin)

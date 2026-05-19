@@ -204,5 +204,46 @@ namespace WordSoul.Api.Controllers
             var result = await _dashboardService.GetSessionAnalyticsAsync(days, ct);
             return Ok(result);
         }
+
+        // GET: api/admin/users/{userId}/review-history?page=1&pageSize=30&from=&to=
+        [HttpGet("users/{userId:int}/review-history")]
+        public async Task<IActionResult> GetUserReviewHistory(
+            int userId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 30,
+            [FromQuery] DateTime? from = null,
+            [FromQuery] DateTime? to = null,
+            CancellationToken ct = default)
+        {
+            if (page < 1) page = 1;
+            if (pageSize < 1 || pageSize > 100) pageSize = 30;
+            var result = await _dashboardService.GetUserReviewHistoryAsync(userId, page, pageSize, from, to, ct);
+            return Ok(result);
+        }
+
+        // GET: api/admin/battles?page=1&pageSize=20&userId=&type=&status=
+        [HttpGet("battles")]
+        public async Task<IActionResult> GetBattleSessions(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] int? userId = null,
+            [FromQuery] string? type = null,
+            [FromQuery] string? status = null,
+            CancellationToken ct = default)
+        {
+            if (page < 1) page = 1;
+            if (pageSize < 1 || pageSize > 100) pageSize = 20;
+            var result = await _dashboardService.GetBattleSessionsAsync(page, pageSize, userId, type, status, ct);
+            return Ok(result);
+        }
+
+        // GET: api/admin/battles/{sessionId}
+        [HttpGet("battles/{sessionId:int}")]
+        public async Task<IActionResult> GetBattleReplay(int sessionId, CancellationToken ct = default)
+        {
+            var result = await _dashboardService.GetBattleReplayAsync(sessionId, ct);
+            if (result == null) return NotFound($"Battle session {sessionId} not found.");
+            return Ok(result);
+        }
     }
 }

@@ -8,5 +8,14 @@ namespace WordSoul.Application.Interfaces.Services
         Task<PvpLeaderboardDto> GetPvpLeaderboardAsync(int top = 50, CancellationToken ct = default);
         Task<UserLearningProgressDto> GetUserLearningProgressAsync(int userId, CancellationToken ct = default);
         Task<SessionAnalyticsDto> GetSessionAnalyticsAsync(int days = 30, CancellationToken ct = default);
+        Task<UserReviewHistoryPageDto> GetUserReviewHistoryAsync(
+            int userId, int page, int pageSize,
+            DateTime? from, DateTime? to,
+            CancellationToken ct = default);
+        Task<BattleSessionPageDto> GetBattleSessionsAsync(
+            int page, int pageSize,
+            int? userId, string? type, string? status,
+            CancellationToken ct = default);
+        Task<BattleReplayDto?> GetBattleReplayAsync(int sessionId, CancellationToken ct = default);
     }
 }

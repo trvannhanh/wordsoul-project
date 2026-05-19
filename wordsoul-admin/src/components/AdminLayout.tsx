@@ -25,6 +25,7 @@ import {
   ThunderboltOutlined,
   GiftOutlined,
   BarChartOutlined,
+  FireOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -66,6 +67,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { key: '/notifications', icon: <BellOutlined />,        label: 'Notifications' },
       { key: '/pvp',           icon: <ThunderboltOutlined />,  label: 'PvP Leaderboard' },
+      { key: '/battles',       icon: <FireOutlined />,         label: 'Battle Replays' },
       { key: '/analytics',     icon: <BarChartOutlined />,     label: 'Session Analytics' },
     ],
     superAdminOnly: true,
@@ -95,6 +97,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/items':          'Item Management',
   '/notifications':  'Notification Broadcast',
   '/pvp':             'PvP Leaderboard',
+  '/battles':         'Battle Replays',
   '/analytics':       'Session Analytics',
   '/system-health':           'System Health',
   '/settings/system-config':  'System Configuration',

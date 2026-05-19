@@ -94,6 +94,194 @@ namespace WordSoul.Infrastructure.Persistence
             };
         }
 
+        public async Task<BattleSessionPageDto> GetBattleSessionsAsync(
+            int page, int pageSize,
+            int? userId, string? type, string? status,
+            CancellationToken ct = default)
+        {
+            var query = _db.BattleSessions
+                .Include(b => b.ChallengerUser)
+                .Include(b => b.OpponentUser)
+                .Include(b => b.GymLeader)
+                .AsQueryable();
+
+            if (userId.HasValue)
+                query = query.Where(b =>
+                    b.ChallengerUserId == userId.Value ||
+                    b.OpponentUserId == userId.Value);
+
+            if (!string.IsNullOrEmpty(type) &&
+                Enum.TryParse<WordSoul.Domain.Enums.BattleType>(type, out var bt))
+                query = query.Where(b => b.Type == bt);
+
+            if (!string.IsNullOrEmpty(status) &&
+                Enum.TryParse<WordSoul.Domain.Enums.BattleStatus>(status, out var bs))
+                query = query.Where(b => b.Status == bs);
+
+            var total = await query.CountAsync(ct);
+            var now   = DateTime.UtcNow;
+
+            var items = await query
+                .OrderByDescending(b => b.StartedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(b => new BattleSessionSummaryDto
+                {
+                    Id                 = b.Id,
+                    ChallengerUsername = b.ChallengerUser != null
+                        ? (b.ChallengerUser.Username ?? b.ChallengerUser.Email)
+                        : b.ChallengerUserId.ToString(),
+                    OpponentUsername   = b.OpponentUser != null
+                        ? (b.OpponentUser.Username ?? b.OpponentUser.Email)
+                        : null,
+                    GymLeaderName      = b.GymLeader != null ? b.GymLeader.Name : null,
+                    Type               = b.Type.ToString(),
+                    Status             = b.Status.ToString(),
+                    StartedAt          = b.StartedAt,
+                    CompletedAt        = b.CompletedAt,
+                    DurationSeconds    = b.CompletedAt.HasValue
+                        ? (int)(b.CompletedAt.Value - b.StartedAt).TotalSeconds
+                        : (int)(now - b.StartedAt).TotalSeconds,
+                    TotalQuestions     = b.TotalQuestions,
+                    ChallengerCorrect  = b.ChallengerCorrect,
+                    OpponentCorrect    = b.OpponentCorrect,
+                    ChallengerWon      = b.ChallengerWon,
+                    RoomCode           = b.RoomCode,
+                })
+                .ToListAsync(ct);
+
+            return new BattleSessionPageDto
+            {
+                TotalCount = total,
+                PageNumber = page,
+                PageSize   = pageSize,
+                Items      = items,
+            };
+        }
+
+        public async Task<BattleReplayDto?> GetBattleReplayAsync(int sessionId, CancellationToken ct = default)
+        {
+            var b = await _db.BattleSessions
+                .Include(x => x.ChallengerUser)
+                .Include(x => x.OpponentUser)
+                .Include(x => x.GymLeader)
+                .Include(x => x.Rounds)
+                    .ThenInclude(r => r.Vocabulary)
+                .FirstOrDefaultAsync(x => x.Id == sessionId, ct);
+
+            if (b == null) return null;
+
+            var now = DateTime.UtcNow;
+            var summary = new BattleReplayDto
+            {
+                Id                 = b.Id,
+                ChallengerUsername = b.ChallengerUser != null
+                    ? (b.ChallengerUser.Username ?? b.ChallengerUser.Email)
+                    : b.ChallengerUserId.ToString(),
+                ChallengerUsername2 = b.ChallengerUser != null
+                    ? (b.ChallengerUser.Username ?? b.ChallengerUser.Email)
+                    : b.ChallengerUserId.ToString(),
+                OpponentUsername   = b.OpponentUser != null
+                    ? (b.OpponentUser.Username ?? b.OpponentUser.Email)
+                    : null,
+                GymLeaderName      = b.GymLeader?.Name,
+                Type               = b.Type.ToString(),
+                Status             = b.Status.ToString(),
+                StartedAt          = b.StartedAt,
+                CompletedAt        = b.CompletedAt,
+                DurationSeconds    = b.CompletedAt.HasValue
+                    ? (int)(b.CompletedAt.Value - b.StartedAt).TotalSeconds
+                    : (int)(now - b.StartedAt).TotalSeconds,
+                TotalQuestions     = b.TotalQuestions,
+                ChallengerCorrect  = b.ChallengerCorrect,
+                OpponentCorrect    = b.OpponentCorrect,
+                ChallengerWon      = b.ChallengerWon,
+                RoomCode           = b.RoomCode,
+                Rounds             = b.Rounds
+                    .OrderBy(r => r.RoundIndex)
+                    .Select(r => new BattleRoundDetailDto
+                    {
+                        RoundIndex     = r.RoundIndex,
+                        VocabularyId   = r.VocabularyId,
+                        Word           = r.Vocabulary?.Word  ?? "",
+                        Meaning        = r.Vocabulary?.Meaning ?? "",
+                        P1Score        = r.P1Score,
+                        P1AnswerMs     = r.P1AnswerMs,
+                        P1Correct      = r.P1Correct,
+                        P1Answer       = r.P1Answer,
+                        P2Score        = r.P2Score,
+                        P2AnswerMs     = r.P2AnswerMs,
+                        P2Correct      = r.P2Correct,
+                        P2Answer       = r.P2Answer,
+                        DamageDealt    = r.DamageDealt,
+                        DamagedPlayer  = r.DamagedPlayer,
+                        TypeMultiplier = r.TypeMultiplier,
+                    })
+                    .ToList(),
+            };
+
+            return summary;
+        }
+
+        public async Task<UserReviewHistoryPageDto> GetUserReviewHistoryAsync(
+            int userId, int page, int pageSize,
+            DateTime? from, DateTime? to,
+            CancellationToken ct = default)
+        {
+            var query = _db.VocabularyReviewHistories
+                .Where(r => r.UserId == userId)
+                .Include(r => r.Vocabulary)
+                .AsQueryable();
+
+            if (from.HasValue) query = query.Where(r => r.ReviewTime >= from.Value);
+            if (to.HasValue)   query = query.Where(r => r.ReviewTime <= to.Value.AddDays(1));
+
+            // Summary stats over full filtered set (before paging)
+            var totalCount    = await query.CountAsync(ct);
+            var correctCount  = await query.CountAsync(r => r.IsCorrect, ct);
+            var avgGrade      = totalCount == 0 ? 0 :
+                await query.AverageAsync(r => (double)r.Grade, ct);
+            var avgResponse   = totalCount == 0 ? 0 :
+                await query.AverageAsync(r => r.ResponseTimeSeconds, ct);
+
+            var items = await query
+                .OrderByDescending(r => r.ReviewTime)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(r => new UserReviewHistoryItemDto
+                {
+                    ReviewId             = r.Id,
+                    VocabularyId         = r.VocabularyId,
+                    Word                 = r.Vocabulary!.Word,
+                    Meaning              = r.Vocabulary.Meaning,
+                    QuestionType         = "",
+                    ReviewTime           = r.ReviewTime,
+                    IsCorrect            = r.IsCorrect,
+                    ResponseTimeSeconds  = r.ResponseTimeSeconds,
+                    HintCount            = r.HintCount,
+                    Grade                = r.Grade,
+                    EaseFactorBefore     = r.EaseFactorBefore,
+                    EaseFactorAfter      = r.EaseFactorAfter,
+                    IntervalBefore       = r.IntervalBefore,
+                    IntervalAfter        = r.IntervalAfter,
+                    NextReviewBefore     = r.NextReviewBefore,
+                    NextReviewAfter      = r.NextReviewAfter,
+                    Notes                = r.Notes,
+                })
+                .ToListAsync(ct);
+
+            return new UserReviewHistoryPageDto
+            {
+                TotalCount            = totalCount,
+                PageNumber            = page,
+                PageSize              = pageSize,
+                Items                 = items,
+                AccuracyPercent       = totalCount == 0 ? 0 : Math.Round((double)correctCount / totalCount * 100, 1),
+                AvgGrade              = Math.Round(avgGrade, 2),
+                AvgResponseTimeSeconds = Math.Round(avgResponse, 2),
+            };
+        }
+
         public async Task<UserLearningProgressDto> GetUserLearningProgressAsync(int userId, CancellationToken ct = default)
         {
             var now = DateTime.UtcNow;
