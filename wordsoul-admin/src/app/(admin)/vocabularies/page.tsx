@@ -3,16 +3,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Table, Input, Select, Button, Tag, App,
-  Popconfirm, Space, Tooltip,
+  Col, Form, Modal, Popconfirm, Row, Space, Switch, Tooltip,
 } from 'antd';
 import {
-  PlusOutlined, EyeOutlined, DeleteOutlined,
+  PlusOutlined, EyeOutlined, DeleteOutlined, EditOutlined,
   RobotOutlined, SearchOutlined,
 } from '@ant-design/icons';
 import { authApi, endpoints } from '@/services/api';
 import dayjs from 'dayjs';
 import { useRouter } from 'next/navigation';
 import AiGenerationModal from '@/components/AiGenerationModal';
+import ImageUploader from '../_components/ImageUploader';
 
 interface VocabularySet {
   id: number;
@@ -34,6 +35,32 @@ const DIFFICULTY_STYLE: Record<string, { color: string; bg: string; border: stri
   Hard:   { color: '#B91C1C', bg: '#FEF2F2', border: '#FECACA' },
 };
 
+const THEME_OPTIONS = [
+  { value: 'DailyLife', label: 'Daily Life' },
+  { value: 'Nature', label: 'Nature' },
+  { value: 'Food', label: 'Food' },
+  { value: 'Weather', label: 'Weather' },
+  { value: 'Health', label: 'Health' },
+  { value: 'Sports', label: 'Sports' },
+  { value: 'Business', label: 'Business' },
+  { value: 'Science', label: 'Science' },
+  { value: 'Art', label: 'Art' },
+  { value: 'Communication', label: 'Communication' },
+  { value: 'Mystery', label: 'Mystery' },
+  { value: 'Dark', label: 'Dark' },
+  { value: 'Academic', label: 'Academic' },
+  { value: 'Challenge', label: 'Challenge' },
+  { value: 'TrapWords', label: 'Trap Words' },
+  { value: 'System', label: 'System' },
+  { value: 'Custom', label: 'Custom' },
+];
+
+const DIFFICULTY_OPTIONS = [
+  { value: 'Easy', label: 'Easy' },
+  { value: 'Medium', label: 'Medium' },
+  { value: 'Hard', label: 'Hard' },
+];
+
 function DifficultyTag({ level }: { level: string }) {
   const base = level?.split(' ')[0] ?? 'Easy';
   const s = DIFFICULTY_STYLE[base] ?? DIFFICULTY_STYLE['Easy'];
@@ -53,10 +80,16 @@ export default function VocabularySetsPage() {
   const [visFilter, setVisFilter] = useState<string | null>(null);
   const router = useRouter();
   const { message } = App.useApp();
+  const [modalForm] = Form.useForm();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(15);
   const [hasMore, setHasMore] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
+  const [editingSet, setEditingSet] = useState<VocabularySet | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const fetchSets = useCallback(async (page: number, size: number) => {
     setLoading(true);
@@ -81,6 +114,70 @@ export default function VocabularySetsPage() {
       message.success('Set deleted');
       fetchSets(currentPage, pageSize);
     } catch { message.error('Failed to delete set'); }
+  };
+
+  const openCreate = () => {
+    setModalMode('create');
+    setEditingSet(null);
+    setSelectedFile(null);
+    modalForm.resetFields();
+    modalForm.setFieldsValue({ difficultyLevel: 'Easy', theme: 'DailyLife', isPublic: true, isActive: true });
+    setModalOpen(true);
+  };
+
+  const openEdit = (set: VocabularySet) => {
+    setModalMode('edit');
+    setEditingSet(set);
+    setSelectedFile(null);
+    modalForm.setFieldsValue({
+      title: set.title,
+      description: set.description,
+      theme: set.theme,
+      difficultyLevel: set.difficultyLevel?.split(' ')[0] ?? 'Easy',
+      isActive: set.isActive,
+    });
+    setModalOpen(true);
+  };
+
+  const handleModalSubmit = async () => {
+    try {
+      const values = await modalForm.validateFields();
+      setSubmitting(true);
+
+      if (modalMode === 'create') {
+        const fd = new FormData();
+        fd.append('title', values.title);
+        fd.append('theme', values.theme);
+        if (values.description) fd.append('description', values.description);
+        fd.append('difficultyLevel', values.difficultyLevel);
+        fd.append('isPublic', String(values.isPublic ?? true));
+        fd.append('isActive', 'true');
+        if (selectedFile) fd.append('imageFile', selectedFile);
+        await authApi.post(endpoints.vocabularySets, fd, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        message.success('Vocabulary set created');
+      } else {
+        if (!editingSet) return;
+        await authApi.put(`${endpoints.vocabularySets}/${editingSet.id}`, {
+          title: values.title,
+          theme: values.theme,
+          description: values.description ?? '',
+          difficultyLevel: values.difficultyLevel,
+          isActive: values.isActive ?? true,
+          vocabularyIds: [],
+        });
+        message.success('Vocabulary set updated');
+      }
+
+      setModalOpen(false);
+      fetchSets(currentPage, pageSize);
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'errorFields' in err) return;
+      message.error(`Failed to ${modalMode === 'create' ? 'create' : 'update'} vocabulary set`);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // Client-side filtering
@@ -175,9 +272,18 @@ export default function VocabularySetsPage() {
     {
       title: '',
       key: 'action',
-      width: 72,
-      render: (_: any, record: VocabularySet) => (
+      width: 96,
+      render: (_: unknown, record: VocabularySet) => (
         <Space size={0}>
+          <Tooltip title="Edit">
+            <Button
+              type="text"
+              size="small"
+              icon={<EditOutlined />}
+              onClick={() => openEdit(record)}
+              style={{ color: 'var(--text-muted)' }}
+            />
+          </Tooltip>
           <Tooltip title="View details">
             <Button
               type="text"
@@ -210,7 +316,7 @@ export default function VocabularySetsPage() {
           <p className="page-subtitle">Manage vocabulary sets, content, and AI generation.</p>
         </div>
         <Space size={8}>
-          <Button size="small" icon={<PlusOutlined />}>
+          <Button size="small" icon={<PlusOutlined />} onClick={openCreate}>
             Create Set
           </Button>
           <Button
@@ -287,6 +393,69 @@ export default function VocabularySetsPage() {
         onCancel={() => setIsAiModalVisible(false)}
         onSuccess={() => { setIsAiModalVisible(false); fetchSets(currentPage, pageSize); }}
       />
+
+      {/* Create / Edit Modal */}
+      <Modal
+        title={modalMode === 'create' ? 'Create Vocabulary Set' : 'Edit Vocabulary Set'}
+        open={modalOpen}
+        onOk={handleModalSubmit}
+        onCancel={() => setModalOpen(false)}
+        confirmLoading={submitting}
+        okText={modalMode === 'create' ? 'Create' : 'Save Changes'}
+        width={520}
+        destroyOnHidden
+      >
+        <Form form={modalForm} layout="vertical" style={{ marginTop: 8 }}>
+          {modalMode === 'create' && (
+            <Form.Item label="Cover Image" style={{ marginBottom: 12 }}>
+              <ImageUploader
+                value={undefined}
+                onChange={setSelectedFile}
+              />
+            </Form.Item>
+          )}
+
+          <Form.Item
+            name="title"
+            label="Title"
+            rules={[{ required: true, message: 'Title is required' }, { max: 100 }]}
+          >
+            <Input maxLength={100} showCount />
+          </Form.Item>
+
+          <Form.Item name="description" label="Description">
+            <Input.TextArea rows={2} maxLength={300} showCount />
+          </Form.Item>
+
+          <Row gutter={12}>
+            <Col span={14}>
+              <Form.Item name="theme" label="Theme" rules={[{ required: true }]}>
+                <Select options={THEME_OPTIONS} showSearch optionFilterProp="label" />
+              </Form.Item>
+            </Col>
+            <Col span={10}>
+              <Form.Item name="difficultyLevel" label="Difficulty" rules={[{ required: true }]}>
+                <Select options={DIFFICULTY_OPTIONS} />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={24}>
+            {modalMode === 'create' && (
+              <Col>
+                <Form.Item name="isPublic" label="Public" valuePropName="checked">
+                  <Switch />
+                </Form.Item>
+              </Col>
+            )}
+            <Col>
+              <Form.Item name="isActive" label="Active" valuePropName="checked">
+                <Switch />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Modal>
     </div>
   );
 }

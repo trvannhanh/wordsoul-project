@@ -21,9 +21,11 @@ export const endpoints = {
   userStatus: (id: number) => `/users/${id}/status`,
   userActivities: (id: number) => `/users/${id}/activities`,
 
-  // Vocabularies
+  // Vocabulary Sets
   vocabularySets: '/vocabulary-sets',
   vocabularySetDetail: (id: number) => `/vocabulary-sets/${id}/details`,
+  vocabularySetUpdate: (id: number) => `/vocabulary-sets/${id}`,
+  vocabularySetDelete: (id: number) => `/vocabulary-sets/${id}`,
   aiPreview: '/vocabulary-sets/ai-preview',
   aiCreate: '/vocabulary-sets/ai-create',
   vocabularies: '/vocabularies',
@@ -54,6 +56,9 @@ export const endpoints = {
 
   // User Balance Adjustment (SuperAdmin)
   userBalance: (id: number) => `/admin/users/${id}/balance`,
+
+  // Notification Broadcast (SuperAdmin)
+  notificationBroadcast: '/admin/notifications/broadcast',
 };
 
 const ACCESS_TOKEN_KEY = 'adminAccessToken';
