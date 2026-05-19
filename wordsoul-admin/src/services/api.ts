@@ -47,6 +47,10 @@ export const endpoints = {
 
   // Settings — Logs
   adminLogs: '/admin/logs',
+
+  // Pets
+  pets: '/pets',
+  petDetail: (id: number) => `/pets/${id}`,
 };
 
 const ACCESS_TOKEN_KEY = 'adminAccessToken';

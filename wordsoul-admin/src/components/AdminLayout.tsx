@@ -20,6 +20,7 @@ import {
   MenuFoldOutlined,
   SunOutlined,
   MoonOutlined,
+  HeartOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -52,6 +53,7 @@ const NAV_GROUPS: NavGroup[] = [
       { key: '/vocabularies', icon: <BookOutlined />, label: 'Vocabulary Library' },
       { key: '/quests',       icon: <AimOutlined />,  label: 'Quests & Achievements' },
       { key: '/gyms',         icon: <TrophyOutlined />, label: 'Gym Operations' },
+      { key: '/pets',         icon: <HeartOutlined />,  label: 'Pets' },
     ],
   },
   {
@@ -75,6 +77,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/vocabularies': 'Vocabulary Library',
   '/quests':       'Quests & Achievements',
   '/gyms':         'Gym Operations',
+  '/pets':          'Pet Management',
   '/system-health':           'System Health',
   '/settings/system-config':  'System Configuration',
   '/settings/logs':           'Activity Logs',
