@@ -14,16 +14,28 @@ namespace WordSoul.Api.Controllers
     {
         private readonly ISystemConfigurationService _systemConfigService;
         private readonly IActivityLogService _activityLogService;
+        private readonly IAdminDashboardService _dashboardService;
         private readonly ILogger<AdminController> _logger;
 
         public AdminController(
             ISystemConfigurationService systemConfigService,
             IActivityLogService activityLogService,
+            IAdminDashboardService dashboardService,
             ILogger<AdminController> logger)
         {
             _systemConfigService = systemConfigService;
             _activityLogService = activityLogService;
+            _dashboardService = dashboardService;
             _logger = logger;
+        }
+
+        // GET: api/admin/dashboard
+        [HttpGet("dashboard")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
+        public async Task<IActionResult> GetDashboard(CancellationToken ct = default)
+        {
+            var stats = await _dashboardService.GetDashboardStatsAsync(ct);
+            return Ok(stats);
         }
 
         // GET: api/admin/configurations
