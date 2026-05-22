@@ -4,44 +4,46 @@
 \contentsline {figure}{\numberline {2.1}{\ignorespaces Đường cong quên lãng.}}{4}{figure.2.1}%
 \addvspace {10\p@ }
 \contentsline {figure}{\numberline {3.1}{\ignorespaces Kiến trúc Clean (Onion Architecture) triển khai trong hệ thống.}}{13}{figure.3.1}%
-\contentsline {figure}{\numberline {3.2}{\ignorespaces Sơ đồ Use Case tổng thể của hệ thống.}}{16}{figure.3.2}%
-\contentsline {figure}{\numberline {3.3}{\ignorespaces Sơ đồ tuần tự quy trình tạo bộ từ vựng.}}{18}{figure.3.3}%
-\contentsline {figure}{\numberline {3.4}{\ignorespaces Sơ đồ tuần tự quy trình thực hiện trận đấu.}}{19}{figure.3.4}%
-\contentsline {figure}{\numberline {3.5}{\ignorespaces Sơ đồ tuần tự quy trình học, ôn tập từ vựng và nhận thưởng.}}{20}{figure.3.5}%
-\contentsline {figure}{\numberline {3.6}{\ignorespaces Sơ đồ luồng nghiệp vụ khởi tạo bộ từ vựng.}}{22}{figure.3.6}%
-\contentsline {figure}{\numberline {3.7}{\ignorespaces Sơ đồ luồng nghiệp vụ xử lý trận đấu thời gian thực.}}{23}{figure.3.7}%
-\contentsline {figure}{\numberline {3.8}{\ignorespaces Sơ đồ hoạt động quy trình học tập và cơ chế thúc đẩy hành vi.}}{24}{figure.3.8}%
-\contentsline {figure}{\numberline {3.9}{\ignorespaces Sơ đồ trạng thái từ vựng trong phiên học.}}{25}{figure.3.9}%
-\contentsline {figure}{\numberline {3.10}{\ignorespaces Sơ đồ trạng thái từ vựng theo thuật toán SM-2.}}{26}{figure.3.10}%
-\contentsline {figure}{\numberline {3.11}{\ignorespaces Cấu trúc sơ đồ lớp tổng quát của hệ thống.}}{27}{figure.3.11}%
-\contentsline {figure}{\numberline {3.12}{\ignorespaces Lược đồ ERD nhóm quản lý người dùng và xác thực.}}{29}{figure.3.12}%
-\contentsline {figure}{\numberline {3.13}{\ignorespaces Lược đồ ERD nhóm từ vựng và nội dung học liệu.}}{30}{figure.3.13}%
-\contentsline {figure}{\numberline {3.14}{\ignorespaces Lược đồ ERD nhóm lịch sử học tập và thuật toán SRS.}}{31}{figure.3.14}%
-\contentsline {figure}{\numberline {3.15}{\ignorespaces Lược đồ ERD nhóm Gamification, thú ảo và hệ thống nhiệm vụ.}}{32}{figure.3.15}%
-\contentsline {figure}{\numberline {3.16}{\ignorespaces Lược đồ ERD nhóm hệ thống đối kháng.}}{33}{figure.3.16}%
-\contentsline {figure}{\numberline {3.17}{\ignorespaces Bản phác thảo giao diện điều phối trung tâm (Dashboard).}}{34}{figure.3.17}%
-\contentsline {figure}{\numberline {3.18}{\ignorespaces Thiết kế giao diện hệ thống xếp hạng cộng đồng.}}{35}{figure.3.18}%
-\contentsline {figure}{\numberline {3.19}{\ignorespaces Cấu trúc thiết kế quản lý danh mục bộ học liệu.}}{36}{figure.3.19}%
-\contentsline {figure}{\numberline {3.20}{\ignorespaces Chi tiết thiết kế giao diện phát triển sinh vật ảo.}}{37}{figure.3.20}%
-\contentsline {figure}{\numberline {3.21}{\ignorespaces Thiết kế giao diện chu trình học tập và củng cố kiến thức.}}{37}{figure.3.21}%
-\contentsline {figure}{\numberline {3.22}{\ignorespaces Thiết kế giao diện Chiến đấu thời gian thực}}{38}{figure.3.22}%
-\contentsline {figure}{\numberline {3.23}{\ignorespaces Giao diện bảng điều phối quản trị viên (wordsoul-admin).}}{39}{figure.3.23}%
-\contentsline {figure}{\numberline {3.24}{\ignorespaces Màn hình thực hiện phiên học từ vựng.}}{40}{figure.3.24}%
-\contentsline {figure}{\numberline {3.25}{\ignorespaces Màn hình thực hiện phiên ôn tập từ vựng.}}{41}{figure.3.25}%
-\contentsline {figure}{\numberline {3.26}{\ignorespaces Giao diện khởi tạo thuộc tính bộ từ vựng.}}{42}{figure.3.26}%
-\contentsline {figure}{\numberline {3.27}{\ignorespaces Quy trình tuyển chọn đơn vị kiến thức cho bộ từ.}}{43}{figure.3.27}%
-\contentsline {figure}{\numberline {3.28}{\ignorespaces Giao diện quản lý và nâng cấp thực thể ảo.}}{44}{figure.3.28}%
-\contentsline {figure}{\numberline {3.29}{\ignorespaces Tổng quan giao diện phân tích tiến độ người dùng.}}{45}{figure.3.29}%
-\contentsline {figure}{\numberline {3.30}{\ignorespaces Màn hình chiến đấu đối kháng.}}{46}{figure.3.30}%
-\contentsline {figure}{\numberline {3.31}{\ignorespaces Màn hình danh sách đối thủ PvE.}}{46}{figure.3.31}%
-\contentsline {figure}{\numberline {3.32}{\ignorespaces Màn hình sảnh chờ PvP.}}{47}{figure.3.32}%
-\contentsline {figure}{\numberline {3.33}{\ignorespaces Dashboard tổng quan kết quả kiểm thử hiệu năng API SubmitAnswer.}}{48}{figure.3.33}%
-\contentsline {figure}{\numberline {3.34}{\ignorespaces Biểu đồ biến thiên Throughput và đánh giá các ngưỡng điều kiện (Thresholds).}}{48}{figure.3.34}%
-\contentsline {figure}{\numberline {3.35}{\ignorespaces Giao diện sinh metadata từ vựng tự động bằng Gemini AI.}}{49}{figure.3.35}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Sơ đồ Use Case tổng thể của hệ thống.}}{15}{figure.3.2}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Sơ đồ tuần tự quy trình tạo bộ từ vựng.}}{17}{figure.3.3}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Sơ đồ tuần tự quy trình thực hiện trận đấu.}}{18}{figure.3.4}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces Sơ đồ tuần tự quy trình học, ôn tập từ vựng và nhận thưởng.}}{19}{figure.3.5}%
+\contentsline {figure}{\numberline {3.6}{\ignorespaces Sơ đồ luồng nghiệp vụ khởi tạo bộ từ vựng.}}{21}{figure.3.6}%
+\contentsline {figure}{\numberline {3.7}{\ignorespaces Sơ đồ luồng nghiệp vụ xử lý trận đấu thời gian thực.}}{22}{figure.3.7}%
+\contentsline {figure}{\numberline {3.8}{\ignorespaces Sơ đồ hoạt động quy trình học tập và cơ chế thúc đẩy hành vi.}}{23}{figure.3.8}%
+\contentsline {figure}{\numberline {3.9}{\ignorespaces Sơ đồ trạng thái từ vựng trong phiên học.}}{24}{figure.3.9}%
+\contentsline {figure}{\numberline {3.10}{\ignorespaces Sơ đồ trạng thái từ vựng theo thuật toán SM-2.}}{25}{figure.3.10}%
+\contentsline {figure}{\numberline {3.11}{\ignorespaces Sơ đồ lớp nhóm Quản lý người dùng và Xác thực.}}{27}{figure.3.11}%
+\contentsline {figure}{\numberline {3.12}{\ignorespaces Sơ đồ lớp nhóm Từ vựng và Nội dung học liệu.}}{28}{figure.3.12}%
+\contentsline {figure}{\numberline {3.13}{\ignorespaces Sơ đồ lớp nhóm Lịch sử học tập và Thuật toán SRS.}}{29}{figure.3.13}%
+\contentsline {figure}{\numberline {3.14}{\ignorespaces Sơ đồ lớp nhóm Gamification --- Thú ảo, Vật phẩm và Nhiệm vụ.}}{30}{figure.3.14}%
+\contentsline {figure}{\numberline {3.15}{\ignorespaces Sơ đồ lớp nhóm Hệ thống Đối kháng.}}{31}{figure.3.15}%
+\contentsline {figure}{\numberline {3.16}{\ignorespaces Lược đồ ERD nhóm Quản lý người dùng và Xác thực.}}{32}{figure.3.16}%
+\contentsline {figure}{\numberline {3.17}{\ignorespaces Lược đồ ERD nhóm Từ vựng và Nội dung học liệu.}}{33}{figure.3.17}%
+\contentsline {figure}{\numberline {3.18}{\ignorespaces Lược đồ ERD nhóm Lịch sử học tập và Thuật toán SRS.}}{34}{figure.3.18}%
+\contentsline {figure}{\numberline {3.19}{\ignorespaces Lược đồ ERD nhóm Gamification --- Thú ảo, Vật phẩm và Nhiệm vụ.}}{35}{figure.3.19}%
+\contentsline {figure}{\numberline {3.20}{\ignorespaces Lược đồ ERD nhóm Hệ thống Đối kháng.}}{36}{figure.3.20}%
+\contentsline {figure}{\numberline {3.21}{\ignorespaces Thiết kế giao diện hệ thống xếp hạng cộng đồng.}}{37}{figure.3.21}%
+\contentsline {figure}{\numberline {3.22}{\ignorespaces Cấu trúc thiết kế quản lý danh mục bộ học liệu.}}{38}{figure.3.22}%
+\contentsline {figure}{\numberline {3.23}{\ignorespaces Chi tiết thiết kế giao diện phát triển sinh vật ảo.}}{39}{figure.3.23}%
+\contentsline {figure}{\numberline {3.24}{\ignorespaces Thiết kế giao diện chu trình học tập và củng cố kiến thức.}}{39}{figure.3.24}%
+\contentsline {figure}{\numberline {3.25}{\ignorespaces Thiết kế giao diện Chiến đấu thời gian thực}}{40}{figure.3.25}%
+\contentsline {figure}{\numberline {3.26}{\ignorespaces Màn hình thực hiện phiên học từ vựng.}}{41}{figure.3.26}%
+\contentsline {figure}{\numberline {3.27}{\ignorespaces Màn hình thực hiện phiên ôn tập từ vựng.}}{42}{figure.3.27}%
+\contentsline {figure}{\numberline {3.28}{\ignorespaces Giao diện khởi tạo thuộc tính bộ từ vựng.}}{45}{figure.3.28}%
+\contentsline {figure}{\numberline {3.29}{\ignorespaces Quy trình tuyển chọn đơn vị kiến thức cho bộ từ.}}{45}{figure.3.29}%
+\contentsline {figure}{\numberline {3.30}{\ignorespaces Giao diện quản lý và nâng cấp thực thể ảo.}}{47}{figure.3.30}%
+\contentsline {figure}{\numberline {3.31}{\ignorespaces Tổng quan giao diện phân tích tiến độ người dùng.}}{48}{figure.3.31}%
+\contentsline {figure}{\numberline {3.32}{\ignorespaces Màn hình chiến đấu đối kháng.}}{50}{figure.3.32}%
+\contentsline {figure}{\numberline {3.33}{\ignorespaces Màn hình danh sách đối thủ PvE.}}{50}{figure.3.33}%
+\contentsline {figure}{\numberline {3.34}{\ignorespaces Màn hình sảnh chờ PvP.}}{51}{figure.3.34}%
+\contentsline {figure}{\numberline {3.35}{\ignorespaces Giao diện bảng điều phối quản trị viên.}}{52}{figure.3.35}%
+\contentsline {figure}{\numberline {3.36}{\ignorespaces Giao diện sinh metadata từ vựng tự động bằng Gemini AI.}}{53}{figure.3.36}%
+\contentsline {figure}{\numberline {3.37}{\ignorespaces Dashboard tổng quan kết quả kiểm thử hiệu năng API SubmitAnswer.}}{58}{figure.3.37}%
+\contentsline {figure}{\numberline {3.38}{\ignorespaces Biểu đồ biến thiên Throughput và đánh giá các ngưỡng điều kiện (Thresholds).}}{58}{figure.3.38}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\addvspace {10\p@ }
-\contentsline {figure}{\numberline {B.1}{\ignorespaces Giao diện thư viện thú ảo tích hợp bộ lọc phân loại đa năng.}}{65}{figure.B.1}%
-\contentsline {figure}{\numberline {B.2}{\ignorespaces Màn hình hiển thị cấu trúc học liệu và trạng thái ghi nhớ cá nhân.}}{66}{figure.B.2}%
-\contentsline {figure}{\numberline {B.3}{\ignorespaces Giao diện truy xuất và quản lý danh mục bộ học liệu.}}{67}{figure.B.3}%
+\contentsline {figure}{\numberline {B.1}{\ignorespaces Giao diện thư viện thú ảo tích hợp bộ lọc phân loại đa năng.}}{72}{figure.B.1}%
+\contentsline {figure}{\numberline {B.2}{\ignorespaces Màn hình hiển thị cấu trúc học liệu và trạng thái ghi nhớ cá nhân.}}{73}{figure.B.2}%
+\contentsline {figure}{\numberline {B.3}{\ignorespaces Giao diện truy xuất và quản lý danh mục bộ học liệu.}}{74}{figure.B.3}%
