@@ -34,6 +34,18 @@ namespace WordSoul.IntegrationTests.Fakes
             return Task.FromResult(new List<ActivityLogDto>());
         }
 
+        public Task<(List<ActivityLogDto> Items, int Total)> GetAdminLogsAsync(
+            string? action = null,
+            int? userId = null,
+            DateTime? fromDate = null,
+            DateTime? toDate = null,
+            int pageNumber = 1,
+            int pageSize = 20,
+            CancellationToken ct = default)
+        {
+            return Task.FromResult((new List<ActivityLogDto>(), 0));
+        }
+
         public Task TrackUserLoginAsync(int userId, CancellationToken ct = default)
         {
             throw new NotImplementedException();

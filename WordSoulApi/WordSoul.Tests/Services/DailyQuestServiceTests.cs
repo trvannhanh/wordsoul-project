@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Moq;
 using WordSoul.Application.Interfaces.Services;
@@ -16,6 +17,7 @@ namespace WordSoul.Tests.Services
         {
             var options = new DbContextOptionsBuilder<WordSoulDbContext>()
                 .UseInMemoryDatabase(dbName)
+                .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
                 .Options;
 
             var context = new WordSoulDbContext(options);

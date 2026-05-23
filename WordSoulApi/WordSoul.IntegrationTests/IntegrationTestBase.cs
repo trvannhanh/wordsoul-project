@@ -83,6 +83,7 @@ namespace WordSoul.IntegrationTests
             Achievement = new AchievementRepository(_context);
             UserItem = new UserItemRepository(_context);
             SystemConfiguration = new SystemConfigurationRepository(_context);
+            UserGroup = new UserGroupRepository(_context);
             // ... add other repositories as needed
         }
 
@@ -109,6 +110,7 @@ namespace WordSoul.IntegrationTests
         public IUserDailyQuestRepository UserDailyQuest { get; }  
         public IUserItemRepository UserItem { get; }
         public ISystemConfigurationRepository SystemConfiguration { get; }
+        public IUserGroupRepository UserGroup { get; }
         // ... other repositories
 
         public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

@@ -283,5 +283,107 @@ namespace WordSoul.Tests.Services.SRS
             // ASSERT
             score.Should().Be(expectedScore);
         }
+
+        // ============ TEST: Grade 4 là điểm trung tính của SM-2 ============
+        // EF' = EF + (0.1 - (5-4)*(0.08 + (5-4)*0.02)) = EF + (0.1 - 0.10) = EF + 0
+        [Fact]
+        public void CalculateNext_WithGrade4_EaseFactorShouldRemainUnchanged()
+        {
+            // ARRANGE
+            var algorithm = new SRSAlgorithm();
+            double currentEF = 2.5;
+
+            // ACT
+            var result = algorithm.CalculateNext(grade: 4, currentEF: currentEF, currentInterval: 6, currentRepetition: 2);
+
+            // ASSERT — Grade 4 là điểm trung tính, EF không thay đổi
+            result.NewEaseFactor.Should().BeApproximately(currentEF, 0.0001,
+                because: "Grade 4 is the neutral point in SM-2 where EF change = 0.1 - 1*(0.08+0.02) = 0");
+        }
+
+        // ============ TEST: Công thức interval I(n) = ceil(I(n-1) × EF) ============
+        [Fact]
+        public void CalculateNext_ThirdRepetitionOnward_IntervalShouldBeCeilingOfPreviousTimesEF()
+        {
+            // ARRANGE
+            var algorithm = new SRSAlgorithm();
+            double currentEF = 2.5;
+            int currentInterval = 10;
+            int currentRepetition = 3; // rep >= 3 → dùng công thức EF multiplier
+
+            // ACT
+            var result = algorithm.CalculateNext(grade: 4, currentEF: currentEF, currentInterval: currentInterval, currentRepetition: currentRepetition);
+
+            // ASSERT — I(n) = ceil(I(n-1) × NewEF) = ceil(10 × 2.5) = 25
+            int expectedInterval = (int)Math.Ceiling(currentInterval * result.NewEaseFactor);
+            result.NewInterval.Should().Be(expectedInterval,
+                because: $"interval formula is ceil(previousInterval × easeFactor) = ceil({currentInterval} × {result.NewEaseFactor})");
+        }
+
+        // ============ TEST: Retention bonus bị cap riêng tại 20 điểm ============
+        // Bonus = min(repetition * 2, 20) → repetition >= 10 đều cho bonus = 20
+        [Theory]
+        [InlineData(10)]   // rep=10 → bonus = min(20, 20) = 20
+        [InlineData(15)]   // rep=15 → bonus = min(30, 20) = 20 (capped)
+        [InlineData(50)]   // rep=50 → bonus = min(100, 20) = 20 (capped)
+        public void CalculateRetentionScore_HighRepetition_BonusShouldBeCappedAt20Points(int highRepetition)
+        {
+            // ARRANGE
+            var algorithm = new SRSAlgorithm();
+            // Dùng 70% accuracy để total không bị cap bởi 100: 70 + 20 = 90 < 100
+            int correctCount = 7, wrongCount = 3;
+
+            // ACT
+            var score = algorithm.CalculateRetentionScore(correctCount, wrongCount, highRepetition);
+
+            // ASSERT — 70% accuracy + 20 bonus (capped) = 90
+            score.Should().Be(90,
+                because: $"repetition={highRepetition} should still give max bonus of 20, resulting in 70 + 20 = 90");
+        }
+
+        // ============ TEST: NextReviewDate phải chính xác với NewInterval ============
+        [Fact]
+        public void CalculateNext_NextReviewDate_ShouldBeScheduledExactlyIntervalDaysFromNow()
+        {
+            // ARRANGE
+            var algorithm = new SRSAlgorithm();
+            var before = DateTime.UtcNow;
+
+            // ACT — grade=4, rep=2 → interval=6 days (hardcoded second repetition)
+            var result = algorithm.CalculateNext(grade: 4, currentEF: 2.5, currentInterval: 1, currentRepetition: 1);
+
+            var after = DateTime.UtcNow;
+
+            // ASSERT — NextReviewDate phải nằm trong khoảng before+6days và after+6days
+            result.NewInterval.Should().Be(6);
+            result.NextReviewDate.Should()
+                .BeOnOrAfter(before.AddDays(result.NewInterval))
+                .And
+                .BeOnOrBefore(after.AddDays(result.NewInterval).AddSeconds(1),
+                    because: "NextReviewDate should be exactly UtcNow + NewInterval days");
+        }
+
+        // ============ TEST: Boundary grade 2 (fail) vs grade 3 (pass) ============
+        // Grade 3 là ngưỡng thấp nhất để PASS (repetition tăng)
+        // Grade 2 là ngưỡng cao nhất để FAIL (repetition về 0)
+        [Theory]
+        [InlineData(3, true,  "should pass threshold and increment repetition")]
+        [InlineData(2, false, "should fail threshold and reset repetition to 0")]
+        public void CalculateNext_AtPassFailBoundary_ShouldHandleRepetitionCorrectly(
+            int grade, bool shouldPass, string reason)
+        {
+            // ARRANGE
+            var algorithm = new SRSAlgorithm();
+            int currentRepetition = 4;
+
+            // ACT
+            var result = algorithm.CalculateNext(grade: grade, currentEF: 2.5, currentInterval: 10, currentRepetition: currentRepetition);
+
+            // ASSERT
+            if (shouldPass)
+                result.NewRepetition.Should().Be(currentRepetition + 1, because: reason);
+            else
+                result.NewRepetition.Should().Be(0, because: reason);
+        }
     }
 }

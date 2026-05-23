@@ -38,6 +38,16 @@ namespace WordSoul.IntegrationTests.Fakes
             throw new NotImplementedException();
         }
 
+        public Task<DailyQuestDto?> UpdateQuestAsync(int id, UpdateDailyQuestDto dto, CancellationToken ct = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> DeleteQuestAsync(int questId, CancellationToken ct = default)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task UpdateQuestProgressAsync(int userId, QuestType questType, int increment = 1, double? accuracy = null, CancellationToken ct = default)
         {
             return Task.CompletedTask;
