@@ -19,9 +19,10 @@ using WordSoul.Infrastructure.ExternalServices;
 using WordSoul.Infrastructure.Persistence;
 
 
-//using WordSoul.Infrastructure.BackgroundServices;
+using WordSoul.Infrastructure.BackgroundServices;
 using WordSoul.Infrastructure.Persistence;
 using WordSoul.Infrastructure.Persistence.Repositories;
+using WordSoul.Api.Middlewares;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -221,6 +222,11 @@ builder.Services.AddScoped<IVocabularyReviewHistoryRepository, VocabularyReviewH
 //Background Service
 builder.Services.AddHostedService<NotificationBackgroundService>();
 
+// System Logs
+builder.Services.AddSingleton<SystemLogQueue>();
+builder.Services.AddHostedService<SystemLogBackgroundWorker>();
+builder.Services.AddHostedService<LogCleanupBackgroundWorker>();
+
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddScoped<IRealtimeNotificationService, SignalRNotificationService>();
@@ -279,6 +285,9 @@ app.MapScalarApiReference(options =>
 
 // Thêm middleware Serilog để ghi log các yêu cầu HTTP
 app.UseSerilogRequestLogging();
+
+// Đăng ký custom middleware ghi log chi tiết Request/Response
+app.UseMiddleware<RequestResponseLoggingMiddleware>();
 
 // 🚀 CORS phải đứng TRƯỚC UseHttpsRedirection
 // Trên Azure App Service, HTTPS được terminate ở load balancer,

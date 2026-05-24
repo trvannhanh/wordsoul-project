@@ -41,6 +41,7 @@ namespace WordSoul.Infrastructure.Persistence
         // ── User Groups ──────────────────────────────────
         public DbSet<UserGroup> UserGroups { get; set; }
         public DbSet<UserGroupMember> UserGroupMembers { get; set; }
+        public DbSet<SystemLog> SystemLogs { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -468,7 +469,9 @@ namespace WordSoul.Infrastructure.Persistence
                 new SystemConfiguration { Key = "AllowRegistration",     Value = "true",  DataType = "Boolean", Category = "GENERAL",      Description = "Allow new users to register on the platform",                                 LastUpdatedBy = "System", LastUpdatedAt = seedTime },
                 new SystemConfiguration { Key = "MaintenanceMode",       Value = "false", DataType = "Boolean", Category = "GENERAL",      Description = "Show maintenance notice to regular users (does not affect admins)",           LastUpdatedBy = "System", LastUpdatedAt = seedTime },
                 new SystemConfiguration { Key = "MaxGroupSize",          Value = "50",    DataType = "Integer", Category = "GENERAL",      Description = "Maximum number of members allowed in a single user group",                    LastUpdatedBy = "System", LastUpdatedAt = seedTime },
-                new SystemConfiguration { Key = "AppDisplayName",        Value = "VocaMon", DataType = "String", Category = "GENERAL",     Description = "Application display name shown to users in the UI",                          LastUpdatedBy = "System", LastUpdatedAt = seedTime }
+                new SystemConfiguration { Key = "AppDisplayName",        Value = "VocaMon", DataType = "String", Category = "GENERAL",     Description = "Application display name shown to users in the UI",                          LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                // System Settings
+                new SystemConfiguration { Key = "LogRetentionDays",      Value = "7",     DataType = "Integer", Category = "SYSTEM",       Description = "Number of days to keep system logs before auto-deleting",                     LastUpdatedBy = "System", LastUpdatedAt = seedTime }
             );
         }
 

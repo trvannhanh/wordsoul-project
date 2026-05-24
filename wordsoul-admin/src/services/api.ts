@@ -58,6 +58,7 @@ export const endpoints = {
 
   // Settings — Logs
   adminLogs: '/admin/logs',
+  systemLogs: '/admin/systemlogs',
 
   // Pets
   pets: '/pets',

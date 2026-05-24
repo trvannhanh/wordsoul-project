@@ -139,6 +139,7 @@ export default function SystemConfigPage() {
 
   const srsConfigs = configs.filter(c => c.category === 'SRS');
   const gameConfigs = configs.filter(c => c.category === 'GAME_BALANCE');
+  const systemConfigs = configs.filter(c => c.category === 'SYSTEM');
 
   return (
     <div>
@@ -180,11 +181,18 @@ export default function SystemConfigPage() {
             configs={srsConfigs}
           />
         </div>
-        <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '20px 24px' }}>
+        <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '20px 24px', marginBottom: 16 }}>
           <ConfigSection
             title="Game Balance & Rewards"
             description="Controls XP multipliers, AP economy, and progression thresholds."
             configs={gameConfigs}
+          />
+        </div>
+        <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '20px 24px' }}>
+          <ConfigSection
+            title="System Settings"
+            description="Controls background jobs, logs retention, and system-level operations."
+            configs={systemConfigs}
           />
         </div>
       </Form>

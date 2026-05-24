@@ -79,7 +79,8 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { key: '/system-health',          icon: <MonitorOutlined />,  label: 'System Health' },
       { key: '/settings/system-config', icon: <ControlOutlined />,  label: 'System Config' },
-      { key: '/settings/logs',          icon: <FileTextOutlined />, label: 'Logs' },
+      { key: '/settings/logs',          icon: <FileTextOutlined />, label: 'Activity Logs' },
+      { key: '/system-logs',            icon: <MonitorOutlined />,  label: 'System Logs' },
       { key: '/settings/generals',      icon: <GlobalOutlined />,   label: 'Generals' },
     ],
   },
@@ -103,6 +104,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/system-health':           'System Health',
   '/settings/system-config':  'System Configuration',
   '/settings/logs':           'Activity Logs',
+  '/system-logs':             'System Logs',
   '/settings/generals':       'General Settings',
 };
 
