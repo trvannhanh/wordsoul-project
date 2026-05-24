@@ -90,6 +90,7 @@ namespace WordSoul.Application.Interfaces.Services
             int id,
             UpdateVocabularySetDto dto,
             int? requestingUserId = null,
+            string? newImageUrl = null,
             CancellationToken cancellationToken = default);
 
         /// <summary>

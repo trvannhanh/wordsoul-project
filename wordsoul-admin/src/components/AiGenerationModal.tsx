@@ -125,6 +125,20 @@ export default function AiGenerationModal({ open, onCancel, onSuccess }: AiGener
       key: 'meaning',
       render: (v: string) => <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{v}</span>,
     },
+    {
+      title: 'Description',
+      dataIndex: 'description',
+      key: 'description',
+      ellipsis: true,
+      render: (v: string) => <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{v || '—'}</span>,
+    },
+    {
+      title: 'Example',
+      dataIndex: 'exampleSentence',
+      key: 'exampleSentence',
+      ellipsis: true,
+      render: (v: string) => <span style={{ fontSize: 12, fontStyle: 'italic' }}>{v || '—'}</span>,
+    },
   ];
 
   return (
@@ -176,7 +190,7 @@ export default function AiGenerationModal({ open, onCancel, onSuccess }: AiGener
             <Button
               type="primary"
               icon={<RobotOutlined />}
-              iconPosition="start"
+              iconPlacement="start"
               onClick={handlePreview}
               loading={loading}
             >
@@ -206,7 +220,7 @@ export default function AiGenerationModal({ open, onCancel, onSuccess }: AiGener
             <Button size="small" icon={<ArrowLeftOutlined />} onClick={() => setStep(0)}>
               Back
             </Button>
-            <Button type="primary" size="small" icon={<ArrowRightOutlined />} iconPosition="end" onClick={() => setStep(2)}>
+            <Button type="primary" size="small" icon={<ArrowRightOutlined />} iconPlacement="end" onClick={() => setStep(2)}>
               Set Details
             </Button>
           </div>
@@ -225,7 +239,7 @@ export default function AiGenerationModal({ open, onCancel, onSuccess }: AiGener
             <Col span={10}>
               <Form.Item name="theme" label="Theme" rules={[{ required: true }]}>
                 <Select placeholder="Select theme">
-                  {['Academic', 'Casual', 'TOEIC', 'IELTS', 'Travel', 'Business'].map(t => (
+                  {['DailyLife', 'Nature', 'Food', 'Weather', 'Technology', 'Travel', 'Health', 'Sports', 'Business', 'Science', 'Art', 'Communication', 'Mystery', 'Dark', 'Academic', 'Challenge', 'TrapWords', 'System', 'Custom'].map(t => (
                     <Select.Option key={t} value={t}>{t}</Select.Option>
                   ))}
                 </Select>

@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using WordSoul.Api.Extensions;
 using WordSoul.Application.DTOs.Vocabulary;
 using WordSoul.Application.DTOs.VocabularySet;
+using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
+using WordSoul.Domain.Entities;
 using WordSoul.Domain.Enums;
 
 namespace WordSoul.Api.Controllers
@@ -18,15 +20,17 @@ namespace WordSoul.Api.Controllers
         private readonly ISetVocabularyService _setVocabularyService;
         private readonly IUserVocabularySetService _userVocabularySetService;
         private readonly IUploadAssetsService _uploadAssetsService;
+        private readonly IUnitOfWork _uow;
         private readonly ILogger<VocabularySetController> _logger;
 
-        public VocabularySetController(IVocabularySetService vocabularySetService, IUserVocabularySetService userVocabularySetService, ILogger<VocabularySetController> logger, IUploadAssetsService uploadAssetsService, ISetVocabularyService setVocabularyService)
+        public VocabularySetController(IVocabularySetService vocabularySetService, IUserVocabularySetService userVocabularySetService, ILogger<VocabularySetController> logger, IUploadAssetsService uploadAssetsService, ISetVocabularyService setVocabularyService, IUnitOfWork uow)
         {
             _vocabularySetService = vocabularySetService;
             _userVocabularySetService = userVocabularySetService;
             _logger = logger;
             _uploadAssetsService = uploadAssetsService;
             _setVocabularyService = setVocabularyService;
+            _uow = uow;
         }
 
         //------------------------------ POST -----------------------------------------
@@ -42,8 +46,9 @@ namespace WordSoul.Api.Controllers
                 return BadRequest("Vocabulary set data is required.");
             }
 
-            // Validation thêm
-            if (createDto.VocabularyIds == null || !createDto.VocabularyIds.Any())
+            // Validation — admin/superadmin can create empty sets; users must supply vocabularies
+            bool isAdmin = User.IsInRole("Admin") || User.IsInRole("SuperAdmin");
+            if (!isAdmin && (createDto.VocabularyIds == null || !createDto.VocabularyIds.Any()))
             {
                 _logger.LogWarning("VocabularyIds is empty or null.");
                 return BadRequest("At least one vocabulary ID is required.");
@@ -352,7 +357,7 @@ namespace WordSoul.Api.Controllers
         // User: chỉ cập nhật bộ của chính mình (validate owner trong service)
         [Authorize(Roles = "Admin,SuperAdmin,User")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateVocabularySet(int id, [FromBody] UpdateVocabularySetDto updateDto)
+        public async Task<IActionResult> UpdateVocabularySet(int id, [FromForm] UpdateVocabularySetDto updateDto)
         {
             if (updateDto == null) return BadRequest("Vocabulary set data is required.");
 
@@ -363,7 +368,17 @@ namespace WordSoul.Api.Controllers
                     ? null
                     : User.GetUserId();
 
-                var updatedVocabularySet = await _vocabularySetService.UpdateVocabularySetAsync(id, updateDto, requestingUserId);
+                string? imageUrl = null;
+                if (updateDto.ImageFile != null && updateDto.ImageFile.Length > 0)
+                {
+                    if (updateDto.ImageFile.Length > 10 * 1024 * 1024)
+                        return BadRequest("Image file size exceeds 10MB.");
+                    if (!updateDto.ImageFile.ContentType.StartsWith("image/"))
+                        return BadRequest("Only image files are allowed.");
+                    (imageUrl, _) = await _uploadAssetsService.UploadImageAsync(updateDto.ImageFile, "vocabulary_sets");
+                }
+
+                var updatedVocabularySet = await _vocabularySetService.UpdateVocabularySetAsync(id, updateDto, requestingUserId, imageUrl);
                 if (updatedVocabularySet == null) return NotFound();
                 return Ok(updatedVocabularySet);
             }
@@ -597,5 +612,60 @@ namespace WordSoul.Api.Controllers
         }
 
         
+        // ── Admin: Reward Pets CRUD ────────────────────────────────────────────────
+
+        // GET: api/vocabulary-sets/{setId}/reward-pets
+        [Authorize(Roles = "Admin,SuperAdmin")]
+        [HttpGet("{setId}/reward-pets")]
+        public async Task<IActionResult> GetRewardPets(int setId, CancellationToken ct)
+        {
+            var pets = await _uow.SetRewardPet.GetPetsByVocabularySetIdAsync(setId, ct);
+            return Ok(pets.Select(p => new
+            {
+                petId = p.PetId,
+                dropRate = p.DropRate,
+                petName = p.Pet?.Name,
+                petImageUrl = p.Pet?.ImageUrl,
+                rarity = p.Pet?.Rarity.ToString(),
+            }));
+        }
+
+        // POST: api/vocabulary-sets/{setId}/reward-pets
+        [Authorize(Roles = "Admin,SuperAdmin")]
+        [HttpPost("{setId}/reward-pets")]
+        public async Task<IActionResult> AddRewardPet(int setId, [FromBody] SetRewardPetDto dto, CancellationToken ct)
+        {
+            var existing = await _uow.SetRewardPet.GetAsync(setId, dto.PetId, ct);
+            if (existing != null) return Conflict("Pet already in reward list.");
+            await _uow.SetRewardPet.AddAsync(new SetRewardPet { VocabularySetId = setId, PetId = dto.PetId, DropRate = dto.DropRate }, ct);
+            await _uow.SaveChangesAsync(ct);
+            return Created(string.Empty, null);
+        }
+
+        // PUT: api/vocabulary-sets/{setId}/reward-pets/{petId}
+        [Authorize(Roles = "Admin,SuperAdmin")]
+        [HttpPut("{setId}/reward-pets/{petId}")]
+        public async Task<IActionResult> UpdateRewardPet(int setId, int petId, [FromBody] SetRewardPetDto dto, CancellationToken ct)
+        {
+            var entry = await _uow.SetRewardPet.GetAsync(setId, petId, ct);
+            if (entry == null) return NotFound();
+            entry.DropRate = dto.DropRate;
+            _uow.SetRewardPet.Update(entry);
+            await _uow.SaveChangesAsync(ct);
+            return NoContent();
+        }
+
+        // DELETE: api/vocabulary-sets/{setId}/reward-pets/{petId}
+        [Authorize(Roles = "Admin,SuperAdmin")]
+        [HttpDelete("{setId}/reward-pets/{petId}")]
+        public async Task<IActionResult> RemoveRewardPet(int setId, int petId, CancellationToken ct)
+        {
+            var entry = await _uow.SetRewardPet.GetAsync(setId, petId, ct);
+            if (entry == null) return NotFound();
+            _uow.SetRewardPet.Remove(entry);
+            await _uow.SaveChangesAsync(ct);
+            return NoContent();
+        }
+
     }
 }

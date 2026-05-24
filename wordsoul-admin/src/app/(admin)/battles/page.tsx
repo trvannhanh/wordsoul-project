@@ -428,7 +428,7 @@ export default function BattlesPage() {
         }
         open={replayOpen}
         onClose={() => setReplayOpen(false)}
-        width={760}
+        style={{ width: 760 }}
         styles={{ body: { padding: '16px 20px' } }}
       >
         {loadingReplay ? (

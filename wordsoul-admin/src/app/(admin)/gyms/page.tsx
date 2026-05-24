@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, Input, InputNumber, App, Row, Col } from 'antd';
+import { Table, Button, Modal, Form, Input, InputNumber, App } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
 import { authApi, endpoints } from '@/services/api';
 
@@ -38,6 +38,7 @@ export default function GymsPage() {
     form.setFieldsValue({
       ...record,
       aiReactionTimeMs: record.gymLeaderPets?.[0]?.botAvgResponseMs ?? 2000,
+      botAccuracy: record.gymLeaderPets?.[0]?.botAccuracy ?? 0.6,
     });
     setIsModalOpen(true);
   };
@@ -66,31 +67,33 @@ export default function GymsPage() {
       render: (v: number) => <span style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums' }}>{v?.toLocaleString()}</span>,
     },
     {
-      title: 'Pass Rate',
-      dataIndex: 'passRatePercent',
-      key: 'passRatePercent',
-      width: 90,
-      render: (v: number) => (
-        <span style={{
-          fontSize: 12,
-          fontWeight: 600,
-          color: v >= 70 ? 'var(--success)' : v >= 40 ? 'var(--warning)' : 'var(--danger)',
-          fontVariantNumeric: 'tabular-nums',
-        }}>
-          {v}%
-        </span>
-      ),
+      title: 'AI Reaction Time',
+      key: 'aiReactionTimeMs',
+      width: 140,
+      render: (_: any, record: any) => {
+        const ms = record.gymLeaderPets?.[0]?.botAvgResponseMs;
+        return ms != null
+          ? <span style={{ fontSize: 12, color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>{ms}ms</span>
+          : <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>—</span>;
+      },
     },
     {
-      title: 'AI Reaction Time',
-      dataIndex: 'aiReactionTimeMs',
-      key: 'aiReactionTimeMs',
-      width: 130,
-      render: (v: number) => (
-        <span style={{ fontSize: 12, color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>
-          {v}ms
-        </span>
-      ),
+      title: 'Bot Accuracy',
+      key: 'botAccuracy',
+      width: 110,
+      render: (_: any, record: any) => {
+        const acc = record.gymLeaderPets?.[0]?.botAccuracy;
+        if (acc == null) return <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>—</span>;
+        const pct = Math.round(acc * 100);
+        return (
+          <span style={{
+            fontSize: 12, fontWeight: 600, fontVariantNumeric: 'tabular-nums',
+            color: pct >= 80 ? 'var(--danger)' : pct >= 60 ? 'var(--warning)' : 'var(--success)',
+          }}>
+            {pct}%
+          </span>
+        );
+      },
     },
     {
       title: '',
@@ -114,7 +117,7 @@ export default function GymsPage() {
       <div className="page-header">
         <div>
           <h1 className="page-title">Gym Operations</h1>
-          <p className="page-subtitle">Configure gym difficulty thresholds, pass rates, and AI reaction speed.</p>
+          <p className="page-subtitle">Configure gym difficulty, AI reaction speed, and bot accuracy.</p>
         </div>
       </div>
 
@@ -153,6 +156,9 @@ export default function GymsPage() {
                       <div>
                         <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary)' }}>{gp.pet?.name}</div>
                         <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Lvl {gp.level}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                          Acc {Math.round(gp.botAccuracy * 100)}% &middot; {gp.botAvgResponseMs}ms
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -179,24 +185,22 @@ export default function GymsPage() {
         <Form form={form} layout="vertical" onFinish={handleUpdate} style={{ marginTop: 16 }}>
           <Form.Item name="name" label="Gym Name" rules={[{ required: true }]}><Input /></Form.Item>
           <Form.Item name="description" label="Description"><Input.TextArea rows={2} /></Form.Item>
-          <Row gutter={12}>
-            <Col span={12}>
-              <Form.Item name="xpThreshold" label="Required XP">
-                <InputNumber style={{ width: '100%' }} min={0} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name="passRatePercent" label="Pass Rate (%)">
-                <InputNumber style={{ width: '100%' }} min={0} max={100} />
-              </Form.Item>
-            </Col>
-          </Row>
+          <Form.Item name="xpThreshold" label="Required XP">
+            <InputNumber style={{ width: '100%' }} min={0} />
+          </Form.Item>
           <Form.Item
             name="aiReactionTimeMs"
             label="AI Reaction Time (ms)"
             extra="Lower = faster AI response. Minimum 500ms."
           >
             <InputNumber style={{ width: '100%' }} min={500} step={100} />
+          </Form.Item>
+          <Form.Item
+            name="botAccuracy"
+            label="Bot Accuracy (0.0 – 1.0)"
+            extra="Probability the bot answers correctly per question. Applied to all pets."
+          >
+            <InputNumber style={{ width: '100%' }} min={0} max={1} step={0.05} />
           </Form.Item>
         </Form>
       </Modal>

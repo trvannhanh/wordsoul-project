@@ -40,6 +40,8 @@ const THEME_OPTIONS = [
   { value: 'Nature', label: 'Nature' },
   { value: 'Food', label: 'Food' },
   { value: 'Weather', label: 'Weather' },
+  { value: 'Technology', label: 'Technology' },
+  { value: 'Travel', label: 'Travel' },
   { value: 'Health', label: 'Health' },
   { value: 'Sports', label: 'Sports' },
   { value: 'Business', label: 'Business' },
@@ -159,13 +161,16 @@ export default function VocabularySetsPage() {
         message.success('Vocabulary set created');
       } else {
         if (!editingSet) return;
-        await authApi.put(`${endpoints.vocabularySets}/${editingSet.id}`, {
-          title: values.title,
-          theme: values.theme,
-          description: values.description ?? '',
-          difficultyLevel: values.difficultyLevel,
-          isActive: values.isActive ?? true,
-          vocabularyIds: [],
+        const fd = new FormData();
+        fd.append('title', values.title);
+        fd.append('theme', values.theme);
+        fd.append('description', values.description ?? '');
+        fd.append('difficultyLevel', values.difficultyLevel);
+        fd.append('isActive', String(values.isActive ?? true));
+        fd.append('vocabularyIds', '[]');
+        if (selectedFile) fd.append('imageFile', selectedFile);
+        await authApi.put(`${endpoints.vocabularySets}/${editingSet.id}`, fd, {
+          headers: { 'Content-Type': 'multipart/form-data' },
         });
         message.success('Vocabulary set updated');
       }
@@ -406,14 +411,12 @@ export default function VocabularySetsPage() {
         destroyOnHidden
       >
         <Form form={modalForm} layout="vertical" style={{ marginTop: 8 }}>
-          {modalMode === 'create' && (
-            <Form.Item label="Cover Image" style={{ marginBottom: 12 }}>
-              <ImageUploader
-                value={undefined}
-                onChange={setSelectedFile}
-              />
-            </Form.Item>
-          )}
+          <Form.Item label="Cover Image" style={{ marginBottom: 12 }}>
+            <ImageUploader
+              value={modalMode === 'edit' ? editingSet?.imageUrl : undefined}
+              onChange={setSelectedFile}
+            />
+          </Form.Item>
 
           <Form.Item
             name="title"

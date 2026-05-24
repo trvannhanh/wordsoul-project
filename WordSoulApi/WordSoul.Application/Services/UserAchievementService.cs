@@ -139,7 +139,8 @@ namespace WordSoul.Application.Services
 
             var rewardItemId = ua.Achievement!.RewardItemId;
 
-            await _inventoryService.AddItemToUserAsync(userId, rewardItemId, 1, ct);
+            if (rewardItemId.HasValue)
+                await _inventoryService.AddItemToUserAsync(userId, rewardItemId.Value, 1, ct);
 
             ua.IsClaimed = true;
             ua.ClaimedAt = DateTime.UtcNow;

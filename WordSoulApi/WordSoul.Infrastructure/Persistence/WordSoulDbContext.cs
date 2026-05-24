@@ -50,7 +50,7 @@ namespace WordSoul.Infrastructure.Persistence
             .HasOne(al => al.User)
             .WithMany()
             .HasForeignKey(al => al.UserId)
-            .OnDelete(DeleteBehavior.Restrict);  // Không xóa user nếu có log
+            .OnDelete(DeleteBehavior.Cascade);  // Cascade: deleting user removes their activity logs
 
             // Đảm bảo unique constraint trên ( LearningSessionId, QuizQuestionId, QuestionType)
             modelBuilder.Entity<AnswerRecord>()
@@ -69,7 +69,7 @@ namespace WordSoul.Infrastructure.Persistence
                 .HasMany(ls => ls.AnswerRecords)
                 .WithOne(a => a.LearningSession)
                 .HasForeignKey(a => a.LearningSessionId)
-                .OnDelete(DeleteBehavior.Restrict); // Restrict delete to prevent accidental loss of answer records
+                .OnDelete(DeleteBehavior.Cascade); // Cascade: deleting a session removes its answer records
 
 
             // User 1 - N LearningSession relationship

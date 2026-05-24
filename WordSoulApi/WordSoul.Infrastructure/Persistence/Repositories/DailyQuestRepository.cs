@@ -42,5 +42,13 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
             _context.DailyQuests.Update(quest);
             return Task.CompletedTask;
         }
+
+        public async Task<bool> DeleteQuestAsync(int questId, CancellationToken ct = default)
+        {
+            var quest = await _context.DailyQuests.FindAsync(questId, ct);
+            if (quest == null) return false;
+            _context.DailyQuests.Remove(quest);
+            return true;
+        }
     }
 }

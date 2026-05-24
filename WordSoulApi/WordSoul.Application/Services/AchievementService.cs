@@ -40,7 +40,8 @@ namespace WordSoul.Application.Services
                     Description = createAchievementDto.Description,
                     ConditionType = createAchievementDto.ConditionType,
                     ConditionValue = createAchievementDto.ConditionValue,
-                    RewardItemId = createAchievementDto.ItemId
+                    RewardItemId = createAchievementDto.RewardItemId,
+                    RewardXp = createAchievementDto.RewardXp
                 };
 
                 await _uow.Achievement.CreateAchievementAsync(achievement, ct);
@@ -56,6 +57,8 @@ namespace WordSoul.Application.Services
                     Description = achievement.Description,
                     ConditionType = achievement.ConditionType.ToString(),
                     ConditionValue = achievement.ConditionValue,
+                    RewardItemId = achievement.RewardItemId,
+                    RewardXp = achievement.RewardXp,
                     ItemImageUrl = achievement?.Item?.ImageUrl,
                     ItemName = achievement?.Item?.Name,
                 };
@@ -87,6 +90,8 @@ namespace WordSoul.Application.Services
                 Description = a.Description,
                 ConditionType = a.ConditionType.ToString(),
                 ConditionValue = a.ConditionValue,
+                RewardItemId = a.RewardItemId,
+                RewardXp = a.RewardXp,
                 ItemName = a.Item?.Name,
                 ItemImageUrl = a.Item?.ImageUrl,
             }).ToList();
@@ -111,6 +116,39 @@ namespace WordSoul.Application.Services
                 Description = achievement.Description,
                 ConditionType = achievement.ConditionType.ToString(),
                 ConditionValue = achievement.ConditionValue,
+                RewardItemId = achievement.RewardItemId,
+                RewardXp = achievement.RewardXp,
+                ItemName = achievement.Item?.Name,
+                ItemImageUrl = achievement.Item?.ImageUrl,
+            };
+        }
+
+        public async Task<AchievementDto?> UpdateAchievementAsync(
+            int id,
+            UpdateAchievementDto dto,
+            CancellationToken ct = default)
+        {
+            var achievement = await _uow.Achievement.GetAchievementByIdAsync(id, ct);
+            if (achievement == null) return null;
+
+            achievement.Name = dto.Name;
+            achievement.Description = dto.Description;
+            achievement.ConditionType = dto.ConditionType;
+            achievement.ConditionValue = dto.ConditionValue;
+            achievement.RewardItemId = dto.RewardItemId;
+            achievement.RewardXp = dto.RewardXp;
+
+            await _uow.SaveChangesAsync(ct);
+
+            return new AchievementDto
+            {
+                Id = achievement.Id,
+                Name = achievement.Name,
+                Description = achievement.Description,
+                ConditionType = achievement.ConditionType.ToString(),
+                ConditionValue = achievement.ConditionValue,
+                RewardItemId = achievement.RewardItemId,
+                RewardXp = achievement.RewardXp,
                 ItemName = achievement.Item?.Name,
                 ItemImageUrl = achievement.Item?.ImageUrl,
             };
@@ -144,6 +182,14 @@ namespace WordSoul.Application.Services
                 await _uow.UserAchievement.CreateUserAchievementAsync(ua, ct);
 
             await _uow.SaveChangesAsync(ct);
+        }
+
+        public async Task<bool> DeleteAchievementAsync(int achievementId, CancellationToken ct = default)
+        {
+            var deleted = await _uow.Achievement.DeleteAchievementAsync(achievementId, ct);
+            if (!deleted) return false;
+            await _uow.SaveChangesAsync(ct);
+            return true;
         }
     }
 }

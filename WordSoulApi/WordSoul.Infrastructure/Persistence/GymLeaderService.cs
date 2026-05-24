@@ -143,11 +143,11 @@ namespace WordSoul.Infrastructure.Persistence
             gym.Name = dto.Name;
             gym.Description = dto.Description;
             gym.XpThreshold = dto.XpThreshold;
-            gym.PassRatePercent = dto.PassRatePercent;
 
             foreach (var pet in gym.GymLeaderPets)
             {
                 pet.BotAvgResponseMs = dto.AiReactionTimeMs;
+                pet.BotAccuracy = Math.Clamp(dto.BotAccuracy, 0.0, 1.0);
             }
 
             await _db.SaveChangesAsync(ct);
@@ -202,7 +202,6 @@ namespace WordSoul.Infrastructure.Persistence
                 VocabThreshold = gym.VocabThreshold,
                 RequiredMemoryState = gym.RequiredMemoryState,
                 QuestionCount = gym.QuestionCount,
-                PassRatePercent = gym.PassRatePercent,
                 XpReward = gym.XpReward,
                 Status = progress?.Status ?? GymStatus.Locked,
                 TotalAttempts = progress?.TotalAttempts ?? 0,
@@ -232,7 +231,6 @@ namespace WordSoul.Infrastructure.Persistence
                 XpThreshold = gym.XpThreshold,
                 VocabThreshold = gym.VocabThreshold,
                 QuestionCount = gym.QuestionCount,
-                PassRatePercent = gym.PassRatePercent,
                 XpReward = gym.XpReward,
                 GymLeaderPets = gym.GymLeaderPets.Select(gp => new AdminGymLeaderPetDto
                 {

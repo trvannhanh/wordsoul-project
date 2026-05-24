@@ -1,4 +1,5 @@
-﻿using WordSoul.Domain.Enums;
+﻿using Microsoft.AspNetCore.Http;
+using WordSoul.Domain.Enums;
 
 namespace WordSoul.Application.DTOs.VocabularySet
 {
@@ -10,5 +11,6 @@ namespace WordSoul.Application.DTOs.VocabularySet
         public VocabularyDifficultyLevel DifficultyLevel { get; set; }
         public bool IsActive { get; set; }
         public List<int> VocabularyIds { get; set; } = [];
+        public IFormFile? ImageFile { get; set; }
     }
 }

@@ -26,7 +26,6 @@ namespace WordSoul.Application.DTOs.Gym
 
         // Battle config
         public int QuestionCount { get; set; }
-        public int PassRatePercent { get; set; }
         public int XpReward { get; set; }
 
         // Trạng thái của user với Gym này

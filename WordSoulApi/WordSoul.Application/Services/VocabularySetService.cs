@@ -474,6 +474,7 @@ namespace WordSoul.Application.Services
             int id,
             UpdateVocabularySetDto dto,
             int? requestingUserId = null,
+            string? newImageUrl = null,
             CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(dto.Title))
@@ -484,7 +485,7 @@ namespace WordSoul.Application.Services
             var set = await _uow.VocabularySet.GetVocabularySetByIdAsync(id, cancellationToken)
                 ?? throw new KeyNotFoundException($"Vocabulary set {id} not found.");
 
-            // Validate owner nếu không phải admin (requestingUserId != null)
+            // Validate owner ếu không phải admin (requestingUserId != null)
             if (requestingUserId.HasValue && set.CreatedById != requestingUserId.Value)
                 throw new UnauthorizedAccessException($"User {requestingUserId} is not the owner of set {id}.");
 
@@ -494,6 +495,8 @@ namespace WordSoul.Application.Services
             set.Description = dto.Description?.Trim();
             set.DifficultyLevel = dto.DifficultyLevel;
             set.IsActive = dto.IsActive;
+            if (!string.IsNullOrEmpty(newImageUrl))
+                set.ImageUrl = newImageUrl;
 
             // Replace vocabularies only when caller explicitly provides IDs (non-empty list)
             if (dto.VocabularyIds.Count > 0)

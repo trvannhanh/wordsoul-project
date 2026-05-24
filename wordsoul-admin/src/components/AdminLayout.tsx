@@ -56,6 +56,7 @@ const NAV_GROUPS: NavGroup[] = [
     section: 'Content',
     items: [
       { key: '/vocabularies', icon: <BookOutlined />, label: 'Vocabulary Library' },
+      { key: '/words',        icon: <FileTextOutlined />, label: 'Words' },
       { key: '/quests',       icon: <AimOutlined />,  label: 'Quests & Achievements' },
       { key: '/gyms',         icon: <TrophyOutlined />, label: 'Gym Operations' },
       { key: '/pets',         icon: <HeartOutlined />,  label: 'Pets' },

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WordSoul.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using WordSoul.Infrastructure.Persistence;
 namespace WordSoul.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(WordSoulDbContext))]
-    partial class WordSoulDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260519110227_FixAchievementAndCascadeDelete")]
+    partial class FixAchievementAndCascadeDelete
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -434,6 +437,9 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("PassRatePercent")
+                        .HasColumnType("int");
 
                     b.Property<int>("QuestionCount")
                         .HasColumnType("int");
@@ -1472,7 +1478,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.HasOne("WordSoul.Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("User");

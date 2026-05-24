@@ -218,6 +218,9 @@ namespace WordSoul.Application.Services
             pet.SecondaryType = dto.SecondaryType;
             pet.IsActive = dto.IsActive;
             pet.CreatedAt = dto.CreatedAt;
+            pet.RequiredLevel = dto.RequiredLevel;
+            pet.BaseFormId = dto.BaseFormId;
+            pet.NextEvolutionId = dto.NextEvolutionId;
 
             await _uow.Pet.UpdatePetAsync(pet);
             await _uow.SaveChangesAsync();
@@ -231,6 +234,9 @@ namespace WordSoul.Application.Services
                 Rarity = pet.Rarity.ToString(),
                 Type = pet.Type.ToString(),
                 SecondaryType = pet.SecondaryType?.ToString(),
+                RequiredLevel = pet.RequiredLevel,
+                BaseFormId = pet.BaseFormId,
+                NextEvolutionId = pet.NextEvolutionId,
                 CreatedAt = pet.CreatedAt,
                 IsActive = pet.IsActive
             };

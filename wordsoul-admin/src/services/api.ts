@@ -33,6 +33,8 @@ export const endpoints = {
   vocabularySetDetail: (id: number) => `/vocabulary-sets/${id}/details`,
   vocabularySetUpdate: (id: number) => `/vocabulary-sets/${id}`,
   vocabularySetDelete: (id: number) => `/vocabulary-sets/${id}`,
+  vocabularySetRewardPets: (id: number) => `/vocabulary-sets/${id}/reward-pets`,
+  vocabularySetRewardPet: (setId: number, petId: number) => `/vocabulary-sets/${setId}/reward-pets/${petId}`,
   aiPreview: '/vocabulary-sets/ai-preview',
   aiCreate: '/vocabulary-sets/ai-create',
   vocabularies: '/vocabularies',

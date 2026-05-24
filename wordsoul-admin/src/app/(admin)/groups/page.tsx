@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   Table, Button, Input, Space, Typography, Tag, Tooltip, Popconfirm,
-  Modal, Form, Drawer, List, Avatar, message, Divider, Select,
+  Modal, Form, Drawer, List, Avatar, App, Divider, Select,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
@@ -54,6 +54,7 @@ interface UserOption {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function GroupsPage() {
+  const { message } = App.useApp();
   const [groups, setGroups] = useState<UserGroup[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -83,9 +84,11 @@ export default function GroupsPage() {
     try {
       const params: Record<string, unknown> = { pageNumber, pageSize };
       if (search) params.search = search;
-      const { data } = await authApi.get<PagedResult<UserGroup>>(endpoints.adminGroups, { params });
-      setGroups(data.items ?? []);
-      setTotal(data.totalCount ?? 0);
+      const { data } = await authApi.get(endpoints.adminGroups, { params });
+      // API returns plain array (not PagedResult)
+      const arr: UserGroup[] = Array.isArray(data) ? data : (data.items ?? []);
+      setGroups(arr);
+      setTotal(data.totalCount ?? arr.length);
     } catch {
       message.error('Failed to load groups');
     } finally {
@@ -312,7 +315,7 @@ export default function GroupsPage() {
         onCancel={() => setModalOpen(false)}
         confirmLoading={formSubmitting}
         okText={editingGroup ? 'Save' : 'Create'}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
           <Form.Item
@@ -333,7 +336,7 @@ export default function GroupsPage() {
         title={drawerGroup ? `Members: ${drawerGroup.name}` : 'Group Members'}
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        width={480}
+        size="large"
         loading={drawerLoading}
       >
         {drawerGroup && (

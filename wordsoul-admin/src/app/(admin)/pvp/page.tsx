@@ -162,7 +162,7 @@ export default function PvpLeaderboardPage() {
               title="Active Players"
               value={data?.totalActivePlayers ?? '—'}
               prefix={<ThunderboltOutlined style={{ color: '#6366f1' }} />}
-              valueStyle={{ color: '#6366f1' }}
+              styles={{ content: { color: '#6366f1' } }}
             />
           </Card>
         </Col>
@@ -172,7 +172,7 @@ export default function PvpLeaderboardPage() {
               title="Average Rating"
               value={data?.averageRating ?? '—'}
               prefix={<TrophyOutlined style={{ color: '#f59e0b' }} />}
-              valueStyle={{ color: '#f59e0b' }}
+              styles={{ content: { color: '#f59e0b' } }}
             />
           </Card>
         </Col>
@@ -182,7 +182,7 @@ export default function PvpLeaderboardPage() {
               title="Highest Rating"
               value={data?.highestRating ?? '—'}
               prefix={<TrophyOutlined style={{ color: '#ef4444' }} />}
-              valueStyle={{ color: '#ef4444' }}
+              styles={{ content: { color: '#ef4444' } }}
             />
           </Card>
         </Col>

@@ -147,6 +147,41 @@ namespace WordSoul.Application.Services
             };
         }
 
+        public async Task<DailyQuestDto?> UpdateQuestAsync(
+            int id,
+            UpdateDailyQuestDto dto,
+            CancellationToken ct = default)
+        {
+            var quest = await _uow.DailyQuest.GetByIdAsync(id, ct);
+            if (quest == null) return null;
+
+            quest.Title = dto.Title;
+            quest.Description = dto.Description;
+            quest.QuestType = dto.QuestType;
+            quest.TargetValue = dto.TargetValue;
+            quest.RewardType = dto.RewardType;
+            quest.RewardValue = dto.RewardValue;
+            quest.RewardReferenceId = dto.RewardReferenceId;
+            quest.IsActive = dto.IsActive;
+
+            await _uow.DailyQuest.UpdateQuestAsync(quest, ct);
+            await _uow.SaveChangesAsync(ct);
+
+            return new DailyQuestDto
+            {
+                Id = quest.Id,
+                Title = quest.Title,
+                Description = quest.Description,
+                QuestType = quest.QuestType.ToString(),
+                TargetValue = quest.TargetValue,
+                RewardType = quest.RewardType.ToString(),
+                RewardValue = quest.RewardValue,
+                RewardReferenceId = quest.RewardReferenceId,
+                IsActive = quest.IsActive,
+                CreatedAt = quest.CreatedAt
+            };
+        }
+
         // 3. Bật/tắt trạng thái active của quest template
         public async Task ToggleQuestActiveAsync(
             int questId,
@@ -303,6 +338,14 @@ namespace WordSoul.Application.Services
                 await transaction.RollbackAsync(ct);
                 throw;
             }
+        }
+
+        public async Task<bool> DeleteQuestAsync(int questId, CancellationToken ct = default)
+        {
+            var found = await _uow.DailyQuest.DeleteQuestAsync(questId, ct);
+            if (!found) return false;
+            await _uow.SaveChangesAsync(ct);
+            return true;
         }
 
     }

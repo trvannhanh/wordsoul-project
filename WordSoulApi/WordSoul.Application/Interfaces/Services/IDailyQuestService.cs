@@ -26,6 +26,8 @@ namespace WordSoul.Application.Interfaces.Services
         Task<ClaimQuestRewardResponseDto> ClaimRewardAsync(int userId, int userDailyQuestId, CancellationToken ct = default);
         Task<List<DailyQuestDto>> GetActiveQuestsAsync(CancellationToken ct = default);
         Task<DailyQuestDto> CreateQuestAsync(CreateDailyQuestDto dto, CancellationToken ct = default);
+        Task<DailyQuestDto?> UpdateQuestAsync(int id, UpdateDailyQuestDto dto, CancellationToken ct = default);
         Task ToggleQuestActiveAsync(int questId, CancellationToken ct = default);
+        Task<bool> DeleteQuestAsync(int questId, CancellationToken ct = default);
     }
 }
