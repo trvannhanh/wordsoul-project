@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using WordSoul.Application.DTOs.AnswerRecord;
@@ -19,7 +19,6 @@ namespace WordSoul.Application.Interfaces.Services
         Task<LearningSessionDto> CreateLearningSessionAsync(
             int userId,
             int setId,
-            int wordCount = 5,
             CancellationToken ct = default);
 
         /// <summary>
@@ -27,7 +26,6 @@ namespace WordSoul.Application.Interfaces.Services
         /// </summary>
         Task<LearningSessionDto> CreateReviewingSessionAsync(
             int userId,
-            int wordCount = 5,
             CancellationToken ct = default);
 
         /// <summary>

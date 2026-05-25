@@ -46,6 +46,7 @@ const LearningSession: React.FC = () => {
     loading,
     error,
     handleAnswer: originalHandleAnswer,
+    confirmAndNext: originalConfirmAndNext,
     sessionData,
     encounteredPet,
     showRewardAnimation,
@@ -55,6 +56,7 @@ const LearningSession: React.FC = () => {
     catchRate: currentCatchRate,
     hintBalance,
     setHintBalance,
+    comboCount,
     buffPetId,
     buffName,
     buffDescription,
@@ -81,6 +83,12 @@ const LearningSession: React.FC = () => {
   const [answeredQuestion, setAnsweredQuestion] = useState<QuizQuestionDto | null>(null);
   const [showIntro, setShowIntro] = useState(true);
 
+  // audio ref for auto-play in vocabulary card
+  const cardAudioRef = useRef<HTMLAudioElement | null>(null);
+  const audioTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isPlayingWordAudio, setIsPlayingWordAudio] = useState(false);
+  const [isPlayingExampleAudio, setIsPlayingExampleAudio] = useState(false);
+
   const [showEncounterIntro, setShowEncounterIntro] = useState(false);
   const encounterShownRef = useRef(false);
 
@@ -95,8 +103,70 @@ const LearningSession: React.FC = () => {
 
   const [buffPet, setBuffPet] = useState<PetDto | null>(null);
 
+  // Cleanup speech synthesis and timeouts on unmount
   useEffect(() => {
-    const timer = setTimeout(() => setShowIntro(false), 1200);
+    return () => {
+      window.speechSynthesis.cancel();
+      if (audioTimeoutRef.current) {
+        clearTimeout(audioTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const playWordAudio = useCallback((word: string, pronunciationUrl?: string) => {
+    if (isPlayingWordAudio) return;
+    setIsPlayingWordAudio(true);
+    if (pronunciationUrl) {
+      const audio = new Audio(pronunciationUrl);
+      audio.onended = () => setIsPlayingWordAudio(false);
+      audio.onerror = () => {
+        const utterance = new SpeechSynthesisUtterance(word);
+        utterance.lang = "en-US";
+        utterance.onend = () => setIsPlayingWordAudio(false);
+        window.speechSynthesis.speak(utterance);
+      };
+      audio.play().catch(() => {
+        const utterance = new SpeechSynthesisUtterance(word);
+        utterance.lang = "en-US";
+        utterance.onend = () => setIsPlayingWordAudio(false);
+        window.speechSynthesis.speak(utterance);
+      });
+    } else {
+      const utterance = new SpeechSynthesisUtterance(word);
+      utterance.lang = "en-US";
+      utterance.onend = () => setIsPlayingWordAudio(false);
+      window.speechSynthesis.speak(utterance);
+    }
+  }, [isPlayingWordAudio]);
+
+  const playExampleAudio = useCallback((text: string, audioUrl?: string) => {
+    if (isPlayingExampleAudio) return;
+    setIsPlayingExampleAudio(true);
+    if (audioUrl) {
+      const audio = new Audio(audioUrl);
+      audio.onended = () => setIsPlayingExampleAudio(false);
+      audio.onerror = () => {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "en-US";
+        utterance.onend = () => setIsPlayingExampleAudio(false);
+        window.speechSynthesis.speak(utterance);
+      };
+      audio.play().catch(() => {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "en-US";
+        utterance.onend = () => setIsPlayingExampleAudio(false);
+        window.speechSynthesis.speak(utterance);
+      });
+    } else {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "en-US";
+      utterance.onend = () => setIsPlayingExampleAudio(false);
+      window.speechSynthesis.speak(utterance);
+    }
+  }, [isPlayingExampleAudio]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowIntro(false), 2000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -166,23 +236,49 @@ const LearningSession: React.FC = () => {
     async (
       question: QuizQuestionDto,
       answer: string,
-      onAnswerProcessed: () => void,
       onResult?: (isCorrect: boolean) => void,
       responseTimeSeconds?: number,
       usedHintCount?: number
     ): Promise<boolean> => {
-      return originalHandleAnswer(question, answer, onAnswerProcessed, onResult, responseTimeSeconds, usedHintCount);
+      return originalHandleAnswer(question, answer, onResult, responseTimeSeconds, usedHintCount);
     },
     [originalHandleAnswer]
   );
 
+  const confirmAndNext = useCallback(() => {
+    setShowPopup(false);
+    setAnsweredQuestion(null);
+    if (audioTimeoutRef.current) {
+      clearTimeout(audioTimeoutRef.current);
+      audioTimeoutRef.current = null;
+    }
+    if (cardAudioRef.current) {
+      cardAudioRef.current.pause();
+      cardAudioRef.current.currentTime = 0;
+    }
+    // Cancel SpeechSynthesis and reset playing flags
+    window.speechSynthesis.cancel();
+    setIsPlayingWordAudio(false);
+    setIsPlayingExampleAudio(false);
+    originalConfirmAndNext();
+  }, [originalConfirmAndNext]);
+
   const handleShowPopup = useCallback((question: QuizQuestionDto) => {
     setAnsweredQuestion(question);
     setShowPopup(true);
-    setTimeout(() => {
-      setShowPopup(false);
-      setAnsweredQuestion(null);
-    }, 3000);
+
+    if (audioTimeoutRef.current) {
+      clearTimeout(audioTimeoutRef.current);
+    }
+
+    // Auto-play pronunciation audio with a 1.2-second delay to avoid clashing with feedback sounds
+    audioTimeoutRef.current = setTimeout(() => {
+      if (question.pronunciationUrl) {
+        const audio = new Audio(question.pronunciationUrl);
+        cardAudioRef.current = audio;
+        audio.play().catch(() => { /* autoplay may be blocked on some browsers */ });
+      }
+    }, 1200);
   }, []);
 
   const getMessage = () => {
@@ -235,7 +331,7 @@ const LearningSession: React.FC = () => {
           encounteredPet={mode === "learning" ? encounteredPet : null}
         />
 
-        {/* ── LEARNING MODE: classic split layout ── */}
+        {/* ── LEARNING MODE ── */}
         {mode === "learning" && (
           <>
             <div className="flex-1 bg-gray-700 border-b-4 border-black p-4 h-1/2">
@@ -256,17 +352,19 @@ const LearningSession: React.FC = () => {
                   loading={loading}
                   error={error}
                   handleAnswer={handleAnswer}
+                  confirmAndNext={confirmAndNext}
                   loadNextQuestion={loadNextQuestion}
                   showPopup={handleShowPopup}
                   hintBalance={hintBalance}
                   setHintBalance={setHintBalance}
+                  comboCount={comboCount}
                 />
               </div>
             </div>
           </>
         )}
 
-        {/* ── REVIEW MODE: pet training layout ── */}
+        {/* ── REVIEW MODE ── */}
         {mode === "review" && (
           <div className="flex-1 overflow-hidden">
             <ReviewLayout
@@ -274,6 +372,7 @@ const LearningSession: React.FC = () => {
               loading={loading}
               error={error}
               handleAnswer={handleAnswer}
+              confirmAndNext={confirmAndNext}
               loadNextQuestion={loadNextQuestion}
               showPopup={handleShowPopup}
               hintBalance={hintBalance}
@@ -281,6 +380,7 @@ const LearningSession: React.FC = () => {
               userPet={userPet}
               currentCorrectAnswered={currentCorrectAnswered}
               maxQuestions={MAX_QUESTIONS}
+              comboCount={comboCount}
             />
           </div>
         )}
@@ -313,46 +413,121 @@ const LearningSession: React.FC = () => {
         />
       )}
 
-      {/* ── Word detail popup ── */}
+      {/* ── Word detail popup — stays until user confirms "Tiếp theo" ── */}
       <AnimatePresence>
         {showPopup && answeredQuestion && (
           <motion.div
-            className="absolute inset-0 flex items-center justify-center bg-opacity-75 z-50"
+            className="absolute inset-0 flex items-center justify-center bg-transparent z-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.25 }}
           >
             <motion.div
-              className="bg-gray-800 p-8 rounded-lg border-4 border-white text-white font-pixel text-center w-3/4 max-w-lg"
-              initial={{ scale: 0, y: 50 }}
+              className="bg-gray-800 p-8 rounded-xl border-4 border-indigo-500 text-white font-pixel text-center w-11/12 max-w-lg shadow-2xl"
+              initial={{ scale: 0.85, y: 40 }}
               animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0, y: 50 }}
-              transition={{ duration: 0.3 }}
+              exit={{ scale: 0.85, y: 40 }}
+              transition={{ type: "spring", stiffness: 280, damping: 22 }}
             >
-              <h2 className="text-4xl mb-4">{answeredQuestion.word}</h2>
-              <p className="text-2xl mb-2">Nghĩa: {answeredQuestion.meaning}</p>
-              <p className="text-lg mb-2">
-                Phát âm: {answeredQuestion.pronunciation || "N/A"}
-              </p>
-              <p className="text-lg mb-2">
-                Loại từ: {answeredQuestion.partOfSpeech || "N/A"}
-              </p>
+              {/* Word Header with Speaker and CEFR Level */}
+              <div className="flex items-center justify-center gap-3 mb-3 flex-wrap">
+                <h2 className="text-4xl text-yellow-300 font-bold">{answeredQuestion.word}</h2>
+                {answeredQuestion.cefrLevel && (
+                  <span className="text-xs bg-indigo-900 border border-indigo-600 px-2 py-0.5 rounded text-indigo-300 font-pixel font-bold uppercase">
+                    {answeredQuestion.cefrLevel}
+                  </span>
+                )}
+                <button
+                  onClick={() => playWordAudio(answeredQuestion.word, answeredQuestion.pronunciationUrl)}
+                  disabled={isPlayingWordAudio}
+                  className="text-yellow-400 hover:text-yellow-300 disabled:opacity-50 transition-colors p-1"
+                  title="Phát âm từ"
+                >
+                  {isPlayingWordAudio ? (
+                    <svg className="w-6 h-6 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.784L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.797-3.784a1 1 0 011 .076zM12.293 7.293a1 1 0 011.414 0A5.003 5.003 0 0115 10a5.003 5.003 0 01-1.293 2.707 1 1 0 01-1.414-1.414A3.003 3.003 0 0013 10a3.003 3.003 0 00-.707-1.293 1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  ) : (
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.784L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.797-3.784a1 1 0 011 .076z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+
+              <p className="text-xl mb-2 text-gray-200">Nghĩa: {answeredQuestion.meaning}</p>
+
+              <div className="flex justify-center gap-4 text-xs mb-4 text-gray-400">
+                {answeredQuestion.pronunciation && (
+                  <span className="text-blue-300 font-mono">
+                    [{answeredQuestion.pronunciation}]
+                  </span>
+                )}
+                {answeredQuestion.partOfSpeech && (
+                  <span className="text-amber-300 italic">
+                    ({answeredQuestion.partOfSpeech})
+                  </span>
+                )}
+              </div>
+
               {answeredQuestion.imageUrl && (
                 <img
                   src={answeredQuestion.imageUrl}
                   alt={answeredQuestion.word}
-                  className="w-48 h-48 object-contain mx-auto mt-4"
+                  className="w-32 h-32 object-contain mx-auto mb-4 rounded border border-gray-600 shadow"
                 />
               )}
+
+              {/* Example sentence / Description */}
+              {(answeredQuestion.exampleSentence || answeredQuestion.description) && (
+                <div className="flex items-start gap-2 border-l-4 border-indigo-500 pl-3 bg-gray-900 bg-opacity-40 p-3 rounded mb-4 text-left">
+                  <p className="text-sm italic text-gray-300 flex-1 leading-relaxed">
+                    "{answeredQuestion.exampleSentence || answeredQuestion.description}"
+                  </p>
+                  <button
+                    onClick={() => playExampleAudio(
+                      answeredQuestion.exampleSentence || answeredQuestion.description!,
+                      answeredQuestion.exampleSentenceAudioUrl
+                    )}
+                    disabled={isPlayingExampleAudio}
+                    className="text-teal-400 hover:text-teal-300 disabled:opacity-50 transition-colors p-1 flex-shrink-0"
+                    title="Phát câu ví dụ"
+                  >
+                    {isPlayingExampleAudio ? (
+                      <svg className="w-5 h-5 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.784L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.797-3.784a1 1 0 011 .076zM12.293 7.293a1 1 0 011.414 0A5.003 5.003 0 0115 10a5.003 5.003 0 01-1.293 2.707 1 1 0 01-1.414-1.414A3.003 3.003 0 0013 10a3.003 3.003 0 00-.707-1.293 1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.784L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.797-3.784a1 1 0 011 .076z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              )}
+
+              <motion.button
+                onClick={confirmAndNext}
+                className="mt-2 px-8 py-3 bg-indigo-700 border-2 border-indigo-400 rounded-xl font-pixel text-white text-base hover:bg-indigo-600 transition-colors custom-cursor shadow-lg w-full"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.96 }}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                Tiếp theo ▶
+              </motion.button>
             </motion.div>
           </motion.div>
         )}
+      </AnimatePresence>
 
-        {/* Reward Complete overlay */}
+      {/* Reward Complete overlay */}
+      <AnimatePresence>
         {showRewardAnimation && sessionData && captureComplete && (
           <motion.div
-            className="absolute inset-0 flex items-center justify-center bg-opacity-75 z-50"
+            className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -362,7 +537,7 @@ const LearningSession: React.FC = () => {
               {mode === "learning" &&
                 !("isPetRewardGranted" in sessionData && sessionData.isPetRewardGranted) && (
                   <motion.p
-                    className="text-red-500 font-pixel mb-4"
+                    className="text-red-400 font-pixel mb-4"
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                   >
@@ -371,14 +546,42 @@ const LearningSession: React.FC = () => {
                       : "No new pet reward available"}
                   </motion.p>
                 )}
+              {/* Review mode: friendly "pet is full" message */}
               {mode === "review" && (
-                <motion.p
-                  className="text-red-500 font-pixel mb-4"
+                <motion.div
+                  className="flex flex-col items-center gap-2 mb-4"
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                 >
-                  Zapdos đã bỏ trốn!
-                </motion.p>
+                  {userPet ? (
+                    <>
+                      <motion.img
+                        src={`https://img.pokemondb.net/sprites/black-white/anim/normal/${userPet.name.toLowerCase()}.gif`}
+                        alt={userPet.name}
+                        className="w-24 h-24 object-contain"
+                        style={{ imageRendering: "pixelated" }}
+                        animate={{ y: [0, -6, 0] }}
+                        transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                        onError={(e) => { e.currentTarget.src = userPet.imageUrl; }}
+                      />
+                      <motion.p
+                        className="text-green-300 font-pixel text-lg"
+                        animate={{ scale: [1, 1.05, 1] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      >
+                        {userPet.name} đã no rồi! 🍖
+                      </motion.p>
+                    </>
+                  ) : (
+                    <motion.p
+                      className="text-green-300 font-pixel text-2xl"
+                      animate={{ scale: [1, 1.05, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      🍖 Phiên ôn tập hoàn thành!
+                    </motion.p>
+                  )}
+                </motion.div>
               )}
 
               <motion.h2

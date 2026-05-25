@@ -137,9 +137,11 @@ export default function SystemConfigPage() {
     );
   }
 
-  const srsConfigs = configs.filter(c => c.category === 'SRS');
-  const gameConfigs = configs.filter(c => c.category === 'GAME_BALANCE');
-  const systemConfigs = configs.filter(c => c.category === 'SYSTEM');
+  const generalConfigs  = configs.filter(c => c.category === 'GENERAL');
+  const learningConfigs = configs.filter(c => c.category === 'LEARNING');
+  const srsConfigs      = configs.filter(c => c.category === 'SRS');
+  const gameConfigs     = configs.filter(c => c.category === 'GAME_BALANCE');
+  const systemConfigs   = configs.filter(c => c.category === 'SYSTEM');
 
   return (
     <div>
@@ -174,6 +176,24 @@ export default function SystemConfigPage() {
       />
 
       <Form form={form} layout="vertical" onFinish={onFinish} disabled={loading || saving}>
+        {generalConfigs.length > 0 && (
+          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '20px 24px', marginBottom: 16 }}>
+            <ConfigSection
+              title="General"
+              description="Application-level settings such as registration, display name, and maintenance mode."
+              configs={generalConfigs}
+            />
+          </div>
+        )}
+        {learningConfigs.length > 0 && (
+          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '20px 24px', marginBottom: 16 }}>
+            <ConfigSection
+              title="Learning Session"
+              description="Controls session size and learning flow parameters."
+              configs={learningConfigs}
+            />
+          </div>
+        )}
         <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '20px 24px', marginBottom: 16 }}>
           <ConfigSection
             title="SRS Algorithm (SM-2)"

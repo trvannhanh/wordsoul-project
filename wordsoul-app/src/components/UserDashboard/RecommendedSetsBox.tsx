@@ -114,7 +114,7 @@ const RecommendedSetsBox: React.FC<RecommendedSetsBoxProps> = ({ recommendedSets
                                         }`}
                                     whileTap={isAdded ? {} : { scale: 0.96 }}
                                 >
-                                    {isAdding ? '...' : isAdded ? '✅ Đã thêm' : '+ Thêm vào thư viện'}
+                                    {isAdding ? '...' : isAdded ? 'Đã thêm' : 'Thêm vào thư viện'}
                                 </motion.button>
                             </motion.div>
                         );

@@ -103,7 +103,7 @@ export default function GymDetail() {
         <span className={`inline-block px-3 py-1 rounded-full text-xs font-pixel ${gym.status === GymStatus.Defeated ? 'bg-green-500/20 text-green-400 border border-green-500/40'
           : gym.status === GymStatus.Unlocked ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40'
             : 'bg-gray-700/50 text-gray-400 border border-gray-600/40'}`}>
-          {gym.status === GymStatus.Defeated ? '✅ DEFEATED' : gym.status === GymStatus.Unlocked ? '⚔️ UNLOCKED' : '🔒 LOCKED'}
+          {gym.status === GymStatus.Defeated ? 'DEFEATED' : gym.status === GymStatus.Unlocked ? 'UNLOCKED' : 'LOCKED'}
         </span>
       </div>
 

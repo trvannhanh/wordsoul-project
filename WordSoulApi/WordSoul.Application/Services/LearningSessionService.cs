@@ -30,6 +30,7 @@ namespace WordSoul.Application.Services
         private readonly ITimeProvider _timeProvider;
         private readonly IPetBuffService _petBuffService;
         private readonly IGymLeaderService _gymLeaderService;
+        private readonly ISystemConfigurationService _sysConfig;
 
         /// <summary>
         /// Khởi tạo LearningSessionService.
@@ -45,7 +46,8 @@ namespace WordSoul.Application.Services
             IDailyQuestService dailyQuestService,
             IPetBuffService petBuffService,
             ITimeProvider timeProvider,
-            IGymLeaderService gymLeaderService)
+            IGymLeaderService gymLeaderService,
+            ISystemConfigurationService sysConfig)
         {
             _uow = uow;
             _logger = logger;
@@ -58,6 +60,7 @@ namespace WordSoul.Application.Services
             _timeProvider = timeProvider;
             _petBuffService = petBuffService;
             _gymLeaderService = gymLeaderService;
+            _sysConfig = sysConfig;
         }
 
         // ------------------------------------CREATE-----------------------------------------
@@ -69,12 +72,13 @@ namespace WordSoul.Application.Services
         public async Task<LearningSessionDto> CreateLearningSessionAsync(
             int userId,
             int setId,
-            int wordCount = 5,
             CancellationToken ct = default)
         {
             if (userId <= 0) throw new ArgumentException("UserId must be greater than zero.", nameof(userId));
             if (setId <= 0) throw new ArgumentException("VocabularySetId must be greater than zero.", nameof(setId));
-            if (wordCount <= 0) throw new ArgumentException("WordCount must be greater than zero.", nameof(wordCount));
+
+            var wordCount = await _sysConfig.GetValueAsync("WordsPerSession", 5, ct);
+            if (wordCount <= 0) wordCount = 5;
 
             var existingSession = await _uow.LearningSession
                 .GetExistingLearningSessionUnCompletedForUserAsync(userId, setId, ct);
@@ -136,13 +140,14 @@ namespace WordSoul.Application.Services
         /// Tạo một phiên học ôn tập mới cho user.
         /// </summary>
         public async Task<LearningSessionDto> CreateReviewingSessionAsync(
-            int userId, // Id người dùng
-            int wordCount = 5, // Số từ trong phiên ôn tập
+            int userId,
             CancellationToken ct = default)
         {
             // Validation
             if (userId <= 0) throw new ArgumentException("UserId must be greater than zero.", nameof(userId));
-            if (wordCount <= 0) throw new ArgumentException("WordCount must be greater than zero.", nameof(wordCount));
+
+            var wordCount = await _sysConfig.GetValueAsync("WordsPerSession", 5, ct);
+            if (wordCount <= 0) wordCount = 5;
 
             // Kiểm tra session ôn tập chưa hoàn thành hiện có
             var existingSession = await _uow.LearningSession
@@ -356,8 +361,10 @@ namespace WordSoul.Application.Services
                 PronunciationUrl = vocab.PronunciationUrl,
                 ImageUrl = vocab.ImageUrl,
                 Description = vocab.Description,
-                PartOfSpeech = vocab.PartOfSpeech.ToString(),
-                CEFRLevel = vocab.CEFRLevel.ToString(),
+                ExampleSentence = vocab.ExampleSentence,
+                ExampleSentenceAudioUrl = vocab.ExampleSentenceAudioUrl,
+                PartOfSpeech = vocab.PartOfSpeech?.ToString(),
+                CEFRLevel = vocab.CEFRLevel?.ToString(),
                 QuestionType = type,
                 Options = options,
                 IsRetry = isRetry,
@@ -409,11 +416,15 @@ namespace WordSoul.Application.Services
 
             await _activityLogService.TrackFinishLearningSessionAsync(userId, sessionId, ct);
 
-            int baseXp = sessionType == SessionType.Learning ? 20 : 100;
+            int baseXp = sessionType == SessionType.Learning
+                ? await _sysConfig.GetValueAsync("XpRewardNewSession", 20, ct)
+                : await _sysConfig.GetValueAsync("XpRewardReviewSession", 100, ct);
             int xpEarned = (int)Math.Round(baseXp * session.PetXpMultiplier);
 
-
-            int apEarned = sessionType == SessionType.Review ? 3 : 0;
+            int baseAp = sessionType == SessionType.Review
+                ? await _sysConfig.GetValueAsync("ReviewBaseAP", 3, ct)
+                : 0;
+            int apEarned = baseAp;
 
             // Learning-specific updates
             bool isPetRewardGranted = false;
@@ -601,12 +612,10 @@ namespace WordSoul.Application.Services
                 sessionVocab.CurrentLevel = Math.Max(0, sessionVocab.CurrentLevel - 1);
                 sessionVocab.IsCompleted = false;
 
-                if (session.CatchRate.HasValue)
+                if (session.CatchRate.HasValue && !session.PetReducePenalty)
                 {
-                    if (!session.PetReducePenalty)
-                    {
-                        session.CatchRate -= 0.05;
-                    }
+                    var penalty = await _sysConfig.GetValueAsync("CatchWrongPenalty", 0.05, ct);
+                    session.CatchRate = Math.Max(0, session.CatchRate.Value - penalty);
                 }    
                     
             }

@@ -12,7 +12,7 @@ const PokemonEncounterIntro: React.FC<PokemonEncounterIntroProps> = ({
 }) => {
     const [phase, setPhase] = useState<"enter" | "show" | "exit">("enter");
     const [displayedText, setDisplayedText] = useState("");
-    const fullText = `A wild ${encounteredPet?.name ?? "Pokémon"} appeared!`;
+    const fullText = `Một ${encounteredPet?.name ?? "Pokémon"} hoang dã đã xuất hiện!`;
 
     // Typewriter effect
     useEffect(() => {
@@ -61,7 +61,7 @@ const PokemonEncounterIntro: React.FC<PokemonEncounterIntroProps> = ({
                         animate={{ opacity: phase === "show" ? 1 : 0, y: 0 }}
                         transition={{ delay: 0.2, duration: 0.4 }}
                     >
-                        ▶ Wild area
+                        Khu vực hoang dã
                     </motion.p>
 
                     {/* Pokemon sprite */}
@@ -135,7 +135,7 @@ const PokemonEncounterIntro: React.FC<PokemonEncounterIntroProps> = ({
                         animate={{ opacity: phase === "show" ? 1 : 0 }}
                         transition={{ delay: 0.8 }}
                     >
-                        Study well to catch it!
+                        Hãy học thật tốt để bắt nó!
                     </motion.p>
 
                     {/* Audio: Pokemon battle cry */}
