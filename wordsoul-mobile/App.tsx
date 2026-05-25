@@ -1,4 +1,3 @@
-import './global.css';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider } from './src/contexts/AuthProvider';
 import { RootNavigator } from './src/navigation/RootNavigator';
