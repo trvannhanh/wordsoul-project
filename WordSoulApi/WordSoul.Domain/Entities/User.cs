@@ -25,6 +25,10 @@ namespace WordSoul.Domain.Entities
         public int HintBalance { get; set; } = 5; // Default 5 hints
         public UserRole Role { get; set; } = UserRole.User; // Default role is User
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime LastActiveAt { get; set; } = DateTime.UtcNow;
+        public DateTime? LastReminderEmailSentAt { get; set; }
+        public int? PreferredStudyHour { get; set; }
+        public string? FcmToken { get; set; }
         public bool IsActive { get; set; } = true;
         [MaxLength(200)]
         public string? RefreshToken { get; set; } 

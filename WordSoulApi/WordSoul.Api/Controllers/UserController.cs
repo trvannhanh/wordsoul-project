@@ -166,6 +166,19 @@ namespace WordSoul.Api.Controllers
             return Ok(new { Message = statusDto.IsActive ? "User unbanned successfully." : "User banned successfully." });
         }
 
+        // PUT: api/users/me/fcm-token : Cập nhật FCM Token cho thiết bị
+        [Authorize(Roles = "Admin,SuperAdmin,User")]
+        [HttpPut("me/fcm-token")]
+        public async Task<IActionResult> UpdateFcmToken([FromBody] FcmTokenDto dto)
+        {
+            var userId = User.GetUserId();
+            if (userId == 0) return Unauthorized();
+
+            var result = await _userService.UpdateFcmTokenAsync(userId, dto.Token);
+            if (!result) return NotFound();
+            return Ok();
+        }
+
         //------------------------------ DELETE -----------------------------------
 
         // DELETE: api/users/{id} : Xóa người dùng theo ID

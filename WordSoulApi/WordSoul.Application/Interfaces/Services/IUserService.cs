@@ -129,6 +129,8 @@ namespace WordSoul.Application.Interfaces.Services
         // DELETE
         // ============================================================================
 
+        Task<bool> UpdateFcmTokenAsync(int userId, string token, CancellationToken cancellationToken = default);
+
         /// <summary>
         /// Xóa người dùng theo ID. Có thể là xóa mềm hoặc xóa cứng tùy repository.
         /// </summary>

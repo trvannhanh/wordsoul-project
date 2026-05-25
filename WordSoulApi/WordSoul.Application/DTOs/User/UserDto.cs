@@ -39,5 +39,10 @@ namespace WordSoul.Application.DTOs.User
         public int TotalAP { get; set; }
     }
 
+    public class FcmTokenDto
+    {
+        public string Token { get; set; } = string.Empty;
+    }
+
 
 }

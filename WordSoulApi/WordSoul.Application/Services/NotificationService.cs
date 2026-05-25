@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using WordSoul.Application.DTOs.Admin;
 using WordSoul.Application.DTOs.Notification;
@@ -17,37 +17,48 @@ namespace WordSoul.Application.Services
         private readonly IUnitOfWork _uow;
         private readonly IActivityLogService _activityLogService;
         private readonly ILogger<NotificationService> _logger;
+        private readonly IFcmService _fcmService;
 
         public NotificationService(
             INotificationRepository notificationRepository,
             IRealtimeNotificationService realtimeService,
             IUnitOfWork uow,
             IActivityLogService activityLogService,
-            ILogger<NotificationService> logger)
+            ILogger<NotificationService> logger,
+            IFcmService fcmService)
         {
             _notificationRepository = notificationRepository;
             _realtimeService = realtimeService;
             _uow = uow;
             _activityLogService = activityLogService;
             _logger = logger;
+            _fcmService = fcmService;
         }
 
         //------------------------------- CREATE -----------------------------------
 
         // Tạo mới thông báo và gửi qua SignalR
-        public async Task CreateNotificationAsync(int userId, string title, string message, NotificationType type, CancellationToken ct = default)
+        public async Task CreateNotificationAsync(int userId, string title, string message, NotificationType type, string? actionUrl = null, CancellationToken ct = default)
         {
             var notification = new Notification
             {
                 UserId = userId,
                 Title = title,
                 Message = message,
-                Type = type
+                Type = type,
+                ActionUrl = actionUrl
             };
 
             await _notificationRepository.CreateNotificationAsync(notification);
             await _uow.SaveChangesAsync(ct);
             await _realtimeService.SendNotificationAsync(userId, notification);
+
+            // Push FCM
+            var user = await _uow.User.GetUserByIdAsync(userId, ct);
+            if (user != null && !string.IsNullOrEmpty(user.FcmToken))
+            {
+                await _fcmService.SendPushNotificationAsync(user.FcmToken, title, message, actionUrl);
+            }
         }
 
         // Broadcast tới nhiều user (hoặc tất cả user nếu TargetUserIds == null)
@@ -71,7 +82,7 @@ namespace WordSoul.Application.Services
 
             foreach (var userId in userIds)
             {
-                await CreateNotificationAsync(userId, dto.Title, dto.Message, dto.Type);
+                await CreateNotificationAsync(userId, dto.Title, dto.Message, dto.Type, dto.ActionUrl, ct);
             }
 
             var logDetail = $"Title: \"{dto.Title}\", Type: {dto.Type}, Sent to: {userIds.Count} user(s)";
@@ -103,6 +114,7 @@ namespace WordSoul.Application.Services
                 Title = n.Title,
                 Type = n.Type.ToString(),
                 Message = n.Message,
+                ActionUrl = n.ActionUrl,
                 IsRead = n.IsRead,
                 CreatedAt = n.CreatedAt
             });

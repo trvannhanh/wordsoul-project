@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WordSoul.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using WordSoul.Infrastructure.Persistence;
 namespace WordSoul.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(WordSoulDbContext))]
-    partial class WordSoulDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260525022326_AddActionUrlToNotification")]
+    partial class AddActionUrlToNotification
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1002,27 +1005,15 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("FcmToken")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("HintBalance")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("LastActiveAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("LastReminderEmailSentAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("PasswordHash")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
-
-                    b.Property<int?>("PreferredStudyHour")
-                        .HasColumnType("int");
 
                     b.Property<int>("PvpLosses")
                         .HasColumnType("int");

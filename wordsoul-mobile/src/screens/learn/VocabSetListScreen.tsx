@@ -200,6 +200,7 @@ export const VocabSetListScreen: React.FC<Props> = ({ navigation }) => {
         </View>
       ) : activeTab === 'Khám phá' ? (
         <FlatList
+          key="explore"
           data={[]}
           keyExtractor={() => ''}
           renderItem={null}
@@ -218,6 +219,7 @@ export const VocabSetListScreen: React.FC<Props> = ({ navigation }) => {
         />
       ) : (
         <FlatList
+          key="my-sets"
           data={mySetsList}
           keyExtractor={(item) => String(item.id)}
           numColumns={2}

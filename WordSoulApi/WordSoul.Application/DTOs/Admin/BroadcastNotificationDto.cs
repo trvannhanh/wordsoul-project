@@ -15,6 +15,9 @@ namespace WordSoul.Application.DTOs.Admin
 
         public NotificationType Type { get; set; } = NotificationType.Review;
 
+        [MaxLength(200)]
+        public string? ActionUrl { get; set; }
+
         /// <summary>
         /// Danh sách userId nhận thông báo. null = gửi cho tất cả user.
         /// </summary>

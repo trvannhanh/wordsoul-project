@@ -1,4 +1,4 @@
-﻿
+
 
 namespace WordSoul.Domain.Enums
 {
@@ -6,6 +6,9 @@ namespace WordSoul.Domain.Enums
     {
         Review,
         Reward,
-        Event
+        Event,
+        StreakWarning,
+        Achievement,
+        System
     }
 }

@@ -28,7 +28,7 @@ import type { QuizQuestionDto, AnswerResponseDto } from '../../types/LearningSes
 import { QuestionTypeEnum } from '../../types/LearningSessionDto';
 import { ProgressBar } from '../../components/ui/ProgressBar';
 import { Ionicons } from '@expo/vector-icons';
-import { Audio } from 'expo-av';
+import { createAudioPlayer } from 'expo-audio';
 
 type Props = NativeStackScreenProps<LearnStackParamList, 'LearningSession'>;
 
@@ -66,11 +66,8 @@ export const LearningSessionScreen: React.FC<Props> = ({ navigation, route }) =>
 
   const playAudio = useCallback(async (url: string) => {
     try {
-      const { sound } = await Audio.Sound.createAsync({ uri: url });
-      await sound.playAsync();
-      sound.setOnPlaybackStatusUpdate((status) => {
-        if (status.isLoaded && status.didJustFinish) sound.unloadAsync();
-      });
+      const player = createAudioPlayer({ uri: url });
+      player.play();
     } catch {
       // ignore audio errors
     }
@@ -182,7 +179,6 @@ export const LearningSessionScreen: React.FC<Props> = ({ navigation, route }) =>
   if (finishing) {
     return (
       <SafeAreaView className="flex-1 bg-white dark:bg-gray-950 items-center justify-center px-6">
-        <Text className="text-4xl mb-4">🎉</Text>
         <Text className="text-2xl font-black text-gray-900 dark:text-white text-center">
           Hoàn thành!
         </Text>
@@ -219,12 +215,12 @@ export const LearningSessionScreen: React.FC<Props> = ({ navigation, route }) =>
         <View className="self-start bg-blue-100 dark:bg-blue-900/40 px-3 py-1 rounded-full">
           <Text className="text-blue-600 dark:text-blue-300 text-xs font-bold">
             {isFlashcard
-              ? '🃏 Flashcard'
+              ? 'Flashcard'
               : isListening
-              ? '🔊 Nghe'
-              : isMultipleChoice
-              ? '📝 Trắc nghiệm'
-              : '✏️ Điền vào chỗ trống'}
+                ? 'Nghe'
+                : isMultipleChoice
+                  ? 'Trắc nghiệm'
+                  : 'Điền vào chỗ trống'}
           </Text>
         </View>
       </View>
@@ -237,11 +233,10 @@ export const LearningSessionScreen: React.FC<Props> = ({ navigation, route }) =>
         {/* ── Flashcard ── */}
         {isFlashcard && (
           <TouchableOpacity
-            className={`rounded-3xl p-8 items-center justify-center min-h-64 shadow-sm ${
-              flipped
-                ? 'bg-blue-600'
-                : 'bg-white dark:bg-gray-800'
-            }`}
+            className={`rounded-3xl p-8 items-center justify-center min-h-64 shadow-sm ${flipped
+              ? 'bg-blue-600'
+              : 'bg-white dark:bg-gray-800'
+              }`}
             onPress={() => setFlipped((v) => !v)}
             activeOpacity={0.9}
           >
@@ -340,13 +335,12 @@ export const LearningSessionScreen: React.FC<Props> = ({ navigation, route }) =>
             </View>
             <Animated.View style={shakeStyle}>
               <TextInput
-                className={`border-2 rounded-2xl px-5 py-4 text-base text-gray-900 dark:text-white bg-white dark:bg-gray-800 ${
-                  answerState === 'correct'
-                    ? 'border-green-400'
-                    : answerState === 'wrong'
+                className={`border-2 rounded-2xl px-5 py-4 text-base text-gray-900 dark:text-white bg-white dark:bg-gray-800 ${answerState === 'correct'
+                  ? 'border-green-400'
+                  : answerState === 'wrong'
                     ? 'border-red-400'
                     : 'border-gray-200 dark:border-gray-700'
-                }`}
+                  }`}
                 placeholder="Nhập từ..."
                 placeholderTextColor="#9ca3af"
                 value={fillInput}
@@ -375,13 +369,13 @@ export const LearningSessionScreen: React.FC<Props> = ({ navigation, route }) =>
               className="flex-1 bg-red-100 dark:bg-red-900/30 border-2 border-red-300 rounded-2xl py-4 items-center"
               onPress={() => handleAnswer('__DONT_KNOW__')}
             >
-              <Text className="text-red-600 font-bold">Chưa biết 😅</Text>
+              <Text className="text-red-600 font-bold">Chưa biết</Text>
             </TouchableOpacity>
             <TouchableOpacity
               className="flex-1 bg-green-100 dark:bg-green-900/30 border-2 border-green-300 rounded-2xl py-4 items-center"
               onPress={() => handleAnswer(currentQ.word ?? '')}
             >
-              <Text className="text-green-600 font-bold">Đã biết ✅</Text>
+              <Text className="text-green-600 font-bold">Đã biết</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -389,18 +383,16 @@ export const LearningSessionScreen: React.FC<Props> = ({ navigation, route }) =>
         {/* ── Answer Feedback ── */}
         {answerState !== 'idle' && (
           <View
-            className={`mt-4 rounded-2xl p-4 ${
-              answerState === 'correct'
-                ? 'bg-green-50 dark:bg-green-900/20 border border-green-200'
-                : 'bg-red-50 dark:bg-red-900/20 border border-red-200'
-            }`}
+            className={`mt-4 rounded-2xl p-4 ${answerState === 'correct'
+              ? 'bg-green-50 dark:bg-green-900/20 border border-green-200'
+              : 'bg-red-50 dark:bg-red-900/20 border border-red-200'
+              }`}
           >
             <Text
-              className={`font-bold text-base mb-1 ${
-                answerState === 'correct' ? 'text-green-700' : 'text-red-600'
-              }`}
+              className={`font-bold text-base mb-1 ${answerState === 'correct' ? 'text-green-700' : 'text-red-600'
+                }`}
             >
-              {answerState === 'correct' ? '✅ Chính xác!' : '❌ Sai rồi!'}
+              {answerState === 'correct' ? 'Chính xác!' : 'Sai rồi!'}
             </Text>
             {answerState === 'wrong' && (
               <Text className="text-gray-600 dark:text-gray-400 text-sm">
@@ -411,13 +403,12 @@ export const LearningSessionScreen: React.FC<Props> = ({ navigation, route }) =>
               </Text>
             )}
             <TouchableOpacity
-              className={`mt-3 rounded-xl py-3 items-center ${
-                answerState === 'correct' ? 'bg-green-500' : 'bg-blue-600'
-              }`}
+              className={`mt-3 rounded-xl py-3 items-center ${answerState === 'correct' ? 'bg-green-500' : 'bg-blue-600'
+                }`}
               onPress={handleNext}
             >
               <Text className="text-white font-bold">
-                {currentIndex + 1 >= questions.length ? 'Hoàn thành 🎉' : 'Tiếp theo →'}
+                {currentIndex + 1 >= questions.length ? 'Hoàn thành' : 'Tiếp theo'}
               </Text>
             </TouchableOpacity>
           </View>

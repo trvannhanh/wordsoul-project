@@ -1,12 +1,14 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { deleteNotification, fetchNotifications, markReadAllNotifications, markReadNotifications } from "../services/notification";
 import { useNotifications } from "../hooks/Notification/useNotifications";
 import { useAuth } from "../hooks/Auth/useAuth";
+import { useFCM } from "../hooks/useFCM";
 
 const Header: React.FC = () => {
     const { user, logout } = useAuth();
     const { notifications, setNotifications } = useNotifications(user?.id);
+    const { fcmToken } = useFCM(!!user);
     const [isNotificationSidebarOpen, setIsNotificationSidebarOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
@@ -14,6 +16,7 @@ const Header: React.FC = () => {
         const savedTheme = localStorage.getItem("theme");
         return savedTheme ? savedTheme === "dark" : true; // Mặc định là true (dark mode) nếu không có giá trị trong localStorage
     });
+    const navigate = useNavigate();
 
     const unreadCount = useMemo(() => notifications.filter((n) => !n.isRead).length, [notifications]);
 
@@ -79,6 +82,16 @@ const Header: React.FC = () => {
                 setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
             })
             .catch((error) => console.error("Failed to mark all as read:", error));
+    };
+
+    const handleActionClick = (notif: any) => {
+        if (!notif.isRead) {
+            handleMarkRead(notif.id);
+        }
+        if (notif.actionUrl) {
+            navigate(notif.actionUrl);
+            setIsNotificationSidebarOpen(false);
+        }
     };
 
     return (
@@ -288,6 +301,14 @@ const Header: React.FC = () => {
                                         {new Date(notif.createdAt).toLocaleTimeString()}
                                     </div>
                                     <div className="flex gap-2 mt-2 flex-wrap">
+                                        {notif.actionUrl && (
+                                            <button
+                                                onClick={() => handleActionClick(notif)}
+                                                className="text-xs text-green-500 hover:text-green-700 custom-cursor font-bold"
+                                            >
+                                                Xem ngay
+                                            </button>
+                                        )}
                                         {!notif.isRead && (
                                             <button
                                                 onClick={() => handleMarkRead(notif.id)}

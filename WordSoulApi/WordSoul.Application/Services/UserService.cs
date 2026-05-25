@@ -292,8 +292,21 @@ namespace WordSoul.Application.Services
         }
 
         // ============================================================================
-        // DELETE
+        // DELETE & OTHERS
         // ============================================================================
+
+        public async Task<bool> UpdateFcmTokenAsync(int userId, string token, CancellationToken cancellationToken = default)
+        {
+            var user = await _uow.User.GetUserByIdAsync(userId, cancellationToken);
+            if (user == null) return false;
+
+            user.FcmToken = token;
+            await _uow.User.UpdateUserAsync(user, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
+            
+            _logger.LogInformation("FCM Token updated for user {UserId}", userId);
+            return true;
+        }
 
         /// <summary>
         /// Xóa mềm hoặc cứng người dùng (tùy implementation trong repo).

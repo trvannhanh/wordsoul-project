@@ -12,6 +12,7 @@
   "dependencies": {
     "@microsoft/signalr": "^9.0.6",
     "axios": "^1.11.0",
+    "firebase": "^12.13.0",
     "framer-motion": "^12.23.12",
     "lucide-react": "^0.543.0",
     "react": "^19.1.1",

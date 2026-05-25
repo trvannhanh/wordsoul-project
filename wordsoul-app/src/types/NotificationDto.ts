@@ -4,6 +4,7 @@ export interface NotificationDto {
   title: string;
   type: string;
   message: string;
+  actionUrl?: string;
   isRead: boolean;
   createdAt: Date;
 }

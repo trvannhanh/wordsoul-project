@@ -1,4 +1,4 @@
-﻿using WordSoul.Application.DTOs.Admin;
+using WordSoul.Application.DTOs.Admin;
 using WordSoul.Application.DTOs.Notification;
 using WordSoul.Domain.Enums;
 
@@ -8,7 +8,7 @@ namespace WordSoul.Application.Interfaces.Services
     {
         //-------------------------------------CREATE-----------------------------------------
         // Tạo mới thông báo
-        Task CreateNotificationAsync(int userId, string title, string message, NotificationType type, CancellationToken ct = default);
+        Task CreateNotificationAsync(int userId, string title, string message, NotificationType type, string? actionUrl = null, CancellationToken ct = default);
 
         // Broadcast thông báo tới nhiều user (hoặc tất cả)
         Task<BroadcastResultDto> BroadcastAsync(BroadcastNotificationDto dto, int adminUserId, CancellationToken ct = default);

@@ -7,6 +7,7 @@ using WordSoul.Application.Interfaces.Services;
 using WordSoul.Api.Extensions;
 using WordSoul.Api.Hubs;
 using WordSoul.Domain.Entities;
+using System.ComponentModel.DataAnnotations;
 
 namespace WordSoul.Api.Controllers
 {
@@ -21,6 +22,7 @@ namespace WordSoul.Api.Controllers
         private readonly IAdminDashboardService _dashboardService;
         private readonly IUserService _userService;
         private readonly INotificationService _notificationService;
+        private readonly IEmailService _emailService;
         private readonly IHubContext<BattleHub> _battleHub;
         private readonly ILogger<AdminController> _logger;
 
@@ -30,6 +32,7 @@ namespace WordSoul.Api.Controllers
             IAdminDashboardService dashboardService,
             IUserService userService,
             INotificationService notificationService,
+            IEmailService emailService,
             IHubContext<BattleHub> battleHub,
             ILogger<AdminController> logger)
         {
@@ -38,6 +41,7 @@ namespace WordSoul.Api.Controllers
             _dashboardService = dashboardService;
             _userService = userService;
             _notificationService = notificationService;
+            _emailService = emailService;
             _battleHub = battleHub;
             _logger = logger;
         }
@@ -175,6 +179,36 @@ namespace WordSoul.Api.Controllers
             {
                 _logger.LogError(ex, "Error broadcasting notification");
                 return StatusCode(500, "An error occurred while sending the broadcast.");
+            }
+        }
+
+        public class TestEmailDto
+        {
+            [Required]
+            [EmailAddress]
+            public string ToEmail { get; set; } = string.Empty;
+        }
+
+        // POST: api/admin/test-email
+        [HttpPost("test-email")]
+        public async Task<IActionResult> TestEmail([FromBody] TestEmailDto dto)
+        {
+            try
+            {
+                var htmlContent = @"
+                    <div style='font-family: Arial, sans-serif; padding: 20px; text-align: center;'>
+                        <h2 style='color: #4F46E5;'>🎉 Chào mừng đến với Vocamon!</h2>
+                        <p>Đây là email test xác nhận tính năng SendGrid của hệ thống hoạt động bình thường.</p>
+                        <p>Chúc bạn một ngày học tập vui vẻ!</p>
+                    </div>";
+
+                await _emailService.SendEmailAsync(dto.ToEmail, "Test tính năng gửi Email từ Vocamon", htmlContent);
+                return Ok(new { Message = $"Test email sent successfully to {dto.ToEmail}" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending test email");
+                return StatusCode(500, $"Error sending email: {ex.Message}");
             }
         }
 

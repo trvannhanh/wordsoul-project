@@ -5,6 +5,8 @@ using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using Serilog;
 using System.Text;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 using WordSoul.Api.Hubs;
 using WordSoul.Api.Services;
 using WordSoul.Application.Common;
@@ -22,6 +24,7 @@ using WordSoul.Infrastructure.Persistence;
 using WordSoul.Infrastructure.BackgroundServices;
 using WordSoul.Infrastructure.Persistence;
 using WordSoul.Infrastructure.Persistence.Repositories;
+using WordSoul.Infrastructure.Services;
 using WordSoul.Api.Middlewares;
 
 
@@ -211,6 +214,8 @@ builder.Services.AddScoped<IUserAchievementService, UserAchievementService>();
 
 builder.Services.AddScoped<IPetBuffService, PetBuffService>();
 builder.Services.AddScoped<ISystemConfigurationService, SystemConfigurationService>();
+builder.Services.AddScoped<IEmailService, SendGridEmailService>();
+builder.Services.AddScoped<IFcmService, FcmService>();
 
 // Upload Assests
 builder.Services.AddScoped<IUploadAssetsService, UploadAssetsService>();
@@ -221,6 +226,8 @@ builder.Services.AddScoped<IVocabularyReviewHistoryRepository, VocabularyReviewH
 
 //Background Service
 builder.Services.AddHostedService<NotificationBackgroundService>();
+builder.Services.AddHostedService<EmailReminderBackgroundService>();
+builder.Services.AddHostedService<SmartTimingAnalyzerWorker>();
 
 // System Logs
 builder.Services.AddSingleton<SystemLogQueue>();
@@ -261,9 +268,39 @@ builder.Services.AddSingleton<Cloudinary>(sp =>
     var account = new Account(
         cloudinarySettings["CloudName"],
         cloudinarySettings["ApiKey"],
-        cloudinarySettings["ApiSecret"]);
+                cloudinarySettings["ApiSecret"]);
     return new Cloudinary(account);
 });
+
+// Configure Firebase Admin
+var firebaseJson = builder.Configuration["Firebase:ServiceAccountJson"];
+
+if (!string.IsNullOrEmpty(firebaseJson))
+{
+    // Đọc từ biến môi trường (Azure App Service)
+    FirebaseApp.Create(new AppOptions()
+    {
+        Credential = GoogleCredential.FromJson(firebaseJson)
+    });
+    Log.Information("Firebase Admin initialized from Environment Variables.");
+}
+else
+{
+    // Fallback đọc từ file cục bộ (Local Development)
+    var firebaseKeyPath = Path.Combine(builder.Environment.ContentRootPath, "Appsettings/vocamon-7932b-firebase-adminsdk-fbsvc-a967a14219.json");
+    if (File.Exists(firebaseKeyPath))
+    {
+        FirebaseApp.Create(new AppOptions()
+        {
+            Credential = GoogleCredential.FromFile(firebaseKeyPath)
+        });
+        Log.Information("Firebase Admin initialized from local JSON file.");
+    }
+    else
+    {
+        Log.Warning("Firebase Service Account JSON not found. Push notifications will not work.");
+    }
+}
 
 // External AI & Media Services
 builder.Services.AddHttpClient<IGeminiAiService, GeminiAiService>();
@@ -283,19 +320,25 @@ app.MapScalarApiReference(options =>
     options.WithTheme(ScalarTheme.Purple);
 });
 
-// Thêm middleware Serilog để ghi log các yêu cầu HTTP
+// Ghi log các yêu cầu HTTP
 app.UseSerilogRequestLogging();
 
-// Đăng ký custom middleware ghi log chi tiết Request/Response
+// Ghi log chi tiết Request/Response
 app.UseMiddleware<RequestResponseLoggingMiddleware>();
 
-// 🚀 CORS phải đứng TRƯỚC UseHttpsRedirection
+// Theo dõi thời gian hoạt động của User
+app.UseMiddleware<ActivityTrackingMiddleware>();
+
+// CORS phải đứng TRƯỚC UseHttpsRedirection
 // Trên Azure App Service, HTTPS được terminate ở load balancer,
 // nên UseHttpsRedirection redirect OPTIONS preflight trước khi CORS kịp xử lý
 app.UseCors("AllowFrontend");
 
-// 4. HTTPS redirect sau CORS
-app.UseHttpsRedirection();
+// 4. HTTPS redirect sau CORS (chỉ bật trên Production/Staging, không dùng khi dev local)
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 // 5. Auth
 app.UseAuthentication();
