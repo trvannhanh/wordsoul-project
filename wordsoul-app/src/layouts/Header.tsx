@@ -154,7 +154,7 @@ const Header: React.FC = () => {
                         <div>
                             <Link to="/gym">
                                 <button className="px-3 py-2 hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-md custom-cursor">
-                                    Gym Leaders
+                                    Chinh phục
                                 </button>
                             </Link>
                         </div>
@@ -248,7 +248,7 @@ const Header: React.FC = () => {
                             Vocadex
                         </Link>
                         <Link to="/gym" className="py-2 hover:text-blue-400" onClick={toggleMobileMenu}>
-                            Gym Leaders
+                            Chinh phục
                         </Link>
                         <Link to="/pvp" className="py-2 hover:text-blue-400" onClick={toggleMobileMenu}>
                             Đấu trường

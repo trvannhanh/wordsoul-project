@@ -42,6 +42,16 @@ export interface LevelStatDto {
   count: number;
 }
 
+export interface SrsMemoryStateStatDto {
+  state: string;
+  count: number;
+}
+
+export interface DailyActivityDto {
+  dateLabel: string;
+  count: number;
+}
+
 export interface UserProgressDto {
   reviewWordCount: number;
   nextReviewTime: string | null;
@@ -49,6 +59,10 @@ export interface UserProgressDto {
   struggleWords?: StruggleWordDto[];
   themePreferences?: ThemePreferenceDto[];
   recommendedSets?: RecommendedSetDto[];
+  memoryStateStats: SrsMemoryStateStatDto[];
+  retentionRate: number;
+  averageRecallSpeed: number;
+  weeklyActivities: DailyActivityDto[];
 }
 
 export interface StruggleWordDto {

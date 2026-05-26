@@ -39,6 +39,7 @@ export default function NotificationsPage() {
   const title   = Form.useWatch('title',    form) ?? '';
   const msg     = Form.useWatch('message',  form) ?? '';
   const type    = Form.useWatch('type',     form) ?? 'Review';
+  const actionUrl = Form.useWatch('actionUrl', form) ?? '';
   const audience = Form.useWatch('audience', form) ?? 'all';
   const targetIds: string[] = Form.useWatch('targetIds', form) ?? [];
 
@@ -51,6 +52,7 @@ export default function NotificationsPage() {
         title:         values.title,
         message:       values.message,
         type:          values.type,
+        actionUrl:     values.actionUrl,
         targetUserIds: values.audience === 'specific'
           ? (values.targetIds as string[]).map(Number).filter((n) => !isNaN(n))
           : null,
@@ -127,6 +129,17 @@ export default function NotificationsPage() {
                   rows={3}
                   placeholder="Brief message body shown in the notification..."
                 />
+              </Form.Item>
+
+              <Form.Item
+                name="actionUrl"
+                label="Action URL (Optional)"
+                extra="Đường dẫn sẽ mở ra khi người dùng click vào thông báo (VD: /learning/123)"
+                rules={[
+                  { max: 200, message: 'Max 200 characters' },
+                ]}
+              >
+                <Input maxLength={200} placeholder="e.g. /learning/123" />
               </Form.Item>
 
               <Row gutter={16}>
@@ -285,6 +298,11 @@ export default function NotificationsPage() {
                 <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 6 }}>
                   Just now · {audienceLabel}
                 </div>
+                {actionUrl && (
+                  <div style={{ fontSize: 11, color: 'var(--accent)', marginTop: 4, fontWeight: 500 }}>
+                    🔗 Mở đường dẫn: {actionUrl}
+                  </div>
+                )}
               </div>
             </div>
 

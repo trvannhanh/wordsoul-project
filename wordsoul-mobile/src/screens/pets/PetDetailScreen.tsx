@@ -61,10 +61,10 @@ export const PetDetailScreen: React.FC<Props> = ({ navigation, route }) => {
       const updated = await fetchPetDetail(petId);
       setPet(updated);
       const msg = res.isEvolved
-        ? `🎊 ${pet.name} đã tiến hóa!`
+        ? `${pet.name} đã tiến hóa!`
         : res.isLevelUp
-        ? `⬆️ Lên cấp ${res.level}!`
-        : `+${res.experience} XP`;
+          ? `Lên cấp ${res.level}!`
+          : `+${res.experience} XP`;
       Alert.alert('Upgrade!', msg);
     } catch {
       Alert.alert('Lỗi', 'Không thể upgrade pet');

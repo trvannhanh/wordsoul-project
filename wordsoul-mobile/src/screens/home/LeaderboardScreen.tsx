@@ -42,11 +42,10 @@ export const LeaderboardScreen: React.FC<Props> = ({ navigation }) => {
     const isMe = item.id === user?.id;
     return (
       <View
-        className={`flex-row items-center px-4 py-3 mx-4 mb-2 rounded-2xl ${
-          isMe
+        className={`flex-row items-center px-4 py-3 mx-4 mb-2 rounded-2xl ${isMe
             ? 'bg-blue-50 dark:bg-blue-900/30 border-2 border-blue-400'
             : 'bg-white dark:bg-gray-800'
-        }`}
+          }`}
       >
         <Text className="w-8 text-center text-base font-bold text-gray-500 dark:text-gray-400">
           {index < 3 ? medalIcons[index] : `#${index + 1}`}
@@ -89,7 +88,7 @@ export const LeaderboardScreen: React.FC<Props> = ({ navigation }) => {
           <Ionicons name="arrow-back" size={24} color="#374151" />
         </TouchableOpacity>
         <Text className="text-gray-900 dark:text-white text-lg font-bold ml-3">
-          🏆 Bảng xếp hạng
+          Bảng xếp hạng
         </Text>
       </View>
 

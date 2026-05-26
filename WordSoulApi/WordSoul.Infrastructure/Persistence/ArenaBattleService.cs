@@ -1172,5 +1172,245 @@ namespace WordSoul.Infrastructure.Persistence
             var combined = p1Vocabs.Concat(p2Vocabs).OrderBy(_ => Guid.NewGuid()).ToList();
             return combined;
         }
+
+        // ═══════════════════════════════════════════════════════════
+        // HISTORY & LOBBY QUERIES
+        // ═══════════════════════════════════════════════════════════
+
+        public async Task<BattleHistoryPageDto> GetBattleHistoryAsync(
+            int userId, WordSoul.Domain.Enums.BattleType? type, int? gymLeaderId, int page = 1, int pageSize = 20, CancellationToken ct = default)
+        {
+            var query = _db.BattleSessions
+                .Include(s => s.ChallengerUser)
+                .Include(s => s.OpponentUser)
+                .Include(s => s.GymLeader)
+                .Where(s => s.ChallengerUserId == userId || s.OpponentUserId == userId)
+                .AsQueryable();
+
+            if (type.HasValue)
+            {
+                query = query.Where(s => s.Type == type.Value);
+            }
+
+            if (gymLeaderId.HasValue)
+            {
+                query = query.Where(s => s.GymLeaderId == gymLeaderId.Value);
+            }
+
+            var totalCount = await query.CountAsync(ct);
+
+            var sessions = await query
+                .OrderByDescending(s => s.StartedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(ct);
+
+            var result = new List<BattleHistoryEntryDto>();
+            foreach (var s in sessions)
+            {
+                bool isP1 = s.ChallengerUserId == userId;
+                string opponentName = "";
+                if (s.Type == BattleType.GymBattle)
+                {
+                    opponentName = s.GymLeader?.Name ?? "Gym Leader";
+                }
+                else
+                {
+                    var opp = isP1 ? s.OpponentUser : s.ChallengerUser;
+                    opponentName = opp?.Username ?? opp?.Email ?? "Opponent";
+                }
+
+                bool currentUserWon = false;
+                if (s.Status == BattleStatus.Completed && s.ChallengerWon.HasValue)
+                {
+                    currentUserWon = isP1 ? s.ChallengerWon.Value : !s.ChallengerWon.Value;
+                }
+
+                result.Add(new BattleHistoryEntryDto
+                {
+                    SessionId = s.Id,
+                    Type = s.Type.ToString(),
+                    Status = s.Status.ToString(),
+                    StartedAt = s.StartedAt,
+                    CompletedAt = s.CompletedAt,
+                    TotalQuestions = s.TotalQuestions,
+                    CurrentRound = s.CurrentRound,
+                    ChallengerUserId = s.ChallengerUserId,
+                    ChallengerUsername = s.ChallengerUser?.Username ?? s.ChallengerUser?.Email ?? s.ChallengerUserId.ToString(),
+                    ChallengerCorrect = s.ChallengerCorrect,
+                    ChallengerTotalScore = s.ChallengerTotalScore,
+                    OpponentUserId = s.OpponentUserId,
+                    OpponentName = opponentName,
+                    OpponentCorrect = s.OpponentCorrect,
+                    OpponentTotalScore = s.OpponentTotalScore,
+                    ChallengerWon = s.ChallengerWon,
+                    IsCurrentUserP1 = isP1,
+                    CurrentUserWon = currentUserWon
+                });
+            }
+
+            return new BattleHistoryPageDto
+            {
+                Items = result,
+                TotalCount = totalCount,
+                PageNumber = page,
+                PageSize = pageSize
+            };
+        }
+
+        public async Task<BattleHistoryDetailDto?> GetBattleHistoryDetailAsync(
+            int sessionId, int userId, CancellationToken ct = default)
+        {
+            var s = await _db.BattleSessions
+                .Include(x => x.ChallengerUser)
+                .Include(x => x.OpponentUser)
+                .Include(x => x.GymLeader)
+                .Include(x => x.Rounds).ThenInclude(r => r.Vocabulary)
+                .Include(x => x.PetStates)
+                .FirstOrDefaultAsync(x => x.Id == sessionId && (x.ChallengerUserId == userId || x.OpponentUserId == userId), ct);
+
+            if (s == null) return null;
+
+            bool isP1 = s.ChallengerUserId == userId;
+            string opponentName = "";
+            if (s.Type == BattleType.GymBattle)
+            {
+                opponentName = s.GymLeader?.Name ?? "Gym Leader";
+            }
+            else
+            {
+                var opp = isP1 ? s.OpponentUser : s.ChallengerUser;
+                opponentName = opp?.Username ?? opp?.Email ?? "Opponent";
+            }
+
+            bool currentUserWon = false;
+            if (s.Status == BattleStatus.Completed && s.ChallengerWon.HasValue)
+            {
+                currentUserWon = isP1 ? s.ChallengerWon.Value : !s.ChallengerWon.Value;
+            }
+
+            var p1Pets = s.PetStates.Where(p => p.PlayerIndex == 1).OrderBy(p => p.SlotIndex)
+                .Select(p => new PetHistoryDto
+                {
+                    DisplayName = p.DisplayName,
+                    ImageUrl = p.ImageUrl,
+                    PetType = p.PetType.ToString(),
+                    SecondaryPetType = p.SecondaryPetType?.ToString(),
+                    MaxHp = p.MaxHp,
+                    CurrentHp = p.CurrentHp,
+                    IsFainted = p.IsFainted
+                }).ToList();
+
+            var p2Pets = s.PetStates.Where(p => p.PlayerIndex == 2).OrderBy(p => p.SlotIndex)
+                .Select(p => new PetHistoryDto
+                {
+                    DisplayName = p.DisplayName,
+                    ImageUrl = p.ImageUrl,
+                    PetType = p.PetType.ToString(),
+                    SecondaryPetType = p.SecondaryPetType?.ToString(),
+                    MaxHp = p.MaxHp,
+                    CurrentHp = p.CurrentHp,
+                    IsFainted = p.IsFainted
+                }).ToList();
+
+            var detail = new BattleHistoryDetailDto
+            {
+                SessionId = s.Id,
+                Type = s.Type.ToString(),
+                Status = s.Status.ToString(),
+                StartedAt = s.StartedAt,
+                CompletedAt = s.CompletedAt,
+                ChallengerWon = s.ChallengerWon,
+                IsCurrentUserP1 = isP1,
+                CurrentUserWon = currentUserWon,
+                P1 = new PlayerHistoryDetailDto
+                {
+                    UserId = s.ChallengerUserId,
+                    Name = s.ChallengerUser?.Username ?? s.ChallengerUser?.Email ?? s.ChallengerUserId.ToString(),
+                    CorrectCount = s.ChallengerCorrect,
+                    TotalScore = s.ChallengerTotalScore,
+                    SelectedPets = p1Pets
+                },
+                P2 = new PlayerHistoryDetailDto
+                {
+                    UserId = s.OpponentUserId,
+                    Name = opponentName,
+                    CorrectCount = s.OpponentCorrect,
+                    TotalScore = s.OpponentTotalScore,
+                    SelectedPets = p2Pets
+                },
+                Rounds = s.Rounds.OrderBy(r => r.RoundIndex).Select(r => new RoundHistoryDetailDto
+                {
+                    RoundIndex = r.RoundIndex,
+                    Word = r.Vocabulary?.Word ?? "",
+                    Meaning = r.Vocabulary?.Meaning ?? "",
+                    Pronunciation = r.Vocabulary?.Pronunciation,
+                    P1Answer = r.P1Answer,
+                    P1Correct = r.P1Correct,
+                    P1AnswerMs = r.P1AnswerMs,
+                    P1Score = r.P1Score,
+                    P2Answer = r.P2Answer,
+                    P2Correct = r.P2Correct,
+                    P2AnswerMs = r.P2AnswerMs,
+                    P2Score = r.P2Score,
+                    DamageDealt = r.DamageDealt,
+                    DamagedPlayer = r.DamagedPlayer,
+                    TypeMultiplier = r.TypeMultiplier
+                }).ToList()
+            };
+
+            return detail;
+        }
+
+        public async Task<List<PvpLobbyRoomDto>> GetWaitingPvpRoomsAsync(CancellationToken ct = default)
+        {
+            var cutOffTime = DateTime.UtcNow.AddHours(-2);
+            var sessions = await _db.BattleSessions
+                .Include(s => s.ChallengerUser)
+                .Where(s => s.Type == BattleType.PvP && s.Status == BattleStatus.Waiting && s.StartedAt >= cutOffTime)
+                .OrderByDescending(s => s.StartedAt)
+                .ToListAsync(ct);
+
+            var result = new List<PvpLobbyRoomDto>();
+            foreach (var s in sessions)
+            {
+                result.Add(new PvpLobbyRoomDto
+                {
+                    SessionId = s.Id,
+                    RoomCode = s.RoomCode ?? "",
+                    HostUserId = s.ChallengerUserId,
+                    HostUsername = s.ChallengerUser?.Username ?? s.ChallengerUser?.Email ?? s.ChallengerUserId.ToString(),
+                    HostRating = s.ChallengerUser?.PvpRating ?? 1000,
+                    CreatedAt = s.StartedAt
+                });
+            }
+
+            return result;
+        }
+
+        public async Task<List<PvpLeaderboardEntryDto>> GetPvpLeaderboardAsync(int top = 50, CancellationToken ct = default)
+        {
+            var entries = await _db.Users
+                .OrderByDescending(u => u.PvpRating)
+                .ThenByDescending(u => u.PvpWins)
+                .Take(top)
+                .Select(u => new PvpLeaderboardEntryDto
+                {
+                    UserId = u.Id,
+                    UserName = u.Username ?? u.Email,
+                    AvatarUrl = u.AvatarUrl,
+                    PvpRating = u.PvpRating,
+                    Wins = u.PvpWins,
+                    Losses = u.PvpLosses
+                })
+                .ToListAsync(ct);
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                entries[i].Rank = i + 1;
+            }
+
+            return entries;
+        }
     }
 }

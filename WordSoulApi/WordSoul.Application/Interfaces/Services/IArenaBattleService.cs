@@ -65,5 +65,11 @@ namespace WordSoul.Application.Interfaces.Services
 
         /// <summary>Lấy PvP rating của user.</summary>
         Task<PvpRatingDto?> GetPvpRatingAsync(int userId, CancellationToken ct = default);
+
+        // ── History & Lobby queries ───────────────────────────────────────────
+        Task<BattleHistoryPageDto> GetBattleHistoryAsync(int userId, WordSoul.Domain.Enums.BattleType? type, int? gymLeaderId, int page = 1, int pageSize = 20, CancellationToken ct = default);
+        Task<BattleHistoryDetailDto?> GetBattleHistoryDetailAsync(int sessionId, int userId, CancellationToken ct = default);
+        Task<List<PvpLobbyRoomDto>> GetWaitingPvpRoomsAsync(CancellationToken ct = default);
+        Task<List<PvpLeaderboardEntryDto>> GetPvpLeaderboardAsync(int top = 50, CancellationToken ct = default);
     }
 }

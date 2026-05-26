@@ -72,7 +72,6 @@ const QuestList: React.FC = () => {
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                    <span className="text-2xl">⚔️</span>
                     <h2 className="font-pixel text-sm text-yellow-400">Nhiệm Vụ Hằng Ngày</h2>
                 </div>
                 {!loading && totalCount > 0 && (
@@ -117,7 +116,7 @@ const QuestList: React.FC = () => {
 
             {/* Quest cards */}
             {!loading && !error && quests.length > 0 && (
-                <div className="space-y-3">
+                <div className="space-y-2">
                     {quests.map((quest) => (
                         <QuestCard key={quest.id} quest={quest} onClaimed={handleClaimed} />
                     ))}

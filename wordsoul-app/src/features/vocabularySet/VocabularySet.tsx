@@ -7,6 +7,9 @@ import { useNavigate } from 'react-router-dom';
 import type { VocabularySetDto } from '../../types/VocabularySetDto';
 import { useAuth } from '../../hooks/Auth/useAuth';
 import WorldMap, { HOTSPOTS } from './WorldMap';
+import RecommendedSetsBox from '../../components/UserDashboard/RecommendedSetsBox';
+import { getUserProgress } from '../../services/user';
+import type { RecommendedSetDto } from '../../types/UserDto';
 
 type ViewTab = 'list' | 'map';
 
@@ -60,7 +63,7 @@ const CardSlider = ({ items, onDelete, prefixSlot, currentUserId }: {
                 disabled={!active}
                 className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center border transition-all self-center
                     ${active
-                        ? 'bg-gray-700 hover:bg-gray-600 border-gray-500 text-white cursor-pointer shadow'
+                        ? 'bg-gray-700 hover:bg-gray-600 border-gray-500 text-white custom-cursor shadow'
                         : 'bg-gray-900 border-gray-700 text-gray-600 cursor-default'}`}
             >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -139,6 +142,23 @@ const VocabularySetsPage = () => {
     const [mySets, setMySets] = useState<VocabularySetDto[]>([]);
     const [refreshKey, setRefreshKey] = useState(0);
     const [mySetFilter, setMySetFilter] = useState<'all' | 'owned'>('all');
+    const [recommendedSets, setRecommendedSets] = useState<RecommendedSetDto[]>([]);
+
+    useEffect(() => {
+        if (!user) {
+            setRecommendedSets([]);
+            return;
+        }
+        const fetchRecommended = async () => {
+            try {
+                const data = await getUserProgress();
+                setRecommendedSets(data.recommendedSets || []);
+            } catch (err) {
+                console.error("Failed to load recommended sets:", err);
+            }
+        };
+        fetchRecommended();
+    }, [user, refreshKey]);
 
     const handleDeleteSet = async (id: number) => {
         try {
@@ -284,6 +304,18 @@ const VocabularySetsPage = () => {
                 {/* ── LIST TAB ─────────────────────────────────── */}
                 {activeTab === 'list' && (
                     <>
+                        {/* Gợi ý cho bạn */}
+                        {user && recommendedSets.length > 0 && (
+                            <section className="mb-10 animate-fade-in">
+                                <RecommendedSetsBox
+                                    recommendedSets={recommendedSets}
+                                    onAdded={() => {
+                                        setRefreshKey(k => k + 1);
+                                    }}
+                                />
+                            </section>
+                        )}
+
                         {/* My Sets */}
                         {user && (
                             <section className="mb-10">

@@ -5,14 +5,10 @@ import { loadSlim } from "@tsparticles/slim";
 import { createReviewSession } from '../services/learningSession';
 import { getUserProgress } from '../services/user';
 import ReviewBox from '../components/UserDashboard/ReviewBox';
-import StatsChart from '../components/UserDashboard/StatsChart';
+import SrsStatsDashboard from '../components/UserDashboard/SrsStatsDashboard';
 import StruggleWordsBox from '../components/UserDashboard/StruggleWordsBox';
-// import ThemeRadarChart from '../components/UserDashboard/ThemeRadarChart';
-import RecommendedSetsBox from '../components/UserDashboard/RecommendedSetsBox';
 import ProfileCard from '../components/UserProfile/ProfileCard';
 import QuestList from '../components/DailyQuest/QuestList';
-import AchievementGrid from '../components/Achievement/AchievementGrid';
-import BadgeCaseWidget from '../components/UserDashboard/BadgeCaseWidget';
 import type { UserProgressDto } from '../types/UserDto';
 
 const UserDashboard: React.FC = () => {
@@ -96,26 +92,25 @@ const UserDashboard: React.FC = () => {
         }}
         className="absolute inset-0"
       />
-      <div className="container mx-auto w-full sm:w-10/12 lg:w-7/12 flex flex-col sm:flex-row items-start gap-6 sm:gap-8 pt-16 sm:pt-20 pb-6 sm:pb-10 relative z-10">
+      <div className="container mx-auto w-full sm:w-10/12 lg:w-8/12 xl:w-7/12 flex flex-col sm:flex-row items-start gap-6 sm:gap-8 pt-16 sm:pt-20 pb-6 sm:pb-10 relative z-10">
+        {/* Cột trái: Review, Biểu đồ thống kê và Từ vựng cần rèn luyện */}
         <div className="w-full sm:w-7/12 space-y-6">
           <ReviewBox
             progress={dashboard}
             loading={loading}
             onCreateReviewSession={handleCreateReviewSession}
           />
-          <StatsChart progress={dashboard} />
-          {dashboard && <StruggleWordsBox struggleWords={dashboard.struggleWords || []} />}
-          {/* {dashboard?.themePreferences && dashboard.themePreferences.length > 0 && (
-            <ThemeRadarChart preferences={dashboard.themePreferences} />
-          )} */}
-          <RecommendedSetsBox
-            recommendedSets={dashboard?.recommendedSets ?? []}
-            onAdded={() => setDashboard(prev => prev ? { ...prev, recommendedSets: [] } : prev)}
-          />
-          <BadgeCaseWidget />
-          <AchievementGrid />
+          <SrsStatsDashboard progress={dashboard} />
+          {dashboard && (
+            <StruggleWordsBox
+              struggleWords={dashboard.struggleWords || []}
+              onCreateReviewSession={handleCreateReviewSession}
+            />
+          )}
         </div>
-        <div className="w-full sm:w-5/12">
+
+        {/* Cột phải: Profile Card, Quests */}
+        <div className="w-full sm:w-5/12 space-y-6">
           <ProfileCard />
           <QuestList />
         </div>
