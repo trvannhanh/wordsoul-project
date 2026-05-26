@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using WordSoul.Application.Common;
 using WordSoul.Application.DTOs.SRS;
 using WordSoul.Application.Interfaces;
@@ -73,6 +73,11 @@ namespace WordSoul.Application.Services.SRS
             progress.LastGrade = grade;
             progress.LastUpdated = _timeProvider.UtcNow;
 
+            progress.TotalAttempt++;
+            if (grade >= 3)
+            {
+                progress.CorrectAttempt++;
+            }
 
             // Calculate retention score
             var retentionScore = _algorithm.CalculateRetentionScore(
