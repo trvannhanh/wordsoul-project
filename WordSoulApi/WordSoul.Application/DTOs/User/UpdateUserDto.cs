@@ -1,10 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace WordSoul.Application.DTOs.User
 {
     public class UpdateUserDto
     {
-        public string Username { get; set; } = string.Empty;
+        public string? Username { get; set; }
+        public string? AvatarUrl { get; set; }
     }
 
     public class AssignRoleDto

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using WordSoul.Application.DTOs.Pet;
 using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
@@ -202,6 +202,8 @@ namespace WordSoul.Application.Services
                 break; // Chỉ tiến hóa 1 lần mỗi lần gọi
             }
 
+            var user = await _uow.User.GetUserByIdAsync(userId, cancellationToken);
+
             await _uow.UserOwnedPet.UpdateUserOwnedPetAsync(ownedPet, cancellationToken);
             await _uow.SaveChangesAsync(cancellationToken);
 
@@ -212,7 +214,7 @@ namespace WordSoul.Application.Services
                 Experience = ownedPet.Experience,
                 IsLevelUp = isLevelUp,
                 IsEvolved = isEvolve,
-                //EvolvedToPetId = evolvedToPetId
+                AP = user?.AP ?? 0
             };
         }
 

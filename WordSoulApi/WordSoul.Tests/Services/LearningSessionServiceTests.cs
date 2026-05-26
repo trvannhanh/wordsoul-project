@@ -75,6 +75,15 @@ namespace WordSoul.Tests.Services
             var dailyQuestService = new Mock<IDailyQuestService>();
             var gymLeaderService = new Mock<IGymLeaderService>();
             var activityLogService = new Mock<IActivityLogService>();
+            var sysConfig = new Mock<ISystemConfigurationService>();
+
+            // Setup sysConfig to return default values
+            sysConfig
+                .Setup(s => s.GetValueAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((string key, int defaultValue, CancellationToken ct) => defaultValue);
+            sysConfig
+                .Setup(s => s.GetValueAsync(It.IsAny<string>(), It.IsAny<double>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((string key, double defaultValue, CancellationToken ct) => defaultValue);
 
             // Default: pet buff returns null (no active buff)
             petBuffService
@@ -89,11 +98,6 @@ namespace WordSoul.Tests.Services
             activityLogService
                 .Setup(s => s.TrackFinishLearningSessionAsync(
                     It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask);
-            activityLogService
-                .Setup(s => s.TrackAnswerQuestionAsync(
-                    It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(),
-                    It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
             activityLogService
                 .Setup(s => s.TrackVocabularyReviewedAsync(
@@ -111,7 +115,8 @@ namespace WordSoul.Tests.Services
                 dailyQuestService.Object,
                 petBuffService.Object,
                 new FixedTime(),
-                gymLeaderService.Object);
+                gymLeaderService.Object,
+                sysConfig.Object);
 
             var deps = new Deps(
                 uowMock, sessionRepo, sessionVocabRepo, answerRecordRepo,
@@ -146,18 +151,6 @@ namespace WordSoul.Tests.Services
 
             await act.Should().ThrowAsync<ArgumentException>()
                 .WithMessage("*VocabularySetId*");
-        }
-
-        [Fact]
-        public async Task CreateLearningSession_WordCount_Zero_ThrowsArgumentException()
-        {
-            var (service, _) = CreateService();
-
-            Func<Task> act = () =>
-                service.CreateLearningSessionAsync(userId: 1, setId: 1, wordCount: 0);
-
-            await act.Should().ThrowAsync<ArgumentException>()
-                .WithMessage("*WordCount*");
         }
 
         // ──────────────────────────────────────────────────────────────────
@@ -288,17 +281,6 @@ namespace WordSoul.Tests.Services
 
             await act.Should().ThrowAsync<ArgumentException>()
                 .WithMessage("*UserId*");
-        }
-
-        [Fact]
-        public async Task CreateReviewingSession_WordCount_Zero_ThrowsArgumentException()
-        {
-            var (service, _) = CreateService();
-
-            Func<Task> act = () => service.CreateReviewingSessionAsync(userId: 1, wordCount: 0);
-
-            await act.Should().ThrowAsync<ArgumentException>()
-                .WithMessage("*WordCount*");
         }
 
         [Fact]

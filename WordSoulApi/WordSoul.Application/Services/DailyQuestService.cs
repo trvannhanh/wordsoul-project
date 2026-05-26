@@ -1,4 +1,4 @@
-﻿
+
 using Microsoft.Extensions.Logging;
 using WordSoul.Application.DTOs.DailyQuest;
 using WordSoul.Application.Interfaces;
@@ -66,8 +66,17 @@ namespace WordSoul.Application.Services
             DateTime date,
             CancellationToken ct = default)
         {
-            return await _uow.UserDailyQuest
+            var quests = await _uow.UserDailyQuest
                 .GetUserDailyQuestsByUserAndDateAsync(userId, date.Date, ct);
+
+            if (quests.Count == 0 && date.Date == DateTime.UtcNow.Date)
+            {
+                await GenerateDailyQuestsForUserAsync(userId, ct);
+                quests = await _uow.UserDailyQuest
+                    .GetUserDailyQuestsByUserAndDateAsync(userId, date.Date, ct);
+            }
+
+            return quests;
         }
 
         //  Lấy danh sách quest template đang active

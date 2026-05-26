@@ -69,3 +69,19 @@ export const consumeHint = async (): Promise<{ message: string }> => {
   const response = await authApi.post<{ message: string }>(endpoints.consumeHint);
   return response.data;
 };
+
+export const updateUserProfile = async (userId: number, profileData: { username?: string; avatarUrl?: string }): Promise<UserDto> => {
+  const response = await authApi.put<UserDto>(endpoints.user(userId), profileData);
+  return response.data;
+};
+
+export const uploadUserAvatar = async (file: File): Promise<UserDto> => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await authApi.post<UserDto>(endpoints.uploadAvatar, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+};

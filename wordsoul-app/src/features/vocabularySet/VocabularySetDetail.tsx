@@ -327,6 +327,7 @@ const VocabularySetDetail: React.FC = () => {
   if (!meta) return <div className="text-center py-8">No data available</div>;
 
   const masteredPct = progress ? Math.round((progress.masteredCount / Math.max(progress.totalVocabularies, 1)) * 100) : 0;
+  const actualNewCount = progress ? Math.max(0, progress.totalVocabularies - (progress.masteredCount + progress.reviewCount + progress.learningCount)) : 0;
 
   return (
     <>
@@ -373,7 +374,7 @@ const VocabularySetDetail: React.FC = () => {
                     { v: progress.masteredCount, color: '#22c55e' },
                     { v: progress.reviewCount,   color: '#eab308' },
                     { v: progress.learningCount, color: '#3b82f6' },
-                    { v: progress.newCount,      color: '#4b5563' },
+                    { v: actualNewCount,         color: '#4b5563' },
                   ];
                   let cum = 0;
                   const arcs = segs.map(s => {
@@ -401,7 +402,7 @@ const VocabularySetDetail: React.FC = () => {
                     { label: 'Đã thuộc',  count: progress.masteredCount, color: 'bg-green-500',  text: 'text-green-400' },
                     { label: 'Cần ôn',    count: progress.reviewCount,   color: 'bg-yellow-500', text: 'text-yellow-400' },
                     { label: 'Đang học',  count: progress.learningCount, color: 'bg-blue-500',   text: 'text-blue-400' },
-                    { label: 'Chưa học',  count: progress.newCount,      color: 'bg-gray-600',   text: 'text-gray-400' },
+                    { label: 'Chưa học',  count: actualNewCount,         color: 'bg-gray-600',   text: 'text-gray-400' },
                   ].map(s => (
                     <div key={s.label} className="flex items-center gap-2 text-xs">
                       <span className={`w-16 ${s.text} font-semibold`}>{s.label}</span>

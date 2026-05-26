@@ -77,7 +77,7 @@ namespace WordSoul.Application.Interfaces.Services
         /// <param name="dto">Thông tin cần cập nhật.</param>
         /// <param name="cancellationToken">Token để hủy thao tác.</param>
         /// <returns>Bản ghi người dùng sau khi cập nhật.</returns>
-        Task<UserDto> UpdateUserAsync(
+        Task<UserDetailDto> UpdateUserAsync(
             int id,
             UpdateUserDto dto,
             CancellationToken cancellationToken = default);

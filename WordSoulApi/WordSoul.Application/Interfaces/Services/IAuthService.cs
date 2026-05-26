@@ -28,6 +28,6 @@ namespace WordSoul.Application.Interfaces.Services
         /// Xử lý luồng đăng nhập bằng Google OAuth (Authorization Code Flow).
         /// Nhận code từ Google callback, exchange lấy token và profile, tìm/tạo user.
         /// </summary>
-        Task<TokenResponseDto?> GoogleLoginAsync(string code, CancellationToken ct = default);
+        Task<TokenResponseDto?> GoogleLoginAsync(string code, int? starterPetId = null, CancellationToken ct = default);
     }
 }

@@ -551,7 +551,7 @@ namespace WordSoul.Application.Services
                     UserPetLevel = petUpgraded.Level,
                     UserPetIsLevelUp = petUpgraded.IsLevelUp,
                     UserPetIsEvolved = petUpgraded.IsEvolved,
-                    Message = "Reviewing session completed! You earned XP and AP!"
+                    Message = "Phiên ôn tập đã hoàn thành! Bạn đã nhận được kinh nghiệm và điểm nâng cấp thú!"
                 };
             }
         }
@@ -595,7 +595,14 @@ namespace WordSoul.Application.Services
                 progress.TotalAttempt++;
 
                 if (isCorrect)
+                {
                     progress.CorrectAttempt++;
+                    progress.CorrectCount++;
+                }
+                else
+                {
+                    progress.WrongCount++;
+                }
             }
 
             // Lưu AnswerRecord
@@ -686,9 +693,19 @@ namespace WordSoul.Application.Services
 
                 await _activityLogService.TrackVocabularyReviewedAsync(userId, vocab.Id, ct);
             }
-
-
-            await _activityLogService.TrackAnswerQuestionAsync(userId, vocab.Id, isCorrect);
+            else if (session.Type == SessionType.Learning && sessionVocab.IsCompleted)
+            {
+                if (progress != null)
+                {
+                    progress.MemoryState = "Learning";
+                    if (progress.FirstLearnedAt == null)
+                    {
+                        progress.FirstLearnedAt = _timeProvider.UtcNow;
+                    }
+                    await _uow.UserVocabularyProgress.UpdateSrsParametersAsync(progress, ct);
+                    await _uow.SaveChangesAsync(ct);
+                }
+            }
 
             return new SubmitAnswerResponseDto
             {

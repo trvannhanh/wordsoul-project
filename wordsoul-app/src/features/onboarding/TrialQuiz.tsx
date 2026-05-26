@@ -54,21 +54,16 @@ const TrialQuiz: React.FC<TrialQuizProps> = ({ onComplete, onExit }) => {
     const handleAnswer = useCallback(async (
         question: QuizQuestionDto,
         answer: string,
-        onAnswerProcessed: () => void,
-        _onResult?: (isCorrect: boolean) => void,
-        _responseTime?: number
+        onResult?: (isCorrect: boolean) => void,
+        _responseTimeSeconds?: number,
+        _usedHintCount?: number
     ): Promise<boolean> => {
         const correct = question.questionType === QuestionTypeEnum.Flashcard
             ? answer.trim().toLowerCase() === 'viewed'
             : answer.trim().toLowerCase() === question.meaning?.toLowerCase();
 
         if (correct) setCorrectAnswered(c => c + 1);
-        _onResult?.(correct);
-
-        // Wait for AnswerScreen popup to finish, then move to next
-        setTimeout(() => {
-            onAnswerProcessed();
-        }, 2500);
+        onResult?.(correct);
 
         return correct;
     }, []);
@@ -86,8 +81,12 @@ const TrialQuiz: React.FC<TrialQuizProps> = ({ onComplete, onExit }) => {
     const handleShowPopup = useCallback((q: QuizQuestionDto) => {
         setAnsweredQuestion(q);
         setShowPopup(true);
-        setTimeout(() => { setShowPopup(false); setAnsweredQuestion(null); }, 2500);
-    }, []);
+        setTimeout(() => {
+            setShowPopup(false);
+            setAnsweredQuestion(null);
+            loadNextQuestion();
+        }, 2500);
+    }, [loadNextQuestion]);
 
     return (
         <div className="h-screen w-screen bg-gray-900 flex flex-col items-center justify-between pixel-background relative overflow-hidden">
@@ -133,7 +132,6 @@ const TrialQuiz: React.FC<TrialQuizProps> = ({ onComplete, onExit }) => {
                                 loading={false}
                                 error={null}
                                 handleAnswer={handleAnswer}
-                                loadNextQuestion={loadNextQuestion}
                                 showPopup={handleShowPopup}
                             />
                         )}

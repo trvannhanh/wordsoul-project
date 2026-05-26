@@ -3,7 +3,7 @@ import { useParams, useSearchParams, useNavigate, useLocation } from "react-rout
 import { motion, AnimatePresence } from "framer-motion";
 import GameScreen from "../../components/LearningSession/GameScreen";
 import AnswerScreen from "../../components/LearningSession/AnswerScreen";
-import ReviewLayout from "../../components/LearningSession/ReviewLayout";
+import ReviewLayout, { type ReviewLayoutHandle } from "../../components/LearningSession/ReviewLayout";
 import PetScreen from "../../components/LearningSession/PetScreen";
 import PokemonEncounterIntro from "../../components/LearningSession/PokemonEncounterIntro";
 import MilestoneOverlay from "../../components/LearningSession/MilestoneOverlay";
@@ -52,7 +52,6 @@ const LearningSession: React.FC = () => {
     showRewardAnimation,
     captureComplete,
     setCaptureComplete,
-    loadNextQuestion,
     catchRate: currentCatchRate,
     hintBalance,
     setHintBalance,
@@ -102,6 +101,7 @@ const LearningSession: React.FC = () => {
   } | null>(null);
 
   const [buffPet, setBuffPet] = useState<PetDto | null>(null);
+  const reviewLayoutRef = useRef<ReviewLayoutHandle | null>(null);
 
   // Cleanup speech synthesis and timeouts on unmount
   useEffect(() => {
@@ -260,8 +260,13 @@ const LearningSession: React.FC = () => {
     window.speechSynthesis.cancel();
     setIsPlayingWordAudio(false);
     setIsPlayingExampleAudio(false);
+
+    if (mode === "review" && reviewLayoutRef.current) {
+      reviewLayoutRef.current.triggerBerryDrop();
+    }
+
     originalConfirmAndNext();
-  }, [originalConfirmAndNext]);
+  }, [originalConfirmAndNext, mode]);
 
   const handleShowPopup = useCallback((question: QuizQuestionDto) => {
     setAnsweredQuestion(question);
@@ -271,14 +276,14 @@ const LearningSession: React.FC = () => {
       clearTimeout(audioTimeoutRef.current);
     }
 
-    // Auto-play pronunciation audio with a 1.2-second delay to avoid clashing with feedback sounds
+    // Auto-play pronunciation audio with a 0.6-second delay to avoid clashing with feedback sounds
     audioTimeoutRef.current = setTimeout(() => {
       if (question.pronunciationUrl) {
         const audio = new Audio(question.pronunciationUrl);
         cardAudioRef.current = audio;
         audio.play().catch(() => { /* autoplay may be blocked on some browsers */ });
       }
-    }, 1200);
+    }, 600);
   }, []);
 
   const getMessage = () => {
@@ -353,7 +358,6 @@ const LearningSession: React.FC = () => {
                   error={error}
                   handleAnswer={handleAnswer}
                   confirmAndNext={confirmAndNext}
-                  loadNextQuestion={loadNextQuestion}
                   showPopup={handleShowPopup}
                   hintBalance={hintBalance}
                   setHintBalance={setHintBalance}
@@ -368,12 +372,12 @@ const LearningSession: React.FC = () => {
         {mode === "review" && (
           <div className="flex-1 overflow-hidden">
             <ReviewLayout
+              ref={reviewLayoutRef}
               question={currentQuestion}
               loading={loading}
               error={error}
               handleAnswer={handleAnswer}
               confirmAndNext={confirmAndNext}
-              loadNextQuestion={loadNextQuestion}
               showPopup={handleShowPopup}
               hintBalance={hintBalance}
               setHintBalance={setHintBalance}
@@ -479,19 +483,32 @@ const LearningSession: React.FC = () => {
                 />
               )}
 
-              {/* Example sentence / Description */}
-              {(answeredQuestion.exampleSentence || answeredQuestion.description) && (
-                <div className="flex items-start gap-2 border-l-4 border-indigo-500 pl-3 bg-gray-900 bg-opacity-40 p-3 rounded mb-4 text-left">
-                  <p className="text-sm italic text-gray-300 flex-1 leading-relaxed">
-                    "{answeredQuestion.exampleSentence || answeredQuestion.description}"
+              {/* Description */}
+              {answeredQuestion.description && (
+                <div className="border-l-4 border-emerald-500 pl-3 bg-gray-900 bg-opacity-40 p-3 rounded mb-3 text-left">
+                  <p className="text-xs text-emerald-400 font-pixel uppercase tracking-wider mb-1">Định nghĩa</p>
+                  <p className="text-sm text-gray-200 leading-relaxed font-sans">
+                    {answeredQuestion.description}
                   </p>
+                </div>
+              )}
+
+              {/* Example sentence */}
+              {answeredQuestion.exampleSentence && (
+                <div className="flex items-start gap-2 border-l-4 border-indigo-500 pl-3 bg-gray-900 bg-opacity-40 p-3 rounded mb-4 text-left">
+                  <div className="flex-1">
+                    <p className="text-xs text-indigo-400 font-pixel uppercase tracking-wider mb-1">Ví dụ</p>
+                    <p className="text-sm italic text-gray-300 leading-relaxed font-sans">
+                      "{answeredQuestion.exampleSentence}"
+                    </p>
+                  </div>
                   <button
                     onClick={() => playExampleAudio(
-                      answeredQuestion.exampleSentence || answeredQuestion.description!,
+                      answeredQuestion.exampleSentence!,
                       answeredQuestion.exampleSentenceAudioUrl
                     )}
                     disabled={isPlayingExampleAudio}
-                    className="text-teal-400 hover:text-teal-300 disabled:opacity-50 transition-colors p-1 flex-shrink-0"
+                    className="text-teal-400 hover:text-teal-300 disabled:opacity-50 transition-colors p-1 flex-shrink-0 self-center"
                     title="Phát câu ví dụ"
                   >
                     {isPlayingExampleAudio ? (
@@ -569,7 +586,7 @@ const LearningSession: React.FC = () => {
                         animate={{ scale: [1, 1.05, 1] }}
                         transition={{ duration: 2, repeat: Infinity }}
                       >
-                        {userPet.name} đã no rồi! 🍖
+                        {userPet.name} đã no rồi!
                       </motion.p>
                     </>
                   ) : (
@@ -578,7 +595,7 @@ const LearningSession: React.FC = () => {
                       animate={{ scale: [1, 1.05, 1] }}
                       transition={{ duration: 2, repeat: Infinity }}
                     >
-                      🍖 Phiên ôn tập hoàn thành!
+                      Phiên ôn tập hoàn thành!
                     </motion.p>
                   )}
                 </motion.div>
@@ -594,11 +611,11 @@ const LearningSession: React.FC = () => {
 
               <div className="space-y-2 mb-4">
                 <motion.p className="text-green-400 font-pixel">
-                  💰 XP: +{sessionData.xpEarned}
+                  Kinh nghiệm: +{sessionData.xpEarned}
                 </motion.p>
                 {mode === "review" && "apEarned" in sessionData && (
                   <motion.p className="text-blue-400 font-pixel">
-                    💎 AP: +{sessionData.apEarned}
+                    Điểm nâng cấp: +{sessionData.apEarned}
                   </motion.p>
                 )}
               </div>
@@ -640,7 +657,7 @@ const LearningSession: React.FC = () => {
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.8 }}
               >
-                🎉 Đóng & Về Dashboard
+                Đóng
               </motion.button>
             </div>
           </motion.div>

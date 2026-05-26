@@ -206,7 +206,7 @@ const Pets: React.FC = () => {
         )}
 
         {!hasMore && pets.length > 0 && (
-          <div className="text-center py-4 text-gray-400">No more pets to load</div>
+          <div className="text-center py-4 text-gray-400">Không còn thú nào để tải thêm</div>
         )}
 
         {/* Nút Back to Top (chỉ hiển thị trên mobile) */}

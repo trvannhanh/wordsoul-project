@@ -723,7 +723,9 @@ namespace WordSoul.Infrastructure.Persistence
 
             // Lấy thông tin opponent
             int opponentId = isChallenger ? session.OpponentUserId!.Value : session.ChallengerUserId;
-            var opponent = await _db.Users.FindAsync([opponentId], ct);
+            var opponent = await _db.Users
+                .Include(u => u.UserOwnedPets).ThenInclude(uop => uop.Pet)
+                .FirstOrDefaultAsync(u => u.Id == opponentId, ct);
 
             return new BattleStartedDto
             {
@@ -735,7 +737,7 @@ namespace WordSoul.Infrastructure.Persistence
                 Opponent = new OpponentInfoDto
                 {
                     Name = opponent?.Username ?? "",
-                    AvatarUrl = opponent?.AvatarUrl,
+                    AvatarUrl = opponent?.AvatarUrl ?? opponent?.UserOwnedPets?.FirstOrDefault(p => p.IsActive)?.Pet.ImageUrl,
                     IsBot = false
                 },
                 // IsP1 sẽ được set ở Hub 

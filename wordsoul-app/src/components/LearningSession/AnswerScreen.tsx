@@ -15,7 +15,7 @@ interface AnswerScreenProps {
     usedHintCount?: number
   ) => Promise<boolean>;
   /** Called when user explicitly confirms to go to next question */
-  confirmAndNext: () => void;
+  confirmAndNext?: () => void;
   showPopup: (question: QuizQuestionDto) => void;
   hintBalance?: number;
   setHintBalance?: (value: number) => void;
@@ -29,7 +29,6 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
   loading,
   error,
   handleAnswer,
-  confirmAndNext,
   showPopup,
   hintBalance,
   setHintBalance,
@@ -109,16 +108,6 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
     showPopup(question);
     // Enter "waiting for confirm" mode — user must press "Tiếp theo"
     setWaitingConfirm(true);
-  };
-
-  /** User pressed "Tiếp theo" — reset timing and load next question */
-  const handleConfirmNext = () => {
-    setWaitingConfirm(false);
-    setShowFeedback(false);
-    setAnswerFeedback(null);
-    // startTimeRef will be reset in the question useEffect when new question arrives
-    startTimeRef.current = Date.now();
-    confirmAndNext();
   };
 
   const handlePlayAudio = () => {
@@ -256,7 +245,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
         </AnimatePresence>
 
         {/* Retry badge */}
-        <AnimatePresence>
+        {/* <AnimatePresence>
           {question.isRetry && !showFeedback && (
             <motion.div
               className="absolute top-2 right-3 z-10 font-pixel text-orange-300 bg-orange-950 border border-orange-700 px-2 py-0.5 rounded-full text-xs"
@@ -267,7 +256,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
               🔄 Thử lại
             </motion.div>
           )}
-        </AnimatePresence>
+        </AnimatePresence> */}
 
         {/* ── Question UI ── */}
         {(() => {
@@ -281,7 +270,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  ✓ Đã Xem
+                  Đã Xem
                 </motion.button>
               );
 

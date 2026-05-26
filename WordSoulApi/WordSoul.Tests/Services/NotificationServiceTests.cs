@@ -29,6 +29,7 @@ public class NotificationServiceTests
         var uow         = new Mock<IUnitOfWork>();
         var userRepo    = new Mock<IUserRepository>();
         var activityLog = new Mock<IActivityLogService>();
+        var fcmService  = new Mock<IFcmService>();
 
         uow.Setup(u => u.User).Returns(userRepo.Object);
         uow.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
@@ -59,7 +60,8 @@ public class NotificationServiceTests
             realtime.Object,
             uow.Object,
             activityLog.Object,
-            new Mock<ILogger<NotificationService>>().Object);
+            new Mock<ILogger<NotificationService>>().Object,
+            fcmService.Object);
 
         return (service, new Deps(notifRepo, realtime, uow, userRepo, activityLog));
     }

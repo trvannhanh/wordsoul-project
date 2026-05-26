@@ -8,7 +8,7 @@ import { useFCM } from "../hooks/useFCM";
 const Header: React.FC = () => {
     const { user, logout } = useAuth();
     const { notifications, setNotifications } = useNotifications(user?.id);
-    const { fcmToken } = useFCM(!!user);
+    useFCM(!!user);
     const [isNotificationSidebarOpen, setIsNotificationSidebarOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {

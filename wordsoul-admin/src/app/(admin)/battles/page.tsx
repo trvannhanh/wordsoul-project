@@ -428,8 +428,10 @@ export default function BattlesPage() {
         }
         open={replayOpen}
         onClose={() => setReplayOpen(false)}
-        style={{ width: 760 }}
-        styles={{ body: { padding: '16px 20px' } }}
+        styles={{
+          wrapper: { width: 760 },
+          body: { padding: '16px 20px' }
+        }}
       >
         {loadingReplay ? (
           <div style={{ textAlign: 'center', padding: 60 }}><Spin /></div>

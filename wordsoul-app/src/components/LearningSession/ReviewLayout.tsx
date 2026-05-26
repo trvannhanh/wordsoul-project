@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback, useRef, useEffect, useImperativeHandle, forwardRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Variants } from "framer-motion";
 import GameScreen from "./GameScreen";
@@ -79,7 +79,6 @@ interface ReviewLayoutProps {
     ) => Promise<boolean>;
     /** Called when user explicitly confirms to go to next question */
     confirmAndNext: () => void;
-    loadNextQuestion: () => void;
     showPopup: (question: QuizQuestionDto) => void;
     hintBalance?: number;
     setHintBalance?: (value: number) => void;
@@ -258,19 +257,22 @@ const PetSprite: React.FC<{
 // ─────────────────────────────────────────────────────────────────────────────
 // ReviewLayout
 // ─────────────────────────────────────────────────────────────────────────────
-const ReviewLayout: React.FC<ReviewLayoutProps> = ({
+export interface ReviewLayoutHandle {
+  triggerBerryDrop: () => void;
+}
+
+const ReviewLayout = forwardRef<ReviewLayoutHandle, ReviewLayoutProps>(({
     question,
     loading,
     error,
     handleAnswer,
     confirmAndNext,
-    loadNextQuestion,
     showPopup,
     hintBalance,
     setHintBalance,
     userPet,
     comboCount = 0,
-}) => {
+}, ref) => {
     const [petMood, setPetMood] = useState<PetMood>("idle");
     const [reactionText, setReactionText] = useState("Cùng ôn bài nào!");
     const [streak, setStreak] = useState(0);
@@ -371,6 +373,39 @@ const ReviewLayout: React.FC<ReviewLayoutProps> = ({
         // Call parent confirmAndNext
         confirmAndNext();
     }, [confirmAndNext, dropBerries]);
+
+    useImperativeHandle(ref, () => ({
+        triggerBerryDrop: () => {
+            if (pendingBerriesRef.current !== null) {
+                const count = pendingBerriesRef.current;
+                pendingBerriesRef.current = null; // Clear it
+
+                // Start berry dropping animation
+                dropBerries(count);
+
+                clearPetTimeouts();
+
+                // After berries land (920ms) -> eating animation
+                petActionTimeoutRef.current = setTimeout(() => {
+                    setPetMood("eating");
+                    setReactionText(pickMsg("eating"));
+                    setEatBurst(true);
+                    
+                    setTimeout(() => setEatBurst(false), 560);
+
+                    // Back to idle after eating finishes (1800ms)
+                    petActionTimeoutRef.current = setTimeout(() => {
+                        setPetMood("idle");
+                        setIdleIdx((i) => {
+                            const msgs = REACTION["idle"];
+                            setReactionText(msgs[i % msgs.length]);
+                            return i + 1;
+                        });
+                    }, 1800);
+                }, 920);
+            }
+        }
+    }), [dropBerries]);
 
     // Mood → style tokens
     const borderColor: Record<PetMood, string> = {
@@ -578,7 +613,6 @@ const ReviewLayout: React.FC<ReviewLayoutProps> = ({
                             error={error}
                             handleAnswer={handleAnswer}
                             confirmAndNext={handleConfirmAndNext}
-                            loadNextQuestion={loadNextQuestion}
                             showPopup={showPopup}
                             hintBalance={hintBalance}
                             setHintBalance={setHintBalance}
@@ -590,6 +624,6 @@ const ReviewLayout: React.FC<ReviewLayoutProps> = ({
             </div>
         </div>
     );
-};
+});
 
 export default ReviewLayout;

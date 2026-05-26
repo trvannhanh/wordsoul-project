@@ -22,6 +22,7 @@ export const endpoints = {
   AllUserActivities: '/users/activities', // Tất cả activity của user
   userActivities: (userId: number) => `/users/${userId}/activities`, // Activity của user chỉ định
   consumeHint: '/users/me/hints/consume', // Tiêu thụ Hint
+  uploadAvatar: '/users/me/avatar', // Tải lên ảnh đại diện
   userVocabularySets: (vocabularySetId: number) => `/users/vocabulary-sets/${vocabularySetId}`, // Danh sách bộ từ vựng của user
   userOwnedPet: (userId: number, petId: number) => `/users/${userId}/pets/${petId}`, // Pet của user chỉ định
 

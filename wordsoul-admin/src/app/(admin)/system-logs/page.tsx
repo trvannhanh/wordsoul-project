@@ -231,10 +231,12 @@ export default function SystemLogsPage() {
       <Drawer
         title="Request Details"
         placement="right"
-        width={700}
         onClose={() => setDrawerVisible(false)}
         open={drawerVisible}
-        styles={{ body: { padding: '20px' } }}
+        styles={{
+          wrapper: { width: 700 },
+          body: { padding: '20px' }
+        }}
       >
         {detailLoading ? (
           <div style={{ textAlign: 'center', marginTop: 100 }}><Spin size="large" /></div>

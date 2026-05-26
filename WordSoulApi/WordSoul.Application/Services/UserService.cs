@@ -86,7 +86,7 @@ namespace WordSoul.Application.Services
                 Level = user.XP / 100, // 100 XP = 1 level
                 StreakDays = streakDays,
                 PetCount = user.UserOwnedPets?.Count ?? 0,
-                AvatarUrl = activePet?.Pet.ImageUrl,
+                AvatarUrl = user.AvatarUrl ?? activePet?.Pet.ImageUrl,
                 PetActiveId = activePet?.PetId,
                 PvpRating = user.PvpRating,
                 PvpWins = user.PvpWins,
@@ -132,9 +132,9 @@ namespace WordSoul.Application.Services
         // ============================================================================
 
         /// <summary>
-        /// Cập nhật thông tin cơ bản của người dùng (admin only).
+        /// Cập nhật thông tin cơ bản của người dùng.
         /// </summary>
-        public async Task<UserDto> UpdateUserAsync(
+        public async Task<UserDetailDto> UpdateUserAsync(
             int id,
             UpdateUserDto dto,
             CancellationToken cancellationToken = default)
@@ -142,24 +142,30 @@ namespace WordSoul.Application.Services
             var user = await _uow.User.GetUserByIdAsync(id, cancellationToken)
                 ?? throw new KeyNotFoundException($"User with ID {id} not found.");
 
-            user.Username = dto.Username ?? user.Username;
-            user.Email = user.Email;
-            user.IsActive = user.IsActive;
+            if (dto.Username != null && dto.Username != user.Username)
+            {
+                if (await _uow.Auth.UserExistsAsync(dto.Username, cancellationToken))
+                {
+                    throw new ArgumentException("Tên người dùng đã tồn tại.");
+                }
+                user.Username = dto.Username;
+            }
+
+            if (dto.AvatarUrl == "clear" || dto.AvatarUrl == "")
+            {
+                user.AvatarUrl = null;
+            }
+            else if (!string.IsNullOrEmpty(dto.AvatarUrl))
+            {
+                user.AvatarUrl = dto.AvatarUrl;
+            }
 
             await _uow.User.UpdateUserAsync(user, cancellationToken);
             await _uow.SaveChangesAsync(cancellationToken);
 
-            _logger.LogInformation("User {UserId} updated by admin", id);
+            _logger.LogInformation("User {UserId} updated basic profile details", id);
 
-            return new UserDto
-            {
-                Id = user.Id,
-                Username = user.Username,
-                Email = user.Email,
-                Role = user.Role.ToString(),
-                CreatedAt = user.CreatedAt,
-                IsActive = user.IsActive
-            };
+            return await GetUserByIdAsync(id, cancellationToken);
         }
 
         /// <summary>

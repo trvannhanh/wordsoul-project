@@ -20,7 +20,7 @@ const ProfileCard: React.FC = () => {
           <img
             src={
               user?.avatarUrl ??
-              'https://res.cloudinary.com/dqpkxxzaf/image/upload/v1756453095/boy_c1k3lt.gif'
+              'https://res.cloudinary.com/dqpkxxzaf/image/upload/v1779778616/subtitute_jg49qb.jpg'
             }
             alt="avatar"
             className="w-full h-full object-cover pixelated rounded"

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using WordSoul.Application.Common.Constants;
 using WordSoul.Application.DTOs;
@@ -132,16 +132,6 @@ namespace WordSoul.Application.Services
                 $"Finished session {sessionId}",
                 ct);
         }
-
-        public Task TrackAnswerQuestionAsync(int userId, int vocabularyId, bool isCorrect, CancellationToken ct = default)
-        {
-            return CreateActivityLogAsync(
-                userId,
-                ActivityActions.AnswerQuestion,
-                $"VocabularyId={vocabularyId}, Correct={isCorrect}",
-                ct);
-        }
-
 
         public Task TrackVocabularyReviewedAsync(int userId, int vocabularyId, CancellationToken ct = default)
         {

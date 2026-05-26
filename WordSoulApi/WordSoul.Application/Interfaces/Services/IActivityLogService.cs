@@ -1,4 +1,4 @@
-﻿using WordSoul.Application.DTOs;
+using WordSoul.Application.DTOs;
 
 namespace WordSoul.Application.Interfaces.Services
 {
@@ -54,7 +54,6 @@ namespace WordSoul.Application.Interfaces.Services
 
         Task TrackStartLearningSessionAsync(int userId, int sessionId, CancellationToken ct = default);
         Task TrackFinishLearningSessionAsync(int userId, int sessionId, CancellationToken ct = default);
-        Task TrackAnswerQuestionAsync(int userId, int vocabularyId, bool isCorrect, CancellationToken ct = default);
         Task TrackVocabularyReviewedAsync(int userId, int vocabularyId, CancellationToken ct = default);
 
         Task TrackPetUnlockedAsync(int userId, int petId, CancellationToken ct = default);

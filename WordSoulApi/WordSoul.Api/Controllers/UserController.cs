@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WordSoul.Api.Extensions;
 using WordSoul.Application.DTOs.Pet;
@@ -20,9 +21,11 @@ namespace WordSoul.Api.Controllers
         private readonly IPetService _petService;
         private readonly IUserOwnedPetService _userOwnedPetService;
         private readonly IUserVocabularyProgressService _userVocabularyProgressService;
+        private readonly IUploadAssetsService _uploadAssetsService;
         public UserController(IUserService userService, IUserVocabularySetService userVocabularySetService, 
                                 IActivityLogService activityLogService, IPetService petService, 
-                                IUserOwnedPetService userOwnedPetService, IUserVocabularyProgressService userVocabularyProgressService)
+                                IUserOwnedPetService userOwnedPetService, IUserVocabularyProgressService userVocabularyProgressService,
+                                IUploadAssetsService uploadAssetsService)
         {
             _userService = userService;
             _userVocabularySetService = userVocabularySetService;
@@ -30,6 +33,7 @@ namespace WordSoul.Api.Controllers
             _petService = petService;
             _userOwnedPetService = userOwnedPetService;
             _userVocabularyProgressService = userVocabularyProgressService;
+            _uploadAssetsService = uploadAssetsService;
         }
 
         //------------------------------ POST -----------------------------------
@@ -141,8 +145,49 @@ namespace WordSoul.Api.Controllers
         public async Task<IActionResult> UpdateUser(int id, UpdateUserDto userDto, CancellationToken cancellationToken = default)
         {
             if (userDto == null) return BadRequest("User data is required.");
-            var updatedUser = await _userService.UpdateUserAsync(id, userDto, cancellationToken);
-            if (updatedUser == null) return NotFound();
+
+            var currentUserId = User.GetUserId();
+            if (currentUserId == 0) return Unauthorized();
+
+            // IDOR check: Chỉ Admin hoặc SuperAdmin mới có quyền chỉnh sửa tài khoản của người khác
+            if (!User.IsInRole("Admin") && !User.IsInRole("SuperAdmin") && currentUserId != id)
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                var updatedUser = await _userService.UpdateUserAsync(id, userDto, cancellationToken);
+                if (updatedUser == null) return NotFound();
+                return Ok(updatedUser);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+        }
+
+        // POST: api/users/me/avatar : Tải lên avatar cho người dùng hiện tại
+        [Authorize(Roles = "Admin,SuperAdmin,User")]
+        [HttpPost("me/avatar")]
+        public async Task<IActionResult> UploadAvatar(IFormFile file, CancellationToken cancellationToken)
+        {
+            var userId = User.GetUserId();
+            if (userId == 0) return Unauthorized();
+
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("Không có tệp nào được tải lên.");
+            }
+
+            var (url, _) = await _uploadAssetsService.UploadImageAsync(file, "avatars");
+            if (string.IsNullOrEmpty(url))
+            {
+                return BadRequest("Tải ảnh lên Cloudinary thất bại.");
+            }
+
+            var updateDto = new UpdateUserDto { AvatarUrl = url };
+            var updatedUser = await _userService.UpdateUserAsync(userId, updateDto, cancellationToken);
             return Ok(updatedUser);
         }
 

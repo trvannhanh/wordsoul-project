@@ -43,6 +43,9 @@ const GoogleCallback: React.FC = () => {
         });
         setUser(res.data);
 
+        // Xóa pet ID tạm thời ở localStorage
+        localStorage.removeItem('onboarding_starter_pet_id');
+
         navigate("/home", { replace: true });
       } catch {
         navigate("/login?googleError=Đã xảy ra lỗi khi lấy thông tin tài khoản.", { replace: true });
