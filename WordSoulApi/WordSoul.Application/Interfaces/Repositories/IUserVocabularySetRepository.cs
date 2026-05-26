@@ -36,5 +36,14 @@ namespace WordSoul.Application.Interfaces.Repositories
         Task UpdateUserVocabularySetAsync(
             UserVocabularySet userVocabularySet,
             CancellationToken cancellationToken = default);
+
+        // ----------------------------- DELETE -----------------------------
+        /// <summary>
+        /// Xóa (hủy đăng ký) bộ từ vựng khỏi danh sách của người dùng.
+        /// </summary>
+        Task<bool> RemoveUserVocabularySetAsync(
+            int userId,
+            int vocabularySetId,
+            CancellationToken cancellationToken = default);
     }
 }

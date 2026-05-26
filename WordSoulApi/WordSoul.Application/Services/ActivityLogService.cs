@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using WordSoul.Application.Common.Constants;
 using WordSoul.Application.DTOs;
@@ -132,16 +132,6 @@ namespace WordSoul.Application.Services
                 $"Finished session {sessionId}",
                 ct);
         }
-
-        public Task TrackAnswerQuestionAsync(int userId, int vocabularyId, bool isCorrect, CancellationToken ct = default)
-        {
-            return CreateActivityLogAsync(
-                userId,
-                ActivityActions.AnswerQuestion,
-                $"VocabularyId={vocabularyId}, Correct={isCorrect}",
-                ct);
-        }
-
 
         public Task TrackVocabularyReviewedAsync(int userId, int vocabularyId, CancellationToken ct = default)
         {
@@ -346,6 +336,25 @@ namespace WordSoul.Application.Services
                 Details = log.Details,
                 Timestamp = log.Timestamp
             };
+        }
+
+        public async Task<(List<ActivityLogDto> Items, int Total)> GetAdminLogsAsync(
+            string? action = null,
+            int? userId = null,
+            DateTime? fromDate = null,
+            DateTime? toDate = null,
+            int pageNumber = 1,
+            int pageSize = 20,
+            CancellationToken ct = default)
+        {
+            if (pageNumber < 1 || pageSize < 1)
+                throw new ArgumentException("pageNumber and pageSize must be greater than 0.");
+            if (pageSize > 100) pageSize = 100;
+
+            var (logs, total) = await _uow.ActivityLog
+                .GetAdminLogsAsync(action, userId, fromDate, toDate, pageNumber, pageSize, ct);
+
+            return (logs.Select(MapToDto).ToList(), total);
         }
     }
 }

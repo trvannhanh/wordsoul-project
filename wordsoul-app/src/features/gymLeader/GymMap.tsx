@@ -78,7 +78,7 @@ export default function GymMap() {
         <h1 className="font-press text-2xl md:text-3xl mb-2" style={{ color: '#f6e05e', textShadow: '0 0 20px #f6e05e88' }}>
           JOHTO & KANTO GYM CIRCUIT
         </h1>
-        <p className="text-gray-300 font-noto text-base mb-4">Challenge 16 Gym Leaders to prove your vocabulary mastery</p>
+        <p className="text-gray-300 font-noto text-base mb-4">Thách đấu 16 huấn luyện viên để chứng minh khả năng làm chủ từ vựng của bạn.</p>
         {/* Badge case */}
         <div className="inline-flex flex-wrap justify-center gap-3 bg-black/40 rounded-xl px-6 py-3 border border-yellow-400/30">
           {gyms.map(gym => (

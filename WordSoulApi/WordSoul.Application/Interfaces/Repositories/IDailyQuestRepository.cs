@@ -14,5 +14,6 @@ namespace WordSoul.Application.Interfaces.Repositories
 
         Task CreateQuestAsync(DailyQuest quest, CancellationToken ct = default);
         Task UpdateQuestAsync(DailyQuest quest, CancellationToken ct = default);
+        Task<bool> DeleteQuestAsync(int questId, CancellationToken ct = default);
     }
 }

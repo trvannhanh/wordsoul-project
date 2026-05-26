@@ -19,6 +19,7 @@ namespace WordSoul.Application.Services
     /// </summary>
     public class AuthService : IAuthService
     {
+        private const string DefaultSubstituteAvatarUrl = "https://res.cloudinary.com/dqpkxxzaf/image/upload/v1779778616/subtitute_jg49qb.jpg";
         private readonly IUnitOfWork _uow;
         private readonly IConfiguration _configuration;
         private readonly IActivityLogService _activityLogService;
@@ -78,7 +79,8 @@ namespace WordSoul.Application.Services
             {
                 Username = registerDto.Username,
                 Email = registerDto.Email,
-                PasswordHash = new PasswordHasher<User>().HashPassword(null!, registerDto.Password)
+                PasswordHash = new PasswordHasher<User>().HashPassword(null!, registerDto.Password),
+                AvatarUrl = DefaultSubstituteAvatarUrl
             };
 
             var user = await _uow.Auth.RegisterUserAsync(newUser, ct);
@@ -105,7 +107,7 @@ namespace WordSoul.Application.Services
         /// 3. Tìm user theo email → liên kết tài khoản tự động
         /// 4. Không tìm thấy → tạo user mới
         /// </summary>
-        public async Task<TokenResponseDto?> GoogleLoginAsync(string code, CancellationToken ct = default)
+        public async Task<TokenResponseDto?> GoogleLoginAsync(string code, int? starterPetId = null, CancellationToken ct = default)
         {
             var googleUserInfo = await _googleOAuthService.ExchangeCodeForUserInfoAsync(code, ct);
             if (googleUserInfo == null)
@@ -144,11 +146,18 @@ namespace WordSoul.Application.Services
                 userByEmail.ExternalLoginProviderKey = googleUserInfo.Sub;
                 userByEmail.ExternalLoginEmail       = googleUserInfo.Email;
 
-                if (string.IsNullOrEmpty(userByEmail.AvatarUrl) && !string.IsNullOrEmpty(googleUserInfo.Picture))
-                    userByEmail.AvatarUrl = googleUserInfo.Picture;
+                if (string.IsNullOrEmpty(userByEmail.AvatarUrl))
+                    userByEmail.AvatarUrl = googleUserInfo.Picture ?? DefaultSubstituteAvatarUrl;
 
                 await _uow.Auth.UpdateUserAsync(userByEmail, ct);
                 await _uow.SaveChangesAsync(ct);
+
+                // Self-healing: Check if user has no pets at all, initialize them
+                var hasPets = await _uow.UserOwnedPet.GetAllUserOwnedPetByUserIdAsync(userByEmail.Id, ct);
+                if (!hasPets.Any())
+                {
+                    await InitializeNewUserAsync(userByEmail, starterPetId, ct);
+                }
 
                 await _activityLogService.TrackUserLoginAsync(userByEmail.Id, ct);
                 await _dailyQuestService.GenerateDailyQuestsForUserAsync(userByEmail.Id);
@@ -166,7 +175,7 @@ namespace WordSoul.Application.Services
                 ExternalLoginProvider    = provider,
                 ExternalLoginProviderKey = googleUserInfo.Sub,
                 ExternalLoginEmail       = googleUserInfo.Email,
-                AvatarUrl = googleUserInfo.Picture
+                AvatarUrl = googleUserInfo.Picture ?? DefaultSubstituteAvatarUrl
             };
 
             var createdUser = await _uow.Auth.RegisterUserAsync(newUser, ct);
@@ -175,7 +184,7 @@ namespace WordSoul.Application.Services
             _logger.LogInformation("Google OAuth: Tạo tài khoản mới User {UserId} cho email {Email}.",
                 createdUser.Id, googleUserInfo.Email);
 
-            await InitializeNewUserAsync(createdUser, null, ct);
+            await InitializeNewUserAsync(createdUser, starterPetId, ct);
             await _activityLogService.TrackUserRegisterAsync(createdUser.Id, ct);
 
             return await CreateTokenResponse(createdUser, ct);
@@ -201,47 +210,58 @@ namespace WordSoul.Application.Services
         /// </summary>
         private async Task InitializeNewUserAsync(User user, int? starterPetId, CancellationToken ct)
         {
-            // 1. Gán achievement mặc định
-            var achievements = await _uow.Achievement.GetAchievementsAsync(null, 1, 10, ct);
-            var userAchievements = achievements
-                .Select(a => new UserAchievement
-                {
-                    UserId = user.Id,
-                    AchievementId = a.Id,
-                    ProgressValue = 0,
-                    IsCompleted = false
-                })
-                .ToList();
+            // 1. Gán achievement mặc định (chỉ gán nếu chưa có)
+            var existingAchievements = await _uow.UserAchievement.GetUserAchievementByUserAsync(user.Id, ct);
+            if (existingAchievements == null || !existingAchievements.Any())
+            {
+                var achievements = await _uow.Achievement.GetAchievementsAsync(null, 1, 10, ct);
+                var userAchievements = achievements
+                    .Select(a => new UserAchievement
+                    {
+                        UserId = user.Id,
+                        AchievementId = a.Id,
+                        ProgressValue = 0,
+                        IsCompleted = false
+                    })
+                    .ToList();
 
-            await _uow.UserAchievement.BulkCreateUserAchievementAsync(userAchievements, ct);
-            await _uow.SaveChangesAsync(ct);
+                await _uow.UserAchievement.BulkCreateUserAchievementAsync(userAchievements, ct);
+                await _uow.SaveChangesAsync(ct);
+            }
 
-            // 2. Gán Starter Pet
+            // 2. Gán Starter Pet (chỉ gán nếu chưa sở hữu)
             // Nếu không có StarterPetId → chọn ngẫu nhiên 1 trong 3: Bulbasaur(1), Charmander(4), Squirtle(7)
             int finalStarterPetId = starterPetId ?? new[] { 1, 4, 7 }[new Random().Next(3)];
 
             var starterPet = await _uow.Pet.GetPetByIdAsync(finalStarterPetId, ct);
             if (starterPet != null && starterPet.IsActive)
             {
-                var userStarterPet = new UserOwnedPet
+                var alreadyOwned = await _uow.UserOwnedPet.CheckPetOwnedByUserAsync(user.Id, starterPet.Id, ct);
+                if (!alreadyOwned)
                 {
-                    UserId     = user.Id,
-                    PetId      = starterPet.Id,
-                    IsActive   = true,
-                    Level      = 1,
-                    Experience = 0,
-                    IsFavorite = true,
-                    AcquiredAt = DateTime.UtcNow
-                };
-                await _uow.UserOwnedPet.CreateUserOwnedPetAsync(userStarterPet, ct);
-                await _uow.SaveChangesAsync(ct);
-                _logger.LogInformation("Gán Starter Pet ID {PetId} ({PetName}) cho User {UserId}.",
-                    starterPet.Id, starterPet.Name, user.Id);
+                    var userStarterPet = new UserOwnedPet
+                    {
+                        UserId     = user.Id,
+                        PetId      = starterPet.Id,
+                        IsActive   = true,
+                        Level      = 1,
+                        Experience = 0,
+                        IsFavorite = true,
+                        AcquiredAt = DateTime.UtcNow
+                    };
+                    await _uow.UserOwnedPet.CreateUserOwnedPetAsync(userStarterPet, ct);
+                    await _uow.SaveChangesAsync(ct);
+                    _logger.LogInformation("Gán Starter Pet ID {PetId} ({PetName}) cho User {UserId}.",
+                        starterPet.Id, starterPet.Name, user.Id);
+                }
             }
             else
             {
                 _logger.LogWarning("StarterPetId {PetId} không tìm thấy hoặc không active — bỏ qua.", finalStarterPetId);
             }
+
+            // 3. Khởi tạo Daily Quests mặc định cho ngày đầu tiên
+            await _dailyQuestService.GenerateDailyQuestsForUserAsync(user.Id, ct);
         }
 
         /// <summary>

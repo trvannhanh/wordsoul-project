@@ -9,8 +9,8 @@ type FilterTab = 'all' | 'completed' | 'locked';
 
 const TABS: { key: FilterTab; label: string }[] = [
     { key: 'all', label: 'Tất cả' },
-    { key: 'completed', label: '✓ Hoàn thành' },
-    { key: 'locked', label: '🔒 Chưa đạt' },
+    { key: 'completed', label: 'Hoàn thành' },
+    { key: 'locked', label: 'Chưa đạt' },
 ];
 
 const AchievementGrid: React.FC = () => {

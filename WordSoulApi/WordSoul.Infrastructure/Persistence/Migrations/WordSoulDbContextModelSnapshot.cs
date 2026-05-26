@@ -49,7 +49,10 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("RewardItemId")
+                    b.Property<int?>("RewardItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RewardXp")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -432,9 +435,6 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("PassRatePercent")
-                        .HasColumnType("int");
-
                     b.Property<int>("QuestionCount")
                         .HasColumnType("int");
 
@@ -614,6 +614,9 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ActionUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -747,6 +750,18 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.Property<int>("Order")
                         .HasColumnType("int");
 
+                    b.Property<string>("OverrideDescription")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OverrideExampleSentence")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OverrideMeaning")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OverridePronunciation")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("VocabularySetId", "VocabularyId");
 
                     b.HasIndex("Order");
@@ -763,6 +778,10 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.Property<string>("Key")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("DataType")
                         .IsRequired()
@@ -793,6 +812,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                         new
                         {
                             Key = "SrsMinEf",
+                            Category = "SRS",
                             DataType = "Float",
                             Description = "Minimum Ease Factor for SM-2 Algorithm",
                             LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
@@ -802,6 +822,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                         new
                         {
                             Key = "SrsInitialInterval1",
+                            Category = "SRS",
                             DataType = "Integer",
                             Description = "First interval (days) for SM-2",
                             LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
@@ -811,6 +832,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                         new
                         {
                             Key = "SrsInitialInterval2",
+                            Category = "SRS",
                             DataType = "Integer",
                             Description = "Second interval (days) for SM-2",
                             LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
@@ -820,6 +842,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                         new
                         {
                             Key = "CatchRateWrongPenalty",
+                            Category = "GAME_BALANCE",
                             DataType = "Float",
                             Description = "Penalty applied to catch rate for each wrong answer (e.g. 0.05 = 5%)",
                             LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
@@ -829,6 +852,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                         new
                         {
                             Key = "XpRewardNewSession",
+                            Category = "GAME_BALANCE",
                             DataType = "Integer",
                             Description = "XP rewarded for completing a learning session with new words",
                             LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
@@ -838,12 +862,109 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                         new
                         {
                             Key = "XpRewardReviewSession",
+                            Category = "GAME_BALANCE",
                             DataType = "Integer",
                             Description = "XP rewarded for completing a review session",
                             LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             LastUpdatedBy = "System",
                             Value = "100"
+                        },
+                        new
+                        {
+                            Key = "AllowRegistration",
+                            Category = "GENERAL",
+                            DataType = "Boolean",
+                            Description = "Allow new users to register on the platform",
+                            LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            LastUpdatedBy = "System",
+                            Value = "true"
+                        },
+                        new
+                        {
+                            Key = "MaintenanceMode",
+                            Category = "GENERAL",
+                            DataType = "Boolean",
+                            Description = "Show maintenance notice to regular users (does not affect admins)",
+                            LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            LastUpdatedBy = "System",
+                            Value = "false"
+                        },
+                        new
+                        {
+                            Key = "MaxGroupSize",
+                            Category = "GENERAL",
+                            DataType = "Integer",
+                            Description = "Maximum number of members allowed in a single user group",
+                            LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            LastUpdatedBy = "System",
+                            Value = "50"
+                        },
+                        new
+                        {
+                            Key = "AppDisplayName",
+                            Category = "GENERAL",
+                            DataType = "String",
+                            Description = "Application display name shown to users in the UI",
+                            LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            LastUpdatedBy = "System",
+                            Value = "VocaMon"
+                        },
+                        new
+                        {
+                            Key = "LogRetentionDays",
+                            Category = "SYSTEM",
+                            DataType = "Integer",
+                            Description = "Number of days to keep system logs before auto-deleting",
+                            LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            LastUpdatedBy = "System",
+                            Value = "7"
                         });
+                });
+
+            modelBuilder.Entity("WordSoul.Domain.Entities.SystemLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<long>("DurationMs")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("RequestPayload")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResponsePayload")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StatusCode")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SystemLogs");
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.User", b =>
@@ -881,15 +1002,27 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<string>("FcmToken")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("HintBalance")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<DateTime>("LastActiveAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastReminderEmailSentAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("PasswordHash")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<int?>("PreferredStudyHour")
+                        .HasColumnType("int");
 
                     b.Property<int>("PvpLosses")
                         .HasColumnType("int");
@@ -998,6 +1131,56 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("UserDailyQuests");
+                });
+
+            modelBuilder.Entity("WordSoul.Domain.Entities.UserGroup", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("Name");
+
+                    b.ToTable("UserGroups");
+                });
+
+            modelBuilder.Entity("WordSoul.Domain.Entities.UserGroupMember", b =>
+                {
+                    b.Property<int>("UserGroupId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("JoinedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("UserGroupId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserGroupMembers");
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.UserGymProgress", b =>
@@ -1360,7 +1543,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.HasOne("WordSoul.Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -1371,7 +1554,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.HasOne("WordSoul.Domain.Entities.LearningSession", "LearningSession")
                         .WithMany("AnswerRecords")
                         .HasForeignKey("LearningSessionId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("WordSoul.Domain.Entities.Vocabulary", "Vocabulary")
@@ -1612,6 +1795,36 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("WordSoul.Domain.Entities.UserGroup", b =>
+                {
+                    b.HasOne("WordSoul.Domain.Entities.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CreatedByUser");
+                });
+
+            modelBuilder.Entity("WordSoul.Domain.Entities.UserGroupMember", b =>
+                {
+                    b.HasOne("WordSoul.Domain.Entities.UserGroup", "UserGroup")
+                        .WithMany("Members")
+                        .HasForeignKey("UserGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WordSoul.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+
+                    b.Navigation("UserGroup");
+                });
+
             modelBuilder.Entity("WordSoul.Domain.Entities.UserGymProgress", b =>
                 {
                     b.HasOne("WordSoul.Domain.Entities.GymLeader", "GymLeader")
@@ -1797,6 +2010,11 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.Navigation("UserVocabularyProgresses");
 
                     b.Navigation("UserVocabularySets");
+                });
+
+            modelBuilder.Entity("WordSoul.Domain.Entities.UserGroup", b =>
+                {
+                    b.Navigation("Members");
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.Vocabulary", b =>

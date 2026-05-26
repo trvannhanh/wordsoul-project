@@ -1,6 +1,6 @@
 
 export const icons: Record<string, React.ReactNode> = {
-  'Total XP': (
+  'Tổng kinh nghiệm': (
     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
       <g clipPath="url(#clip0_240_18579)">
         <path
@@ -48,7 +48,7 @@ export const icons: Record<string, React.ReactNode> = {
       </defs>
     </svg>
   ),
-  'Total AP': (
+  'Tổng điểm': (
     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
       <path
         fillRule="evenodd"
@@ -92,7 +92,7 @@ export const icons: Record<string, React.ReactNode> = {
       <rect x="12" y="4" width="8" height="6" fill="#75D1FF" />
     </svg>
   ),
-  Pets: (
+  'Thú cưng': (
     <svg xmlns="http://www.w3.org/2000/svg" width="33" height="32" viewBox="0 0 33 32" fill="none">
       <path
         fill="currentColor"
@@ -100,7 +100,7 @@ export const icons: Record<string, React.ReactNode> = {
       />
     </svg>
   ),
-  Streak: (
+  'Chuỗi ngày học': (
     <svg xmlns="http://www.w3.org/2000/svg" width="33" height="32" viewBox="0 0 33 32" fill="none">
       <path
         fillRule="evenodd"

@@ -12,6 +12,8 @@ namespace WordSoul.Application.DTOs.Achievement
         public string? Description { get; set; }
         public string? ConditionType { get; set; }
         public int ConditionValue { get; set; }
+        public int? RewardItemId { get; set; }
+        public int RewardXp { get; set; }
         public string? ItemName { get; set; }
         public string? ItemImageUrl { get; set; }
     }
@@ -30,7 +32,27 @@ namespace WordSoul.Application.DTOs.Achievement
         [Range(1, int.MaxValue)]
         public int ConditionValue { get; set; }
 
+        /// <summary>Optional item reward. Null means no item reward.</summary>
+        public int? RewardItemId { get; set; }
+
+        /// <summary>XP awarded when achievement is unlocked.</summary>
+        public int RewardXp { get; set; }
+    }
+
+    public class UpdateAchievementDto
+    {
+        [Required, MaxLength(200)]
+        public string Name { get; set; } = string.Empty;
+
+        [MaxLength(500)]
+        public string? Description { get; set; }
+
+        public ConditionType ConditionType { get; set; }
+
         [Range(1, int.MaxValue)]
-        public int ItemId { get; set; }
+        public int ConditionValue { get; set; }
+
+        public int? RewardItemId { get; set; }
+        public int RewardXp { get; set; }
     }
 }

@@ -10,17 +10,18 @@ interface AnswerScreenProps {
   handleAnswer: (
     question: QuizQuestionDto,
     answer: string,
-    onAnswerProcessed: () => void,
     onResult?: (isCorrect: boolean) => void,
     responseTimeSeconds?: number,
     usedHintCount?: number
   ) => Promise<boolean>;
-  loadNextQuestion: () => void;
+  /** Called when user explicitly confirms to go to next question */
+  confirmAndNext?: () => void;
   showPopup: (question: QuizQuestionDto) => void;
   hintBalance?: number;
   setHintBalance?: (value: number) => void;
   /** Called with result so parent (ReviewLayout) can react */
   onAnswerResult?: (isCorrect: boolean) => void;
+  comboCount?: number;
 }
 
 const AnswerScreen: React.FC<AnswerScreenProps> = ({
@@ -28,14 +29,16 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
   loading,
   error,
   handleAnswer,
-  loadNextQuestion,
   showPopup,
   hintBalance,
   setHintBalance,
   onAnswerResult,
+  comboCount = 0,
 }) => {
   const [answerFeedback, setAnswerFeedback] = useState<"correct" | "wrong" | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
+  /** true = waiting for user to click "Tiếp theo" before loading next question */
+  const [waitingConfirm, setWaitingConfirm] = useState(false);
   const [userAnswer, setUserAnswer] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -44,17 +47,25 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
   const [audioProgress, setAudioProgress] = useState(0);
   const [audioDuration, setAudioDuration] = useState(0);
 
+  // XP floaty text
+  const [showXpFloaty, setShowXpFloaty] = useState(false);
+
   const startTimeRef = useRef<number>(Date.now());
 
   const [usedHint, setUsedHint] = useState(false);
   const [eliminatedOptions, setEliminatedOptions] = useState<string[]>([]);
   const [isConsumingHint, setIsConsumingHint] = useState(false);
 
+  // Reset per question
   useEffect(() => {
     if (question) {
       startTimeRef.current = Date.now();
       setUsedHint(false);
       setEliminatedOptions([]);
+      setWaitingConfirm(false);
+      setShowFeedback(false);
+      setAnswerFeedback(null);
+      setShowXpFloaty(false);
     }
   }, [question]);
 
@@ -78,12 +89,11 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
   };
 
   const handleSubmitAnswer = async (answer: string) => {
-    if (!question) return;
+    if (!question || waitingConfirm) return;
     const responseTimeSeconds = (Date.now() - startTimeRef.current) / 1000;
     const isCorrect = await handleAnswer(
       question,
       answer,
-      () => { loadNextQuestion(); },
       (result) => { onAnswerResult?.(result); },
       responseTimeSeconds,
       usedHint ? 1 : 0
@@ -91,11 +101,13 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
     setUserAnswer("");
     setShowFeedback(true);
     setAnswerFeedback(isCorrect ? "correct" : "wrong");
+    if (isCorrect) {
+      setShowXpFloaty(true);
+      setTimeout(() => setShowXpFloaty(false), 1400);
+    }
     showPopup(question);
-    setTimeout(() => {
-      setShowFeedback(false);
-      setAnswerFeedback(null);
-    }, 3000);
+    // Enter "waiting for confirm" mode — user must press "Tiếp theo"
+    setWaitingConfirm(true);
   };
 
   const handlePlayAudio = () => {
@@ -181,14 +193,15 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
         />
       )}
 
-      {/* Answer content area — flex-1 so hint footer stays at bottom */}
+      {/* Answer content area */}
       <div className="flex-1 flex items-center justify-center relative">
+        {/* Correct/Wrong banner */}
         <AnimatePresence>
           {showFeedback && (
             <motion.div
               className={`absolute top-2 left-1/2 -translate-x-1/2 z-10 font-pixel text-lg px-4 py-1 rounded-full border ${answerFeedback === "correct"
-                  ? "text-green-400 border-green-600 bg-green-950"
-                  : "text-red-400 border-red-600 bg-red-950"
+                ? "text-green-400 border-green-600 bg-green-950"
+                : "text-red-400 border-red-600 bg-red-950"
                 }`}
               initial={{ scale: 0, opacity: 0, y: -10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -200,6 +213,52 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
           )}
         </AnimatePresence>
 
+        {/* +XP floaty */}
+        <AnimatePresence>
+          {showXpFloaty && (
+            <motion.div
+              className="absolute top-10 right-6 z-20 font-pixel text-yellow-300 text-sm pointer-events-none select-none"
+              initial={{ opacity: 1, y: 0, scale: 1 }}
+              animate={{ opacity: 0, y: -36, scale: 1.2 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1.2, ease: "easeOut" }}
+            >
+              +XP ✨
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Combo flash */}
+        <AnimatePresence>
+          {comboCount >= 2 && showFeedback && answerFeedback === "correct" && (
+            <motion.div
+              key={comboCount}
+              className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 font-pixel text-amber-300 bg-amber-950 border border-amber-600 px-3 py-1 rounded-full text-xs pointer-events-none"
+              initial={{ scale: 0.5, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.5, opacity: 0 }}
+              transition={{ duration: 0.3, type: "spring" }}
+            >
+              🔥 ×{comboCount} Combo!
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Retry badge */}
+        {/* <AnimatePresence>
+          {question.isRetry && !showFeedback && (
+            <motion.div
+              className="absolute top-2 right-3 z-10 font-pixel text-orange-300 bg-orange-950 border border-orange-700 px-2 py-0.5 rounded-full text-xs"
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0 }}
+            >
+              🔄 Thử lại
+            </motion.div>
+          )}
+        </AnimatePresence> */}
+
+        {/* ── Question UI ── */}
         {(() => {
           switch (question.questionType) {
             case QuestionTypeEnum.Flashcard:
@@ -211,7 +270,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  ✓ Đã Xem
+                  Đã Xem
                 </motion.button>
               );
 
@@ -239,21 +298,21 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
                     autoFocus
                     onChange={(e) => setUserAnswer(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" && !showFeedback && userAnswer.trim()) {
+                      if (e.key === "Enter" && !showFeedback && !waitingConfirm && userAnswer.trim()) {
                         handleSubmitAnswer(userAnswer);
                       }
                     }}
-                    disabled={showFeedback}
-                    placeholder="Type the word..."
+                    disabled={showFeedback || waitingConfirm}
+                    placeholder="Gõ từ vựng..."
                   />
                   <motion.button
                     onClick={() => userAnswer.trim() && handleSubmitAnswer(userAnswer)}
-                    disabled={showFeedback || !userAnswer.trim()}
+                    disabled={showFeedback || waitingConfirm || !userAnswer.trim()}
                     className="w-full py-2 bg-emerald-700 border border-emerald-500 rounded-lg font-pixel text-white text-sm hover:bg-emerald-600 disabled:opacity-40 transition-colors custom-cursor"
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    Xác nhận →
+                    Xác nhận
                   </motion.button>
                 </div>
               );
@@ -268,10 +327,10 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
                         key={opt}
                         onClick={() => !isEliminated && handleSubmitAnswer(opt)}
                         className={`p-4 rounded-lg font-pixel text-xl text-center transition-colors custom-cursor border ${isEliminated
-                            ? "bg-gray-800 border-gray-700 text-gray-600 cursor-not-allowed"
-                            : "bg-gray-800 border-gray-600 text-white hover:bg-emerald-800 hover:border-emerald-500 disabled:opacity-50"
+                          ? "bg-gray-800 border-gray-700 text-gray-600 cursor-not-allowed"
+                          : "bg-gray-800 border-gray-600 text-white hover:bg-emerald-800 hover:border-emerald-500 disabled:opacity-50"
                           }`}
-                        disabled={showFeedback || isEliminated}
+                        disabled={showFeedback || waitingConfirm || isEliminated}
                         whileHover={!isEliminated ? { scale: 1.03, y: -1 } : {}}
                         whileTap={!isEliminated ? { scale: 0.97 } : {}}
                       >
@@ -294,8 +353,8 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
                         onClick={handlePlayAudio}
                         disabled={isPlaying || showFeedback}
                         className={`px-5 py-2 rounded-full font-pixel text-sm border-2 disabled:opacity-50 transition-all ${isPlaying
-                            ? "bg-red-900 border-red-600 text-red-300"
-                            : "bg-blue-900 border-blue-600 text-blue-300 hover:bg-blue-800"
+                          ? "bg-red-900 border-red-600 text-red-300"
+                          : "bg-blue-900 border-blue-600 text-blue-300 hover:bg-blue-800"
                           }`}
                         whileHover={{ scale: 1.04 }}
                         whileTap={{ scale: 0.96 }}
@@ -352,46 +411,46 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
                     placeholder="Type what you hear..."
                     className="bg-gray-900 border-2 border-gray-600 focus:border-purple-500 p-3 rounded-lg w-full text-white font-pixel text-center text-lg focus:outline-none transition-colors disabled:opacity-50"
                     autoFocus
-                    disabled={showFeedback}
+                    disabled={showFeedback || waitingConfirm}
                     onChange={(e) => setUserAnswer(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" && !showFeedback && userAnswer.trim()) {
+                      if (e.key === "Enter" && !showFeedback && !waitingConfirm && userAnswer.trim()) {
                         handleSubmitAnswer(userAnswer);
                       }
                     }}
                   />
                   <motion.button
                     onClick={() => userAnswer.trim() && handleSubmitAnswer(userAnswer)}
-                    disabled={showFeedback || !userAnswer.trim()}
+                    disabled={showFeedback || waitingConfirm || !userAnswer.trim()}
                     className="w-full py-2 bg-purple-800 border border-purple-600 rounded-lg font-pixel text-purple-200 text-sm hover:bg-purple-700 disabled:opacity-40 transition-colors custom-cursor"
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    Xác nhận →
+                    Xác nhận
                   </motion.button>
                 </div>
               );
 
             default:
-              return <div className="text-white font-pixel">Unknown question type</div>;
+              return <div className="text-white font-pixel">Lỗi loại câu hỏi</div>;
           }
         })()}
       </div>
 
-      {/* ── Hint Footer — always at the bottom, never overlapping content ── */}
-      {showHintButton && (
+      {/* ── Hint Footer ── */}
+      {showHintButton && !waitingConfirm && (
         <div className="flex items-center justify-between px-4 py-2 border-t border-gray-700 bg-gray-900 bg-opacity-60">
           <button
             onClick={handleUseHint}
             disabled={usedHint || isConsumingHint || !hintBalance || hintBalance <= 0 || showFeedback}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-full font-pixel text-xs transition-colors border ${usedHint
-                ? "bg-gray-800 text-gray-500 border-gray-700 opacity-50 cursor-not-allowed"
-                : !hintBalance || hintBalance <= 0
-                  ? "bg-red-950 text-red-400 border-red-800 opacity-50 cursor-not-allowed"
-                  : "bg-amber-950 text-amber-300 border-amber-700 hover:bg-amber-900 custom-cursor"
+              ? "bg-gray-800 text-gray-500 border-gray-700 opacity-50 cursor-not-allowed"
+              : !hintBalance || hintBalance <= 0
+                ? "bg-red-950 text-red-400 border-red-800 opacity-50 cursor-not-allowed"
+                : "bg-amber-950 text-amber-300 border-amber-700 hover:bg-amber-900 custom-cursor"
               }`}
           >
-            <span>💡 Hint</span>
+            <span>💡 Gợi ý</span>
             <span className="bg-black bg-opacity-40 px-1.5 py-0.5 rounded-full text-xs">
               {hintBalance ?? 0}
             </span>
@@ -400,8 +459,8 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
             {question.questionType === QuestionTypeEnum.Flashcard
               ? ""
               : question.questionType === QuestionTypeEnum.MultipleChoice
-                ? "Click to answer"
-                : "Enter to confirm"}
+                ? "Nhấn để trả lời"
+                : "Nhấn enter để xác nhận"}
           </span>
         </div>
       )}

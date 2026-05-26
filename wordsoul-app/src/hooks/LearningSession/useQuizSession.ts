@@ -52,6 +52,7 @@ export const useQuizSession = (
   const [captureComplete, setCaptureComplete] = useState(false);
   const [catchRate, setCatchRate] = useState<number>(initialCatchRate || 0);
   const [hintBalance, setHintBalance] = useState<number>(0);
+  const [comboCount, setComboCount] = useState(0);
 
   useEffect(() => {
     const fetchUserHints = async () => {
@@ -138,7 +139,6 @@ export const useQuizSession = (
   const handleAnswer = useCallback(async (
     question: QuizQuestionDto,
     answer: string,
-    onAnswerProcessed: () => void,
     onResult?: (isCorrect: boolean) => void,
     responseTimeSeconds?: number,
     usedHintCount = 0
@@ -168,13 +168,7 @@ export const useQuizSession = (
       console.log("📦 Full payload:      ", requestPayload);
       console.groupEnd();
 
-      const response: AnswerResponseDto = await answerQuiz(sessionId, {
-        vocabularyId: question.vocabularyId,
-        questionType: question.questionType,
-        answer,
-        responseTimeSeconds: responseTimeSeconds ?? 0,
-        hintCount: usedHintCount,
-      });
+      const response: AnswerResponseDto = await answerQuiz(sessionId, requestPayload);
 
       if (setCurrentCorrectAnswered) {
         setCurrentCorrectAnswered(
@@ -183,6 +177,7 @@ export const useQuizSession = (
       }
 
       if (response.isCorrect) {
+        setComboCount(c => c + 1);
         const nextLevelType = levelToType[response.newLevel] || QuestionTypeEnum.Listening;
         if (response.isVocabularyCompleted) {
           setLevelFeedback({
@@ -195,6 +190,7 @@ export const useQuizSession = (
           });
         }
       } else {
+        setComboCount(0);
         const prevLevel = Math.max(0, response.newLevel);
         const retryType = levelToType[prevLevel];
         setLevelFeedback({
@@ -208,10 +204,7 @@ export const useQuizSession = (
 
       onResult?.(response.isCorrect);
 
-      setTimeout(() => {
-        setLevelFeedback(null);
-        onAnswerProcessed();
-      }, 3000);
+      setTimeout(() => setLevelFeedback(null), 3000);
 
       return response.isCorrect;
     } catch (err) {
@@ -223,6 +216,11 @@ export const useQuizSession = (
       setLoading(false);
     }
   }, [sessionId, currentQuestionIndex, questionsBatch.length, currentCorrectAnswered, setCurrentCorrectAnswered, petReducePenalty]);
+
+  // Called by AnswerScreen when user clicks "Tiếp theo" — loads next question
+  const confirmAndNext = useCallback(() => {
+    loadNextQuestion();
+  }, [loadNextQuestion]);
 
   const handleCompleteSession = useCallback(async () => {
     try {
@@ -262,6 +260,7 @@ export const useQuizSession = (
     loading,
     error,
     handleAnswer,
+    confirmAndNext,
     sessionData,
     levelFeedback,
     progress: {
@@ -276,6 +275,7 @@ export const useQuizSession = (
     catchRate,
     hintBalance,
     setHintBalance,
+    comboCount,
     // ── Buff fields ──
     buffPetId,
     buffName,

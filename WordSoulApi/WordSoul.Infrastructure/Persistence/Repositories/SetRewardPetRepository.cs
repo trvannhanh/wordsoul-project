@@ -16,13 +16,22 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
         // Lấy danh sách pet theo VocabularySetId
         public async Task<IEnumerable<SetRewardPet>> GetPetsByVocabularySetIdAsync(int vocabularySetId, CancellationToken cancellationToken = default)
         {
-            // 3. Lấy danh sách pet thuộc set
-            var setPets = await _context.SetRewardPets
+            return await _context.SetRewardPets
                 .Where(sp => sp.VocabularySetId == vocabularySetId)
                 .Include(sp => sp.Pet)
                 .ToListAsync(cancellationToken);
-
-            return setPets;
         }
+
+        public async Task<SetRewardPet?> GetAsync(int vocabularySetId, int petId, CancellationToken ct = default)
+            => await _context.SetRewardPets
+                .Include(sp => sp.Pet)
+                .FirstOrDefaultAsync(sp => sp.VocabularySetId == vocabularySetId && sp.PetId == petId, ct);
+
+        public async Task AddAsync(SetRewardPet entry, CancellationToken ct = default)
+            => await _context.SetRewardPets.AddAsync(entry, ct);
+
+        public void Update(SetRewardPet entry) => _context.SetRewardPets.Update(entry);
+
+        public void Remove(SetRewardPet entry) => _context.SetRewardPets.Remove(entry);
     }
 }

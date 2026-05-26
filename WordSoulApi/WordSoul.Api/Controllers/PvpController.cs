@@ -156,5 +156,21 @@ namespace WordSoul.Api.Controllers
             if (rating == null) return NotFound();
             return Ok(rating);
         }
+
+        /// <summary>Lấy danh sách các phòng PvP custom đang ở trạng thái chờ (Waiting).</summary>
+        [HttpGet("rooms")]
+        public async Task<IActionResult> GetWaitingRooms()
+        {
+            var rooms = await _arena.GetWaitingPvpRoomsAsync();
+            return Ok(rooms);
+        }
+
+        /// <summary>Lấy bảng xếp hạng ELO PvP.</summary>
+        [HttpGet("leaderboard")]
+        public async Task<IActionResult> GetLeaderboard([FromQuery] int top = 50)
+        {
+            var leaderboard = await _arena.GetPvpLeaderboardAsync(top);
+            return Ok(leaderboard);
+        }
     }
 }

@@ -1,6 +1,6 @@
 import { AxiosError } from "axios";
 import api, { authApi, endpoints } from "./api";
-import type { VocabularySetDetailDto, VocabularySetDto, AiCreateVocabularySetResultDto, VocabularyPreviewDto } from "../types/VocabularySetDto";
+import type { VocabularySetDetailDto, VocabularySetDto, AiCreateVocabularySetResultDto, VocabularyPreviewDto, UpdateVocabularyInSetDto, VocabularySetProgressDto, VocabularyDetailDto, UpdateVocabularyCoreDto } from "../types/VocabularySetDto";
 
 
 export const fetchVocabularySets = async (
@@ -134,6 +134,62 @@ export const updateVocabularySet = async (id: number, data: VocabularySetDto): P
 
 export const deleteVocabularySet = async (id: number): Promise<void> => {
   await authApi.delete(endpoints.vocabularySet(id));
+};
+
+export const publishVocabularySet = async (id: number): Promise<VocabularySetDto> => {
+  const response = await authApi.put<VocabularySetDto>(endpoints.vocabularySetPublish(id));
+  return response.data;
+};
+
+export const updateVocabularyInSet = async (
+  setId: number,
+  vocabId: number,
+  dto: UpdateVocabularyInSetDto
+): Promise<VocabularyDetailDto> => {
+  const response = await authApi.put<VocabularyDetailDto>(endpoints.vocabularySetVocabOverride(setId, vocabId), dto);
+  return response.data;
+};
+
+export const fetchMySetProgress = async (id: number): Promise<VocabularySetProgressDto> => {
+  const response = await authApi.get<VocabularySetProgressDto>(endpoints.vocabularySetMyProgress(id));
+  return response.data;
+};
+
+export const unregisterVocabularySet = async (id: number): Promise<void> => {
+  await authApi.delete(endpoints.vocabularySetUnregister(id));
+};
+
+export const addExistingVocabToSet = async (setId: number, vocabId: number): Promise<void> => {
+  await authApi.post(`/vocabulary-sets/${setId}/vocabularies/${vocabId}`);
+};
+
+export const addNewVocabToSet = async (setId: number, dto: VocabularyPreviewDto): Promise<void> => {
+  await authApi.post(`/vocabulary-sets/${setId}/vocabularies/new`, dto);
+};
+
+export const removeVocabFromSet = async (setId: number, vocabId: number): Promise<void> => {
+  await authApi.delete(`/vocabulary-sets/${setId}/vocabularies/${vocabId}`);
+};
+
+export const updateVocabCore = async (
+  setId: number,
+  vocabId: number,
+  dto: UpdateVocabularyCoreDto,
+  imageFile?: File | null
+): Promise<VocabularyDetailDto> => {
+  const form = new FormData();
+  if (dto.word !== undefined) form.append('word', dto.word);
+  if (dto.meaning !== undefined) form.append('meaning', dto.meaning);
+  if (dto.pronunciation !== undefined) form.append('pronunciation', dto.pronunciation);
+  if (dto.exampleSentence !== undefined) form.append('exampleSentence', dto.exampleSentence);
+  if (dto.description !== undefined) form.append('description', dto.description);
+  if (imageFile) form.append('imageFile', imageFile);
+  const res = await authApi.patch<VocabularyDetailDto>(
+    `/vocabulary-sets/${setId}/vocabularies/${vocabId}/core`,
+    form,
+    { headers: { 'Content-Type': 'multipart/form-data' } }
+  );
+  return res.data;
 };
 
 

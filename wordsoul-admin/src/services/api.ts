@@ -17,10 +17,24 @@ export const endpoints = {
 
   // Users
   users: '/users',
+  userDetail: (id: number) => `/users/${id}`,
+  userStatus: (id: number) => `/users/${id}/status`,
+  userActivities: (id: number) => `/users/${id}/activities`,
 
-  // Vocabularies
+  // PvP
+  pvpLeaderboard: '/admin/pvp/leaderboard',
+
+  // Items
+  items: '/items',
+  itemDetail: (id: number) => `/items/${id}`,
+
+  // Vocabulary Sets
   vocabularySets: '/vocabulary-sets',
   vocabularySetDetail: (id: number) => `/vocabulary-sets/${id}/details`,
+  vocabularySetUpdate: (id: number) => `/vocabulary-sets/${id}`,
+  vocabularySetDelete: (id: number) => `/vocabulary-sets/${id}`,
+  vocabularySetRewardPets: (id: number) => `/vocabulary-sets/${id}/reward-pets`,
+  vocabularySetRewardPet: (setId: number, petId: number) => `/vocabulary-sets/${setId}/reward-pets/${petId}`,
   aiPreview: '/vocabulary-sets/ai-preview',
   aiCreate: '/vocabulary-sets/ai-create',
   vocabularies: '/vocabularies',
@@ -35,6 +49,32 @@ export const endpoints = {
   // Maintenance
   redisFlush: '/admin/maintenance/redis-flush',
   dbCleanup: '/admin/maintenance/db-cleanup',
+
+  // User Groups
+  adminGroups: '/admin/groups',
+  adminGroupDetail: (id: number) => `/admin/groups/${id}`,
+  adminGroupMembers: (id: number) => `/admin/groups/${id}/members`,
+  adminGroupMember: (groupId: number, userId: number) => `/admin/groups/${groupId}/members/${userId}`,
+
+  // Settings — Logs
+  adminLogs: '/admin/logs',
+  systemLogs: '/admin/systemlogs',
+
+  // Pets
+  pets: '/pets',
+  petDetail: (id: number) => `/pets/${id}`,
+
+  // User Balance Adjustment (SuperAdmin)
+  userBalance: (id: number) => `/admin/users/${id}/balance`,
+  userLearningProgress: (id: number) => `/admin/users/${id}/learning-progress`,
+  userReviewHistory: (id: number) => `/admin/users/${id}/review-history`,
+  adminBattles: '/admin/battles',
+  adminBattleReplay: (id: number) => `/admin/battles/${id}`,
+  adminBattleAbandon: (id: number) => `/admin/battles/${id}/abandon`,
+  sessionAnalytics: '/admin/analytics/sessions',
+
+  // Notification Broadcast (SuperAdmin)
+  notificationBroadcast: '/admin/notifications/broadcast',
 };
 
 const ACCESS_TOKEN_KEY = 'adminAccessToken';

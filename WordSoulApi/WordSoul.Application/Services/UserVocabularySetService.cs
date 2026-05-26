@@ -111,5 +111,20 @@ namespace WordSoul.Application.Services
                 CreatedAt = relation.CreatedAt
             };
         }
+
+        public async Task<bool> RemoveVocabularySetFromUserAsync(
+            int userId,
+            int vocabSetId,
+            CancellationToken cancellationToken = default)
+        {
+            _logger.LogInformation("Removing VocabularySet {SetId} from User {UserId}", vocabSetId, userId);
+
+            var removed = await _uow.UserVocabularySet.RemoveUserVocabularySetAsync(userId, vocabSetId, cancellationToken);
+            if (!removed) return false;
+
+            await _uow.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation("VocabularySet {SetId} removed from User {UserId}", vocabSetId, userId);
+            return true;
+        }
     }
 }

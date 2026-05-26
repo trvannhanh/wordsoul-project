@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   Button, Table, Space, Tag, Popconfirm,
-  Modal, Form, Input, Select, Upload, App, Descriptions, Badge,
+  Modal, Form, Input, Select, Upload, App, InputNumber,
 } from 'antd';
 import {
   ArrowLeftOutlined, EditOutlined, DeleteOutlined,
@@ -12,6 +12,15 @@ import {
 } from '@ant-design/icons';
 import { authApi, endpoints } from '@/services/api';
 import dayjs from 'dayjs';
+import ImageUploader from '../../_components/ImageUploader';
+
+interface RewardPet {
+  petId: number;
+  petName?: string;
+  petImageUrl?: string;
+  rarity?: string;
+  dropRate: number;
+}
 
 interface Vocabulary {
   id: number;
@@ -58,6 +67,14 @@ export default function VocabularySetDetailPage() {
   const [isEditSetModalOpen, setIsEditSetModalOpen] = useState(false);
   const [isVocabModalOpen, setIsVocabModalOpen] = useState(false);
   const [editingVocab, setEditingVocab] = useState<Vocabulary | null>(null);
+  const [editSetFile, setEditSetFile] = useState<File | null>(null);
+
+  // Reward pets
+  const [rewardPets, setRewardPets] = useState<RewardPet[]>([]);
+  const [petModalOpen, setPetModalOpen] = useState(false);
+  const [petForm] = Form.useForm();
+  const [petSubmitting, setPetSubmitting] = useState(false);
+  const [editingPet, setEditingPet] = useState<RewardPet | null>(null);
 
   const [form] = Form.useForm();
   const [vocabForm] = Form.useForm();
@@ -72,13 +89,31 @@ export default function VocabularySetDetailPage() {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { if (id) fetchDetails(); }, [id]);
+  const fetchRewardPets = useCallback(async () => {
+    try {
+      const { data: pets } = await authApi.get(endpoints.vocabularySetRewardPets(Number(id)));
+      setRewardPets(Array.isArray(pets) ? pets : []);
+    } catch { /* silent */ }
+  }, [id]);
+
+  useEffect(() => { if (id) { fetchDetails(); fetchRewardPets(); } }, [id]);
 
   const handleUpdateSet = async (values: any) => {
     try {
-      await authApi.put(`${endpoints.vocabularySets}/${id}`, values);
+      const fd = new FormData();
+      fd.append('title', values.title);
+      fd.append('theme', values.theme);
+      fd.append('description', values.description ?? '');
+      fd.append('difficultyLevel', values.difficultyLevel);
+      fd.append('isActive', String(values.isActive ?? true));
+      fd.append('vocabularyIds', '[]');
+      if (editSetFile) fd.append('imageFile', editSetFile);
+      await authApi.put(`${endpoints.vocabularySets}/${id}`, fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
       message.success('Set updated');
       setIsEditSetModalOpen(false);
+      setEditSetFile(null);
       fetchDetails();
     } catch { message.error('Failed to update set'); }
   };
@@ -130,6 +165,42 @@ export default function VocabularySetDetailPage() {
     setEditingVocab(null);
     vocabForm.resetFields();
     setIsVocabModalOpen(true);
+  };
+
+  const openAddPetModal = () => {
+    setEditingPet(null);
+    petForm.resetFields();
+    setPetModalOpen(true);
+  };
+
+  const openEditPetModal = (pet: RewardPet) => {
+    setEditingPet(pet);
+    petForm.setFieldsValue({ petId: pet.petId, dropRate: pet.dropRate });
+    setPetModalOpen(true);
+  };
+
+  const handlePetSubmit = async (values: any) => {
+    setPetSubmitting(true);
+    try {
+      if (editingPet) {
+        await authApi.put(endpoints.vocabularySetRewardPet(Number(id), editingPet.petId), { petId: values.petId, dropRate: values.dropRate });
+        message.success('Drop rate updated');
+      } else {
+        await authApi.post(endpoints.vocabularySetRewardPets(Number(id)), { petId: values.petId, dropRate: values.dropRate });
+        message.success('Reward pet added');
+      }
+      setPetModalOpen(false);
+      fetchRewardPets();
+    } catch { message.error('Failed to save reward pet'); }
+    finally { setPetSubmitting(false); }
+  };
+
+  const handleRemovePet = async (petId: number) => {
+    try {
+      await authApi.delete(endpoints.vocabularySetRewardPet(Number(id), petId));
+      message.success('Reward pet removed');
+      fetchRewardPets();
+    } catch { message.error('Failed to remove reward pet'); }
   };
 
   const wordColumns = [
@@ -227,7 +298,17 @@ export default function VocabularySetDetailPage() {
                 size="small"
                 icon={<EditOutlined />}
                 style={{ width: '100%', marginTop: 8 }}
-                onClick={() => { form.setFieldsValue(data); setIsEditSetModalOpen(true); }}
+                onClick={() => {
+                  form.setFieldsValue({
+                    title: data.title,
+                    description: data.description,
+                    theme: data.theme,
+                    difficultyLevel: data.difficultyLevel?.split(' ')[0] ?? 'Easy',
+                    isActive: data.isActive,
+                  });
+                  setEditSetFile(null);
+                  setIsEditSetModalOpen(true);
+                }}
               >
                 Edit Set Info
               </Button>
@@ -235,26 +316,79 @@ export default function VocabularySetDetailPage() {
           </div>
         </div>
 
-        {/* Right: Words table */}
-        <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
-          <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
-              Words in Set
-              <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-muted)', marginLeft: 6 }}>
-                ({data.totalVocabularies})
+        {/* Right: Words table + Reward Pets */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Words */}
+          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                Words in Set
+                <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-muted)', marginLeft: 6 }}>
+                  ({data.totalVocabularies})
+                </span>
               </span>
-            </span>
-            <Button type="primary" size="small" icon={<PlusOutlined />} onClick={openAddVocabModal}>
-              Add Word
-            </Button>
+              <Button type="primary" size="small" icon={<PlusOutlined />} onClick={openAddVocabModal}>
+                Add Word
+              </Button>
+            </div>
+            <Table
+              dataSource={data.vocabularies}
+              columns={wordColumns}
+              rowKey="id"
+              pagination={false}
+              size="small"
+            />
           </div>
-          <Table
-            dataSource={data.vocabularies}
-            columns={wordColumns}
-            rowKey="id"
-            pagination={false}
-            size="small"
-          />
+
+          {/* Reward Pets */}
+          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                Reward Pets
+                <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-muted)', marginLeft: 6 }}>
+                  ({rewardPets.length})
+                </span>
+              </span>
+              <Button size="small" icon={<PlusOutlined />} onClick={openAddPetModal}>Add Pet</Button>
+            </div>
+            <Table
+              dataSource={rewardPets}
+              rowKey="petId"
+              size="small"
+              pagination={false}
+              columns={[
+                {
+                  title: 'Image',
+                  dataIndex: 'petImageUrl',
+                  width: 52,
+                  render: (url?: string) => url
+                    ? <img src={url} alt="" style={{ width: 32, height: 32, borderRadius: 6, objectFit: 'cover', border: '1px solid var(--border)' }} />
+                    : <div style={{ width: 32, height: 32, borderRadius: 6, background: 'var(--bg-muted)', border: '1px solid var(--border)' }} />,
+                },
+                { title: 'Pet Name', dataIndex: 'petName', render: (v?: string) => <span style={{ fontWeight: 500, fontSize: 13 }}>{v ?? `Pet #${v}`}</span> },
+                { title: 'Rarity', dataIndex: 'rarity', width: 90, render: (v?: string) => v ? <Tag style={{ fontSize: 11 }}>{v}</Tag> : null },
+                {
+                  title: 'Drop Rate',
+                  dataIndex: 'dropRate',
+                  width: 100,
+                  render: (v: number) => <span style={{ fontSize: 12, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{(v * 100).toFixed(1)}%</span>,
+                },
+                {
+                  title: '',
+                  key: 'actions',
+                  width: 80,
+                  render: (_: any, record: RewardPet) => (
+                    <Space size={4}>
+                      <Button size="small" icon={<EditOutlined />} onClick={() => openEditPetModal(record)} />
+                      <Popconfirm title="Remove pet?" okText="Remove" okButtonProps={{ danger: true }} onConfirm={() => handleRemovePet(record.petId)}>
+                        <Button size="small" danger icon={<DeleteOutlined />} />
+                      </Popconfirm>
+                    </Space>
+                  ),
+                },
+              ]}
+            />
+          </div>
         </div>
       </div>
 
@@ -262,16 +396,20 @@ export default function VocabularySetDetailPage() {
       <Modal
         title="Edit Vocabulary Set"
         open={isEditSetModalOpen}
-        onCancel={() => setIsEditSetModalOpen(false)}
+        onCancel={() => { setIsEditSetModalOpen(false); setEditSetFile(null); }}
         onOk={() => form.submit()}
         okText="Save"
-        width={420}
+        width={460}
+        destroyOnHidden
       >
         <Form form={form} layout="vertical" onFinish={handleUpdateSet} style={{ marginTop: 16 }}>
+          <Form.Item label="Cover Image" style={{ marginBottom: 12 }}>
+            <ImageUploader value={data?.imageUrl} onChange={setEditSetFile} />
+          </Form.Item>
           <Form.Item name="title" label="Title" rules={[{ required: true }]}><Input /></Form.Item>
           <Form.Item name="theme" label="Theme" rules={[{ required: true }]}>
             <Select>
-              {['Academic', 'Casual', 'TOEIC', 'IELTS', 'Travel'].map(t => (
+              {['DailyLife','Nature','Food','Weather','Technology','Travel','Health','Sports','Business','Science','Art','Communication','Mystery','Dark','Academic','Challenge','TrapWords','System','Custom'].map(t => (
                 <Select.Option key={t} value={t}>{t}</Select.Option>
               ))}
             </Select>
@@ -321,6 +459,26 @@ export default function VocabularySetDetailPage() {
             <Upload beforeUpload={() => false} maxCount={1} listType="picture">
               <Button size="small" icon={<UploadOutlined />}>Select Image</Button>
             </Upload>
+          </Form.Item>
+        </Form>
+      </Modal>
+      {/* Add/Edit Reward Pet Modal */}
+      <Modal
+        title={editingPet ? 'Edit Drop Rate' : 'Add Reward Pet'}
+        open={petModalOpen}
+        onOk={() => petForm.submit()}
+        onCancel={() => { setPetModalOpen(false); petForm.resetFields(); }}
+        confirmLoading={petSubmitting}
+        okText={editingPet ? 'Save' : 'Add'}
+        width={340}
+        destroyOnHidden
+      >
+        <Form form={petForm} layout="vertical" onFinish={handlePetSubmit} style={{ marginTop: 12 }}>
+          <Form.Item name="petId" label="Pet ID" rules={[{ required: true, message: 'Required' }]}>
+            <InputNumber style={{ width: '100%' }} min={1} disabled={!!editingPet} />
+          </Form.Item>
+          <Form.Item name="dropRate" label="Drop Rate (0.0 – 1.0)" rules={[{ required: true }]} initialValue={0.1}>
+            <InputNumber style={{ width: '100%' }} min={0.01} max={1} step={0.05} precision={2} />
           </Form.Item>
         </Form>
       </Modal>

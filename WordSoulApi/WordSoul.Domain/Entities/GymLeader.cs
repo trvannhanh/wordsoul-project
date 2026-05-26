@@ -56,7 +56,6 @@ namespace WordSoul.Domain.Entities
 
         // Cấu hình battle
         public int QuestionCount { get; set; } = 15;       // Số câu hỏi
-        public int PassRatePercent { get; set; } = 80;     // % đúng tối thiểu để pass
         public int CooldownHours { get; set; } = 12;       // Cooldown (giờ) sau khi thua
 
         // Navigation

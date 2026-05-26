@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Microsoft.EntityFrameworkCore.Storage;
 using Moq;
 using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Repositories;
@@ -25,6 +26,12 @@ namespace WordSoul.Tests.Services
 
             uowMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1);
+
+            var txMock = new Mock<IDbContextTransaction>();
+            txMock.Setup(t => t.CommitAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+            txMock.Setup(t => t.RollbackAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+            txMock.Setup(t => t.DisposeAsync()).Returns(ValueTask.CompletedTask);
+            uowMock.Setup(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>())).ReturnsAsync(txMock.Object);
 
             return new UserAchievementService(
                 uowMock.Object,

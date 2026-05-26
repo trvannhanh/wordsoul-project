@@ -11,8 +11,8 @@ const milestoneConfig = {
     25: {
         label: "25%",
         emoji: "🌱",
-        text: "Good start! Keep going!",
-        subText: "¼ of the way there!",
+        text: "Khởi đầu tốt! Tiếp tục nào!",
+        subText: "Bạn đã hoàn thành ¼ chặng đường!",
         color: "from-green-900/90 to-gray-900/90",
         border: "border-green-400",
         textColor: "text-green-400",
@@ -20,8 +20,8 @@ const milestoneConfig = {
     50: {
         label: "50%",
         emoji: "⚡",
-        text: "Halfway there!",
-        subText: "You're doing great!",
+        text: "Đã đi được nửa đường!",
+        subText: "Bạn đang làm rất tốt!",
         color: "from-yellow-900/90 to-gray-900/90",
         border: "border-yellow-400",
         textColor: "text-yellow-400",
@@ -29,8 +29,8 @@ const milestoneConfig = {
     75: {
         label: "75%",
         emoji: "🔥",
-        text: "Almost there!",
-        subText: "Keep it up — nearly caught!",
+        text: "Sắp hoàn thành rồi!",
+        subText: "Cố lên — gần bắt được rồi!",
         color: "from-orange-900/90 to-gray-900/90",
         border: "border-orange-400",
         textColor: "text-orange-400",

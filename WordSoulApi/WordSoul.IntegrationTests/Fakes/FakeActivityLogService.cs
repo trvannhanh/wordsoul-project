@@ -1,4 +1,4 @@
-﻿
+
 using WordSoul.Application.DTOs;
 using WordSoul.Application.Interfaces.Services;
 
@@ -34,74 +34,81 @@ namespace WordSoul.IntegrationTests.Fakes
             return Task.FromResult(new List<ActivityLogDto>());
         }
 
+        public Task<(List<ActivityLogDto> Items, int Total)> GetAdminLogsAsync(
+            string? action = null,
+            int? userId = null,
+            DateTime? fromDate = null,
+            DateTime? toDate = null,
+            int pageNumber = 1,
+            int pageSize = 20,
+            CancellationToken ct = default)
+        {
+            return Task.FromResult((new List<ActivityLogDto>(), 0));
+        }
+
         public Task TrackUserLoginAsync(int userId, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            return Task.CompletedTask;
         }
 
         public Task TrackUserLogoutAsync(int userId, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            return Task.CompletedTask;
         }
 
         public Task TrackUserRegisterAsync(int userId, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            return Task.CompletedTask;
         }
 
         public Task TrackStartLearningSessionAsync(int userId, int sessionId, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            return Task.CompletedTask;
         }
 
         public Task TrackFinishLearningSessionAsync(int userId, int sessionId, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
-        }
-
-        public Task TrackAnswerQuestionAsync(int userId, int vocabularyId, bool isCorrect, CancellationToken ct = default)
-        {
-            throw new NotImplementedException();
+            return Task.CompletedTask;
         }
 
         public Task TrackVocabularyReviewedAsync(int userId, int vocabularyId, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            return Task.CompletedTask;
         }
 
         public Task TrackPetUnlockedAsync(int userId, int petId, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            return Task.CompletedTask;
         }
 
         public Task TrackPetUpgradedAsync(int userId, int petId, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            return Task.CompletedTask;
         }
 
         public Task TrackRewardClaimedAsync(int userId, int rewardId, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            return Task.CompletedTask;
         }
 
         public Task TrackQuestClaimedAsync(int userId, int questId, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            return Task.CompletedTask;
         }
 
         public Task TrackAchievementUnlockedAsync(int userId, int achievementId, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            return Task.CompletedTask;
         }
 
         public Task TrackDailyStreakIncreasedAsync(int userId, int newStreakCount, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            return Task.CompletedTask;
         }
 
         public Task TrackDailyStreakBrokenAsync(int userId, int previousStreakCount, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            return Task.CompletedTask;
         }
     }
 }

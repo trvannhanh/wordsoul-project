@@ -8,8 +8,11 @@ namespace WordSoul.Domain.Entities
         public string? Description { get; set; }
         public ConditionType ConditionType { get; set; }
         public int ConditionValue { get; set; }
-        public int RewardItemId { get; set; }
+        /// <summary>Optional item reward (null = no item). Previously named ItemId (legacy).</summary>
+        public int? RewardItemId { get; set; }
         public Item? Item { get; set; } = null;
+        /// <summary>XP awarded when this achievement is unlocked.</summary>
+        public int RewardXp { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public List<UserAchievement> UserAchievements { get; set; } = [];

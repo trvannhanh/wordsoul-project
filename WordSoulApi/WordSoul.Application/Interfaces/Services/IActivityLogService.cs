@@ -1,4 +1,4 @@
-﻿using WordSoul.Application.DTOs;
+using WordSoul.Application.DTOs;
 
 namespace WordSoul.Application.Interfaces.Services
 {
@@ -54,7 +54,6 @@ namespace WordSoul.Application.Interfaces.Services
 
         Task TrackStartLearningSessionAsync(int userId, int sessionId, CancellationToken ct = default);
         Task TrackFinishLearningSessionAsync(int userId, int sessionId, CancellationToken ct = default);
-        Task TrackAnswerQuestionAsync(int userId, int vocabularyId, bool isCorrect, CancellationToken ct = default);
         Task TrackVocabularyReviewedAsync(int userId, int vocabularyId, CancellationToken ct = default);
 
         Task TrackPetUnlockedAsync(int userId, int petId, CancellationToken ct = default);
@@ -64,5 +63,17 @@ namespace WordSoul.Application.Interfaces.Services
         Task TrackAchievementUnlockedAsync(int userId, int achievementId, CancellationToken ct = default);
         Task TrackDailyStreakIncreasedAsync(int userId, int newStreakCount, CancellationToken ct = default);
         Task TrackDailyStreakBrokenAsync(int userId, int previousStreakCount, CancellationToken ct = default);
+
+        /// <summary>
+        /// Lấy tất cả logs cho trang Admin với bộ lọc đầy đủ và total count.
+        /// </summary>
+        Task<(List<ActivityLogDto> Items, int Total)> GetAdminLogsAsync(
+            string? action = null,
+            int? userId = null,
+            DateTime? fromDate = null,
+            DateTime? toDate = null,
+            int pageNumber = 1,
+            int pageSize = 20,
+            CancellationToken ct = default);
     }
 }

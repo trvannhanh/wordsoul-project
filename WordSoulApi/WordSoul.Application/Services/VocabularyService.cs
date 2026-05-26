@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using WordSoul.Application.DTOs.Vocabulary;
 using WordSoul.Application.Interfaces;
@@ -11,21 +10,14 @@ namespace WordSoul.Application.Services
     public class VocabularyService : IVocabularyService
     {
         private readonly IUnitOfWork _uow;
-        private readonly IMemoryCache _cache;
         private readonly ILogger<VocabularyService> _logger;
-
-        // Thread-safe theo dõi key để có thể xóa cache theo prefix khi cần
-        private readonly HashSet<string> _cacheKeys = new();
-        private readonly object _cacheLock = new();
 
         public VocabularyService(
             IUnitOfWork uow,
-            ILogger<VocabularyService> logger,
-            IMemoryCache cache)
+            ILogger<VocabularyService> logger)
         {
             _uow = uow;
             _logger = logger;
-            _cache = cache;
         }
 
         // ============================================================================
@@ -71,7 +63,7 @@ namespace WordSoul.Application.Services
         // ============================================================================
 
         /// <summary>
-        /// Lấy danh sách từ vựng với bộ lọc và phân trang (có cache 15 phút).
+        /// Lấy danh sách từ vựng với bộ lọc và phân trang.
         /// </summary>
         public async Task<IEnumerable<VocabularyDto>> GetAllVocabulariesAsync(
             string? word = null,
@@ -82,67 +74,27 @@ namespace WordSoul.Application.Services
             int pageSize = 50,
             CancellationToken cancellationToken = default)
         {
-            var cacheKey = $"VocabList_{word}_{meaning}_{partOfSpeech}_{cefrLevel}_{pageNumber}_{pageSize}";
-
-            if (_cache.TryGetValue(cacheKey, out IEnumerable<VocabularyDto> cached))
-            {
-                _logger.LogDebug("Cache HIT – {CacheKey}", cacheKey);
-                return cached;
-            }
 
             var entities = await _uow.Vocabulary.GetAllVocabulariesAsync(
                 word, meaning, partOfSpeech, cefrLevel, pageNumber, pageSize, cancellationToken);
 
             var dtos = entities.Select(MapToDto).ToList();
-
-            var entryOptions = new MemoryCacheEntryOptions()
-                .SetAbsoluteExpiration(TimeSpan.FromMinutes(15))
-                .SetSize(1); // đơn vị tùy dự án, chỉ để IMemoryCache biết kích thước
-
-            lock (_cacheLock)
-            {
-                _cache.Set(cacheKey, dtos, entryOptions);
-                _cacheKeys.Add(cacheKey);
-            }
-
-            _logger.LogDebug("Cache MISS & stored – {CacheKey}", cacheKey);
             return dtos;
         }
 
         /// <summary>
-        /// Lấy chi tiết một từ vựng theo ID (có cache 30 phút).
+        /// Lấy chi tiết một từ vựng theo ID.
         /// </summary>
         public async Task<VocabularyDto?> GetVocabularyByIdAsync(
             int id,
             CancellationToken cancellationToken = default)
         {
-            var cacheKey = $"Vocab_{id}";
-
-            if (_cache.TryGetValue(cacheKey, out VocabularyDto cached))
-            {
-                _logger.LogDebug("Cache HIT – {CacheKey}", cacheKey);
-                return cached;
-            }
-
             var entity = await _uow.Vocabulary.GetVocabularyByIdAsync(id, cancellationToken);
             if (entity == null)
                 return null;
 
-            var dto = MapToDto(entity);
-
-            var entryOptions = new MemoryCacheEntryOptions()
-                .SetAbsoluteExpiration(TimeSpan.FromMinutes(30))
-                .SetSize(1);
-
-            lock (_cacheLock)
-            {
-                _cache.Set(cacheKey, dto, entryOptions);
-                _cacheKeys.Add(cacheKey);
+            return MapToDto(entity);
             }
-
-            _logger.LogDebug("Cache MISS & stored – {CacheKey}", cacheKey);
-            return dto;
-        }
 
         /// <summary>
         /// Lấy nhiều từ vựng theo danh sách từ (word list) – thường dùng khi tạo session học.
@@ -155,29 +107,9 @@ namespace WordSoul.Application.Services
                 return Enumerable.Empty<VocabularyDto>();
 
             var orderedWords = dto.Words.OrderBy(w => w).ToList();
-            var cacheKey = $"VocabByWords_{string.Join("_", orderedWords)}";
-
-            if (_cache.TryGetValue(cacheKey, out IEnumerable<VocabularyDto> cached))
-            {
-                _logger.LogDebug("Cache HIT – {CacheKey}", cacheKey);
-                return cached;
-            }
-
             var entities = await _uow.Vocabulary.GetVocabulariesByWordsAsync(orderedWords, null, cancellationToken);
 
             var dtos = entities.Select(MapToDto).ToList();
-
-            var entryOptions = new MemoryCacheEntryOptions()
-                .SetAbsoluteExpiration(TimeSpan.FromMinutes(20))
-                .SetSize(1);
-
-            lock (_cacheLock)
-            {
-                _cache.Set(cacheKey, dtos, entryOptions);
-                _cacheKeys.Add(cacheKey);
-            }
-
-            _logger.LogDebug("Cache MISS & stored – {CacheKey}", cacheKey);
             return dtos;
         }
 
@@ -215,13 +147,9 @@ namespace WordSoul.Application.Services
 
             await _uow.Vocabulary.UpdateVocabularyAsync(entity, cancellationToken);
             await _uow.SaveChangesAsync(cancellationToken);
+    
 
-            // Xóa cache liên quan
-            InvalidateCache($"Vocab_{id}");
-            InvalidateCachePrefix("VocabList_");
-            InvalidateCachePrefix("VocabByWords_");
-
-            _logger.LogInformation("Vocabulary ID {Id} updated and related caches invalidated", id);
+            _logger.LogInformation("Vocabulary ID {Id} updated", id);
 
             return MapToAdminDto(entity);
         }
@@ -243,12 +171,7 @@ namespace WordSoul.Application.Services
             if (result)
             {
                 await _uow.SaveChangesAsync(cancellationToken);
-
-                InvalidateCache($"Vocab_{id}");
-                InvalidateCachePrefix("VocabList_");
-                InvalidateCachePrefix("VocabByWords_");
-
-                _logger.LogInformation("Vocabulary ID {Id} deleted and caches invalidated", id);
+                _logger.LogInformation("Vocabulary ID {Id} deleted", id);
             }
 
             return result;
@@ -285,27 +208,5 @@ namespace WordSoul.Application.Services
             ImageUrl = v.ImageUrl,
             PronunciationUrl = v.PronunciationUrl
         };
-
-        private void InvalidateCache(string key)
-        {
-            lock (_cacheLock)
-            {
-                _cache.Remove(key);
-                _cacheKeys.Remove(key);
-            }
-        }
-
-        private void InvalidateCachePrefix(string prefix)
-        {
-            lock (_cacheLock)
-            {
-                var keysToRemove = _cacheKeys.Where(k => k.StartsWith(prefix)).ToList();
-                foreach (var key in keysToRemove)
-                {
-                    _cache.Remove(key);
-                    _cacheKeys.Remove(key);
-                }
-            }
-        }
     }
 }

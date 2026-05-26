@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using WordSoul.Application.Interfaces.Repositories;
 using WordSoul.Domain.Entities;
 
@@ -28,6 +28,7 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
         public async Task<SetVocabulary?> GetSetVocabularyAsync(int vocabId, int setId, CancellationToken cancellationToken = default)
         {
             return await _context.SetVocabularies
+                .Include(sv => sv.Vocabulary)
                 .FirstOrDefaultAsync(sv => sv.VocabularySetId == setId && sv.VocabularyId == vocabId, cancellationToken);
         }
 
@@ -55,8 +56,9 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
         {
             return await _context.VocabularySets
                 .AsNoTracking()
-                .Include(vs => vs.SetVocabularies) // Include SetVocabularies at the root level
-                .ThenInclude(sv => sv.Vocabulary)  // Then include the related Vocabulary
+                .Include(vs => vs.CreatedBy)
+                .Include(vs => vs.SetVocabularies)
+                .ThenInclude(sv => sv.Vocabulary)
                 .Where(vs => vs.Id == id)
                 .Select(vs => new VocabularySet
                 {
@@ -67,9 +69,12 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
                     Description = vs.Description,
                     DifficultyLevel = vs.DifficultyLevel,
                     IsActive = vs.IsActive,
+                    IsPublic = vs.IsPublic,
+                    CreatedById = vs.CreatedById,
+                    CreatedBy = vs.CreatedBy,
                     CreatedAt = vs.CreatedAt,
                     SetVocabularies = vs.SetVocabularies
-                        .OrderBy(sv => sv.VocabularyId) // Consistent ordering
+                        .OrderBy(sv => sv.Order)
                         .Skip((page - 1) * pageSize)
                         .Take(pageSize)
                         .ToList()
@@ -112,10 +117,9 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
         {
             var max = await _context.SetVocabularies
                 .Where(sv => sv.VocabularySetId == setId)
-                .Select(sv => sv.Order)
-                .DefaultIfEmpty(0)  // Tránh lỗi nếu không có record
+                .Select(sv => (int?)sv.Order)
                 .MaxAsync(cancellationToken);
-            return max;
+            return max ?? 0;
         }
 
         //-------------------------------------DELETE-------------------------------------------
@@ -133,6 +137,15 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
             return true;
         }
 
+        //-------------------------------------UPDATE-------------------------------------------
+
+        // Cập nhật SetVocabulary (bao gồm Override fields)
+        public Task<SetVocabulary> UpdateSetVocabularyAsync(SetVocabulary setVocabulary, CancellationToken cancellationToken = default)
+        {
+            _context.SetVocabularies.Update(setVocabulary);
+            return Task.FromResult(setVocabulary);
+        }
+
         //-------------------------------------OTHER------------------------------------------
 
         // Kiểm tra từ vựng đã tồn tại trong bộ chưa
@@ -148,6 +161,16 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
             return await _context.SetVocabularies
                 .AsNoTracking()
                 .CountAsync(sv => sv.VocabularySetId == vocabularySetId, cancellationToken);
+        }
+
+        // Lấy danh sách VocabularyId của tất cả từ trong bộ (dùng cho progress query)
+        public async Task<List<int>> GetVocabularyIdsInSetAsync(int setId, CancellationToken cancellationToken = default)
+        {
+            return await _context.SetVocabularies
+                .AsNoTracking()
+                .Where(sv => sv.VocabularySetId == setId)
+                .Select(sv => sv.VocabularyId)
+                .ToListAsync(cancellationToken);
         }
     }
 }

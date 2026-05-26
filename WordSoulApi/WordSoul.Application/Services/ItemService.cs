@@ -26,6 +26,37 @@ namespace WordSoul.Application.Services
         }
 
         // ---------------------------------------------------------------------
+        // READ
+        // ---------------------------------------------------------------------
+
+        public async Task<List<ItemDto>> GetAllItemsAsync(CancellationToken ct = default)
+        {
+            var items = await _uow.Item.GetItemAsync(ct);
+            return items.Select(i => new ItemDto
+            {
+                Id = i.Id,
+                Name = i.Name,
+                Description = i.Description,
+                ImageUrl = i.ImageUrl,
+                Type = i.Type.ToString()
+            }).ToList();
+        }
+
+        public async Task<ItemDto?> GetItemByIdAsync(int id, CancellationToken ct = default)
+        {
+            var item = await _uow.Item.GetItemByIdAsync(id, ct);
+            if (item == null) return null;
+            return new ItemDto
+            {
+                Id = item.Id,
+                Name = item.Name,
+                Description = item.Description,
+                ImageUrl = item.ImageUrl,
+                Type = item.Type.ToString()
+            };
+        }
+
+        // ---------------------------------------------------------------------
         // CREATE
         // ---------------------------------------------------------------------
 
@@ -84,6 +115,51 @@ namespace WordSoul.Application.Services
                 _logger.LogError(ex, "Error creating item: {Name}", createItemDto.Name);
                 throw new Exception($"Error creating item: {ex.Message}", ex);
             }
+        }
+
+        // ---------------------------------------------------------------------
+        // UPDATE
+        // ---------------------------------------------------------------------
+
+        public async Task<ItemDto> UpdateItemAsync(int id, UpdateItemDto dto, string? imageUrl, CancellationToken ct = default)
+        {
+            var item = await _uow.Item.GetItemByIdAsync(id, ct)
+                ?? throw new KeyNotFoundException($"Item {id} not found.");
+
+            item.Name = dto.Name;
+            item.Description = dto.Description;
+            item.Type = dto.Type;
+            if (imageUrl != null)
+                item.ImageUrl = imageUrl;
+
+            await _uow.Item.UpdateItemAsync(item, ct);
+            await _uow.SaveChangesAsync(ct);
+
+            _logger.LogInformation("Updated item {Id} — {Name}", item.Id, item.Name);
+
+            return new ItemDto
+            {
+                Id = item.Id,
+                Name = item.Name,
+                Description = item.Description,
+                ImageUrl = item.ImageUrl,
+                Type = item.Type.ToString()
+            };
+        }
+
+        // ---------------------------------------------------------------------
+        // DELETE
+        // ---------------------------------------------------------------------
+
+        public async Task DeleteItemAsync(int id, CancellationToken ct = default)
+        {
+            var item = await _uow.Item.GetItemByIdAsync(id, ct)
+                ?? throw new KeyNotFoundException($"Item {id} not found.");
+
+            await _uow.Item.DeleteItemAsync(id, ct);
+            await _uow.SaveChangesAsync(ct);
+
+            _logger.LogInformation("Deleted item {Id} — {Name}", id, item.Name);
         }
     }
 }

@@ -48,7 +48,10 @@ const Login: React.FC = () => {
     const apiBase = BASE_URL.startsWith("http")
       ? BASE_URL
       : `${window.location.origin}${BASE_URL}`;
-    window.location.href = `${apiBase}/auth/google-login`;
+    const starterPetId = localStorage.getItem('onboarding_starter_pet_id');
+    const stateParam = starterPetId ? `starterPetId=${starterPetId}` : '';
+    const url = `${apiBase}/auth/google-login${stateParam ? `?state=${encodeURIComponent(stateParam)}` : ''}`;
+    window.location.href = url;
   };
 
   return (

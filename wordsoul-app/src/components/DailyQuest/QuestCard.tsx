@@ -35,7 +35,8 @@ const QuestCard: React.FC<QuestCardProps> = ({ quest, onClaimed }) => {
     const icon = QUEST_TYPE_ICONS[quest.questType] ?? QUEST_TYPE_ICONS.default;
     const rewardLabel = REWARD_TYPE_LABELS[quest.rewardType] ?? REWARD_TYPE_LABELS.default;
 
-    const handleClaim = async () => {
+    const handleClaim = async (e: React.MouseEvent) => {
+        e.stopPropagation();
         if (claiming || quest.isClaimed || !quest.isCompleted) return;
         setClaiming(true);
         try {
@@ -45,7 +46,7 @@ const QuestCard: React.FC<QuestCardProps> = ({ quest, onClaimed }) => {
             onClaimed(quest.id, result);
             setTimeout(() => setShowReward(false), 2200);
         } catch {
-            // silently ignore; parent can show errors if needed
+            // silently ignore
         } finally {
             setClaiming(false);
         }
@@ -60,122 +61,83 @@ const QuestCard: React.FC<QuestCardProps> = ({ quest, onClaimed }) => {
 
     return (
         <motion.div
-            className="relative background-color pixel-border rounded-xl p-4 overflow-hidden"
-            initial={{ opacity: 0, y: 12 }}
+            className={`relative background-color border border-gray-700/80 hover:border-gray-500 rounded-lg p-2.5 flex items-center justify-between gap-3 overflow-hidden select-none transition-colors ${quest.isClaimed ? 'opacity-60' : 'opacity-100'
+                }`}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35 }}
+            transition={{ duration: 0.25 }}
             layout
         >
             {/* Reward animation overlay */}
             <AnimatePresence>
                 {showReward && (
                     <motion.div
-                        className="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none"
+                        className="absolute inset-0 flex items-center justify-center bg-yellow-400/20 z-20 pointer-events-none"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                     >
-                        {/* Faded glow bg */}
-                        <motion.div
-                            className="absolute inset-0 bg-yellow-400/20 rounded-xl"
-                            initial={{ scale: 0.8 }}
-                            animate={{ scale: 1.1 }}
-                            exit={{ scale: 0.8 }}
-                            transition={{ duration: 0.4 }}
-                        />
-                        {/* Flying reward text */}
-                        <motion.div
-                            className="relative font-pixel text-yellow-300 text-2xl drop-shadow-lg"
-                            initial={{ y: 20, opacity: 0, scale: 0.6 }}
-                            animate={{ y: -10, opacity: 1, scale: 1.2 }}
-                            exit={{ y: -40, opacity: 0 }}
-                            transition={{ duration: 0.5, type: 'spring', stiffness: 200 }}
+                        <motion.span
+                            className="font-pixel text-yellow-300 text-[11px] drop-shadow-md font-bold"
+                            initial={{ y: 10, scale: 0.8 }}
+                            animate={{ y: -5, scale: 1.1 }}
+                            exit={{ y: -20, opacity: 0 }}
+                            transition={{ duration: 0.6 }}
                         >
                             {rewardMsg}
-                        </motion.div>
-                        {/* Particles */}
-                        {[...Array(8)].map((_, i) => (
-                            <motion.div
-                                key={i}
-                                className="absolute w-2 h-2 rounded-full bg-yellow-400"
-                                initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
-                                animate={{
-                                    x: Math.cos((i / 8) * Math.PI * 2) * 60,
-                                    y: Math.sin((i / 8) * Math.PI * 2) * 60,
-                                    opacity: 0,
-                                    scale: 0.3,
-                                }}
-                                transition={{ duration: 0.7, delay: 0.1 }}
-                            />
-                        ))}
+                        </motion.span>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            {/* Header */}
-            <div className="flex items-start justify-between mb-3 gap-2">
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <span className="text-xl flex-shrink-0">{icon}</span>
-                    <div className="min-w-0">
-                        <h3 className="font-pixel text-xs text-color leading-relaxed truncate">
+            {/* Left Section: Quest Icon, Title & Progress Text */}
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+                <span className="text-lg flex-shrink-0">{icon}</span>
+                <div className="min-w-0 flex-1">
+                    <div className="flex justify-between items-baseline gap-2">
+                        <h4 className="font-pixel text-[11px] text-white truncate" title={quest.title}>
                             {quest.title}
-                        </h3>
-                        {quest.description && (
-                            <p className="text-gray-400 text-xs mt-0.5 line-clamp-1">{quest.description}</p>
-                        )}
+                        </h4>
+                        <span className="font-pixel text-[9px] text-gray-400 flex-shrink-0">
+                            {quest.progress}/{quest.targetValue}
+                        </span>
                     </div>
-                </div>
-
-                {/* Status badge */}
-                {quest.isClaimed ? (
-                    <span className="flex-shrink-0 bg-gray-600 text-gray-300 text-xs font-pixel px-2 py-1 rounded-full whitespace-nowrap">
-                        ★ Đã nhận
-                    </span>
-                ) : quest.isCompleted ? (
-                    <span className="flex-shrink-0 bg-yellow-400 text-black text-xs font-pixel px-2 py-1 rounded-full whitespace-nowrap animate-pulse">
-                        ✓ Xong!
-                    </span>
-                ) : null}
-            </div>
-
-            {/* Progress bar */}
-            <div className="mb-3">
-                <div className="flex justify-between items-center mb-1">
-                    <span className="text-xs text-gray-400 font-pixel">Tiến trình</span>
-                    <span className="text-xs font-pixel text-color">
-                        {quest.progress}/{quest.targetValue}
-                    </span>
-                </div>
-                <div className="w-full h-3 bg-gray-700 rounded-full overflow-hidden border border-gray-600">
-                    <motion.div
-                        className={`h-full rounded-full ${barColor}`}
-                        initial={{ width: 0 }}
-                        animate={{ width: `${progressPercent}%` }}
-                        transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }}
-                    />
+                    {quest.description && (
+                        <p className="text-gray-500 text-[9px] truncate mt-0.5">
+                            {quest.description}
+                        </p>
+                    )}
                 </div>
             </div>
 
-            {/* Footer: reward badge + claim button */}
-            <div className="flex items-center justify-between">
-                <span className="bg-purple-700 text-purple-100 text-xs font-pixel px-2 py-1 rounded-full">
-                    +{quest.rewardValue} {rewardLabel}
+            {/* Right Section: Reward bubble and Claim button */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+                <span className="bg-purple-900/60 border border-purple-800 text-purple-200 text-[8px] font-pixel px-1.5 py-0.5 rounded-full">
+                    +{quest.rewardValue}{rewardLabel}
                 </span>
 
-                <motion.button
+                <button
                     onClick={handleClaim}
                     disabled={!quest.isCompleted || quest.isClaimed || claiming}
-                    className={
-                        'relative font-pixel text-xs px-3 py-1.5 rounded pixel-border transition-opacity ' +
-                        (quest.isCompleted && !quest.isClaimed
-                            ? 'bg-yellow-400 text-black hover:bg-yellow-300 cursor-pointer'
-                            : 'bg-gray-700 text-gray-500 opacity-50 cursor-not-allowed')
-                    }
-                    whileHover={quest.isCompleted && !quest.isClaimed ? { scale: 1.07 } : {}}
-                    whileTap={quest.isCompleted && !quest.isClaimed ? { scale: 0.95 } : {}}
+                    className={`font-pixel text-[9px] px-2.5 py-1 rounded border active:translate-y-0.5 transition-all ${quest.isClaimed
+                            ? 'bg-gray-800 border-gray-700 text-gray-500 cursor-default'
+                            : quest.isCompleted
+                                ? 'bg-yellow-500 border-yellow-400 text-black hover:bg-yellow-400 cursor-pointer shadow-[0_0_5px_rgba(234,179,8,0.3)] animate-pulse'
+                                : 'bg-gray-800 border-gray-700 text-gray-400 cursor-default opacity-40'
+                        }`}
                 >
-                    {claiming ? '...' : quest.isClaimed ? 'Đã nhận' : 'Nhận thưởng'}
-                </motion.button>
+                    {claiming ? '...' : quest.isClaimed ? 'Đã nhận' : 'Nhận'}
+                </button>
+            </div>
+
+            {/* Progress Bar running at the bottom */}
+            <div className="absolute bottom-0 left-0 w-full h-[3px] bg-gray-900">
+                <motion.div
+                    className={`h-full ${barColor}`}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progressPercent}%` }}
+                    transition={{ duration: 0.4, ease: 'easeOut' }}
+                />
             </div>
         </motion.div>
     );

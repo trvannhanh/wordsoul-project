@@ -21,7 +21,7 @@ namespace WordSoul.Domain.Enums
         Science,        // Psychic  - Khoa học, triết học, tư duy logic
         Art,            // Bug      - Nghệ thuật, sự tỉ mỉ, thủ công
         Communication,  // Water    - Giao tiếp, mạng lưới xã hội (dòng chảy thông tin)
-        Social,         // Xóa do trùng Water -> Hoặc có thể hiểu Communication = Water. (Sẽ dùng Communication)
+        //Social,         // Xóa do trùng Water -> Hoặc có thể hiểu Communication = Water. (Sẽ dùng Communication)
 
         // ── ABSTRACT ─────────────────────────────────────────
         Mystery,        // Ghost    - Tâm linh, bí ẩn, truyền thuyết

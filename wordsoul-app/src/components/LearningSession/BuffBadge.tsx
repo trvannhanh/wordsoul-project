@@ -151,22 +151,22 @@ const BuffBadge: React.FC<BuffBadgeProps> = ({
               <div className="flex flex-wrap gap-1 pt-1">
                 {xpBonus && (
                   <span className="text-xs bg-amber-900 border border-amber-600 text-amber-300 px-2 py-0.5 rounded-sm">
-                    💰 {xpBonus}
+                    {xpBonus}
                   </span>
                 )}
                 {catchBonus && (
                   <span className="text-xs bg-blue-900 border border-blue-600 text-blue-300 px-2 py-0.5 rounded-sm">
-                    🎯 {catchBonus}
+                    {catchBonus}
                   </span>
                 )}
                 {petHintShield && (
                   <span className="text-xs bg-purple-900 border border-purple-600 text-purple-300 px-2 py-0.5 rounded-sm">
-                    🔮 1 Hint miễn phí
+                    1 Hint miễn phí
                   </span>
                 )}
                 {petReducePenalty && (
                   <span className="text-xs bg-stone-800 border border-stone-500 text-stone-300 px-2 py-0.5 rounded-sm">
-                    🪨 Không giảm catch khi sai
+                    Không giảm catch khi sai
                   </span>
                 )}
               </div>

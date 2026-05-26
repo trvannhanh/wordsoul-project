@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using WordSoul.Domain.Enums;
 
 namespace WordSoul.Domain.Entities
@@ -12,6 +12,7 @@ namespace WordSoul.Domain.Entities
         public NotificationType Type { get; set; }
         [MaxLength(200)]
         public string? Message { get; set; }
+        public string? ActionUrl { get; set; }
         public bool IsRead { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }

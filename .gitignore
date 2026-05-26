@@ -83,7 +83,8 @@ local.settings.json
 # Ignore local configuration that may contain secrets
 appsettings.Development.json
 appsettings.Production.json
-appsettings.Staging.jso
+appsettings.Staging.json
+vocamon-7932b-firebase-adminsdk-fbsvc-a967a14219.json
 
 #########################
 # Entity Framework Migrations

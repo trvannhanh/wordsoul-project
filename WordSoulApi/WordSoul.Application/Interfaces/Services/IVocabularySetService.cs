@@ -1,3 +1,4 @@
+using WordSoul.Application.DTOs.Vocabulary;
 using WordSoul.Application.DTOs.VocabularySet;
 using WordSoul.Domain.Enums;
 
@@ -58,19 +59,58 @@ namespace WordSoul.Application.Interfaces.Services
             int limitPerTheme = 6,
             CancellationToken cancellationToken = default);
 
+        /// <summary>
+        /// Tạo từ vựng mới (với ảnh/audio tự động) và thêm vào bộ từ vựng. Chỉ owner được gọi.
+        /// </summary>
+        Task<AdminVocabularyDto> AddNewVocabularyToSetAsync(
+            int setId,
+            VocabularyPreviewDto dto,
+            int userId,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Cập nhật core fields (word, meaning, pronunciation, exampleSentence, description, ảnh) của từ vựng.
+        /// Chỉ owner bộ mới được gọi; chỉ áp dụng cho từ do chính user tạo (IsCustom = true, CreatorId = userId).
+        /// </summary>
+        Task<AdminVocabularyDto> UpdateVocabularyCoreAsync(
+            int setId,
+            int vocabId,
+            UpdateVocabularyCoreDto dto,
+            int userId,
+            CancellationToken cancellationToken = default);
+
         // ========================================================================
         // UPDATE
         // ========================================================================
+
+        /// <summary>
+        /// Cập nhật bộ từ vựng. requestingUserId = null nghĩa là Admin (không kiểm tra owner).
+        /// </summary>
         Task<VocabularySetDto?> UpdateVocabularySetAsync(
             int id,
             UpdateVocabularySetDto dto,
+            int? requestingUserId = null,
+            string? newImageUrl = null,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Chuyển bộ từ vựng từ private sang public (chỉ 1 chiều, chỉ owner).
+        /// </summary>
+        Task<VocabularySetDto?> PublishVocabularySetAsync(
+            int id,
+            int requestingUserId,
             CancellationToken cancellationToken = default);
 
         // ========================================================================
         // DELETE
         // ========================================================================
+
+        /// <summary>
+        /// Xóa bộ từ vựng. requestingUserId = null nghĩa là Admin (không kiểm tra owner).
+        /// </summary>
         Task<bool> DeleteVocabularySetAsync(
             int id,
+            int? requestingUserId = null,
             CancellationToken cancellationToken = default);
     }
 }

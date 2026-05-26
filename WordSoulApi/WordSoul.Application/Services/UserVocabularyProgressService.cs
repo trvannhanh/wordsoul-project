@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using WordSoul.Application.DTOs.User;
 using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
@@ -48,7 +48,11 @@ namespace WordSoul.Application.Services
                 {
                     ReviewWordCount = 0,
                     NextReviewTime = null,
-                    VocabularyStats = new List<LevelStatDto>()
+                    VocabularyStats = new List<LevelStatDto>(),
+                    MemoryStateStats = new List<SrsMemoryStateStatDto>(),
+                    RetentionRate = 0.0,
+                    AverageRecallSpeed = 0.0,
+                    WeeklyActivities = new List<DailyActivityDto>()
                 };
             }
 
@@ -88,6 +92,44 @@ namespace WordSoul.Application.Services
                     WrongCount = p.WrongCount
                 })
                 .ToList();
+
+            // 1. Thống kê theo trạng thái trí nhớ (MemoryState)
+            var memoryStateStats = progresses
+                .GroupBy(p => p.MemoryState)
+                .Select(g => new SrsMemoryStateStatDto
+                {
+                    State = g.Key ?? "New",
+                    Count = g.Count()
+                })
+                .ToList();
+
+            // 2. Tính tỷ lệ ghi nhớ trung bình (% Retention Rate)
+            int totalCorrect = progresses.Sum(p => p.CorrectAttempt);
+            int totalAttempt = progresses.Sum(p => p.TotalAttempt);
+            double retentionRate = totalAttempt > 0
+                ? Math.Round((double)totalCorrect / totalAttempt * 100, 1)
+                : 0.0;
+
+            // 3. Tính tốc độ phản xạ trung bình & lịch sử học tập 7 ngày
+            var history = await _uow.VocabularyReviewHistory.GetReviewHistoryByUserAsync(userId, cancellationToken);
+            var historyList = history.ToList();
+
+            double avgRecallSpeed = historyList.Any()
+                ? Math.Round(historyList.Average(h => h.ResponseTimeSeconds), 2)
+                : 0.0;
+
+            var weeklyActivities = new List<DailyActivityDto>();
+            var today = DateTime.UtcNow.Date;
+            for (int i = 6; i >= 0; i--)
+            {
+                var targetDate = today.AddDays(-i);
+                int count = historyList.Count(h => h.ReviewTime.Date == targetDate);
+                weeklyActivities.Add(new DailyActivityDto
+                {
+                    DateLabel = targetDate.ToString("dd/MM"),
+                    Count = count
+                });
+            }
 
             // ──────────────────────────────────────────────────────────────
             // PERSONALIZATION: Sở thích chủ đề + Gợi ý bộ từ vựng
@@ -136,7 +178,11 @@ namespace WordSoul.Application.Services
                 VocabularyStats = vocabularyStats,
                 StruggleWords = struggleWords,
                 ThemePreferences = themePreferences,
-                RecommendedSets = recommendedSets
+                RecommendedSets = recommendedSets,
+                MemoryStateStats = memoryStateStats,
+                RetentionRate = retentionRate,
+                AverageRecallSpeed = avgRecallSpeed,
+                WeeklyActivities = weeklyActivities
             };
 
             _logger.LogInformation(

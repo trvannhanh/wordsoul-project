@@ -1,0 +1,82 @@
+export interface LoginDto {
+  username: string;
+  password: string;
+}
+
+export interface RegisterDto {
+  username: string;
+  email: string;
+  password: string;
+  starterPetId?: number;
+}
+
+export interface RefreshTokenRequestDto {
+  id: number;
+  refreshToken: string;
+}
+
+export interface TokenResponseDto {
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface UserDto {
+  id: number;
+  username: string;
+  email: string;
+  role: string;
+  createdAt: string;
+  isActive: boolean;
+  level: number;
+  totalXP: number;
+  totalAP: number;
+  hintBalance?: number;
+  streakDays: number;
+  avatarUrl?: string;
+  petCount?: number;
+  petActiveId?: number;
+}
+
+export interface LevelStatDto {
+  level: number;
+  count: number;
+}
+
+export interface StruggleWordDto {
+  vocabularyId: number;
+  word: string;
+  meaning: string;
+  wrongCount: number;
+}
+
+export interface ThemePreferenceDto {
+  theme: string;
+  completedSessionsCount: number;
+}
+
+export interface RecommendedSetDto {
+  id: number;
+  title: string;
+  theme: string;
+  imageUrl?: string;
+  description?: string;
+  difficultyLevel: string;
+}
+
+export interface UserProgressDto {
+  reviewWordCount: number;
+  nextReviewTime: string | null;
+  vocabularyStats: LevelStatDto[];
+  struggleWords?: StruggleWordDto[];
+  themePreferences?: ThemePreferenceDto[];
+  recommendedSets?: RecommendedSetDto[];
+}
+
+export interface ActivityLogDto {
+  id: number;
+  userId: number;
+  username: string;
+  action: string;
+  details: string;
+  createdAt: string;
+}

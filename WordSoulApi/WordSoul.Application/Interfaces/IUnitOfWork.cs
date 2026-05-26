@@ -30,6 +30,7 @@ namespace WordSoul.Application.Interfaces
         IDailyQuestRepository DailyQuest { get; }
         IUserItemRepository UserItem { get; }
         ISystemConfigurationRepository SystemConfiguration { get; }
+        IUserGroupRepository UserGroup { get; }
 
 
 

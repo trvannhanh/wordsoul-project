@@ -18,7 +18,6 @@ namespace WordSoul.Application.DTOs.Gym
         public int XpThreshold { get; set; }
         public int VocabThreshold { get; set; }
         public int QuestionCount { get; set; }
-        public int PassRatePercent { get; set; }
         public int XpReward { get; set; }
         public List<AdminGymLeaderPetDto> GymLeaderPets { get; set; } = new();
     }

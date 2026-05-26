@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 using WordSoul.Application.DTOs;
 using WordSoul.Application.DTOs.Vocabulary;
@@ -8,7 +8,8 @@ namespace WordSoul.Application.Interfaces.Services
 {
     /// <summary>
     /// Giao diện dịch vụ quản lý từ vựng thuộc các bộ từ vựng.
-    /// Hỗ trợ thêm, lấy dữ liệu có phân trang + cache, và xóa liên kết từ bộ.
+    /// Hỗ trợ thêm, lấy dữ liệu có phân trang + cache, xóa liên kết từ bộ,
+    /// chỉnh sửa Override fields và lấy thống kê tiến trình học.
     /// </summary>
     public interface ISetVocabularyService
     {
@@ -34,6 +35,15 @@ namespace WordSoul.Application.Interfaces.Services
             int setId,
             CreateVocabularyInSetDto vocabularyDto,
             string? imageUrl,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Thêm một từ vựng đã có sẵn (theo ID) vào bộ từ vựng. Chỉ owner được thực hiện.
+        /// </summary>
+        Task<bool> AddExistingVocabularyToSetAsync(
+            int setId,
+            int vocabId,
+            int requestingUserId,
             CancellationToken cancellationToken = default);
 
 
@@ -62,6 +72,7 @@ namespace WordSoul.Application.Interfaces.Services
         /// <summary>
         /// Lấy thông tin chi tiết đầy đủ của bộ từ vựng,
         /// bao gồm thông tin bộ và danh sách từ có phân trang (có cache).
+        /// Các trường Override trong SetVocabulary sẽ được ưu tiên thay thế giá trị gốc.
         /// </summary>
         /// <param name="id">ID bộ từ vựng.</param>
         /// <param name="page">Trang hiện tại (mặc định = 1).</param>
@@ -75,6 +86,42 @@ namespace WordSoul.Application.Interfaces.Services
             int id,
             int page = 1,
             int pageSize = 10,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Lấy thống kê tiến trình học của một user với một bộ từ vựng.
+        /// Bao gồm: phân bố MemoryState, RetentionScore, Heatmap 30 ngày, top 5 từ yếu.
+        /// </summary>
+        /// <param name="setId">ID bộ từ vựng.</param>
+        /// <param name="userId">ID người dùng.</param>
+        /// <param name="cancellationToken">Token hủy thao tác.</param>
+        Task<VocabularySetProgressDto?> GetVocabularySetProgressAsync(
+            int setId,
+            int userId,
+            CancellationToken cancellationToken = default);
+
+
+        // ============================================================================
+        // UPDATE
+        // ============================================================================
+
+        /// <summary>
+        /// Cập nhật các trường Override của một từ vựng trong bộ.
+        /// Chỉ ghi vào bảng SetVocabulary — không thay đổi bảng Vocabulary gốc.
+        /// Chỉ owner của bộ từ vựng mới có quyền thực hiện.
+        /// </summary>
+        /// <param name="setId">ID bộ từ vựng.</param>
+        /// <param name="vocabId">ID từ vựng cần override.</param>
+        /// <param name="dto">Dữ liệu override.</param>
+        /// <param name="requestingUserId">ID user yêu cầu (để validate quyền owner).</param>
+        /// <param name="cancellationToken">Token hủy thao tác.</param>
+        /// <returns>DTO từ vựng đã được cập nhật, hoặc null nếu không tìm thấy liên kết.</returns>
+        /// <exception cref="UnauthorizedAccessException">Nếu user không phải owner.</exception>
+        Task<VocabularyDetailDto?> UpdateVocabularyInSetAsync(
+            int setId,
+            int vocabId,
+            UpdateVocabularyInSetDto dto,
+            int requestingUserId,
             CancellationToken cancellationToken = default);
 
 

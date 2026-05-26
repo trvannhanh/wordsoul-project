@@ -40,7 +40,8 @@ namespace WordSoul.IntegrationTests.Services
                 new FakeDailyQuestService(),
                 new FakePetBuffService(),
                 _timeProvider,
-                new FakeGymLeaderService()
+                new FakeGymLeaderService(),
+                new FakeSystemConfigurationService()
             );
         }
 

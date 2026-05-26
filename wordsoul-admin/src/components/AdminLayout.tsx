@@ -5,8 +5,14 @@ import { Dropdown, Avatar, Tooltip } from 'antd';
 import {
   DashboardOutlined,
   UserOutlined,
+  SafetyOutlined,
+  TeamOutlined,
   BookOutlined,
   SettingOutlined,
+  MonitorOutlined,
+  ControlOutlined,
+  FileTextOutlined,
+  GlobalOutlined,
   LogoutOutlined,
   TrophyOutlined,
   AimOutlined,
@@ -14,32 +20,92 @@ import {
   MenuFoldOutlined,
   SunOutlined,
   MoonOutlined,
+  HeartOutlined,
+  BellOutlined,
+  ThunderboltOutlined,
+  GiftOutlined,
+  BarChartOutlined,
+  FireOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useRouter, usePathname } from 'next/navigation';
 
 // ── Nav definition ────────────────────────────────────────────────────────────
-const NAV_ITEMS = [
-  { key: '/dashboard',     icon: <DashboardOutlined />, label: 'Dashboard' },
-  { key: '/users',         icon: <UserOutlined />,      label: 'Users' },
-  { key: '/vocabularies',  icon: <BookOutlined />,      label: 'Vocabulary Library' },
-  { key: '/quests',        icon: <AimOutlined />,       label: 'Quests & Achievements' },
-  { key: '/gyms',          icon: <TrophyOutlined />,    label: 'Gym Operations' },
-];
+type NavGroup = {
+  section?: string;
+  items: { key: string; icon: React.ReactNode; label: string }[];
+  superAdminOnly?: boolean;
+};
 
-const SUPERADMIN_ITEMS = [
-  { key: '/system-health', icon: <SettingOutlined />,   label: 'System Health' },
+const NAV_GROUPS: NavGroup[] = [
+  {
+    items: [
+      { key: '/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
+    ],
+  },
+  {
+    section: 'User Management',
+    items: [
+      { key: '/users', icon: <UserOutlined />,   label: 'All Users' },
+      { key: '/roles', icon: <SafetyOutlined />, label: 'Roles' },
+      { key: '/groups', icon: <TeamOutlined />, label: 'User Groups' },
+    ],
+  },
+  {
+    section: 'Content',
+    items: [
+      { key: '/vocabularies', icon: <BookOutlined />, label: 'Vocabulary Library' },
+      { key: '/words',        icon: <FileTextOutlined />, label: 'Words' },
+      { key: '/quests',       icon: <AimOutlined />,  label: 'Quests & Achievements' },
+      { key: '/gyms',         icon: <TrophyOutlined />, label: 'Gym Operations' },
+      { key: '/pets',         icon: <HeartOutlined />,  label: 'Pets' },
+      { key: '/items',        icon: <GiftOutlined />,   label: 'Items' },
+    ],
+  },
+  {
+    section: 'System',
+    items: [
+      { key: '/notifications', icon: <BellOutlined />,        label: 'Notifications' },
+      { key: '/pvp',           icon: <ThunderboltOutlined />,  label: 'PvP Leaderboard' },
+      { key: '/battles',       icon: <FireOutlined />,         label: 'Battle Replays' },
+      { key: '/analytics',     icon: <BarChartOutlined />,     label: 'Session Analytics' },
+    ],
+    superAdminOnly: true,
+  },
+  {
+    section: 'Settings',
+    superAdminOnly: true,
+    items: [
+      { key: '/system-health',          icon: <MonitorOutlined />,  label: 'System Health' },
+      { key: '/settings/system-config', icon: <ControlOutlined />,  label: 'System Config' },
+      { key: '/settings/logs',          icon: <FileTextOutlined />, label: 'Activity Logs' },
+      { key: '/system-logs',            icon: <MonitorOutlined />,  label: 'System Logs' },
+      { key: '/settings/generals',      icon: <GlobalOutlined />,   label: 'Generals' },
+    ],
+  },
 ];
 
 // ── Page titles (for header breadcrumb) ──────────────────────────────────────
 const PAGE_TITLES: Record<string, string> = {
   '/dashboard':    'Dashboard',
   '/users':        'User Management',
+  '/roles':         'Role Management',
+  '/groups':        'User Groups',
   '/vocabularies': 'Vocabulary Library',
   '/quests':       'Quests & Achievements',
   '/gyms':         'Gym Operations',
-  '/system-health':'System Health & Config',
+  '/pets':          'Pet Management',
+  '/items':          'Item Management',
+  '/notifications':  'Notification Broadcast',
+  '/pvp':             'PvP Leaderboard',
+  '/battles':         'Battle Replays',
+  '/analytics':       'Session Analytics',
+  '/system-health':           'System Health',
+  '/settings/system-config':  'System Configuration',
+  '/settings/logs':           'Activity Logs',
+  '/system-logs':             'System Logs',
+  '/settings/generals':       'General Settings',
 };
 
 // ── Sub-component: NavItem ────────────────────────────────────────────────────
@@ -83,7 +149,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (isLoading || !user) return null;
 
   const isSuperAdmin = user.role === 'SuperAdmin';
-  const allNavItems = isSuperAdmin ? [...NAV_ITEMS, ...SUPERADMIN_ITEMS] : NAV_ITEMS;
+  const visibleGroups = NAV_GROUPS.filter(g => !g.superAdminOnly || isSuperAdmin);
+  const allKeys = visibleGroups.flatMap(g => g.items.map(i => i.key));
 
   // Match active key: handle sub-routes like /vocabularies/123
   const activeKey = Object.keys(PAGE_TITLES).find(k =>
@@ -149,19 +216,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Nav */}
         <nav className="sidebar-nav">
-          {!collapsed && (
-            <div className="sidebar-section-label">Navigation</div>
-          )}
-          {allNavItems.map(item => (
-            <NavItem
-              key={item.key}
-              navKey={item.key}
-              icon={item.icon}
-              label={item.label}
-              collapsed={collapsed}
-              isActive={activeKey === item.key}
-              onClick={() => router.push(item.key)}
-            />
+          {visibleGroups.map((group, gi) => (
+            <React.Fragment key={gi}>
+              {group.section && !collapsed && (
+                <div className="sidebar-section-label">{group.section}</div>
+              )}
+              {group.items.map(item => (
+                <NavItem
+                  key={item.key}
+                  navKey={item.key}
+                  icon={item.icon}
+                  label={item.label}
+                  collapsed={collapsed}
+                  isActive={activeKey === item.key}
+                  onClick={() => router.push(item.key)}
+                />
+              ))}
+            </React.Fragment>
           ))}
         </nav>
 

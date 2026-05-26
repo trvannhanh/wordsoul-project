@@ -50,5 +50,13 @@ namespace WordSoul.Application.Interfaces.Services
             int userId,
             int vocabSetId,
             CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Hủy đăng ký bộ từ vựng khỏi danh sách học tập của người dùng.
+        /// </summary>
+        Task<bool> RemoveVocabularySetFromUserAsync(
+            int userId,
+            int vocabSetId,
+            CancellationToken cancellationToken = default);
     }
 }

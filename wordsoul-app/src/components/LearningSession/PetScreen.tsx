@@ -25,6 +25,7 @@ const PetScreen: React.FC<PetScreenProps> = ({
   captureComplete,
   setCaptureComplete,
   encounteredPet,
+  userPet,
   sessionData,
   mode,
   petId,
@@ -34,7 +35,7 @@ const PetScreen: React.FC<PetScreenProps> = ({
   const getEndPet = () => {
     if (encounteredPet) return encounteredPet;
     if (mode === "review") {
-      return {
+      return userPet || {
         id: petId || 0,
         name: "Zapdos",
         imageUrl:
@@ -94,7 +95,7 @@ const PetScreen: React.FC<PetScreenProps> = ({
               onAnimationComplete={() => setCaptureComplete(true)}
             >
               <img
-                src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1757509182/PikPng.com_pokeball-sprite-png_4945371_nm8b89.png"
+                src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1757509182/pokeball-sprite-png_4945371_nm8b89.png"
                 alt="Poké Ball"
                 className="w-20 h-20 pixel-art mb-2"
               />
@@ -107,146 +108,182 @@ const PetScreen: React.FC<PetScreenProps> = ({
               />
             </motion.div>
 
-          ) : /* ── Escape animation (pet flies away) ── */
-            (mode === "learning" &&
-              "isPetRewardGranted" in sessionData &&
-              sessionData.petId &&
-              !sessionData.isPetRewardGranted &&
-              !captureComplete) ||
-              (mode === "review" && !captureComplete) ? (
-              <motion.div
-                className="flex flex-col items-center"
-                initial={{ scale: 1, y: 0, opacity: 1 }}
-                animate={{ scale: 0.5, y: -240, opacity: 0 }}
-                transition={{ duration: 2, ease: easeInOut }}
-                onAnimationComplete={() => setCaptureComplete(true)}
-              >
-                <img
-                  src={
-                    mode === "review"
-                      ? "https://img.pokemondb.net/sprites/black-white/anim/normal/charizard.gif"
-                      : `https://img.pokemondb.net/sprites/black-white/anim/normal/${endPet?.name?.toLowerCase() ?? "pikachu"
-                      }.gif`
-                  }
-                  alt={endPet?.name ?? "Pet"}
-                  className="w-36 h-36 object-contain pixel-art mb-2"
-                  onError={(e) => {
-                    e.currentTarget.src = endPet?.imageUrl ?? "";
-                  }}
-                />
-                <p className="text-white text-sm font-pixel bg-black bg-opacity-70 p-2 rounded">
-                  {mode === "review"
-                    ? "Zapdos đã bay đi!"
-                    : `${endPet?.name ?? "Pet"} đã bỏ trốn!`}
-                </p>
-                <audio
-                  autoPlay
-                  src="https://res.cloudinary.com/dqpkxxzaf/video/upload/v1758225103/pokemon-red_blue_yellow-run-away-sound-effect-1_g4iona.mp3"
-                />
-              </motion.div>
-
-            ) : (
-              /* ── Reward Summary ── */
-              <motion.div
-                className="flex flex-col items-center justify-center text-center bg-gray-900 bg-opacity-90 p-8 rounded-2xl border-4 border-white w-11/12 max-w-lg shadow-2xl"
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.4, type: "spring" }}
-              >
-                {mode === "learning" &&
-                  !("isPetRewardGranted" in sessionData && sessionData.isPetRewardGranted) && (
-                    <motion.p
-                      className="text-red-400 font-pixel mb-3 text-sm"
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                    >
-                      {"petName" in sessionData && sessionData.petName
-                        ? `${sessionData.petName} đã bỏ trốn!`
-                        : "No new pet reward available"}
-                    </motion.p>
-                  )}
-                {mode === "review" && (
+          ) : mode === "learning" &&
+            "isPetRewardGranted" in sessionData &&
+            sessionData.petId &&
+            !sessionData.isPetRewardGranted &&
+            !captureComplete ? (
+            <motion.div
+              className="flex flex-col items-center"
+              initial={{ scale: 1, y: 0, opacity: 1 }}
+              animate={{ scale: 0.5, y: -240, opacity: 0 }}
+              transition={{ duration: 2, ease: easeInOut }}
+              onAnimationComplete={() => setCaptureComplete(true)}
+            >
+              <img
+                src={`https://img.pokemondb.net/sprites/black-white/anim/normal/${endPet?.name?.toLowerCase() ?? "pikachu"}.gif`}
+                alt={endPet?.name ?? "Pet"}
+                className="w-36 h-36 object-contain pixel-art mb-2"
+                onError={(e) => {
+                  e.currentTarget.src = endPet?.imageUrl ?? "";
+                }}
+              />
+              <p className="text-white text-sm font-pixel bg-black bg-opacity-70 p-2 rounded">
+                {endPet?.name ?? "Pet"} đã bỏ trốn!
+              </p>
+              <audio
+                autoPlay
+                src="https://res.cloudinary.com/dqpkxxzaf/video/upload/v1758225103/pokemon-red_blue_yellow-run-away-sound-effect-1_g4iona.mp3"
+              />
+            </motion.div>
+          ) : mode === "review" && !captureComplete ? (
+            <motion.div
+              className="flex flex-col items-center"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: [1, 1.2, 1, 1.2, 1], y: [0, -15, 0, -15, 0], opacity: 1 }}
+              transition={{ duration: 2 }}
+              onAnimationComplete={() => setCaptureComplete(true)}
+            >
+              <img
+                src={
+                  endPet?.name
+                    ? `https://img.pokemondb.net/sprites/black-white/anim/normal/${endPet.name.toLowerCase()}.gif`
+                    : ""
+                }
+                alt={endPet?.name ?? "Pet"}
+                className="w-36 h-36 object-contain pixel-art mb-2"
+                onError={(e) => {
+                  e.currentTarget.src = endPet?.imageUrl ?? "";
+                }}
+              />
+              <p className="text-white text-sm font-pixel bg-black bg-opacity-70 p-2 rounded">
+                {endPet ? `${endPet.name} đã được ăn no nê!` : "Thú cưng đã được ăn no nê!"}
+              </p>
+              <audio
+                autoPlay
+                src="https://res.cloudinary.com/dqpkxxzaf/video/upload/v1757509871/06-caught-a-pokemon_a3r9h1.mp3"
+              />
+            </motion.div>
+          ) : (
+            /* ── Reward Summary ── */
+            <motion.div
+              className="flex flex-col items-center justify-center text-center bg-gray-900 bg-opacity-90 p-8 rounded-2xl border-4 border-white w-11/12 max-w-lg shadow-2xl"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.4, type: "spring" }}
+            >
+              {mode === "learning" &&
+                !("isPetRewardGranted" in sessionData && sessionData.isPetRewardGranted) && (
                   <motion.p
                     className="text-red-400 font-pixel mb-3 text-sm"
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                   >
-                    Zapdos đã bỏ trốn!
+                    {"petName" in sessionData && sessionData.petName
+                      ? `${sessionData.petName} đã bỏ trốn!`
+                      : "No new pet reward available"}
                   </motion.p>
                 )}
-
-                <motion.h2
-                  className="text-2xl text-white font-pixel mb-4"
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
+              {mode === "review" && endPet && (
+                <motion.div
+                  className="flex flex-col items-center space-y-2 mb-5 p-4 bg-emerald-950/80 rounded-xl border border-emerald-500/30 w-full"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.4, type: "spring" }}
                 >
-                  {getMessage()}
-                </motion.h2>
+                  <img
+                    src={
+                      endPet.name
+                        ? `https://img.pokemondb.net/sprites/black-white/anim/normal/${endPet.name.toLowerCase()}.gif`
+                        : ""
+                    }
+                    alt={endPet.name}
+                    className="w-28 h-28 object-contain pixel-art rounded-lg"
+                    onError={(e) => {
+                      e.currentTarget.src = endPet.imageUrl ?? "";
+                    }}
+                  />
+                  <h3 className="text-emerald-300 font-pixel text-base">
+                    {endPet.name}
+                  </h3>
+                  <p className="text-xs text-emerald-200 text-center font-pixel">
+                    Đồng hành thành công và đã ăn no nê
+                  </p>
+                </motion.div>
+              )}
 
-                {/* Pet reward display */}
-                {mode === "learning" &&
-                  "isPetRewardGranted" in sessionData &&
-                  sessionData.petId &&
-                  sessionData.isPetRewardGranted && (
-                    <motion.div
-                      className="flex flex-col items-center space-y-2 mb-5 p-4 bg-yellow-900 bg-opacity-80 rounded-xl"
-                      initial={{ scale: 0, rotate: 180 }}
-                      animate={{ scale: 1, rotate: 0 }}
-                      transition={{ delay: 0.4, type: "spring" }}
-                    >
-                      <img
-                        src={`https://img.pokemondb.net/sprites/black-white/anim/normal/${endPet?.name?.toLowerCase()}.gif`}
-                        alt={sessionData.petName}
-                        className="w-28 h-28 object-contain pixel-art rounded-lg border-2 border-yellow-400"
-                        onError={(e) => {
-                          e.currentTarget.src = endPet?.imageUrl ?? "";
-                        }}
-                      />
-                      <h3 className="text-yellow-300 font-pixel text-base">
-                        {sessionData.petName}
-                      </h3>
-                      <div className="text-xs text-yellow-200 space-y-1 text-center">
-                        <p>Type: {sessionData.petType}</p>
-                        <p>Rarity: {sessionData.petRarity}</p>
-                      </div>
-                    </motion.div>
-                  )}
+              <motion.h2
+                className="text-2xl text-white font-pixel mb-4"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+              >
+                {getMessage()}
+              </motion.h2>
 
-                {/* Rewards */}
-                <div className="space-y-1 mb-5">
+              {/* Pet reward display */}
+              {mode === "learning" &&
+                "isPetRewardGranted" in sessionData &&
+                sessionData.petId &&
+                sessionData.isPetRewardGranted && (
+                  <motion.div
+                    className="flex flex-col items-center space-y-2 mb-5 p-4 bg-yellow-900 bg-opacity-80 rounded-xl"
+                    initial={{ scale: 0, rotate: 180 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ delay: 0.4, type: "spring" }}
+                  >
+                    <img
+                      src={`https://img.pokemondb.net/sprites/black-white/anim/normal/${endPet?.name?.toLowerCase()}.gif`}
+                      alt={sessionData.petName}
+                      className="w-28 h-28 object-contain pixel-art rounded-lg border-2 border-yellow-400"
+                      onError={(e) => {
+                        e.currentTarget.src = endPet?.imageUrl ?? "";
+                      }}
+                    />
+                    <h3 className="text-yellow-300 font-pixel text-base">
+                      {sessionData.petName}
+                    </h3>
+                    <div className="text-xs text-yellow-200 space-y-1 text-center">
+                      <p>Type: {sessionData.petType}</p>
+                      <p>Rarity: {sessionData.petRarity}</p>
+                    </div>
+                  </motion.div>
+                )}
+
+              {/* Rewards */}
+              <div className="space-y-1 mb-5">
+                <motion.p
+                  className="text-green-400 font-pixel"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  Kinh nghiệm: +{sessionData.xpEarned}
+                </motion.p>
+                {mode === "review" && "apEarned" in sessionData && (
                   <motion.p
-                    className="text-green-400 font-pixel"
+                    className="text-blue-400 font-pixel"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
+                    transition={{ delay: 0.3 }}
                   >
-                    💰 XP: +{sessionData.xpEarned}
+                    Điểm: +{sessionData.apEarned}
                   </motion.p>
-                  {mode === "review" && "apEarned" in sessionData && (
-                    <motion.p
-                      className="text-blue-400 font-pixel"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.3 }}
-                    >
-                      💎 AP: +{sessionData.apEarned}
-                    </motion.p>
-                  )}
-                </div>
+                )}
+              </div>
 
-                <motion.button
-                  onClick={handleCloseReward}
-                  className="bg-emerald-600 px-8 py-3 rounded-lg text-white font-pixel border-2 border-white hover:bg-emerald-700 transition-colors custom-cursor"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.7 }}
-                >
-                  🎉 Đóng & Về Dashboard
-                </motion.button>
-              </motion.div>
-            )}
+              <motion.button
+                onClick={handleCloseReward}
+                className="bg-emerald-600 px-8 py-3 rounded-lg text-white font-pixel border-2 border-white hover:bg-emerald-700 transition-colors custom-cursor"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.7 }}
+              >
+                Kết thúc
+              </motion.button>
+            </motion.div>
+          )}
         </motion.div>
       </AnimatePresence>
     </div>

@@ -45,7 +45,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ activeTheme, onSelect }) => {
         <div className="w-full mb-6">
             {/* Map label */}
             <div className="flex items-center gap-2 mb-3">
-                <span className="text-lg font-bold">🗺️ Bản đồ thế giới</span>
+                <span className="text-lg font-bold">Bản đồ thế giới</span>
                 {activeTheme && (
                     <span
                         className="text-xs px-2 py-0.5 rounded-full font-semibold"

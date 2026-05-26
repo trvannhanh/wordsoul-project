@@ -29,6 +29,7 @@
 
 % Chèn và định dạng mã giả, bảng biểu, tiêu đề...
 \usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{algorithm}
 \usepackage[noend]{algpseudocode}
 \usepackage{titlesec}
@@ -38,6 +39,8 @@
 \usepackage{tikz}
 \usetikzlibrary{calc}      
 \usepackage[hidelinks]{hyperref}
+\usepackage{longtable}
+\usepackage{multirow}
 
 % --- SỬA LỖI TẠI ĐÂY ---
 % 1. Lệnh \includeonly PHẢI nằm ở đây (trước \begin{document}).
@@ -62,6 +65,8 @@
 
 \listoffigures
 
+\input{Appendix/abbreviations.tex}
+
 \clearpage
 \pagenumbering{arabic} 
 
@@ -73,7 +78,6 @@
 \include{Chapter2/chapter2}
 \include{Chapter3/chapter3}
 \include{Chapter4/chapter4}
-\include{Chapter5/chapter5}
 
 % In tài liệu tham khảo
 \phantomsection

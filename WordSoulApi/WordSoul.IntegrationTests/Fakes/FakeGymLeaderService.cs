@@ -16,5 +16,11 @@ namespace WordSoul.IntegrationTests.Fakes
 
         public Task CheckAndUnlockGymsAsync(int userId, CancellationToken ct = default)
             => Task.CompletedTask;
+
+        public Task<List<AdminGymLeaderDto>> AdminGetAllGymsAsync(CancellationToken ct = default)
+            => Task.FromResult(new List<AdminGymLeaderDto>());
+
+        public Task<AdminGymLeaderDto> AdminUpdateGymAsync(int id, GymUpdateDto dto, CancellationToken ct = default)
+            => Task.FromResult(new AdminGymLeaderDto());
     }
 }

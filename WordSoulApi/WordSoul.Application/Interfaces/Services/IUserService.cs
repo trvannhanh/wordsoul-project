@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using WordSoul.Application.DTOs.Admin;
 using WordSoul.Application.DTOs.User;
 using WordSoul.Domain.Enums;
 
@@ -76,7 +77,7 @@ namespace WordSoul.Application.Interfaces.Services
         /// <param name="dto">Thông tin cần cập nhật.</param>
         /// <param name="cancellationToken">Token để hủy thao tác.</param>
         /// <returns>Bản ghi người dùng sau khi cập nhật.</returns>
-        Task<UserDto> UpdateUserAsync(
+        Task<UserDetailDto> UpdateUserAsync(
             int id,
             UpdateUserDto dto,
             CancellationToken cancellationToken = default);
@@ -88,6 +89,19 @@ namespace WordSoul.Application.Interfaces.Services
         /// <param name="cancellationToken">Token để hủy thao tác.</param>
         /// <returns>true nếu tiêu thụ thành công, false nếu hết Hint.</returns>
         Task<bool> ConsumeHintAsync(int userId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Cập nhật trạng thái hoạt động (ban/unban) của người dùng.
+        /// Không cho phép ban SuperAdmin.
+        /// </summary>
+        /// <param name="userId">ID người dùng.</param>
+        /// <param name="isActive">true để unban, false để ban.</param>
+        /// <param name="cancellationToken">Token để hủy thao tác.</param>
+        /// <returns>true nếu cập nhật thành công; false nếu user không tồn tại.</returns>
+        Task<bool> UpdateUserStatusAsync(
+            int userId,
+            bool isActive,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gán vai trò cho người dùng (Admin/User).
@@ -102,9 +116,20 @@ namespace WordSoul.Application.Interfaces.Services
             string roleName,
             CancellationToken cancellationToken = default);
 
+        /// <summary>
+        /// Điều chỉnh XP, AP, HintBalance của user (dành riêng cho admin).
+        /// Clamp về 0 nếu kết quả âm. Ghi audit log với lý do.
+        /// </summary>
+        Task<AdjustBalanceResultDto> AdjustUserBalanceAsync(
+            int userId,
+            AdjustBalanceDto dto,
+            CancellationToken cancellationToken = default);
+
         // ============================================================================
         // DELETE
         // ============================================================================
+
+        Task<bool> UpdateFcmTokenAsync(int userId, string token, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Xóa người dùng theo ID. Có thể là xóa mềm hoặc xóa cứng tùy repository.

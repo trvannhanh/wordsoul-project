@@ -20,7 +20,7 @@ const ProfileCard: React.FC = () => {
           <img
             src={
               user?.avatarUrl ??
-              'https://res.cloudinary.com/dqpkxxzaf/image/upload/v1756453095/boy_c1k3lt.gif'
+              'https://res.cloudinary.com/dqpkxxzaf/image/upload/v1779778616/subtitute_jg49qb.jpg'
             }
             alt="avatar"
             className="w-full h-full object-cover pixelated rounded"
@@ -28,14 +28,14 @@ const ProfileCard: React.FC = () => {
         </div>
         <div>
           <div className="font-pixel text-lg text-color">{user?.username ?? 'Guest'}</div>
-          <div className="text-xs text-color">Level {user?.level ?? 0}</div>
+          <div className="text-xs text-color">Cấp độ {user?.level ?? 0}</div>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4 mb-4">
-        <StatCard label="Total XP" value={user?.totalXP ?? 0} />
-        <StatCard label="Total AP" value={user?.totalAP ?? 0} />
-        <StatCard label="Pets" value={user?.petCount ?? 0} />
-        <StatCard label="Streak" value={user?.streakDays ?? 0} />
+        <StatCard label="Tổng kinh nghiệm" value={user?.totalXP ?? 0} />
+        <StatCard label="Tổng điểm" value={user?.totalAP ?? 0} />
+        <StatCard label="Thú cưng" value={user?.petCount ?? 0} />
+        <StatCard label="Chuỗi ngày học" value={user?.streakDays ?? 0} />
       </div>
       <Link to="/profile" className="no-underline">
         <motion.button
@@ -43,7 +43,7 @@ const ProfileCard: React.FC = () => {
           whileHover={{ scale: 1.05, boxShadow: '0 0 10px rgba(59, 130, 246, 0.7)' }}
           whileTap={{ scale: 0.95 }}
         >
-          View Profile
+          Xem thông tin
         </motion.button>
       </Link>
     </motion.div>

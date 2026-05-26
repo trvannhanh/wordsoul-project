@@ -24,6 +24,9 @@ namespace WordSoul.Application.DTOs.User
         public int PetCount { get; set; }
         public int? PetActiveId { get; set; }
         public string? AvatarUrl { get; set; }
+        public int PvpRating { get; set; }
+        public int PvpWins { get; set; }
+        public int PvpLosses { get; set; }
     }
 
    
@@ -34,6 +37,11 @@ namespace WordSoul.Application.DTOs.User
         public string UserName { get; set; } = string.Empty;
         public int TotalXP { get; set; }
         public int TotalAP { get; set; }
+    }
+
+    public class FcmTokenDto
+    {
+        public string Token { get; set; } = string.Empty;
     }
 
 

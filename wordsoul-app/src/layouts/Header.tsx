@@ -1,12 +1,14 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { deleteNotification, fetchNotifications, markReadAllNotifications, markReadNotifications } from "../services/notification";
 import { useNotifications } from "../hooks/Notification/useNotifications";
 import { useAuth } from "../hooks/Auth/useAuth";
+import { useFCM } from "../hooks/useFCM";
 
 const Header: React.FC = () => {
     const { user, logout } = useAuth();
     const { notifications, setNotifications } = useNotifications(user?.id);
+    useFCM(!!user);
     const [isNotificationSidebarOpen, setIsNotificationSidebarOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
@@ -14,6 +16,7 @@ const Header: React.FC = () => {
         const savedTheme = localStorage.getItem("theme");
         return savedTheme ? savedTheme === "dark" : true; // Mặc định là true (dark mode) nếu không có giá trị trong localStorage
     });
+    const navigate = useNavigate();
 
     const unreadCount = useMemo(() => notifications.filter((n) => !n.isRead).length, [notifications]);
 
@@ -81,6 +84,16 @@ const Header: React.FC = () => {
             .catch((error) => console.error("Failed to mark all as read:", error));
     };
 
+    const handleActionClick = (notif: any) => {
+        if (!notif.isRead) {
+            handleMarkRead(notif.id);
+        }
+        if (notif.actionUrl) {
+            navigate(notif.actionUrl);
+            setIsNotificationSidebarOpen(false);
+        }
+    };
+
     return (
         <>
             {/* Header chính */}
@@ -134,21 +147,21 @@ const Header: React.FC = () => {
                         <div>
                             <Link to="/pets">
                                 <button className="px-3 py-2 hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-md custom-cursor">
-                                    Pokédex
+                                    Vocadex
                                 </button>
                             </Link>
                         </div>
                         <div>
                             <Link to="/gym">
                                 <button className="px-3 py-2 hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-md custom-cursor">
-                                    Gym Leaders
+                                    Chinh phục
                                 </button>
                             </Link>
                         </div>
                         <div>
                             <Link to="/pvp">
                                 <button className="px-3 py-2 hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-md custom-cursor">
-                                    PvP Arena
+                                    Đấu trường
                                 </button>
                             </Link>
                         </div>
@@ -232,13 +245,13 @@ const Header: React.FC = () => {
                             Bộ từ vựng
                         </Link>
                         <Link to="/pets" className="py-2 hover:text-blue-400" onClick={toggleMobileMenu}>
-                            Pokédex
+                            Vocadex
                         </Link>
                         <Link to="/gym" className="py-2 hover:text-blue-400" onClick={toggleMobileMenu}>
-                            Gym Leaders
+                            Chinh phục
                         </Link>
                         <Link to="/pvp" className="py-2 hover:text-blue-400" onClick={toggleMobileMenu}>
-                            PvP Arena
+                            Đấu trường
                         </Link>
                         <Link to="/community" className="py-2 hover:text-blue-400" onClick={toggleMobileMenu}>
                             Cộng đồng
@@ -288,6 +301,14 @@ const Header: React.FC = () => {
                                         {new Date(notif.createdAt).toLocaleTimeString()}
                                     </div>
                                     <div className="flex gap-2 mt-2 flex-wrap">
+                                        {notif.actionUrl && (
+                                            <button
+                                                onClick={() => handleActionClick(notif)}
+                                                className="text-xs text-green-500 hover:text-green-700 custom-cursor font-bold"
+                                            >
+                                                Xem ngay
+                                            </button>
+                                        )}
                                         {!notif.isRead && (
                                             <button
                                                 onClick={() => handleMarkRead(notif.id)}

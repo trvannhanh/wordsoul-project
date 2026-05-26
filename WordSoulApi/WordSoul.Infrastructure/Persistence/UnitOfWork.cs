@@ -32,6 +32,7 @@ namespace WordSoul.Infrastructure.Persistence
         private IDailyQuestRepository? _dailyQuest;
         private IUserItemRepository? _userItem;
         private ISystemConfigurationRepository? _systemConfiguration;
+        private IUserGroupRepository? _userGroup;
 
         public UnitOfWork(WordSoulDbContext context)
         {
@@ -89,6 +90,9 @@ namespace WordSoul.Infrastructure.Persistence
 
         public ISystemConfigurationRepository SystemConfiguration =>
             _systemConfiguration ??= new SystemConfigurationRepository(_context);
+
+        public IUserGroupRepository UserGroup =>
+            _userGroup ??= new UserGroupRepository(_context);
 
         public async Task<int> SaveChangesAsync(CancellationToken ct = default)
         {

@@ -1,4 +1,4 @@
-﻿namespace WordSoul.Application.DTOs.User
+namespace WordSoul.Application.DTOs.User
 {
     public class UserProgressDto
     {
@@ -17,6 +17,12 @@
 
         // Gợi ý bộ từ vựng cá nhân hóa
         public List<RecommendedSetDto> RecommendedSets { get; set; } = [];
+
+        // Spaced Repetition (SRS) Advanced Stats
+        public List<SrsMemoryStateStatDto> MemoryStateStats { get; set; } = [];
+        public double RetentionRate { get; set; }
+        public double AverageRecallSpeed { get; set; }
+        public List<DailyActivityDto> WeeklyActivities { get; set; } = [];
     }
 
     public class StruggleWordDto
@@ -47,5 +53,17 @@
         public string? ImageUrl { get; set; }
         public string? Description { get; set; }
         public string DifficultyLevel { get; set; } = string.Empty;
+    }
+
+    public class SrsMemoryStateStatDto
+    {
+        public string State { get; set; } = string.Empty;
+        public int Count { get; set; }
+    }
+
+    public class DailyActivityDto
+    {
+        public string DateLabel { get; set; } = string.Empty;
+        public int Count { get; set; }
     }
 }

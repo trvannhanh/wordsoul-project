@@ -29,6 +29,8 @@ export interface QuizQuestionDto {
   options?: string[];
   pronunciationUrl?: string;
   isRetry?: boolean;
+  exampleSentence?: string;
+  exampleSentenceAudioUrl?: string;
   /**
    * Câu hỏi được hiển thị trên GameScreen:
    * - MultipleChoice: nghĩa của từ (Meaning) → user chọn Word đúng
@@ -76,10 +78,10 @@ export interface CompleteReviewSessionResponseDto {
 }
 
 export const QuestionTypeEnum = {
-  Flashcard: 0,
-  FillInBlank: 1,
-  MultipleChoice: 2,
-  Listening: 3,
+  Flashcard: "Flashcard",
+  FillInBlank: "FillInBlank",
+  MultipleChoice: "MultipleChoice",
+  Listening: "Listening",
 } as const;
 
 export type QuestionTypeEnum = typeof QuestionTypeEnum[keyof typeof QuestionTypeEnum];

@@ -40,5 +40,32 @@ namespace WordSoul.Application.Services
                 throw;
             }
         }
+
+        /// <inheritdoc/>
+        public async Task<T> GetValueAsync<T>(string key, T defaultValue, CancellationToken cancellationToken = default)
+            where T : IParsable<T>
+        {
+            try
+            {
+                var config = await _unitOfWork.SystemConfiguration.GetByKeyAsync(key, cancellationToken);
+                if (config is null || string.IsNullOrWhiteSpace(config.Value))
+                {
+                    _logger.LogWarning("SystemConfig key '{Key}' not found, using default: {Default}", key, defaultValue);
+                    return defaultValue;
+                }
+
+                if (T.TryParse(config.Value, System.Globalization.CultureInfo.InvariantCulture, out var parsed))
+                    return parsed;
+
+                _logger.LogWarning("SystemConfig key '{Key}' value '{Value}' could not be parsed as {Type}, using default: {Default}",
+                    key, config.Value, typeof(T).Name, defaultValue);
+                return defaultValue;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error reading SystemConfig key '{Key}', using default: {Default}", key, defaultValue);
+                return defaultValue;
+            }
+        }
     }
 }

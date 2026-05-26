@@ -1,4 +1,4 @@
-﻿
+
 using Microsoft.Extensions.Logging;
 using WordSoul.Application.DTOs.DailyQuest;
 using WordSoul.Application.Interfaces;
@@ -66,8 +66,17 @@ namespace WordSoul.Application.Services
             DateTime date,
             CancellationToken ct = default)
         {
-            return await _uow.UserDailyQuest
+            var quests = await _uow.UserDailyQuest
                 .GetUserDailyQuestsByUserAndDateAsync(userId, date.Date, ct);
+
+            if (quests.Count == 0 && date.Date == DateTime.UtcNow.Date)
+            {
+                await GenerateDailyQuestsForUserAsync(userId, ct);
+                quests = await _uow.UserDailyQuest
+                    .GetUserDailyQuestsByUserAndDateAsync(userId, date.Date, ct);
+            }
+
+            return quests;
         }
 
         //  Lấy danh sách quest template đang active
@@ -131,6 +140,41 @@ namespace WordSoul.Application.Services
             await _uow.SaveChangesAsync(ct);
 
             _logger.LogInformation("Created new DailyQuest: {Title}", quest.Title);
+
+            return new DailyQuestDto
+            {
+                Id = quest.Id,
+                Title = quest.Title,
+                Description = quest.Description,
+                QuestType = quest.QuestType.ToString(),
+                TargetValue = quest.TargetValue,
+                RewardType = quest.RewardType.ToString(),
+                RewardValue = quest.RewardValue,
+                RewardReferenceId = quest.RewardReferenceId,
+                IsActive = quest.IsActive,
+                CreatedAt = quest.CreatedAt
+            };
+        }
+
+        public async Task<DailyQuestDto?> UpdateQuestAsync(
+            int id,
+            UpdateDailyQuestDto dto,
+            CancellationToken ct = default)
+        {
+            var quest = await _uow.DailyQuest.GetByIdAsync(id, ct);
+            if (quest == null) return null;
+
+            quest.Title = dto.Title;
+            quest.Description = dto.Description;
+            quest.QuestType = dto.QuestType;
+            quest.TargetValue = dto.TargetValue;
+            quest.RewardType = dto.RewardType;
+            quest.RewardValue = dto.RewardValue;
+            quest.RewardReferenceId = dto.RewardReferenceId;
+            quest.IsActive = dto.IsActive;
+
+            await _uow.DailyQuest.UpdateQuestAsync(quest, ct);
+            await _uow.SaveChangesAsync(ct);
 
             return new DailyQuestDto
             {
@@ -303,6 +347,14 @@ namespace WordSoul.Application.Services
                 await transaction.RollbackAsync(ct);
                 throw;
             }
+        }
+
+        public async Task<bool> DeleteQuestAsync(int questId, CancellationToken ct = default)
+        {
+            var found = await _uow.DailyQuest.DeleteQuestAsync(questId, ct);
+            if (!found) return false;
+            await _uow.SaveChangesAsync(ct);
+            return true;
         }
 
     }

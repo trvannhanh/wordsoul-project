@@ -45,6 +45,14 @@ namespace WordSoul.Api.Controllers
             return NoContent();
         }
 
+        [HttpPut("quests/{id}")]
+        public async Task<IActionResult> UpdateQuest(int id, [FromBody] UpdateDailyQuestDto dto)
+        {
+            var result = await _questService.UpdateQuestAsync(id, dto);
+            if (result == null) return NotFound();
+            return Ok(result);
+        }
+
         // --- Achievements ---
 
         [HttpGet("achievements")]
@@ -59,6 +67,30 @@ namespace WordSoul.Api.Controllers
         {
             var result = await _achievementService.CreateAchievementAsync(dto);
             return Ok(result);
+        }
+
+        [HttpPut("achievements/{id}")]
+        public async Task<IActionResult> UpdateAchievement(int id, [FromBody] UpdateAchievementDto dto)
+        {
+            var result = await _achievementService.UpdateAchievementAsync(id, dto);
+            if (result == null) return NotFound();
+            return Ok(result);
+        }
+
+        [HttpDelete("quests/{id}")]
+        public async Task<IActionResult> DeleteQuest(int id)
+        {
+            var deleted = await _questService.DeleteQuestAsync(id);
+            if (!deleted) return NotFound();
+            return NoContent();
+        }
+
+        [HttpDelete("achievements/{id}")]
+        public async Task<IActionResult> DeleteAchievement(int id)
+        {
+            var deleted = await _achievementService.DeleteAchievementAsync(id);
+            if (!deleted) return NotFound();
+            return NoContent();
         }
     }
 }

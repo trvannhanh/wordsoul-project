@@ -47,7 +47,7 @@ const RecommendedSetsBox: React.FC<RecommendedSetsBoxProps> = ({ recommendedSets
 
     return (
         <div className="pokemon-background pixel-border rounded-xl p-6 mt-6">
-            <h3 className="font-pixel text-xl mb-1 text-yellow-300">✨ Gợi ý cho bạn</h3>
+            <h3 className="font-pixel text-xl mb-1 text-yellow-300">Gợi ý cho bạn</h3>
             <p className="font-pixel text-gray-400 text-xs mb-4">
                 Dựa trên sở thích chủ đề của bạn
             </p>
@@ -114,7 +114,7 @@ const RecommendedSetsBox: React.FC<RecommendedSetsBoxProps> = ({ recommendedSets
                                         }`}
                                     whileTap={isAdded ? {} : { scale: 0.96 }}
                                 >
-                                    {isAdding ? '...' : isAdded ? '✅ Đã thêm' : '+ Thêm vào thư viện'}
+                                    {isAdding ? '...' : isAdded ? 'Đã thêm' : 'Thêm vào thư viện'}
                                 </motion.button>
                             </motion.div>
                         );

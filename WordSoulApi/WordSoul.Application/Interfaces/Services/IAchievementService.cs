@@ -82,5 +82,12 @@ namespace WordSoul.Application.Interfaces.Services
         Task InitializeUserAchievementsAsync(
             int userId,
             CancellationToken ct = default);
+
+        Task<AchievementDto?> UpdateAchievementAsync(
+            int id,
+            UpdateAchievementDto dto,
+            CancellationToken ct = default);
+
+        Task<bool> DeleteAchievementAsync(int achievementId, CancellationToken ct = default);
     }
 }

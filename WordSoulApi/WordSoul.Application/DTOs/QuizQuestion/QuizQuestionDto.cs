@@ -23,6 +23,9 @@ namespace WordSoul.Application.DTOs.QuizQuestion
         public string? PronunciationUrl { get; set; }
         public bool IsRetry { get; set; }
 
+        public string? ExampleSentence { get; set; }
+        public string? ExampleSentenceAudioUrl { get; set; }
+
         /// <summary>
         /// Câu hỏi được hiển thị trên GameScreen, tuỳ loại câu hỏi:
         /// - MultipleChoice: nghĩa của từ (Meaning) → user chọn Word đúng

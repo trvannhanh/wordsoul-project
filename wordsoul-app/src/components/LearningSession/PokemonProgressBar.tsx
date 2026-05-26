@@ -37,7 +37,7 @@ const PokemonProgressBar: React.FC<PokemonProgressBarProps> = ({
             {/* Header row: label + catch rate */}
             <div className="flex items-center justify-between mb-1">
                 <p className="text-white font-pixel text-xs">
-                    ✅ {currentCorrectAnswered} / {maxQuestions}
+                    {currentCorrectAnswered} / {maxQuestions}
                 </p>
                 {encounteredPet && (
                     <div className="flex items-center gap-1">

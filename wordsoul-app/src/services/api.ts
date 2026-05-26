@@ -22,6 +22,7 @@ export const endpoints = {
   AllUserActivities: '/users/activities', // Tất cả activity của user
   userActivities: (userId: number) => `/users/${userId}/activities`, // Activity của user chỉ định
   consumeHint: '/users/me/hints/consume', // Tiêu thụ Hint
+  uploadAvatar: '/users/me/avatar', // Tải lên ảnh đại diện
   userVocabularySets: (vocabularySetId: number) => `/users/vocabulary-sets/${vocabularySetId}`, // Danh sách bộ từ vựng của user
   userOwnedPet: (userId: number, petId: number) => `/users/${userId}/pets/${petId}`, // Pet của user chỉ định
 
@@ -32,6 +33,10 @@ export const endpoints = {
   vocabularySet: (vocabularySetId: number) => `/vocabulary-sets/${vocabularySetId}`, // Bộ từ vựng chỉ định
   fetchGroupedVocabularySets: '/vocabulary-sets/grouped', // Gom nhóm bộ từ vựng
   vocabularySetDetail: (vocabularySetId: number) => `/vocabulary-sets/${vocabularySetId}/details`, // Chi tiết bộ từ vựng
+  vocabularySetPublish: (id: number) => `/vocabulary-sets/${id}/publish`, // Publish bộ private → public
+  vocabularySetVocabOverride: (setId: number, vocabId: number) => `/vocabulary-sets/${setId}/vocabularies/${vocabId}`, // Override từ trong bộ
+  vocabularySetMyProgress: (id: number) => `/vocabulary-sets/${id}/my-progress`, // Tiến trình học của user
+  vocabularySetUnregister: (id: number) => `/vocabulary-sets/${id}/user`, // Hủy đăng ký bộ từ vựng
 
   // Vocabulary
   vocabularies: '/vocabularies', // Tất cả từ vựng

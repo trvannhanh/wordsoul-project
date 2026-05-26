@@ -17,4 +17,20 @@ namespace WordSoul.Application.DTOs.DailyQuest
         public int RewardValue { get; set; }
         public int? RewardReferenceId { get; set; }
     }
+
+    public class UpdateDailyQuestDto
+    {
+        [Required, MaxLength(100)]
+        public string Title { get; set; } = string.Empty;
+
+        [MaxLength(300)]
+        public string? Description { get; set; }
+
+        public QuestType QuestType { get; set; }
+        public int TargetValue { get; set; }
+        public RewardType RewardType { get; set; }
+        public int RewardValue { get; set; }
+        public int? RewardReferenceId { get; set; }
+        public bool IsActive { get; set; } = true;
+    }
 }

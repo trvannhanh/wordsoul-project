@@ -30,5 +30,15 @@ namespace WordSoul.Application.Interfaces.Repositories
         Task<int> GetActivityLogsCountByUserIdAsync(
             int userId,
             CancellationToken cancellationToken = default);
+
+        // ADMIN - filtered paged query with total count
+        Task<(List<ActivityLog> Items, int Total)> GetAdminLogsAsync(
+            string? action = null,
+            int? userId = null,
+            DateTime? fromDate = null,
+            DateTime? toDate = null,
+            int pageNumber = 1,
+            int pageSize = 20,
+            CancellationToken cancellationToken = default);
     }
 }

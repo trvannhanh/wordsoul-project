@@ -75,5 +75,42 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
             var count = await _context.ActivityLogs.CountAsync(al => al.UserId == userId, cancellationToken);
             return count;
         }
+
+        // Admin: filtered paged query with total count
+        public async Task<(List<ActivityLog> Items, int Total)> GetAdminLogsAsync(
+            string? action = null,
+            int? userId = null,
+            DateTime? fromDate = null,
+            DateTime? toDate = null,
+            int pageNumber = 1,
+            int pageSize = 20,
+            CancellationToken cancellationToken = default)
+        {
+            var query = _context.ActivityLogs
+                .Include(al => al.User)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(action))
+                query = query.Where(al => al.Action == action);
+
+            if (userId.HasValue)
+                query = query.Where(al => al.UserId == userId.Value);
+
+            if (fromDate.HasValue)
+                query = query.Where(al => al.Timestamp >= fromDate.Value);
+
+            if (toDate.HasValue)
+                query = query.Where(al => al.Timestamp <= toDate.Value);
+
+            var total = await query.CountAsync(cancellationToken);
+
+            var items = await query
+                .OrderByDescending(al => al.Timestamp)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return (items, total);
+        }
     }
 }

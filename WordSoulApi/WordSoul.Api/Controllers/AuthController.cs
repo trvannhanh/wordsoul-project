@@ -61,7 +61,7 @@ namespace WordSoul.Api.Controllers
         /// </summary>
         [HttpGet("google-login")]
         [AllowAnonymous]
-        public IActionResult GoogleLogin()
+        public IActionResult GoogleLogin([FromQuery] string? state)
         {
             var clientId     = _configuration["Google:ClientId"]!;
             var redirectUri  = Uri.EscapeDataString(_configuration["Google:RedirectUri"]!);
@@ -76,6 +76,11 @@ namespace WordSoul.Api.Controllers
                 $"&access_type=offline" +
                 $"&prompt=consent";
 
+            if (!string.IsNullOrEmpty(state))
+            {
+                googleAuthUrl += $"&state={Uri.EscapeDataString(state)}";
+            }
+
             return Redirect(googleAuthUrl);
         }
 
@@ -88,6 +93,7 @@ namespace WordSoul.Api.Controllers
         public async Task<IActionResult> GoogleResponse(
             [FromQuery] string? code,
             [FromQuery] string? error,
+            [FromQuery] string? state,
             CancellationToken ct = default)
         {
             var frontendUrl = _configuration["AllowedOrigins"]?.Split(",")[0]?.Trim()
@@ -99,7 +105,24 @@ namespace WordSoul.Api.Controllers
                 return Redirect($"{frontendUrl}/login?error=google_denied");
             }
 
-            var result = await _authService.GoogleLoginAsync(code, ct);
+            int? starterPetId = null;
+            if (!string.IsNullOrEmpty(state))
+            {
+                var parts = state.Split('&');
+                foreach (var part in parts)
+                {
+                    if (part.StartsWith("starterPetId="))
+                    {
+                        var val = part.Substring("starterPetId=".Length);
+                        if (int.TryParse(val, out var id))
+                        {
+                            starterPetId = id;
+                        }
+                    }
+                }
+            }
+
+            var result = await _authService.GoogleLoginAsync(code, starterPetId, ct);
             if (result == null)
             {
                 return Redirect($"{frontendUrl}/login?error=google_failed");

@@ -1,0 +1,47 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+      "@/components/*": [
+        "src/components/*"
+      ],
+      "@/screens/*": [
+        "src/screens/*"
+      ],
+      "@/services/*": [
+        "src/services/*"
+      ],
+      "@/types/*": [
+        "src/types/*"
+      ],
+      "@/hooks/*": [
+        "src/hooks/*"
+      ],
+      "@/contexts/*": [
+        "src/contexts/*"
+      ],
+      "@/helpers/*": [
+        "src/helpers/*"
+      ],
+      "@/navigation/*": [
+        "src/navigation/*"
+      ],
+      "@/constants/*": [
+        "src/constants/*"
+      ]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "global.d.ts",
+    ".expo/types/**/*.d.ts",
+    "nativewind-env.d.ts"
+  ]
+}

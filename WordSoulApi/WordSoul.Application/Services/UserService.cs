@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using WordSoul.Application.DTOs.Admin;
 using WordSoul.Application.DTOs.User;
 using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
@@ -85,9 +86,11 @@ namespace WordSoul.Application.Services
                 Level = user.XP / 100, // 100 XP = 1 level
                 StreakDays = streakDays,
                 PetCount = user.UserOwnedPets?.Count ?? 0,
-                AvatarUrl = activePet?.Pet.ImageUrl,
+                AvatarUrl = user.AvatarUrl ?? activePet?.Pet.ImageUrl,
                 PetActiveId = activePet?.PetId,
-                //PetActiveName = activePet?.Pet.Name
+                PvpRating = user.PvpRating,
+                PvpWins = user.PvpWins,
+                PvpLosses = user.PvpLosses,
             };
         }
 
@@ -129,9 +132,9 @@ namespace WordSoul.Application.Services
         // ============================================================================
 
         /// <summary>
-        /// Cập nhật thông tin cơ bản của người dùng (admin only).
+        /// Cập nhật thông tin cơ bản của người dùng.
         /// </summary>
-        public async Task<UserDto> UpdateUserAsync(
+        public async Task<UserDetailDto> UpdateUserAsync(
             int id,
             UpdateUserDto dto,
             CancellationToken cancellationToken = default)
@@ -139,24 +142,71 @@ namespace WordSoul.Application.Services
             var user = await _uow.User.GetUserByIdAsync(id, cancellationToken)
                 ?? throw new KeyNotFoundException($"User with ID {id} not found.");
 
-            user.Username = dto.Username ?? user.Username;
-            user.Email = user.Email;
-            user.IsActive = user.IsActive;
+            if (dto.Username != null && dto.Username != user.Username)
+            {
+                if (await _uow.Auth.UserExistsAsync(dto.Username, cancellationToken))
+                {
+                    throw new ArgumentException("Tên người dùng đã tồn tại.");
+                }
+                user.Username = dto.Username;
+            }
+
+            if (dto.AvatarUrl == "clear" || dto.AvatarUrl == "")
+            {
+                user.AvatarUrl = null;
+            }
+            else if (!string.IsNullOrEmpty(dto.AvatarUrl))
+            {
+                user.AvatarUrl = dto.AvatarUrl;
+            }
 
             await _uow.User.UpdateUserAsync(user, cancellationToken);
             await _uow.SaveChangesAsync(cancellationToken);
 
-            _logger.LogInformation("User {UserId} updated by admin", id);
+            _logger.LogInformation("User {UserId} updated basic profile details", id);
 
-            return new UserDto
+            return await GetUserByIdAsync(id, cancellationToken);
+        }
+
+        /// <summary>
+        /// Cập nhật trạng thái hoạt động (ban/unban) của người dùng.
+        /// </summary>
+        public async Task<bool> UpdateUserStatusAsync(
+            int userId,
+            bool isActive,
+            CancellationToken cancellationToken = default)
+        {
+            var user = await _uow.User.GetUserByIdAsync(userId, cancellationToken);
+            if (user == null)
             {
-                Id = user.Id,
-                Username = user.Username,
-                Email = user.Email,
-                Role = user.Role.ToString(),
-                CreatedAt = user.CreatedAt,
-                IsActive = user.IsActive
-            };
+                _logger.LogWarning("Attempt to update status for non-existent user ID {UserId}", userId);
+                return false;
+            }
+
+            if (user.Role == UserRole.SuperAdmin)
+            {
+                _logger.LogWarning("Attempt to ban SuperAdmin user ID {UserId} was rejected", userId);
+                return false;
+            }
+
+            user.IsActive = isActive;
+
+            // Invalidate refresh token when banning to force logout
+            if (!isActive)
+            {
+                user.RefreshToken = null;
+                user.RefreshTokenExpiryTime = null;
+            }
+
+            await _uow.User.UpdateUserAsync(user, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
+
+            var action = isActive ? "UserUnbanned" : "UserBanned";
+            await _activityLogService.CreateActivityLogAsync(
+                userId, action, $"User {user.Username} was {(isActive ? "unbanned" : "banned")}", cancellationToken);
+
+            _logger.LogInformation("User {UserId} status set to IsActive={IsActive}", userId, isActive);
+            return true;
         }
 
         /// <summary>
@@ -213,9 +263,56 @@ namespace WordSoul.Application.Services
             return true;
         }
 
+        /// <summary>
+        /// Điều chỉnh XP, AP, HintBalance của user bởi admin.
+        /// Clamp về 0 nếu kết quả âm. Ghi audit log.
+        /// </summary>
+        public async Task<AdjustBalanceResultDto> AdjustUserBalanceAsync(
+            int userId,
+            AdjustBalanceDto dto,
+            CancellationToken cancellationToken = default)
+        {
+            var user = await _uow.User.GetUserByIdAsync(userId, cancellationToken)
+                ?? throw new KeyNotFoundException($"User with ID {userId} not found.");
+
+            user.XP = Math.Max(0, user.XP + dto.XpDelta);
+            user.AP = Math.Max(0, user.AP + dto.ApDelta);
+            user.HintBalance = Math.Max(0, user.HintBalance + dto.HintDelta);
+
+            await _uow.User.UpdateUserAsync(user, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
+
+            var logDetails = $"XP {(dto.XpDelta >= 0 ? "+" : "")}{dto.XpDelta}, AP {(dto.ApDelta >= 0 ? "+" : "")}{dto.ApDelta}, Hint {(dto.HintDelta >= 0 ? "+" : "")}{dto.HintDelta}. Reason: {dto.Reason}";
+            await _activityLogService.CreateActivityLogAsync(
+                userId, "ADMIN_BALANCE_ADJUST", logDetails, cancellationToken);
+
+            _logger.LogInformation("Balance adjusted for user {UserId}: {Details}", userId, logDetails);
+
+            return new AdjustBalanceResultDto
+            {
+                UserId = userId,
+                NewXP = user.XP,
+                NewAP = user.AP,
+                NewHintBalance = user.HintBalance,
+            };
+        }
+
         // ============================================================================
-        // DELETE
+        // DELETE & OTHERS
         // ============================================================================
+
+        public async Task<bool> UpdateFcmTokenAsync(int userId, string token, CancellationToken cancellationToken = default)
+        {
+            var user = await _uow.User.GetUserByIdAsync(userId, cancellationToken);
+            if (user == null) return false;
+
+            user.FcmToken = token;
+            await _uow.User.UpdateUserAsync(user, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
+            
+            _logger.LogInformation("FCM Token updated for user {UserId}", userId);
+            return true;
+        }
 
         /// <summary>
         /// Xóa mềm hoặc cứng người dùng (tùy implementation trong repo).
