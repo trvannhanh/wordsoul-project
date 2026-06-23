@@ -251,7 +251,7 @@ namespace WordSoul.Tests.Services.SRS
         }
 
         [Fact]
-        public async Task UpdateAfterReviewAsync_SaveChangesAsync_CalledOnce()
+        public async Task UpdateAfterReviewAsync_SaveChangesAsync_NeverCalled()
         {
             // ARRANGE
             var (service, uowMock, progressRepoMock) = CreateService();
@@ -264,7 +264,7 @@ namespace WordSoul.Tests.Services.SRS
             await service.UpdateAfterReviewAsync(1, 1, grade: 3);
 
             // ASSERT
-            uowMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+            uowMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]

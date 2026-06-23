@@ -1,4 +1,4 @@
-﻿namespace WordSoul.Domain.Entities
+namespace WordSoul.Domain.Entities
 {
     public class UserVocabularyProgress
     {
@@ -27,6 +27,16 @@
         public DateTime? FirstLearnedAt { get; set; }      // Lần đầu học
         public DateTime? MasteredAt { get; set; }          // Khi nào thuộc
 
+
+        // ── Pronunciation Tracking (Độc lập với SRS chính) ─────────────────────
+        /// <summary>Số lần phát âm Perfect liên tiếp hiện tại. Reset sau khi áp dụng bonus EF.</summary>
+        public int PronunciationPerfectStreak { get; set; } = 0;
+
+        /// <summary>Tổng số lần phát âm Sai (có thể giảm nhẻ khi có Perfect). Dùng để kích hoạt penalty.</summary>
+        public int PronunciationWrongCount { get; set; } = 0;
+
+        /// <summary>Thời điểm luyện phát âm gần nhất. Dùng để hiển thị trong UI dashboard.</summary>
+        public DateTime? LastPronunciationAt { get; set; }
 
         // Computed property for ProficiencyLevel
         public int ProficiencyLevel => Repetition switch

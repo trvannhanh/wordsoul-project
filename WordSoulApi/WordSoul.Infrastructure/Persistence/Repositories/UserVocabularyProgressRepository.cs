@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using WordSoul.Application.Interfaces.Repositories;
 using WordSoul.Domain.Entities;
 
@@ -41,10 +41,10 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
                         .ToListAsync(cancellationToken: cancellationToken);
         }
 
-        // Lấy tất cả tiến trình học từ vựng của người dùng
         public async Task<List<UserVocabularyProgress>> GetAllUserVocabularyProgressByUserAsync(int userId, CancellationToken ct = default)
         {
             return await _context.UserVocabularyProgresses
+                .Include(p => p.Vocabulary)
                 .Where(p => p.UserId == userId)
                 .ToListAsync(ct);
         }

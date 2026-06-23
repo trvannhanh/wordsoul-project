@@ -222,6 +222,7 @@ builder.Services.AddScoped<IUploadAssetsService, UploadAssetsService>();
 
 // SRS
 builder.Services.AddScoped<ISRSService, SRSService>();
+builder.Services.AddScoped<IPronunciationPracticeService, PronunciationPracticeService>();
 builder.Services.AddScoped<IVocabularyReviewHistoryRepository, VocabularyReviewHistoryRepository>();
 
 //Background Service
@@ -244,6 +245,10 @@ builder.Services.AddScoped<SRSAlgorithm>();
 builder.Services.AddScoped<ITimeProvider, SystemTimeProvider>();
 builder.Services.AddScoped<IDailyQuestService, DailyQuestService>();
 builder.Services.AddScoped<IUserInventoryService, UserInventoryService>();
+
+// Pronunciation Practice
+builder.Services.AddSingleton<IAzurePronunciationService, AzurePronunciationService>();
+builder.Services.AddScoped<IPronunciationAttemptRepository, PronunciationAttemptRepository>();
 
 // Gym Leader Progression
 builder.Services.AddScoped<IGymLeaderService, GymLeaderService>();

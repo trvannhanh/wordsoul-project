@@ -8,6 +8,7 @@ namespace WordSoul.Domain.Enums
         DailyStreak,
         CompletedSet,
         CatchedPets,
-        GymDefeated  // Dành riêng để track badge khi chinh phục Gym Leader
+        GymDefeated,          // Dành riêng để track badge khi chinh phục Gym Leader
+        PronunciationMastered // Đạt kết quả "Perfect" khi luyện phát âm X từ tổng cộng
     }
 }

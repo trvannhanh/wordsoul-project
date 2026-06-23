@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,7 +16,7 @@ namespace WordSoul.Application.Services.SRS
         // Constants
         private const double MIN_EASE_FACTOR = 1.3;
         private const double DEFAULT_EASE_FACTOR = 2.5;
-        private const double MAX_EASE_FACTOR = 4.0;
+        public const double MAX_EASE_FACTOR = 4.0;
 
         /// <summary>
         /// Calculate next review parameters based on SM-2

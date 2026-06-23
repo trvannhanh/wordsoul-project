@@ -42,6 +42,10 @@ namespace WordSoul.Infrastructure.Persistence
         public DbSet<UserGroup> UserGroups { get; set; }
         public DbSet<UserGroupMember> UserGroupMembers { get; set; }
         public DbSet<SystemLog> SystemLogs { get; set; }
+
+        // ── Pronunciation Practice ─────────────────────────────────
+        public DbSet<PronunciationAttempt> PronunciationAttempts { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -456,6 +460,28 @@ namespace WordSoul.Infrastructure.Persistence
 
             modelBuilder.Entity<UserGroup>()
                 .HasIndex(g => g.Name);
+
+            // ── PronunciationAttempt ─────────────────────────────────────────
+            modelBuilder.Entity<PronunciationAttempt>()
+                .HasOne(pa => pa.User)
+                .WithMany()
+                .HasForeignKey(pa => pa.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PronunciationAttempt>()
+                .HasOne(pa => pa.Vocabulary)
+                .WithMany()
+                .HasForeignKey(pa => pa.VocabularyId)
+                .OnDelete(DeleteBehavior.Restrict); // Giữ lịch sử phát âm kể cả khi xoá từ vựng
+
+            // Index để tối ưu query lịch sử phát âm theo user + từ
+            modelBuilder.Entity<PronunciationAttempt>()
+                .HasIndex(pa => new { pa.UserId, pa.VocabularyId, pa.AttemptTime });
+
+            // Index cho achievement check (count Perfect theo userId)
+            modelBuilder.Entity<PronunciationAttempt>()
+                .HasIndex(pa => new { pa.UserId, pa.Result });
+
             // ── System Configuration Seeding ─────────────────────────────────
             var seedTime = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             modelBuilder.Entity<SystemConfiguration>().HasData(

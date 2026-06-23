@@ -33,6 +33,7 @@ namespace WordSoul.Infrastructure.Persistence
         private IUserItemRepository? _userItem;
         private ISystemConfigurationRepository? _systemConfiguration;
         private IUserGroupRepository? _userGroup;
+        private IPronunciationAttemptRepository? _pronunciationAttempt;
 
         public UnitOfWork(WordSoulDbContext context)
         {
@@ -93,6 +94,9 @@ namespace WordSoul.Infrastructure.Persistence
 
         public IUserGroupRepository UserGroup =>
             _userGroup ??= new UserGroupRepository(_context);
+
+        public IPronunciationAttemptRepository PronunciationAttempt =>
+            _pronunciationAttempt ??= new PronunciationAttemptRepository(_context);
 
         public async Task<int> SaveChangesAsync(CancellationToken ct = default)
         {

@@ -1,4 +1,4 @@
-﻿
+
 
 namespace WordSoul.Domain.Enums
 {
@@ -7,6 +7,7 @@ namespace WordSoul.Domain.Enums
         Learn,
         Review,
         Accuracy,
-        Catch
+        Catch,
+        Pronunciation
     }
 }

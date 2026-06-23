@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -31,6 +31,16 @@ namespace WordSoul.Application.Interfaces.Services
         /// </summary>
         Task<decimal> GetOverallRetentionScoreAsync(
             int userId,
+            CancellationToken ct = default);
+
+        /// <summary>
+        /// Áp dụng hiệu ứng nhẹ của kết quả phát âm lên các thông số SM-2.
+        /// Không gọi UpdateAfterReviewAsync() — không thay đổi Repetition hay Interval trực tiếp.
+        /// </summary>
+        Task ApplyPronunciationEffectAsync(
+            int userId,
+            int vocabularyId,
+            WordSoul.Domain.Enums.PronunciationResult result,
             CancellationToken ct = default);
     }
 }
