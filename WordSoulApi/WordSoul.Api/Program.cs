@@ -1,12 +1,15 @@
 using CloudinaryDotNet;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using Serilog;
+using StackExchange.Redis;
 using System.Text;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
+using WordSoul.Api.Extensions;
 using WordSoul.Api.Hubs;
 using WordSoul.Api.Services;
 using WordSoul.Application.Common;
@@ -19,11 +22,8 @@ using WordSoul.Infrastructure.BackgroundServices;
 using WordSoul.Infrastructure.Common;
 using WordSoul.Infrastructure.ExternalServices;
 using WordSoul.Infrastructure.Persistence;
-
-
-using WordSoul.Infrastructure.BackgroundServices;
-using WordSoul.Infrastructure.Persistence;
 using WordSoul.Infrastructure.Persistence.Repositories;
+using WordSoul.Infrastructure.RateLimiting;
 using WordSoul.Infrastructure.Services;
 using WordSoul.Api.Middlewares;
 
@@ -162,16 +162,29 @@ builder.Services.AddSignalR(options =>
     }
 });
 
+// Problem Details (RFC 7807) + Global Exception Handling
+builder.Services.AddProblemDetails();
+builder.Services.AddTransient<GlobalExceptionMiddleware>();
+
 // Add in-memory caching service
 builder.Services.AddMemoryCache();
 builder.Services.AddLogging();
 
-// Add Redis cache
+// Add Redis cache (IDistributedCache)
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = builder.Configuration["Redis:ConnectionString"];
     options.InstanceName = "wordsoul:";
 });
+
+// Register IConnectionMultiplexer (shared Redis connection) for RedisRateLimiter.
+// Reuses the same connection string — no second connection is opened.
+builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
+    ConnectionMultiplexer.Connect(builder.Configuration["Redis:ConnectionString"] ?? "localhost:6379"));
+
+// Register Redis-backed distributed rate limiter for cost-sensitive policies
+// (ai-vocabulary, audio-generation). Registered as Singleton — stateless, thread-safe.
+builder.Services.AddSingleton<RedisRateLimiter>();
 
 // Register Redis Cache Service
 builder.Services.AddSingleton<IVocabularyAiCacheService, VocabularyAiCacheService>();
@@ -314,6 +327,11 @@ builder.Services.AddScoped<IGoogleOAuthService, GoogleOAuthService>();
 builder.Services.AddSingleton<IAzureSpeechService, AzureSpeechService>();
 
 
+// ── Rate Limiting ────────────────────────────────────────────────────────────
+// Registered AFTER Redis and BEFORE builder.Build().
+// All 7 policies are config-driven via RateLimitingOptions (appsettings.json).
+builder.Services.AddWordSoulRateLimiting(builder.Configuration);
+
 var app = builder.Build();
 
 //Configure the HTTP request pipeline.
@@ -325,36 +343,83 @@ app.MapScalarApiReference(options =>
     options.WithTheme(ScalarTheme.Purple);
 });
 
-// Ghi log các yêu cầu HTTP
+// ╔══════════════════════════════════════════════════════════════════════════╗
+// ║  MIDDLEWARE PIPELINE ORDER — WordSoulApi                               ║
+// ║                                                                        ║
+// ║  1. GlobalExceptionMiddleware  — outermost, catches ALL downstream     ║
+// ║     exceptions including 429s that bubble up unexpectedly.             ║
+// ║  2. SerilogRequestLogging      — log after exception handler wraps it  ║
+// ║  3. RequestResponseLogging     — detailed body logging                 ║
+// ║  4. ActivityTrackingMiddleware — user last-seen telemetry              ║
+// ║  5. CORS                       — must precede HTTPS redirect so        ║
+// ║     OPTIONS preflight is not redirected                                ║
+// ║  6. HTTPS redirect             — production only                       ║
+// ║  7. UseRateLimiter             — AFTER exception handler (so 429       ║
+// ║     responses are logged) but BEFORE authentication.                   ║
+// ║     WHY before auth: the "auth-endpoints" policy partitions by IP and  ║
+// ║     acts on login/register before any identity is resolved.            ║
+// ║     The "authenticated-user" policy uses claims extracted by           ║
+// ║     UseAuthentication, but because the policy factory runs lazily on   ║
+// ║     each request, the JWT has already been parsed by the time the      ║
+// ║     limiter inspects HttpContext.User. Placing UseRateLimiter here     ║
+// ║     ensures the 429 response bypasses UseAuthorization (no 401        ║
+// ║     interference) and that the GlobalExceptionMiddleware can log it.   ║
+// ║  8. UseAuthentication + UseAuthorization                               ║
+// ╚══════════════════════════════════════════════════════════════════════════╝
+
+// 1. Global Exception Handler (must be FIRST to catch everything downstream)
+app.UseMiddleware<GlobalExceptionMiddleware>();
+
+// 2. HTTP request logging
 app.UseSerilogRequestLogging();
 
-// Ghi log chi tiết Request/Response
+// 3. Detailed Request/Response logging
 app.UseMiddleware<RequestResponseLoggingMiddleware>();
 
-// Theo dõi thời gian hoạt động của User
+// 4. User activity tracking
 app.UseMiddleware<ActivityTrackingMiddleware>();
 
-// CORS phải đứng TRƯỚC UseHttpsRedirection
-// Trên Azure App Service, HTTPS được terminate ở load balancer,
-// nên UseHttpsRedirection redirect OPTIONS preflight trước khi CORS kịp xử lý
+// 5. CORS must be before HTTPS redirect
+// On Azure App Service, HTTPS is terminated at the load balancer, so
+// UseHttpsRedirection would redirect OPTIONS preflight before CORS processes it.
 app.UseCors("AllowFrontend");
 
-// 4. HTTPS redirect sau CORS (chỉ bật trên Production/Staging, không dùng khi dev local)
+// 6. HTTPS redirect (production/staging only — not when developing locally)
 if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
 
-// 5. Auth
+// 7. Rate Limiting — placed AFTER exception middleware (so 429 responses are
+//    properly logged) and BEFORE authentication (so IP-based auth endpoint
+//    protection works without requiring a valid JWT first).
+app.UseRateLimiter();
+
+// 8. Auth
 app.UseAuthentication();
 app.UseAuthorization();
 
-// 6. Controllers và Hubs
+// 9. Controllers — no global rate limiting policy here; individual endpoints
+//    are decorated with [EnableRateLimiting("policy-name")] attributes.
 app.MapControllers();
 
-// Hub SignalR - đặt sau UseCors để policy được áp dụng
-app.MapHub<NotificationHub>("/notificationHub").RequireCors("AllowFrontend");
-app.MapHub<BattleHub>("/battleHub").RequireCors("AllowFrontend");
+// 10. Health check endpoints — explicitly exempt from rate limiting.
+//     These are called by Azure App Service probes and must never be blocked.
+app.MapGet("/health",  () => Results.Ok(new { status = "healthy" }))
+   .DisableRateLimiting();
+app.MapGet("/healthz", () => Results.Ok(new { status = "healthy" }))
+   .DisableRateLimiting();
+
+// 11. SignalR Hubs — MUST use DisableRateLimiting on the negotiate path.
+//     Rate limiting the /negotiate endpoint breaks SignalR connection establishment
+//     because the client retries negotiation aggressively and will hit limits
+//     before the real-time connection can be established.
+app.MapHub<NotificationHub>("/notificationHub")
+   .RequireCors("AllowFrontend")
+   .DisableRateLimiting();  // ← critical: negotiate + hub traffic must not be rate-limited
+app.MapHub<BattleHub>("/battleHub")
+   .RequireCors("AllowFrontend")
+   .DisableRateLimiting();  // ← critical: same reason
 
 // 7. Migration
 using (var scope = app.Services.CreateScope())

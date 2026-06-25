@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
 using WordSoul.Application.DTOs.Battle;
 using WordSoul.Application.Interfaces.Services;
+using WordSoul.Api.Extensions;
 using WordSoul.Api.Hubs;
 
 namespace WordSoul.Api.Controllers
@@ -100,6 +102,7 @@ namespace WordSoul.Api.Controllers
         /// Server sẽ push "MatchFound" qua SignalR khi ghép được cặp.
         /// </summary>
         [HttpPost("queue/join")]
+        [EnableRateLimiting(RateLimitingExtensions.MatchmakingJoin)] // 10 req/min per userId — prevent queue spam
         public async Task<IActionResult> JoinQueue([FromBody] JoinQueueDto dto)
         {
             var userId = GetUserId();
