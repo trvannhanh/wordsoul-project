@@ -324,6 +324,7 @@ namespace WordSoul.Application.Services
                     case QuestType.Learn:
                     case QuestType.Review:
                     case QuestType.Catch:
+                    case QuestType.Pronunciation:
                         targetQuest.Progress += increment;
                         break;
 

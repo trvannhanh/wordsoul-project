@@ -82,6 +82,12 @@ export const endpoints = {
   gymDetail: (gymId: number) => `/gym/${gymId}`,                            // GET: chi tiết 1 gym
   startGymBattle: (gymId: number) => `/gym/${gymId}/battle/start`,          // POST: bắt đầu battle
   submitBattle: (sessionId: number) => `/gym/battle/${sessionId}/submit`,   // POST: submit kết quả
+
+  // Pronunciation Practice
+  pronunciationWords: '/pronunciation-attempts/practice-vocabularies',                      // GET: danh sách từ đã học để luyện phát âm
+  pronunciationAssess: '/pronunciation-attempts',                                           // POST: đánh giá phát âm
+  pronunciationHistory: (vocabId: number) => `/pronunciation-attempts/vocabularies/${vocabId}`, // GET: lịch sử phát âm 1 từ
+  pronunciationStats: '/pronunciation-attempts/stats',                                      // GET: thống kê tổng quan
 };
 
 // ---- Helpers ----

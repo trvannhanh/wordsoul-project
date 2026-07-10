@@ -1,6 +1,7 @@
 \babel@toc {vietnamese}{}\relax 
-\contentsline {chapter}{Lời cảm ơn}{i}{chapter*.1}%
-\contentsline {chapter}{Danh mục từ viết tắt}{vi}{chapter*.4}%
+\contentsline {chapter}{Ý kiến cho phép bảo vệ khóa luận}{ii}{chapter*.1}%
+\contentsline {chapter}{Lời cảm ơn}{iii}{chapter*.2}%
+\contentsline {chapter}{Danh mục từ viết tắt}{viii}{chapter*.5}%
 \contentsline {chapter}{\numberline {1}Giới thiệu}{1}{chapter.1}%
 \contentsline {section}{\numberline {1.1}Lý do chọn đề tài}{1}{section.1.1}%
 \contentsline {section}{\numberline {1.2}Mục tiêu đề tài}{2}{section.1.2}%
@@ -24,33 +25,33 @@
 \contentsline {subsection}{\numberline {3.1.2}Yêu cầu phi chức năng}{11}{subsection.3.1.2}%
 \contentsline {section}{\numberline {3.2}Thiết kế hệ thống chi tiết}{11}{section.3.2}%
 \contentsline {subsection}{\numberline {3.2.1}Kiến trúc tổng thể}{11}{subsection.3.2.1}%
-\contentsline {subsubsection}{Kiến trúc Frontend module hóa — Component-Based Architecture}{12}{subsubsection*.5}%
-\contentsline {subsubsection}{Kiến trúc Backend chi tiết — Clean Architecture \& Design Patterns}{12}{subsubsection*.6}%
+\contentsline {subsubsection}{Kiến trúc Frontend module hóa — Component-Based Architecture}{12}{subsubsection*.6}%
+\contentsline {subsubsection}{Kiến trúc Backend chi tiết — Clean Architecture \& Design Patterns}{12}{subsubsection*.7}%
 \contentsline {subsection}{\numberline {3.2.2}Mô hình hóa chức năng qua sơ đồ Use Case}{14}{subsection.3.2.2}%
 \contentsline {subsection}{\numberline {3.2.3}Thiết kế phân quyền theo vai trò}{16}{subsection.3.2.3}%
 \contentsline {subsection}{\numberline {3.2.4}Sơ đồ tuần tự}{17}{subsection.3.2.4}%
-\contentsline {subsubsection}{Quy trình tạo bộ từ vựng}{17}{subsubsection*.7}%
-\contentsline {subsubsection}{Quy trình thực hiện trận đấu}{18}{subsubsection*.8}%
-\contentsline {subsubsection}{Quy trình học, ôn từ vựng và nhận thưởng}{19}{subsubsection*.9}%
+\contentsline {subsubsection}{Quy trình tạo bộ từ vựng}{17}{subsubsection*.8}%
+\contentsline {subsubsection}{Quy trình thực hiện trận đấu}{18}{subsubsection*.9}%
+\contentsline {subsubsection}{Quy trình học, ôn từ vựng và nhận thưởng}{19}{subsubsection*.10}%
 \contentsline {subsection}{\numberline {3.2.5}Sơ đồ hoạt động}{20}{subsection.3.2.5}%
-\contentsline {subsubsection}{Cơ chế thiết lập kho học liệu cá nhân}{21}{subsubsection*.10}%
-\contentsline {subsubsection}{Cơ chế điều phối và xử lý logic đối kháng}{22}{subsubsection*.11}%
-\contentsline {subsubsection}{Hệ thống hóa quy trình tích lũy tri thức và quản lý phần thưởng}{23}{subsubsection*.12}%
+\contentsline {subsubsection}{Cơ chế thiết lập kho học liệu cá nhân}{21}{subsubsection*.11}%
+\contentsline {subsubsection}{Cơ chế điều phối và xử lý logic đối kháng}{22}{subsubsection*.12}%
+\contentsline {subsubsection}{Hệ thống hóa quy trình tích lũy tri thức và quản lý phần thưởng}{23}{subsubsection*.13}%
 \contentsline {subsection}{\numberline {3.2.6}Sơ đồ trạng thái}{24}{subsection.3.2.6}%
-\contentsline {subsubsection}{Trạng thái từ vựng trong phiên học}{24}{subsubsection*.13}%
-\contentsline {subsubsection}{Trạng thái từ vựng theo thuật toán SM-2}{25}{subsubsection*.14}%
+\contentsline {subsubsection}{Trạng thái từ vựng trong phiên học}{24}{subsubsection*.14}%
+\contentsline {subsubsection}{Trạng thái từ vựng theo thuật toán SM-2}{25}{subsubsection*.15}%
 \contentsline {subsection}{\numberline {3.2.7}Phân tích cấu trúc thực thể và quan hệ logic}{26}{subsection.3.2.7}%
-\contentsline {subsubsection}{Nhóm Quản lý người dùng và Xác thực}{27}{subsubsection*.15}%
-\contentsline {subsubsection}{Nhóm Từ vựng và Nội dung học liệu}{28}{subsubsection*.16}%
-\contentsline {subsubsection}{Nhóm Lịch sử học tập và Thuật toán SRS}{29}{subsubsection*.17}%
-\contentsline {subsubsection}{Nhóm Gamification --- Thú ảo, Vật phẩm và Nhiệm vụ}{30}{subsubsection*.18}%
-\contentsline {subsubsection}{Nhóm Hệ thống Đối kháng}{31}{subsubsection*.19}%
+\contentsline {subsubsection}{Nhóm Quản lý người dùng và Xác thực}{27}{subsubsection*.16}%
+\contentsline {subsubsection}{Nhóm Từ vựng và Nội dung học liệu}{28}{subsubsection*.17}%
+\contentsline {subsubsection}{Nhóm Lịch sử học tập và Thuật toán SRS}{29}{subsubsection*.18}%
+\contentsline {subsubsection}{Nhóm Gamification --- Thú ảo, Vật phẩm và Nhiệm vụ}{30}{subsubsection*.19}%
+\contentsline {subsubsection}{Nhóm Hệ thống Đối kháng}{31}{subsubsection*.20}%
 \contentsline {subsection}{\numberline {3.2.8}Thiết kế mô hình dữ liệu vật lý}{31}{subsection.3.2.8}%
-\contentsline {subsubsection}{Nhóm Quản lý người dùng và Xác thực}{32}{subsubsection*.20}%
-\contentsline {subsubsection}{Nhóm Từ vựng và Nội dung học liệu}{33}{subsubsection*.21}%
-\contentsline {subsubsection}{Nhóm Lịch sử học tập và Thuật toán SRS}{34}{subsubsection*.22}%
-\contentsline {subsubsection}{Nhóm Gamification --- Thú ảo, Vật phẩm và Nhiệm vụ}{35}{subsubsection*.23}%
-\contentsline {subsubsection}{Nhóm Hệ thống Đối kháng}{36}{subsubsection*.24}%
+\contentsline {subsubsection}{Nhóm Quản lý người dùng và Xác thực}{32}{subsubsection*.21}%
+\contentsline {subsubsection}{Nhóm Từ vựng và Nội dung học liệu}{33}{subsubsection*.22}%
+\contentsline {subsubsection}{Nhóm Lịch sử học tập và Thuật toán SRS}{34}{subsubsection*.23}%
+\contentsline {subsubsection}{Nhóm Gamification --- Thú ảo, Vật phẩm và Nhiệm vụ}{35}{subsubsection*.24}%
+\contentsline {subsubsection}{Nhóm Hệ thống Đối kháng}{36}{subsubsection*.25}%
 \contentsline {section}{\numberline {3.3}Thiết kế giao diện người dùng và Trải nghiệm người dùng}{37}{section.3.3}%
 \contentsline {subsection}{\numberline {3.3.1}Giao diện Bảng vinh danh cộng đồng}{37}{subsection.3.3.1}%
 \contentsline {subsection}{\numberline {3.3.2}Cơ chế quản trị học liệu đa tầng}{37}{subsection.3.3.2}%
@@ -76,8 +77,8 @@
 \contentsline {section}{\numberline {4.1}Tổng kết công trình nghiên cứu}{59}{section.4.1}%
 \contentsline {section}{\numberline {4.2}Những hạn chế và rào cản tồn tại}{60}{section.4.2}%
 \contentsline {section}{\numberline {4.3}Tầm nhìn và lộ trình hoàn thiện}{60}{section.4.3}%
-\contentsline {chapter}{Tài liệu tham khảo}{61}{section*.25}%
-\contentsline {chapter}{Phụ Lục}{62}{chapter*.26}%
+\contentsline {chapter}{Tài liệu tham khảo}{61}{section*.26}%
+\contentsline {chapter}{Phụ Lục}{62}{chapter*.27}%
 \contentsline {chapter}{\numberline {A}Triển Khai Kỹ Thuật và Mã Nguồn Trọng Tâm}{63}{chapter.A}%
 \contentsline {section}{\numberline {A.1}Kiến Trúc SignalR và Xử Lý Kết Nối Real-time}{63}{section.A.1}%
 \contentsline {section}{\numberline {A.2}Thuật Toán SRS (SuperMemo-2) Implementation}{67}{section.A.2}%

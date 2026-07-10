@@ -111,10 +111,6 @@ namespace WordSoul.Application.Services.SRS
             // 5. Save to database
             await _uow.UserVocabularyProgress.UpdateSrsParametersAsync(progress, ct);
 
-
-            // 7. Commit transaction
-            await _uow.SaveChangesAsync(ct);
-
             // 8. Return result
             return new SRSUpdateResult
             {
@@ -206,6 +202,81 @@ namespace WordSoul.Application.Services.SRS
                 0 => "Don't worry! This happens. Let's review this again soon! 💙",
                 _ => "Keep learning!"
             };
+        }
+
+        /// <summary>
+        /// Áp dụng hiệu ứng nhẹ của kết quả phát âm lên các thông số SM-2.
+        /// - Perfect ×2 liên tiếp: EF +0.05 (tối đa 4.0)
+        /// - Wrong ≥3 lần trên từ đang Review/Mastered: kéo gần NextReviewTime 20%
+        /// - Không bao giờ reset Repetition hay thay đổi Interval
+        /// </summary>
+        public async Task ApplyPronunciationEffectAsync(
+            int userId,
+            int vocabularyId,
+            Domain.Enums.PronunciationResult result,
+            CancellationToken ct = default)
+        {
+            var progress = await _uow.UserVocabularyProgress
+                .GetUserVocabularyProgressAsync(userId, vocabularyId, ct);
+
+            if (progress == null)
+            {
+                _logger.LogDebug(
+                    "ApplyPronunciationEffect: no progress found for User {UserId}, Vocab {VocabId}",
+                    userId, vocabularyId);
+                return;
+            }
+
+            switch (result)
+            {
+                case Domain.Enums.PronunciationResult.Perfect:
+                    progress.PronunciationPerfectStreak++;
+                    // Giảm nhẹ WrongCount (tối thiểu 0)
+                    progress.PronunciationWrongCount = Math.Max(0, progress.PronunciationWrongCount - 1);
+
+                    // Bonus EF sau 2 lần Perfect liên tiếp
+                    if (progress.PronunciationPerfectStreak >= 2)
+                    {
+                        progress.EasinessFactor = Math.Min(
+                            SRSAlgorithm.MAX_EASE_FACTOR,
+                            progress.EasinessFactor + 0.05
+                        );
+                        progress.PronunciationPerfectStreak = 0; // Reset sau khi áp dụng bonus
+                        _logger.LogDebug(
+                            "Pronunciation bonus EF applied for User {UserId}, Vocab {VocabId}. New EF: {EF:F2}",
+                            userId, vocabularyId, progress.EasinessFactor);
+                    }
+                    break;
+
+                case Domain.Enums.PronunciationResult.NearMiss:
+                    progress.PronunciationPerfectStreak = 0;
+                    break;
+
+                case Domain.Enums.PronunciationResult.Wrong:
+                    progress.PronunciationPerfectStreak = 0;
+                    progress.PronunciationWrongCount++;
+
+                    // Penalty nhẹ: kéo ngắn NextReviewTime 20% nếu sai >= 3 lần
+                    // Chỉ áp dụng cho từ đang ở Review/Mastered (không phạt từ đang học)
+                    if (progress.PronunciationWrongCount >= 3
+                        && (progress.MemoryState == "Review" || progress.MemoryState == "Mastered"))
+                    {
+                        var now = _timeProvider.UtcNow;
+                        var remaining = progress.NextReviewTime - now;
+                        if (remaining.TotalDays > 1) // Chỉ áp dụng khi còn nhiều hơn 1 ngày
+                        {
+                            var shortfall = TimeSpan.FromDays(remaining.TotalDays * 0.2);
+                            progress.NextReviewTime = progress.NextReviewTime - shortfall;
+                            _logger.LogDebug(
+                                "Pronunciation penalty applied for User {UserId}, Vocab {VocabId}. NextReview pulled to {Date:yyyy-MM-dd}",
+                                userId, vocabularyId, progress.NextReviewTime);
+                        }
+                    }
+                    break;
+            }
+
+            progress.LastPronunciationAt = _timeProvider.UtcNow;
+            await _uow.UserVocabularyProgress.UpdateSrsParametersAsync(progress, ct);
         }
     }
 }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using WordSoul.Api.Extensions;
 using WordSoul.Application.DTOs.Vocabulary;
 using WordSoul.Application.DTOs.VocabularySet;
@@ -108,6 +109,7 @@ namespace WordSoul.Api.Controllers
         // POST: api/vocabulary-sets/ai-preview : Xem trước dữ liệu tạo từ vựng
         [HttpPost("ai-preview")]
         [Authorize(Roles = "Admin,SuperAdmin,User")]
+        [EnableRateLimiting(RateLimitingExtensions.AiVocabulary)] // Token Bucket 20/+5 per 30s — Gemini quota protection
         public async Task<IActionResult> AiPreviewVocabularySet([FromBody] AiPreviewRequestDto dto)
         {
             if (dto == null || dto.Words == null || !dto.Words.Any())
@@ -138,6 +140,7 @@ namespace WordSoul.Api.Controllers
         // POST: api/vocabulary-sets/ai-create : Tạo bộ từ vựng mới với AI hỗ trợ
         [HttpPost("ai-create")]
         [Authorize(Roles = "Admin,SuperAdmin,User")]
+        [EnableRateLimiting(RateLimitingExtensions.AiVocabulary)] // Token Bucket 20/+5 per 30s — Gemini quota protection
         public async Task<IActionResult> AiCreateVocabularySet([FromForm] AiCreateVocabularySetDto createDto)
         {
             if (createDto == null)

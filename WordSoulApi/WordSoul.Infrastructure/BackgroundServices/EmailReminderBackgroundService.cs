@@ -53,11 +53,11 @@ namespace WordSoul.Infrastructure.BackgroundServices
 
                             string subject = $"Vocamon {activePetName} đang nhớ bạn!";
                             string htmlContent = $@"
-                                <h2>Chào {user.Username ?? "bạn"},</h2>
+                                <h2>Chào {user.Username ?? "bạn"},</h2>  
                                 <p>Đã vài ngày rồi bạn chưa vào ứng dụng.</p>
                                 <p><strong>{activePetName}</strong> đang rất buồn và đói điểm kinh nghiệm (XP) đấy! Hãy vào học ngay để nhận thưởng và chơi cùng {activePetName} nhé.</p>
                                 <br/>
-                                <a href='https://vocamon.com' style='background-color:#FFD700;color:#000;padding:10px 20px;text-decoration:none;border-radius:5px;font-weight:bold;'>Vào thăm {activePetName} ngay</a>
+                                <a href='https://vocamon.online' style='background-color:#FFD700;color:#000;padding:10px 20px;text-decoration:none;border-radius:5px;font-weight:bold;'>Vào thăm {activePetName} ngay</a>
                                 <br/><br/>
                                 <p>Đội ngũ Vocamon</p>";
 

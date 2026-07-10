@@ -31,6 +31,7 @@ namespace WordSoul.Application.Interfaces
         IUserItemRepository UserItem { get; }
         ISystemConfigurationRepository SystemConfiguration { get; }
         IUserGroupRepository UserGroup { get; }
+        IPronunciationAttemptRepository PronunciationAttempt { get; }
 
 
 

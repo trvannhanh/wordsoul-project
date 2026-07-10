@@ -31,6 +31,8 @@ import PvpPetSelector from './features/battle/PvpPetSelector';
 import PvpBattleArena from './features/battle/PvpBattleArena';
 import PvpBattleResult from './features/battle/PvpBattleResult';
 import PvpMatchmaking from './features/battle/PvpMatchmaking';
+import PronunciationPetSelect from './features/pronunciation/PronunciationPetSelect';
+import PronunciationSession from './features/pronunciation/PronunciationSession';
 import { AuthProvider } from './store/AuthProvider';
 
 
@@ -67,6 +69,10 @@ const App: React.FC = () => {
           <Route path="/pvp/matchmaking" element={<PvpMatchmaking />} />
           <Route path="/pvp/arena/:sessionId" element={<PvpBattleArena />} />
           <Route path="/pvp/arena/:sessionId/result" element={<PvpBattleResult />} />
+
+          {/* Pronunciation Practice */}
+          <Route path="/pronunciation" element={<PronunciationPetSelect />} />
+          <Route path="/pronunciation/session" element={<PronunciationSession />} />
 
           <Route element={<NoFooterLayout />}>
             <Route path='/pets' element={<Pets />} />

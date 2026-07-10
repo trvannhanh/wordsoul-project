@@ -697,6 +697,58 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.ToTable("Pets");
                 });
 
+            modelBuilder.Entity("WordSoul.Domain.Entities.PronunciationAttempt", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<double>("AccuracyScore")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime>("AttemptTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("AzureRawResponse")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("CompletenessScore")
+                        .HasColumnType("float");
+
+                    b.Property<int>("ConsecutivePerfectCount")
+                        .HasColumnType("int");
+
+                    b.Property<double>("FluencyScore")
+                        .HasColumnType("float");
+
+                    b.Property<double>("PronunciationScore")
+                        .HasColumnType("float");
+
+                    b.Property<int>("Result")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("VocabularyId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("XpAwarded")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VocabularyId");
+
+                    b.HasIndex("UserId", "Result");
+
+                    b.HasIndex("UserId", "VocabularyId", "AttemptTime");
+
+                    b.ToTable("PronunciationAttempts");
+                });
+
             modelBuilder.Entity("WordSoul.Domain.Entities.SessionVocabulary", b =>
                 {
                     b.Property<int>("LearningSessionId")
@@ -1305,6 +1357,9 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.Property<int>("LastGrade")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("LastPronunciationAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("LastUpdated")
                         .HasColumnType("datetime2");
 
@@ -1317,6 +1372,12 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
                     b.Property<DateTime>("NextReviewTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("PronunciationPerfectStreak")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PronunciationWrongCount")
+                        .HasColumnType("int");
 
                     b.Property<int>("Repetition")
                         .HasColumnType("int");
@@ -1698,6 +1759,25 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("WordSoul.Domain.Entities.PronunciationAttempt", b =>
+                {
+                    b.HasOne("WordSoul.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WordSoul.Domain.Entities.Vocabulary", "Vocabulary")
+                        .WithMany()
+                        .HasForeignKey("VocabularyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+
+                    b.Navigation("Vocabulary");
                 });
 
             modelBuilder.Entity("WordSoul.Domain.Entities.SessionVocabulary", b =>

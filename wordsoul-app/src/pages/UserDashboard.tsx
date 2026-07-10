@@ -9,6 +9,7 @@ import SrsStatsDashboard from '../components/UserDashboard/SrsStatsDashboard';
 import StruggleWordsBox from '../components/UserDashboard/StruggleWordsBox';
 import ProfileCard from '../components/UserProfile/ProfileCard';
 import QuestList from '../components/DailyQuest/QuestList';
+import PronunciationWidget from '../components/UserDashboard/PronunciationWidget';
 import type { UserProgressDto } from '../types/UserDto';
 
 const UserDashboard: React.FC = () => {
@@ -100,6 +101,7 @@ const UserDashboard: React.FC = () => {
             loading={loading}
             onCreateReviewSession={handleCreateReviewSession}
           />
+          <PronunciationWidget />
           <SrsStatsDashboard progress={dashboard} />
           {dashboard && (
             <StruggleWordsBox

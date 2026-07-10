@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using WordSoul.Api.Extensions;
 using WordSoul.Application.DTOs.User;
 using WordSoul.Application.Interfaces.Services;
 
@@ -25,6 +27,7 @@ namespace WordSoul.Api.Controllers
         // POST: api/auth/register
         [HttpPost("register")]
         [AllowAnonymous]
+        [EnableRateLimiting(RateLimitingExtensions.AuthEndpoints)] // 10 req/15min per IP — credential-stuffing protection
         public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
         {
             var user = await _authService.RegisterAsync(registerDto);
@@ -36,6 +39,7 @@ namespace WordSoul.Api.Controllers
         // POST: api/auth/login
         [HttpPost("login")]
         [AllowAnonymous]
+        [EnableRateLimiting(RateLimitingExtensions.AuthEndpoints)] // 10 req/15min per IP — brute-force protection
         public async Task<ActionResult<TokenResponseDto>> Login(LoginDto loginDto)
         {
             var result = await _authService.LoginAsync(loginDto);

@@ -84,7 +84,9 @@ namespace WordSoul.IntegrationTests
             UserItem = new UserItemRepository(_context);
             SystemConfiguration = new SystemConfigurationRepository(_context);
             UserGroup = new UserGroupRepository(_context);
-            // ... add other repositories as needed
+            DailyQuest = new DailyQuestRepository(_context);
+            UserDailyQuest = new UserDailyQuestRepository(_context);
+            PronunciationAttempt = new PronunciationAttemptRepository(_context);
         }
 
         public IUserRepository User { get; }
@@ -111,7 +113,7 @@ namespace WordSoul.IntegrationTests
         public IUserItemRepository UserItem { get; }
         public ISystemConfigurationRepository SystemConfiguration { get; }
         public IUserGroupRepository UserGroup { get; }
-        // ... other repositories
+        public IPronunciationAttemptRepository PronunciationAttempt { get; }
 
         public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
