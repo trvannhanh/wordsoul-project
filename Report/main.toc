@@ -1,7 +1,7 @@
 \babel@toc {vietnamese}{}\relax 
-\contentsline {chapter}{Ý kiến cho phép bảo vệ khóa luận}{i}{chapter*.1}%
-\contentsline {chapter}{Lời cảm ơn}{ii}{chapter*.2}%
-\contentsline {chapter}{Danh mục từ viết tắt}{vii}{chapter*.5}%
+\contentsline {chapter}{Ý kiến cho phép bảo vệ khóa luận}{ii}{chapter*.1}%
+\contentsline {chapter}{Lời cảm ơn}{iii}{chapter*.2}%
+\contentsline {chapter}{Danh mục từ viết tắt}{viii}{chapter*.5}%
 \contentsline {chapter}{\numberline {1}Giới thiệu}{1}{chapter.1}%
 \contentsline {section}{\numberline {1.1}Lý do chọn đề tài}{1}{section.1.1}%
 \contentsline {section}{\numberline {1.2}Mục tiêu đề tài}{2}{section.1.2}%
