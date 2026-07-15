@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDebounce } from 'use-debounce';
 import { deleteVocabularySet, fetchGroupedVocabularySets, fetchUserVocabularySets, fetchVocabularySets } from '../../services/vocabularySet';
-import Card from '../../components/Card';
-import Skeleton from '../../components/Skeleton';
+import Card from '../../shared/components/Card';
+import Skeleton from '../../shared/components/Skeleton';
 import { useNavigate } from 'react-router-dom';
 import type { VocabularySetDto } from '../../types/VocabularySetDto';
 import { useAuth } from '../../hooks/Auth/useAuth';
 import WorldMap, { HOTSPOTS } from './WorldMap';
-import RecommendedSetsBox from '../../components/UserDashboard/RecommendedSetsBox';
+import RecommendedSetsBox from '../../shared/components/UserDashboard/RecommendedSetsBox';
 import { getUserProgress } from '../../services/user';
 import type { RecommendedSetDto } from '../../types/UserDto';
 

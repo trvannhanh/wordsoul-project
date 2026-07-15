@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import Card from '../components/Card';
-import HeroSection from '../components/HeroSection';
+import Card from '../shared/components/Card';
+import HeroSection from '../shared/components/HeroSection';
 import { fetchVocabularySets } from '../services/vocabularySet';
-import Skeleton from '../components/Skeleton';
+import Skeleton from '../shared/components/Skeleton';
 import type { VocabularySetDto } from '../types/VocabularySetDto';
 import OnboardingFlow from '../features/onboarding/OnboardingFlow';
 import { useAuth } from '../hooks/Auth/useAuth';

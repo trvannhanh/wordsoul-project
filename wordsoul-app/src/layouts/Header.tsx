@@ -4,6 +4,7 @@ import { deleteNotification, fetchNotifications, markReadAllNotifications, markR
 import { useNotifications } from "../hooks/Notification/useNotifications";
 import { useAuth } from "../hooks/Auth/useAuth";
 import { useFCM } from "../hooks/useFCM";
+import type { NotificationDto } from "../types/NotificationDto";
 
 const Header: React.FC = () => {
     const { user, logout } = useAuth();
@@ -84,7 +85,7 @@ const Header: React.FC = () => {
             .catch((error) => console.error("Failed to mark all as read:", error));
     };
 
-    const handleActionClick = (notif: any) => {
+    const handleActionClick = (notif: NotificationDto) => {
         if (!notif.isRead) {
             handleMarkRead(notif.id);
         }

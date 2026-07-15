@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     getMyPvpRating,
@@ -54,6 +54,33 @@ export default function PvpLobby() {
     const [detailData, setDetailData] = useState<BattleHistoryDetailDto | null>(null);
     const [detailLoading, setDetailLoading] = useState(false);
 
+    const fetchLobbies = useCallback(() => {
+        setLobbiesLoading(true);
+        getWaitingPvpRooms()
+            .then(data => setLobbies(data))
+            .catch(err => console.error('Failed to load waiting rooms', err))
+            .finally(() => setLobbiesLoading(false));
+    }, []);
+
+    const fetchLeaderboard = useCallback(() => {
+        setLeaderboardLoading(true);
+        getPvpLeaderboard(50)
+            .then(data => setLeaderboard(data))
+            .catch(err => console.error('Failed to load leaderboard', err))
+            .finally(() => setLeaderboardLoading(false));
+    }, []);
+
+    const fetchHistory = useCallback(() => {
+        setHistoryLoading(true);
+        getBattleHistory('PvP', historyPage, historyPageSize)
+            .then(data => {
+                setHistoryList(data.items);
+                setHistoryTotalCount(data.totalCount);
+            })
+            .catch(err => console.error('Failed to load battle history', err))
+            .finally(() => setHistoryLoading(false));
+    }, [historyPage, historyPageSize]);
+
     // Fetch all dashboard data on mount
     useEffect(() => {
         getMyPvpRating()
@@ -63,40 +90,12 @@ export default function PvpLobby() {
 
         fetchLobbies();
         fetchLeaderboard();
-    }, []);
+    }, [fetchLeaderboard, fetchLobbies]);
 
     // Reload history when page changes
     useEffect(() => {
         fetchHistory();
-    }, [historyPage]);
-
-    const fetchLobbies = () => {
-        setLobbiesLoading(true);
-        getWaitingPvpRooms()
-            .then(data => setLobbies(data))
-            .catch(err => console.error('Failed to load waiting rooms', err))
-            .finally(() => setLobbiesLoading(false));
-    };
-
-    const fetchLeaderboard = () => {
-        setLeaderboardLoading(true);
-        getPvpLeaderboard(50)
-            .then(data => setLeaderboard(data))
-            .catch(err => console.error('Failed to load leaderboard', err))
-            .finally(() => setLeaderboardLoading(false));
-    };
-
-    const fetchHistory = () => {
-        setHistoryLoading(true);
-        getBattleHistory('PvP', historyPage, historyPageSize)
-            .then(data => {
-                setHistoryList(data.items);
-                setHistoryTotalCount(data.totalCount);
-            })
-            .catch(err => console.error('Failed to load battle history', err))
-            .finally(() => setHistoryLoading(false));
-    };
-
+    }, [fetchHistory]);
     const handleOpenDetail = (sessionId: number) => {
         setSelectedSessionId(sessionId);
         setDetailLoading(true);

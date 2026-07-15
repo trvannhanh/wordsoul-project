@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import type { BattleEndedDto } from '../../types/BattleArenaTypes';
+import type { BattleEndedDto } from './types';
 
 export default function PvpBattleResult() {
     const navigate = useNavigate();

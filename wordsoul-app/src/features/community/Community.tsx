@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { getLeaderBoard } from '../../services/user';
 import type { LeaderBoardDto } from '../../types/UserDto';
 
@@ -12,7 +12,7 @@ const Community: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const pageSize = 10;
 
-    const loadLeaderboard = async () => {
+    const loadLeaderboard = useCallback(async () => {
         setLoading(true);
         try {
             if (activeTab === 'xp') {
@@ -22,16 +22,16 @@ const Community: React.FC = () => {
                 const apData = await getLeaderBoard(undefined, true, apPage, pageSize);
                 setApLeaderboard(apData);
             }
-        } catch (err) {
+        } catch {
             setError('Error loading leaderboard');
         } finally {
             setLoading(false);
         }
-    };
+    }, [activeTab, apPage, pageSize, xpPage]);
 
     useEffect(() => {
         loadLeaderboard();
-    }, [activeTab, xpPage, apPage]);
+    }, [loadLeaderboard]);
 
     const handleTabSwitch = (tab: 'xp' | 'ap') => {
         setActiveTab(tab);

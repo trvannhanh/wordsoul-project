@@ -3,9 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { activePet, fetchPetDetailById, upgradePet } from '../../services/pet';
 import { motion, AnimatePresence } from 'framer-motion';
-import Particles from 'react-particles';
-import { loadFull } from 'tsparticles';
-import ProfileCard from '../../components/UserProfile/ProfileCard';
+import ProfileCard from '../../shared/components/UserProfile/ProfileCard';
 import { typeBackgrounds, type PetDetailDto, type UpgradePetResponseDto } from '../../types/PetDto';
 import type { UserDto } from '../../types/UserDto';
 import { useAuth } from '../../hooks/Auth/useAuth';
@@ -25,6 +23,13 @@ interface BerryParticle {
 }
 
 const BERRY_TYPES: BerryType[] = ["oran", "sitrus", "pecha"];
+const EVOLUTION_SPARKLES = Array.from({ length: 36 }, (_, index) => ({
+  id: index,
+  x: 8 + ((index * 29) % 84),
+  y: 10 + ((index * 43) % 78),
+  size: 2 + (index % 4),
+  delay: (index % 9) * 0.06,
+}));
 function randomBerry(): BerryType {
   return BERRY_TYPES[Math.floor(Math.random() * BERRY_TYPES.length)];
 }
@@ -96,11 +101,6 @@ const PetDetailPage: React.FC = () => {
 
   // Chọn background dựa trên pet.type, mặc định là pet-background
   const backgroundClass = pet?.type ? typeBackgrounds[pet.type] || "pet-background" : "pet-background";
-
-  // Khởi tạo particles
-  const particlesInit = async (main: any) => {
-    await loadFull(main);
-  };
 
   const dropBerries = (count: number) => {
     const fresh: BerryParticle[] = Array.from({ length: count }, () => ({
@@ -296,21 +296,22 @@ const PetDetailPage: React.FC = () => {
                         animate={{ opacity: [0, 0.8, 0] }}
                         transition={{ duration: 3, times: [0, 0.4, 1], ease: 'easeInOut' }}
                       />
-                      <Particles
-                        id="tsparticles"
-                        init={particlesInit}
-                        options={{
-                          particles: {
-                            number: { value: window.innerWidth < 768 ? 20 : 50 },
-                            size: { value: { min: 1, max: 5 } },
-                            move: { enable: true, speed: window.innerWidth < 768 ? 3 : 6, direction: 'none', random: true },
-                            opacity: { value: { min: 0.3, max: 0.7 } },
-                          },
-                          interactivity: { events: { onHover: { enable: false } } },
-                        }}
-                        className="absolute inset-0 md:block hidden"
-                      />
-                    </>
+                      <div className="pointer-events-none absolute inset-0 hidden overflow-hidden md:block">
+                        {EVOLUTION_SPARKLES.map((sparkle) => (
+                          <motion.span
+                            key={sparkle.id}
+                            className="absolute rounded-full bg-yellow-200 shadow-[0_0_12px_rgba(253,224,71,0.9)]"
+                            style={{
+                              left: `${sparkle.x}%`,
+                              top: `${sparkle.y}%`,
+                              width: sparkle.size,
+                              height: sparkle.size,
+                            }}
+                            animate={{ opacity: [0, 0.9, 0], scale: [0.4, 1.8, 0.4], y: [-8, 8] }}
+                            transition={{ duration: 1.2, delay: sparkle.delay, repeat: Infinity, ease: 'easeInOut' }}
+                          />
+                        ))}
+                      </div>                    </>
                   )}
                 </>
               ) : (

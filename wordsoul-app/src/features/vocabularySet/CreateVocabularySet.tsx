@@ -5,7 +5,7 @@ import { VocabularySetThemeEnum as themeValues } from '../../types/VocabularySet
 import { VocabularyDifficultyLevelEnum as difficultyValues } from '../../types/VocabularyDto';
 import type { VocabularyDifficultyLevelEnum } from '../../types/VocabularyDto';
 import type { VocabularySetThemeEnum, AiCreateVocabularySetResultDto, VocabularyPreviewDto } from '../../types/VocabularySetDto';
-import LoadingScreen from '../../components/LearningSession/LoadingScreen';
+import LoadingScreen from '../learningSession/components/LoadingScreen';
 
 const MAX_TITLE_LENGTH = 100;
 const MAX_SET_DESC_LENGTH = 300;

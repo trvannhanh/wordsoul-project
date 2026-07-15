@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QuestionTypeEnum, type QuizQuestionDto } from '../../types/LearningSessionDto';
-import GameScreen from '../../components/LearningSession/GameScreen';
-import AnswerScreen from '../../components/LearningSession/AnswerScreen';
-import PokemonProgressBar from '../../components/LearningSession/PokemonProgressBar';
+import GameScreen from '../learningSession/components/GameScreen';
+import AnswerScreen from '../learningSession/components/AnswerScreen';
+import PokemonProgressBar from '../learningSession/components/PetProgressBar';
 
 // ─── Static trial data (no API needed) ───────────────────────────────────────
 const TRIAL_QUESTIONS: QuizQuestionDto[] = [
@@ -54,9 +54,7 @@ const TrialQuiz: React.FC<TrialQuizProps> = ({ onComplete, onExit }) => {
     const handleAnswer = useCallback(async (
         question: QuizQuestionDto,
         answer: string,
-        onResult?: (isCorrect: boolean) => void,
-        _responseTimeSeconds?: number,
-        _usedHintCount?: number
+        onResult?: (isCorrect: boolean) => void
     ): Promise<boolean> => {
         const correct = question.questionType === QuestionTypeEnum.Flashcard
             ? answer.trim().toLowerCase() === 'viewed'

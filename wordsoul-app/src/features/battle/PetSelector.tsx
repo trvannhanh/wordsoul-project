@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { isAxiosError } from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { setupArenaBattle } from '../../services/gym';
 import { useAuth } from '../../hooks/Auth/useAuth';
@@ -56,8 +57,11 @@ export default function PetSelector() {
         try {
             const sessionId = await setupArenaBattle(Number(gymId), selected);
             navigate(`/arena/${sessionId}`);
-        } catch (err: any) {
-            setError(err?.response?.data?.error ?? 'Không thể bắt đầu trận đấu.');
+        } catch (err: unknown) {
+            const message = isAxiosError<{ error?: string }>(err)
+                ? err.response?.data?.error
+                : undefined;
+            setError(message ?? 'Không thể bắt đầu trận đấu.');
             setStarting(false);
         }
     };

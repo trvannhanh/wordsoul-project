@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useDebounce } from 'use-debounce';
 import { fetchPets } from '../../services/pet';
-import PetCard from '../../components/Pet/PetCard';
+import PetCard from '../../shared/components/PetCard/PetCard';
 import type { PetDto } from '../../types/PetDto';
 
 const rarityOptions = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
@@ -35,7 +35,7 @@ const Pets: React.FC = () => {
     [isSearching, hasMore]
   );
 
-  const loadPets = async (reset: boolean = false) => {
+  const loadPets = useCallback(async (targetPageNumber: number, reset: boolean = false) => {
     setIsSearching(true);
     try {
       const filters = {
@@ -43,35 +43,32 @@ const Pets: React.FC = () => {
         rarity: rarityFilter || undefined,
         type: typeFilter || undefined,
         isOwned: ownedOnly ? true : undefined,
-        pageNumber,
+        pageNumber: targetPageNumber,
         pageSize: 20,
       };
       const data = await fetchPets(filters);
       setPets((prev) => (reset ? data : [...prev, ...data]));
       setHasMore(data.length === 20);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (err) {
+    } catch {
       setError('Error loading pets');
     } finally {
       setIsSearching(false);
       setLoading(false);
     }
-  };
+  }, [debouncedSearchName, rarityFilter, typeFilter, ownedOnly]);
 
   // Reset danh sách khi thay đổi bộ lọc
   useEffect(() => {
     setPets([]);
     setPageNumber(1);
     setHasMore(true);
-    loadPets(true);
+    setLoading(true);
   }, [debouncedSearchName, rarityFilter, typeFilter, ownedOnly]);
 
-  // Tải thêm khi pageNumber thay đổi
+  // Tải dữ liệu khi bộ lọc hoặc trang thay đổi
   useEffect(() => {
-    if (pageNumber > 1) {
-      loadPets();
-    }
-  }, [pageNumber]);
+    loadPets(pageNumber, pageNumber === 1);
+  }, [pageNumber, loadPets]);
 
   // Theo dõi cuộn để hiển thị nút Back to Top
   useEffect(() => {

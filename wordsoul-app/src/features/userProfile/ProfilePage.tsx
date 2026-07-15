@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { isAxiosError } from 'axios';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import StatCard from '../../components/UserProfile/StatCard';
-import SrsStatsDashboard from '../../components/UserDashboard/SrsStatsDashboard';
-import ThemeRadarChart from '../../components/UserDashboard/ThemeRadarChart';
-import AchievementGrid from '../../components/Achievement/AchievementGrid';
+import StatCard from '../../shared/components/UserProfile/StatCard';
+import SrsStatsDashboard from '../../shared/components/UserDashboard/SrsStatsDashboard';
+import ThemeRadarChart from '../../shared/components/UserDashboard/ThemeRadarChart';
+import AchievementGrid from '../../shared/components/Achievement/AchievementGrid';
 import { useAuth } from '../../hooks/Auth/useAuth';
 import { getUserProgress, updateUserProfile, uploadUserAvatar } from '../../services/user';
 import type { UserProgressDto, UserDto } from '../../types/UserDto';
@@ -137,9 +138,13 @@ const ProfilePage: React.FC = () => {
         setIsEditModalOpen(false);
         setSuccessMsg(null);
       }, 1500);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error saving profile:', err);
-      setErrorMsg(err.response?.data?.message || err.message || 'Có lỗi xảy ra khi lưu hồ sơ.');
+      const responseMessage = isAxiosError<{ message?: string }>(err)
+        ? err.response?.data?.message
+        : undefined;
+      const message = err instanceof Error ? err.message : undefined;
+      setErrorMsg(responseMessage || message || 'Có lỗi xảy ra khi lưu hồ sơ.');
     } finally {
       setIsSaving(false);
     }

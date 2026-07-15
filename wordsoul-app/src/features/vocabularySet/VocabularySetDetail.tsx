@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import VocabSetHeroSection from "../../components/VocabSetHeroSection";
+import VocabSetHeroSection from "./components/VocabSetHeroSection";
 import { fetchVocabularySetDetail, updateVocabularySet, publishVocabularySet, fetchMySetProgress, unregisterVocabularySet, updateVocabCore } from "../../services/vocabularySet";
 import { createLearningSession } from "../../services/learningSession";
-import ProfileCard from "../../components/UserProfile/ProfileCard";
-import VocabularyList from "../../components/Vocabulary/VocabularyList";
+import ProfileCard from "../../shared/components/UserProfile/ProfileCard";
+import VocabularyList from "./components/VocabularyList";
 import { getUserVocabularySets, registerVocabularySet } from "../../services/user";
 import { fetchPets } from "../../services/pet";
-import PetCard from "../../components/Pet/PetCard";
+import PetCard from "../../shared/components/PetCard/PetCard";
 import type { UserVocabularySetDto } from "../../types/UserDto";
 import type { PetDto } from "../../types/PetDto";
 import type { VocabularySetProgressDto, VocabularyDetailDto, UpdateVocabularyCoreDto } from "../../types/VocabularySetDto";
