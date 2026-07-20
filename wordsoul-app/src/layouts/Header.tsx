@@ -3,11 +3,13 @@ import { useEffect, useMemo, useState } from "react";
 import { deleteNotification, fetchNotifications, markReadAllNotifications, markReadNotifications } from "../services/notification";
 import { useNotifications } from "../hooks/Notification/useNotifications";
 import { useAuth } from "../hooks/Auth/useAuth";
+import { useSettings } from "../store/SettingsContext";
 import { useFCM } from "../hooks/useFCM";
 import type { NotificationDto } from "../types/NotificationDto";
 
 const Header: React.FC = () => {
     const { user, logout } = useAuth();
+    const { getSetting } = useSettings();
     const { notifications, setNotifications } = useNotifications(user?.id);
     useFCM(!!user);
     const [isNotificationSidebarOpen, setIsNotificationSidebarOpen] = useState(false);
@@ -104,20 +106,21 @@ const Header: React.FC = () => {
                     <h2 className="flex items-center cursor-pointer">
                         <div>
                             <img
-                                src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1759222012/egg-logo_pflvdz.png"
+                                src={getSetting('WebAppLogo') || "https://res.cloudinary.com/dqpkxxzaf/image/upload/v1759222012/egg-logo_pflvdz.png"}
                                 width="35"
                                 height="35"
-                                alt="coin logo"
+                                alt="logo"
                                 className="animate-pulse "
+                                style={{ objectFit: 'contain' }}
                             />
                         </div>
                         {user ? (
                             <Link to="/home" className="ml-2 text-xs sm:text-sm font-press hover:text-blue-700 custom-cursor">
-                                Vocamon
+                                {getSetting('WebAppName') || "Vocamon"}
                             </Link>
                         ) : (
                             <Link to="/" className="ml-2 text-xs sm:text-sm font-press  hover:text-blue-700 custom-cursor">
-                                Vocamon
+                                {getSetting('WebAppName') || "Vocamon"}
                             </Link>
                         )}
                     </h2>
@@ -240,7 +243,7 @@ const Header: React.FC = () => {
 
             {/* Mobile Menu Dropdown */}
             {isMobileMenuOpen && (
-                <div className="font-pixel fixed md:hidden bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2 absolute top-[48px] left-0 w-full z-40">
+                <div className="font-pixel fixed md:hidden bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2 top-[48px] left-0 w-full z-40">
                     <div className="flex flex-col gap-2">
                         <Link to="/vocabularySet" className="py-2 hover:text-blue-400" onClick={toggleMobileMenu}>
                             Bộ từ vựng

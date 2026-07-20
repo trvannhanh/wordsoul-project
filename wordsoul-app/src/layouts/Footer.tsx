@@ -1,20 +1,22 @@
 import React from 'react';
+import { useSettings } from '../store/SettingsContext';
 
 const Footer: React.FC = () => {
+  const { getSetting } = useSettings();
   return (
     <footer className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white py-12">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="space-y-4">
-            <h3 className="text-xl font-bold">Vocamon</h3>
+            <h3 className="text-xl font-bold">{getSetting('WebAppName') || 'Vocamon'}</h3>
             <p className="text-gray-400">
-              Catch 'em all, Master them all! Your ultimate vocabulary learning adventure.
+              {getSetting('WebAppSubtitle') || "Catch 'em all, Master them all! Your ultimate vocabulary learning adventure."}
             </p>
             <p className="text-gray-400">
               Xô Viết Nghệ Tĩnh, Bình Thạnh, Hồ Chí Minh
             </p>
-            <p className="text-gray-400">Email: trvannhanh@gmail.com</p>
+            <p className="text-gray-400">Email: {getSetting('ContactEmail') || 'trvannhanh@gmail.com'}</p>
           </div>
 
           {/* Quick Links */}
@@ -71,7 +73,7 @@ const Footer: React.FC = () => {
             <h3 className="text-xl font-bold mb-4">Follow Us</h3>
             <div className="flex space-x-4">
               <a
-                href="https://www.facebook.com/giidavibe/"
+                href={getSetting('FacebookUrl') || "https://www.facebook.com/giidavibe/"}
                 target="_blank"
                 rel="noreferrer"
                 className="text-gray-400 hover:text-white transition-colors"
@@ -99,7 +101,7 @@ const Footer: React.FC = () => {
         {/* Bottom Bar */}
         <div className="mt-8 pt-8 border-t border-gray-700 text-center">
           <p className="text-gray-400">
-            &copy; {new Date().getFullYear()} Vocamon. All rights reserved.
+            {getSetting('FooterCopyright') || `© ${new Date().getFullYear()} Vocamon. All rights reserved.`}
           </p>
         </div>
       </div>

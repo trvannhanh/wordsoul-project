@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Menu, X } from 'lucide-react'; // Sử dụng icon từ lucide-react (cài đặt: npm install lucide-react)
+import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
 
 const DashboardLayout = () => {

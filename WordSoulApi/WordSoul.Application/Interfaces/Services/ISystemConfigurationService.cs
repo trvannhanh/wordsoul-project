@@ -7,6 +7,9 @@ namespace WordSoul.Application.Interfaces.Services
         Task<List<SystemConfiguration>> GetAllConfigurationsAsync(CancellationToken cancellationToken = default);
         Task<SystemConfiguration?> GetConfigurationByKeyAsync(string key, CancellationToken cancellationToken = default);
         Task UpdateConfigurationsAsync(IEnumerable<SystemConfiguration> configurations, CancellationToken cancellationToken = default);
+        Task<SystemConfiguration> CreateConfigurationAsync(SystemConfiguration config, CancellationToken cancellationToken = default);
+        Task<SystemConfiguration> UpdateConfigurationAsync(string key, SystemConfiguration config, CancellationToken cancellationToken = default);
+        Task<bool> DeleteConfigurationAsync(string key, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Reads a SystemConfiguration value by key and converts it to <typeparamref name="T"/>.

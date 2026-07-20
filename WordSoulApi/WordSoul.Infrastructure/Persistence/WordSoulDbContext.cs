@@ -496,6 +496,23 @@ namespace WordSoul.Infrastructure.Persistence
                 new SystemConfiguration { Key = "MaintenanceMode",       Value = "false", DataType = "Boolean", Category = "GENERAL",      Description = "Show maintenance notice to regular users (does not affect admins)",           LastUpdatedBy = "System", LastUpdatedAt = seedTime },
                 new SystemConfiguration { Key = "MaxGroupSize",          Value = "50",    DataType = "Integer", Category = "GENERAL",      Description = "Maximum number of members allowed in a single user group",                    LastUpdatedBy = "System", LastUpdatedAt = seedTime },
                 new SystemConfiguration { Key = "AppDisplayName",        Value = "VocaMon", DataType = "String", Category = "GENERAL",     Description = "Application display name shown to users in the UI",                          LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                
+                // Admin branding configurations
+                new SystemConfiguration { Key = "AdminAppName",        Value = "VocaMon Admin", DataType = "String", Category = "GENERAL",     Description = "Application name for the Admin portal",                       LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "AdminAppLogo",        Value = "https://res.cloudinary.com/dqpkxxzaf/image/upload/v1759222012/egg-logo_pflvdz.png", DataType = "String", Category = "GENERAL",     Description = "Logo URL for the Admin portal",                               LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                
+                // Web App branding configurations
+                new SystemConfiguration { Key = "WebAppName",          Value = "VocaMon", DataType = "String", Category = "GENERAL",     Description = "Application name for the client Web App",                    LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "WebAppSubtitle",      Value = "Học từ vựng cùng thú cưng", DataType = "String", Category = "GENERAL",     Description = "Subtitle/Slogan for the client Web App",                     LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "WebAppLogo",          Value = "https://res.cloudinary.com/dqpkxxzaf/image/upload/v1759222012/egg-logo_pflvdz.png", DataType = "String", Category = "GENERAL",     Description = "Logo URL for the client Web App",                            LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "WebAppFavicon",       Value = "https://res.cloudinary.com/dqpkxxzaf/image/upload/v1759222012/egg-logo_pflvdz.png", DataType = "String", Category = "GENERAL",     Description = "Favicon URL for the client Web App",                         LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                
+                // Recommended configurations
+                new SystemConfiguration { Key = "ContactEmail",        Value = "support@vocamon.online", DataType = "String", Category = "GENERAL",     Description = "Support/contact email address shown to users",               LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "AllowGoogleLogin",     Value = "true",  DataType = "Boolean", Category = "GENERAL",      Description = "Enable or disable Google OAuth registration and login",       LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "FooterCopyright",      Value = "© 2026 VocaMon. All rights reserved.", DataType = "String", Category = "GENERAL",     Description = "Copyright text shown in the Web App footer",                 LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "FacebookUrl",          Value = "https://www.facebook.com/giidavibe/", DataType = "String", Category = "GENERAL",     Description = "Official Facebook Fanpage link",                            LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+
                 // System Settings
                 new SystemConfiguration { Key = "LogRetentionDays",      Value = "7",     DataType = "Integer", Category = "SYSTEM",       Description = "Number of days to keep system logs before auto-deleting",                     LastUpdatedBy = "System", LastUpdatedAt = seedTime }
             );

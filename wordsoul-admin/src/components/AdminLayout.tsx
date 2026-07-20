@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Dropdown, Avatar, Tooltip } from 'antd';
 import {
   DashboardOutlined,
@@ -8,7 +9,6 @@ import {
   SafetyOutlined,
   TeamOutlined,
   BookOutlined,
-  SettingOutlined,
   MonitorOutlined,
   ControlOutlined,
   FileTextOutlined,
@@ -30,12 +30,18 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useRouter, usePathname } from 'next/navigation';
+import { authApi, endpoints } from '@/services/api';
 
 // ── Nav definition ────────────────────────────────────────────────────────────
 type NavGroup = {
   section?: string;
   items: { key: string; icon: React.ReactNode; label: string }[];
   superAdminOnly?: boolean;
+};
+
+type SystemConfigValue = {
+  key: string;
+  value: string;
 };
 
 const NAV_GROUPS: NavGroup[] = [
@@ -110,14 +116,12 @@ const PAGE_TITLES: Record<string, string> = {
 
 // ── Sub-component: NavItem ────────────────────────────────────────────────────
 function NavItem({
-  navKey,
   icon,
   label,
   collapsed,
   isActive,
   onClick,
 }: {
-  navKey: string;
   icon: React.ReactNode;
   label: string;
   collapsed: boolean;
@@ -145,21 +149,46 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { colorScheme, toggleColorScheme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
+  const [settings, setSettings] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const fetchBranding = async () => {
+      try {
+        const { data } = await authApi.get<SystemConfigValue[]>(endpoints.systemConfig);
+        const map: Record<string, string> = {};
+        data.forEach(c => {
+          map[c.key] = c.value;
+        });
+        setSettings(map);
+      } catch (err) {
+        console.error('Failed to load branding configurations', err);
+      }
+    };
+    if (user) {
+      fetchBranding();
+    }
+  }, [user]);
+
+  const adminAppName = settings['AdminAppName'] || 'Vocamon';
+  const adminAppLogo = settings['AdminAppLogo'];
+
+  const pageTitle = Object.entries(PAGE_TITLES).find(([key]) =>
+    pathname.startsWith(key)
+  )?.[1] ?? '';
+
+  useEffect(() => {
+    document.title = `${pageTitle ? `${pageTitle} - ` : ''}${adminAppName}`;
+  }, [adminAppName, pageTitle]);
 
   if (isLoading || !user) return null;
 
   const isSuperAdmin = user.role === 'SuperAdmin';
   const visibleGroups = NAV_GROUPS.filter(g => !g.superAdminOnly || isSuperAdmin);
-  const allKeys = visibleGroups.flatMap(g => g.items.map(i => i.key));
 
   // Match active key: handle sub-routes like /vocabularies/123
   const activeKey = Object.keys(PAGE_TITLES).find(k =>
     k === '/' ? pathname === '/' : pathname.startsWith(k)
   ) ?? '';
-
-  const pageTitle = Object.entries(PAGE_TITLES).find(([k]) =>
-    pathname.startsWith(k)
-  )?.[1] ?? '';
 
   const userMenuItems = [
     {
@@ -202,13 +231,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className={`admin-sidebar${collapsed ? ' collapsed' : ''}`}>
         {/* Logo */}
         <div className="sidebar-logo">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" style={{ flexShrink: 0 }}>
-            <rect width="22" height="22" rx="6" fill="var(--accent)" opacity="0.12" />
-            <path d="M6 7h10M6 11h6M6 15h8" stroke="var(--accent)" strokeWidth="1.8" strokeLinecap="round" />
-          </svg>
+          {adminAppLogo ? (
+            <Image
+              src={adminAppLogo}
+              alt="logo"
+              width={22}
+              height={22}
+              style={{ objectFit: 'contain', flexShrink: 0 }}
+              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+            />
+          ) : (
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" style={{ flexShrink: 0 }}>
+              <rect width="22" height="22" rx="6" fill="var(--accent)" opacity="0.12" />
+              <path d="M6 7h10M6 11h6M6 15h8" stroke="var(--accent)" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
+          )}
           {!collapsed && (
             <>
-              <span className="sidebar-logo-text">Vocamon</span>
+              <span className="sidebar-logo-text">{adminAppName}</span>
               <span className="sidebar-logo-badge">Admin</span>
             </>
           )}
@@ -224,7 +264,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               {group.items.map(item => (
                 <NavItem
                   key={item.key}
-                  navKey={item.key}
                   icon={item.icon}
                   label={item.label}
                   collapsed={collapsed}

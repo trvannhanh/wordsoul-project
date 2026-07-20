@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from '../store/AuthProvider';
+import { SettingsProvider } from '../store/SettingsProvider';
 import MainLayout from '../layouts/MainLayout';
 import NoFooterLayout from '../layouts/NoFooterLayout';
 
@@ -46,56 +47,58 @@ const routeFallback = (
 export function AppRouter() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <Suspense fallback={routeFallback}>
-          <Routes>
-            <Route element={<MainLayout />}>
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/auth/callback" element={<GoogleCallback />} />
-              <Route path="/" element={<Home />} />
+      <SettingsProvider>
+        <AuthProvider>
+          <Suspense fallback={routeFallback}>
+            <Routes>
+              <Route element={<MainLayout />}>
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/auth/callback" element={<GoogleCallback />} />
+                <Route path="/" element={<Home />} />
 
-              <Route path="/vocabularySet/:id" element={<VocabularySetDetail />} />
-              <Route path="/vocabularySet" element={<VocabularySet />} />
-              <Route path="/vocabulary-sets/create" element={<CreateVocabularySet />} />
+                <Route path="/vocabularySet/:id" element={<VocabularySetDetail />} />
+                <Route path="/vocabularySet" element={<VocabularySet />} />
+                <Route path="/vocabulary-sets/create" element={<CreateVocabularySet />} />
 
-              <Route path="/home" element={<UserDashboard />} />
-              <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/home" element={<UserDashboard />} />
+                <Route path="/profile" element={<ProfilePage />} />
 
-              <Route path="/gym" element={<GymMap />} />
-              <Route path="/gym/:gymId" element={<GymDetail />} />
-            </Route>
+                <Route path="/gym" element={<GymMap />} />
+                <Route path="/gym/:gymId" element={<GymDetail />} />
+              </Route>
 
-            <Route path="/learningSession/:id" element={<LearningSession />} />
-            <Route path="/gym/battle/:sessionId/result" element={<GymResult />} />
-            <Route path="/gym/:gymId/pets" element={<PetSelector />} />
-            <Route path="/arena/:sessionId" element={<BattleArena />} />
-            <Route path="/arena/:sessionId/result" element={<BattleArenaResult />} />
-            <Route path="/pvp" element={<PvpLobby />} />
-            <Route path="/pvp/pets" element={<PvpPetSelector />} />
-            <Route path="/pvp/matchmaking" element={<PvpMatchmaking />} />
-            <Route path="/pvp/arena/:sessionId" element={<PvpBattleArena />} />
-            <Route path="/pvp/arena/:sessionId/result" element={<PvpBattleResult />} />
+              <Route path="/learningSession/:id" element={<LearningSession />} />
+              <Route path="/gym/battle/:sessionId/result" element={<GymResult />} />
+              <Route path="/gym/:gymId/pets" element={<PetSelector />} />
+              <Route path="/arena/:sessionId" element={<BattleArena />} />
+              <Route path="/arena/:sessionId/result" element={<BattleArenaResult />} />
+              <Route path="/pvp" element={<PvpLobby />} />
+              <Route path="/pvp/pets" element={<PvpPetSelector />} />
+              <Route path="/pvp/matchmaking" element={<PvpMatchmaking />} />
+              <Route path="/pvp/arena/:sessionId" element={<PvpBattleArena />} />
+              <Route path="/pvp/arena/:sessionId/result" element={<PvpBattleResult />} />
 
-            <Route path="/pronunciation" element={<PronunciationPetSelect />} />
-            <Route path="/pronunciation/session" element={<PronunciationSession />} />
+              <Route path="/pronunciation" element={<PronunciationPetSelect />} />
+              <Route path="/pronunciation/session" element={<PronunciationSession />} />
 
-            <Route element={<NoFooterLayout />}>
-              <Route path="/pets" element={<Pets />} />
-              <Route path="/pets/:id" element={<PetDetailPage />} />
-              <Route path="/community" element={<Community />} />
-            </Route>
+              <Route element={<NoFooterLayout />}>
+                <Route path="/pets" element={<Pets />} />
+                <Route path="/pets/:id" element={<PetDetailPage />} />
+                <Route path="/community" element={<Community />} />
+              </Route>
 
-            <Route path="/admin" element={<DashboardLayout />}>
-              <Route index element={<UserList />} />
-              <Route path="users/:userId" element={<UserDetail />} />
-              <Route path="activities" element={<ActivityLog />} />
-              <Route path="vocabulary-sets" element={<VocabularySetList />} />
-              <Route path="pets" element={<PetList />} />
-            </Route>
-          </Routes>
-        </Suspense>
-      </AuthProvider>
+              <Route path="/admin" element={<DashboardLayout />}>
+                <Route index element={<UserList />} />
+                <Route path="users/:userId" element={<UserDetail />} />
+                <Route path="activities" element={<ActivityLog />} />
+                <Route path="vocabulary-sets" element={<VocabularySetList />} />
+                <Route path="pets" element={<PetList />} />
+              </Route>
+            </Routes>
+          </Suspense>
+        </AuthProvider>
+      </SettingsProvider>
     </BrowserRouter>
   );
 }
