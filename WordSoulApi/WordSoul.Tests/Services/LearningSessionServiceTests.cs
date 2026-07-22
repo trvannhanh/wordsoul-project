@@ -399,6 +399,30 @@ namespace WordSoul.Tests.Services
         }
 
         [Fact]
+        public async Task CompleteSession_EndpointTypeDoesNotMatchStoredType_ThrowsInvalidOperation()
+        {
+            var (service, deps) = CreateService();
+            deps.SessionRepo
+                .Setup(r => r.GetLearningSessionByIdAsync(1, default))
+                .ReturnsAsync(new LearningSession
+                {
+                    Id = 1,
+                    UserId = 1,
+                    Type = SessionType.Learning,
+                    IsCompleted = false
+                });
+
+            Func<Task> act = () =>
+                service.CompleteSessionAsync(userId: 1, sessionId: 1, SessionType.Review);
+
+            await act.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("*Session type mismatch*");
+            deps.SessionVocabRepo.Verify(
+                r => r.GetSessionVocabulariesBySessionIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()),
+                Times.Never);
+        }
+
+        [Fact]
         public async Task CompleteSession_NotAllVocabsCompleted_ThrowsInvalidOperation()
         {
             // ARRANGE
@@ -436,10 +460,10 @@ namespace WordSoul.Tests.Services
             var (service, deps) = CreateService();
             deps.SessionRepo
                 .Setup(r => r.GetLearningSessionByIdAsync(1, default))
-                .ReturnsAsync(new LearningSession { Id = 1, IsCompleted = true });
+                .ReturnsAsync(new LearningSession { Id = 1, UserId = 1, IsCompleted = true });
 
             // ACT
-            var result = await service.GetSessionQuestionsAsync(sessionId: 1);
+            var result = await service.GetSessionQuestionsAsync(userId: 1, sessionId: 1);
 
             // ASSERT
             result.Should().BeEmpty();
@@ -452,7 +476,7 @@ namespace WordSoul.Tests.Services
             var (service, deps) = CreateService();
             deps.SessionRepo
                 .Setup(r => r.GetLearningSessionByIdAsync(1, default))
-                .ReturnsAsync(new LearningSession { Id = 1, IsCompleted = false });
+                .ReturnsAsync(new LearningSession { Id = 1, UserId = 1, IsCompleted = false });
             deps.SessionVocabRepo
                 .Setup(r => r.GetSessionVocabulariesBySessionIdAsync(1, default))
                 .ReturnsAsync(new List<SessionVocabulary>
@@ -464,10 +488,27 @@ namespace WordSoul.Tests.Services
                 });
 
             // ACT
-            var result = await service.GetSessionQuestionsAsync(sessionId: 1);
+            var result = await service.GetSessionQuestionsAsync(userId: 1, sessionId: 1);
 
             // ASSERT
             result.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task GetSessionQuestions_SessionOwnedByAnotherUser_ThrowsUnauthorized()
+        {
+            var (service, deps) = CreateService();
+            deps.SessionRepo
+                .Setup(r => r.GetLearningSessionByIdAsync(1, default))
+                .ReturnsAsync(new LearningSession { Id = 1, UserId = 99 });
+
+            Func<Task> act = async () =>
+                await service.GetSessionQuestionsAsync(userId: 1, sessionId: 1);
+
+            await act.Should().ThrowAsync<UnauthorizedAccessException>();
+            deps.SessionVocabRepo.Verify(
+                r => r.GetSessionVocabulariesBySessionIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()),
+                Times.Never);
         }
 
         #endregion
@@ -493,6 +534,7 @@ namespace WordSoul.Tests.Services
             var (service, _) = CreateService();
             var request = new SubmitAnswerRequestDto
             {
+                SubmissionId = Guid.NewGuid(),
                 VocabularyId = 0,
                 QuestionType = QuestionType.Flashcard,
                 Answer = "anything"
@@ -554,6 +596,7 @@ namespace WordSoul.Tests.Services
 
             var request = new SubmitAnswerRequestDto
             {
+                SubmissionId = Guid.NewGuid(),
                 VocabularyId = 10,
                 QuestionType = QuestionType.Flashcard,
                 Answer = "wrong answer doesn't matter"
@@ -577,7 +620,7 @@ namespace WordSoul.Tests.Services
             var sessionVocab = new SessionVocabulary
             {
                 LearningSessionId = 1, VocabularyId = 10,
-                CurrentLevel = 2, IsCompleted = false,
+                CurrentLevel = 1, IsCompleted = false,
                 Vocabulary = vocab
             };
             var session = new LearningSession
@@ -617,6 +660,7 @@ namespace WordSoul.Tests.Services
 
             var request = new SubmitAnswerRequestDto
             {
+                SubmissionId = Guid.NewGuid(),
                 VocabularyId = 10,
                 QuestionType = QuestionType.FillInBlank,
                 Answer = "definitely-wrong"   // Wrong answer
@@ -629,7 +673,7 @@ namespace WordSoul.Tests.Services
             result.IsCorrect.Should().BeFalse();
             result.CorrectAnswer.Should().Be("ephemeral");
             // Level decreases: 2 → max(0, 2-1) = 1
-            result.NewLevel.Should().Be(1);
+            result.NewLevel.Should().Be(0);
             result.IsVocabularyCompleted.Should().BeFalse();
         }
 
@@ -643,7 +687,7 @@ namespace WordSoul.Tests.Services
             var sessionVocab = new SessionVocabulary
             {
                 LearningSessionId = 1, VocabularyId = 10,
-                CurrentLevel = 2, IsCompleted = false,
+                CurrentLevel = 1, IsCompleted = false,
                 Vocabulary = vocab
             };
             var session = new LearningSession
@@ -681,6 +725,7 @@ namespace WordSoul.Tests.Services
 
             var request = new SubmitAnswerRequestDto
             {
+                SubmissionId = Guid.NewGuid(),
                 VocabularyId = 10,
                 QuestionType = QuestionType.FillInBlank,
                 Answer = "ephemeral"    // Correct answer (case-insensitive)
@@ -692,7 +737,7 @@ namespace WordSoul.Tests.Services
             // ASSERT
             result.IsCorrect.Should().BeTrue();
             // Level increases: 2 → 3 (not yet complete, needs 4)
-            result.NewLevel.Should().Be(3);
+            result.NewLevel.Should().Be(2);
             result.IsVocabularyCompleted.Should().BeFalse();
         }
 
@@ -731,7 +776,7 @@ namespace WordSoul.Tests.Services
                 .Setup(r => r.GetUserVocabularyProgressAsync(1, 10, default))
                 .ReturnsAsync(progress);
             deps.AnswerRecordRepo
-                .Setup(r => r.GetAttemptCountAsync(1, 10, QuestionType.Flashcard, default))
+                .Setup(r => r.GetAttemptCountAsync(1, 10, QuestionType.Listening, default))
                 .ReturnsAsync(0);
             deps.AnswerRecordRepo
                 .Setup(r => r.CreateAnswerRecordAsync(
@@ -744,8 +789,9 @@ namespace WordSoul.Tests.Services
 
             var request = new SubmitAnswerRequestDto
             {
+                SubmissionId = Guid.NewGuid(),
                 VocabularyId = 10,
-                QuestionType = QuestionType.Flashcard,
+                QuestionType = QuestionType.Listening,
                 Answer = "perseverance"
             };
 
@@ -756,6 +802,108 @@ namespace WordSoul.Tests.Services
             result.IsCorrect.Should().BeTrue();
             result.NewLevel.Should().Be(4);
             result.IsVocabularyCompleted.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task SubmitAnswer_QuestionTypeDoesNotMatchCurrentLevel_ThrowsInvalidOperation()
+        {
+            var (service, deps) = CreateService();
+            var submissionId = Guid.NewGuid();
+            deps.SessionRepo
+                .Setup(r => r.GetExistingLearningSessionForUserAsync(1, 1, default))
+                .ReturnsAsync(new LearningSession { Id = 1, UserId = 1, IsCompleted = false });
+            deps.SessionVocabRepo
+                .Setup(r => r.GetSessionVocabularyAsync(1, 10, default))
+                .ReturnsAsync(new SessionVocabulary
+                {
+                    LearningSessionId = 1,
+                    VocabularyId = 10,
+                    CurrentLevel = 2,
+                    Vocabulary = new Vocabulary { Id = 10, Word = "secure" }
+                });
+
+            var request = new SubmitAnswerRequestDto
+            {
+                SubmissionId = submissionId,
+                VocabularyId = 10,
+                QuestionType = QuestionType.Flashcard,
+                Answer = "viewed"
+            };
+
+            Func<Task> act = () => service.SubmitAnswerAsync(1, 1, request);
+
+            await act.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("*Question type mismatch*");
+            deps.AnswerRecordRepo.Verify(
+                r => r.CreateAnswerRecordAsync(It.IsAny<AnswerRecord>(), It.IsAny<CancellationToken>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public async Task SubmitAnswer_CompletedSession_ThrowsInvalidOperation()
+        {
+            var (service, deps) = CreateService();
+            deps.SessionRepo
+                .Setup(r => r.GetExistingLearningSessionForUserAsync(1, 1, default))
+                .ReturnsAsync(new LearningSession { Id = 1, UserId = 1, IsCompleted = true });
+
+            var request = new SubmitAnswerRequestDto
+            {
+                SubmissionId = Guid.NewGuid(),
+                VocabularyId = 10,
+                QuestionType = QuestionType.Flashcard,
+                Answer = "viewed"
+            };
+
+            Func<Task> act = () => service.SubmitAnswerAsync(1, 1, request);
+
+            await act.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("*completed session*");
+            deps.SessionVocabRepo.Verify(
+                r => r.GetSessionVocabularyAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public async Task SubmitAnswer_DuplicateSubmission_ReturnsStoredResultWithoutAdvancingProgress()
+        {
+            var (service, deps) = CreateService();
+            var submissionId = Guid.NewGuid();
+            deps.SessionRepo
+                .Setup(r => r.GetExistingLearningSessionForUserAsync(1, 1, default))
+                .ReturnsAsync(new LearningSession { Id = 1, UserId = 1, IsCompleted = true });
+            deps.AnswerRecordRepo
+                .Setup(r => r.GetBySubmissionIdAsync(1, submissionId, default))
+                .ReturnsAsync(new AnswerRecord
+                {
+                    SubmissionId = submissionId,
+                    LearningSessionId = 1,
+                    VocabularyId = 10,
+                    Vocabulary = new Vocabulary { Id = 10, Word = "secure" },
+                    QuestionType = QuestionType.Listening,
+                    Answer = "secure",
+                    IsCorrect = true,
+                    AttemptCount = 2,
+                    ResultingLevel = 4,
+                    IsVocabularyCompleted = true
+                });
+
+            var result = await service.SubmitAnswerAsync(1, 1, new SubmitAnswerRequestDto
+            {
+                SubmissionId = submissionId,
+                VocabularyId = 10,
+                QuestionType = QuestionType.Listening,
+                Answer = "secure"
+            });
+
+            result.IsCorrect.Should().BeTrue();
+            result.AttemptNumber.Should().Be(2);
+            result.NewLevel.Should().Be(4);
+            result.IsVocabularyCompleted.Should().BeTrue();
+            deps.SessionVocabRepo.Verify(
+                r => r.GetSessionVocabularyAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+                Times.Never);
+            deps.Uow.Verify(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
 
         #endregion

@@ -269,10 +269,21 @@ namespace WordSoul.Application.Services
         /// Lấy danh sách câu hỏi quiz cho một phiên học cụ thể.
         /// Nếu session đã complete thì trả về rỗng.
         /// </summary>
-        public async Task<IEnumerable<QuizQuestionDto>> GetSessionQuestionsAsync(int sessionId, CancellationToken ct = default)
+        public async Task<IEnumerable<QuizQuestionDto>> GetSessionQuestionsAsync(
+            int userId,
+            int sessionId,
+            CancellationToken ct = default)
         {
-            // Validation
+            if (userId <= 0)
+                throw new ArgumentException("UserId must be greater than zero.", nameof(userId));
+            if (sessionId <= 0)
+                throw new ArgumentException("SessionId must be greater than zero.", nameof(sessionId));
+
             var session = await _uow.LearningSession.GetLearningSessionByIdAsync(sessionId, ct);
+            if (session == null)
+                throw new KeyNotFoundException("Learning session not found.");
+            if (session.UserId != userId)
+                throw new UnauthorizedAccessException("User does not have access to this session.");
             if (session?.IsCompleted == true) return Enumerable.Empty<QuizQuestionDto>();
 
             // Lấy tất cả từ vựng trong session
@@ -405,6 +416,9 @@ namespace WordSoul.Application.Services
             var session = await _uow.LearningSession.GetLearningSessionByIdAsync(sessionId, ct);
             if (session == null || session.UserId != userId) throw new UnauthorizedAccessException("User does not have access to this session");
             if (session.IsCompleted) throw new InvalidOperationException("Session is already completed");
+            if (session.Type != sessionType)
+                throw new InvalidOperationException(
+                    $"Session type mismatch. Expected {session.Type}, received {sessionType}.");
 
             var sessionVocabs = await _uow.SessionVocabulary.GetSessionVocabulariesBySessionIdAsync(sessionId, ct);
             if (sessionVocabs.Any(sv => !sv.IsCompleted)) throw new InvalidOperationException("Not all vocabularies are completed in this session");
@@ -567,12 +581,42 @@ namespace WordSoul.Application.Services
             CancellationToken ct = default)
         {
             //Validation
-            if (request == null || request.VocabularyId <= 0)
+            if (request == null
+                || request.VocabularyId <= 0
+                || request.SubmissionId == Guid.Empty
+                || request.Answer == null
+                || request.ResponseTimeSeconds < 0
+                || request.HintCount < 0)
                 throw new ArgumentException("Invalid request data");
 
             var session = await _uow.LearningSession
                 .GetExistingLearningSessionForUserAsync(userId, sessionId, ct)
                 ?? throw new UnauthorizedAccessException();
+
+            var existingAnswer = await _uow.AnswerRecord
+                .GetBySubmissionIdAsync(sessionId, request.SubmissionId, ct);
+
+            if (existingAnswer != null)
+            {
+                if (existingAnswer.VocabularyId != request.VocabularyId
+                    || existingAnswer.QuestionType != request.QuestionType)
+                {
+                    throw new InvalidOperationException(
+                        "SubmissionId was already used for a different answer request.");
+                }
+
+                return new SubmitAnswerResponseDto
+                {
+                    IsCorrect = existingAnswer.IsCorrect,
+                    CorrectAnswer = existingAnswer.Vocabulary?.Word ?? string.Empty,
+                    AttemptNumber = existingAnswer.AttemptCount,
+                    NewLevel = existingAnswer.ResultingLevel,
+                    IsVocabularyCompleted = existingAnswer.IsVocabularyCompleted
+                };
+            }
+
+            if (session.IsCompleted)
+                throw new InvalidOperationException("Cannot submit an answer to a completed session.");
 
             var sessionVocab = await _uow.SessionVocabulary
                 .GetSessionVocabularyAsync(sessionId, request.VocabularyId, ct)
@@ -581,8 +625,16 @@ namespace WordSoul.Application.Services
             var vocab = sessionVocab.Vocabulary
                 ?? throw new KeyNotFoundException();
 
+            if (sessionVocab.IsCompleted)
+                throw new InvalidOperationException("Vocabulary is already completed in this session.");
+
+            var expectedQuestionType = GetQuestionTypeForLevel(sessionVocab.CurrentLevel);
+            if (request.QuestionType != expectedQuestionType)
+                throw new InvalidOperationException(
+                    $"Question type mismatch. Expected {expectedQuestionType}, received {request.QuestionType}.");
+
             // Kiểm tra câu trả lời
-            var isCorrect = CheckAnswer(request, vocab);
+            var isCorrect = CheckAnswer(expectedQuestionType, request.Answer, vocab);
 
             // Đảm bảo UserVocabularyProgress tồn tại
             await EnsureUserVocabularyProgressAsync(userId, vocab.Id, ct);
@@ -606,8 +658,6 @@ namespace WordSoul.Application.Services
             }
 
             // Lưu AnswerRecord
-            await SaveAnswerRecordAsync(sessionId, vocab.Id, request, isCorrect, ct);
-
             // Cập nhật SessionVocabulary
             if (isCorrect)
             {
@@ -628,6 +678,15 @@ namespace WordSoul.Application.Services
             }
 
             await _uow.SessionVocabulary.UpdateSessionVocabularyAsync(sessionVocab, ct);
+
+            var answerRecord = await SaveAnswerRecordAsync(
+                sessionId,
+                vocab.Id,
+                request,
+                isCorrect,
+                sessionVocab.CurrentLevel,
+                sessionVocab.IsCompleted,
+                ct);
 
          
             await _uow.SaveChangesAsync(ct);
@@ -711,6 +770,7 @@ namespace WordSoul.Application.Services
             {
                 IsCorrect = isCorrect,
                 CorrectAnswer = vocab.Word,
+                AttemptNumber = answerRecord.AttemptCount,
                 NewLevel = sessionVocab.CurrentLevel,
                 IsVocabularyCompleted = sessionVocab.IsCompleted
             };
@@ -773,17 +833,31 @@ namespace WordSoul.Application.Services
         }
 
         // Helper: kiểm tra câu trả lời đúng sai dựa trên loại câu hỏi
+        private static QuestionType GetQuestionTypeForLevel(int currentLevel)
+        {
+            return currentLevel switch
+            {
+                0 => QuestionType.Flashcard,
+                1 => QuestionType.FillInBlank,
+                2 => QuestionType.MultipleChoice,
+                3 => QuestionType.Listening,
+                _ => throw new InvalidOperationException(
+                    $"Invalid session vocabulary level: {currentLevel}.")
+            };
+        }
+
         private static bool CheckAnswer(
-            SubmitAnswerRequestDto request,
+            QuestionType questionType,
+            string answer,
             Vocabulary vocab)
         {
-            return request.QuestionType switch
+            return questionType switch
             {
                 QuestionType.FillInBlank or QuestionType.Listening =>
-                    string.Equals(request.Answer.Trim(), vocab.Word.Trim(), StringComparison.OrdinalIgnoreCase),
+                    string.Equals(answer.Trim(), vocab.Word.Trim(), StringComparison.OrdinalIgnoreCase),
 
                 QuestionType.MultipleChoice =>
-                    request.Answer.Trim() == vocab.Word,
+                    answer.Trim() == vocab.Word,
 
                 QuestionType.Flashcard => true,
                 _ => false
@@ -816,11 +890,13 @@ namespace WordSoul.Application.Services
         }
 
         // Helper: lưu AnswerRecord cho câu trả lời
-        private async Task SaveAnswerRecordAsync(
+        private async Task<AnswerRecord> SaveAnswerRecordAsync(
             int sessionId,
             int vocabId,
             SubmitAnswerRequestDto request,
             bool isCorrect,
+            int resultingLevel,
+            bool isVocabularyCompleted,
             CancellationToken ct)
         {
             var attempt = await _uow.AnswerRecord
@@ -828,18 +904,22 @@ namespace WordSoul.Application.Services
 
             var record = new AnswerRecord
             {
+                SubmissionId = request.SubmissionId,
                 LearningSessionId = sessionId,
                 VocabularyId = vocabId,
                 QuestionType = request.QuestionType,
                 Answer = request.Answer,
                 AttemptCount = attempt + 1,
                 IsCorrect = isCorrect,
+                ResultingLevel = resultingLevel,
+                IsVocabularyCompleted = isVocabularyCompleted,
                 HintCount = request.HintCount,
                 ResponseTimeSeconds = request.ResponseTimeSeconds,
                 CreatedAt = _timeProvider.UtcNow
             };
 
             await _uow.AnswerRecord.CreateAnswerRecordAsync(record, ct);
+            return record;
         }
 
     }

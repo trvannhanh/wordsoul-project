@@ -55,9 +55,10 @@ namespace WordSoul.IntegrationTests.Services
 
             var request = new SubmitAnswerRequestDto
             {
+                SubmissionId = Guid.NewGuid(),
                 VocabularyId = vocab.Id,
                 Answer = vocab.Word,
-                QuestionType = QuestionType.FillInBlank,
+                QuestionType = QuestionType.Listening,
                 HintCount = 0,
                 ResponseTimeSeconds = 2
             };
@@ -83,9 +84,10 @@ namespace WordSoul.IntegrationTests.Services
             await _service.SubmitAnswerAsync(user.Id, session.Id,
                 new SubmitAnswerRequestDto
                 {
+                    SubmissionId = Guid.NewGuid(),
                     VocabularyId = vocab.Id,
                     Answer = vocab.Word,
-                    QuestionType = QuestionType.FillInBlank,
+                    QuestionType = QuestionType.Listening,
                     HintCount = 0,
                     ResponseTimeSeconds = 4
                 });
@@ -106,9 +108,10 @@ namespace WordSoul.IntegrationTests.Services
 
             var request = new SubmitAnswerRequestDto
             {
+                SubmissionId = Guid.NewGuid(),
                 VocabularyId = vocab.Id,
                 Answer = "wrong",
-                QuestionType = QuestionType.FillInBlank,
+                QuestionType = QuestionType.Listening,
                 HintCount = 0,
                 ResponseTimeSeconds = 5
             };
@@ -128,9 +131,10 @@ namespace WordSoul.IntegrationTests.Services
 
             var request = new SubmitAnswerRequestDto
             {
+                SubmissionId = Guid.NewGuid(),
                 VocabularyId = vocab.Id,
                 Answer = vocab.Word,
-                QuestionType = QuestionType.FillInBlank,
+                QuestionType = QuestionType.Listening,
                 HintCount = 2,
                 ResponseTimeSeconds = 2
             };

@@ -61,6 +61,20 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
             return record;
         }
 
+        public async Task<AnswerRecord?> GetBySubmissionIdAsync(
+            int sessionId,
+            Guid submissionId,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.AnswerRecords
+                .AsNoTracking()
+                .Include(a => a.Vocabulary)
+                .FirstOrDefaultAsync(
+                    a => a.LearningSessionId == sessionId
+                      && a.SubmissionId == submissionId,
+                    cancellationToken);
+        }
+
         public async Task<List<AnswerRecord>> GetAllAnswerRecordAttemptsForVocabInSession(
             int sessionId,
             int vocabularyId,

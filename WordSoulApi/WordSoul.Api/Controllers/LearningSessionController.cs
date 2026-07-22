@@ -108,6 +108,11 @@ namespace WordSoulApi.Controllers
                 _logger.LogWarning(ex, "Invalid request data for user {UserId}, session {SessionId}", userId, sessionId);
                 return BadRequest(ex.Message);
             }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Invalid answer state for user {UserId}, session {SessionId}", userId, sessionId);
+                return Conflict(ex.Message);
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Internal server error for user {UserId}, session {SessionId}, vocabulary {VocabularyId}", userId, sessionId, request.VocabularyId);
@@ -182,10 +187,27 @@ namespace WordSoulApi.Controllers
         [HttpGet("{sessionId}/questions")]
         public async Task<ActionResult<IEnumerable<QuizQuestionDto>>> GetSessionQuestions(int sessionId)
         {
+            var userId = User.GetUserId();
+            if (userId == 0) return Unauthorized();
+
             try
             {
-                var questions = await _learningSessionService.GetSessionQuestionsAsync(sessionId);
+                var questions = await _learningSessionService.GetSessionQuestionsAsync(userId, sessionId);
                 return Ok(questions);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(ex, "User {UserId} does not have access to session {SessionId}", userId, sessionId);
+                return Forbid(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(ex, "Session {SessionId} was not found", sessionId);
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {

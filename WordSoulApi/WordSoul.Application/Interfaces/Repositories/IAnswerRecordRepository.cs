@@ -31,6 +31,11 @@ namespace WordSoul.Application.Interfaces.Repositories
             int sessionId,
             CancellationToken cancellationToken = default);
 
+        Task<AnswerRecord?> GetBySubmissionIdAsync(
+            int sessionId,
+            Guid submissionId,
+            CancellationToken cancellationToken = default);
+
         Task<List<AnswerRecord>> GetAllAnswerRecordAttemptsForVocabInSession(
             int sessionId, int vocabularyId, CancellationToken ct = default);
 

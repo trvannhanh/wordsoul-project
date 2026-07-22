@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fetchQuizOfSession, completeLearningSession, completeReviewSession, answerQuiz } from "../../../services/learningSession";
 import { getCurrentUser } from "../../../services/user";
 import { fetchPetById } from "../../../services/pet";
@@ -52,6 +52,7 @@ export const useQuizSession = (
   const [catchRate, setCatchRate] = useState<number>(initialCatchRate || 0);
   const [hintBalance, setHintBalance] = useState<number>(0);
   const [comboCount, setComboCount] = useState(0);
+  const submissionIdsRef = useRef(new WeakMap<QuizQuestionDto, string>());
 
   useEffect(() => {
     const fetchUserHints = async () => {
@@ -173,7 +174,14 @@ export const useQuizSession = (
 
       console.log(`💭 Answering question ${currentQuestionIndex + 1}/${questionsBatch.length}`);
 
+      let submissionId = submissionIdsRef.current.get(question);
+      if (!submissionId) {
+        submissionId = crypto.randomUUID();
+        submissionIdsRef.current.set(question, submissionId);
+      }
+
       const requestPayload: AnswerRequestDto = {
+        submissionId,
         vocabularyId: question.vocabularyId,
         questionType: question.questionType,
         answer,
@@ -193,6 +201,7 @@ export const useQuizSession = (
       console.groupEnd();
 
       const response: AnswerResponseDto = await answerQuiz(sessionId, requestPayload);
+      submissionIdsRef.current.delete(question);
 
       if (setCurrentCorrectAnswered) {
         setCurrentCorrectAnswered(

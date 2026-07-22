@@ -42,6 +42,7 @@ export interface QuizQuestionDto {
 
 
 export interface AnswerRequestDto {
+  submissionId: string;
   vocabularyId: number;
   questionType: QuestionTypeEnum;
   answer: string;
