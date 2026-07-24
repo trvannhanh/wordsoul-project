@@ -302,45 +302,26 @@ namespace WordSoul.Application.Services
             double? accuracy = null,
             CancellationToken ct = default)
         {
+            if (_uow.HasActiveTransaction)
+            {
+                await UpdateQuestProgressCoreAsync(
+                    userId,
+                    questType,
+                    increment,
+                    accuracy,
+                    ct);
+                return;
+            }
 
             await using var transaction = await _uow.BeginTransactionAsync(ct);
             try
             {
-                var today = DateTime.UtcNow.Date;
-                var quests = await _uow.UserDailyQuest
-                    .GetUserDailyQuestsByUserAndDateAsync(userId, today, ct);
-
-                var targetQuest = quests
-                    .FirstOrDefault(q => q.DailyQuest!.QuestType == questType);
-
-                if (targetQuest == null || targetQuest.IsCompleted)
-                {
-                    await transaction.CommitAsync(ct);
-                    return;
-                }
-
-                switch (questType)
-                {
-                    case QuestType.Learn:
-                    case QuestType.Review:
-                    case QuestType.Catch:
-                    case QuestType.Pronunciation:
-                        targetQuest.Progress += increment;
-                        break;
-
-                    case QuestType.Accuracy:
-                        if (accuracy.HasValue && accuracy.Value >= 0.8)
-                            targetQuest.Progress += 1;
-                        break;
-                }
-
-                if (targetQuest.Progress >= targetQuest.DailyQuest!.TargetValue)
-                {
-                    targetQuest.Progress = targetQuest.DailyQuest.TargetValue;
-                    targetQuest.IsCompleted = true;
-                }
-
-                await _uow.SaveChangesAsync(ct);
+                await UpdateQuestProgressCoreAsync(
+                    userId,
+                    questType,
+                    increment,
+                    accuracy,
+                    ct);
                 await transaction.CommitAsync(ct);
             }
             catch
@@ -348,6 +329,47 @@ namespace WordSoul.Application.Services
                 await transaction.RollbackAsync(ct);
                 throw;
             }
+        }
+
+        private async Task UpdateQuestProgressCoreAsync(
+            int userId,
+            QuestType questType,
+            int increment,
+            double? accuracy,
+            CancellationToken ct)
+        {
+            var today = DateTime.UtcNow.Date;
+            var quests = await _uow.UserDailyQuest
+                .GetUserDailyQuestsByUserAndDateAsync(userId, today, ct);
+
+            var targetQuest = quests
+                .FirstOrDefault(q => q.DailyQuest!.QuestType == questType);
+
+            if (targetQuest == null || targetQuest.IsCompleted)
+                return;
+
+            switch (questType)
+            {
+                case QuestType.Learn:
+                case QuestType.Review:
+                case QuestType.Catch:
+                case QuestType.Pronunciation:
+                    targetQuest.Progress += increment;
+                    break;
+
+                case QuestType.Accuracy:
+                    if (accuracy.HasValue && accuracy.Value >= 0.8)
+                        targetQuest.Progress += 1;
+                    break;
+            }
+
+            if (targetQuest.Progress >= targetQuest.DailyQuest!.TargetValue)
+            {
+                targetQuest.Progress = targetQuest.DailyQuest.TargetValue;
+                targetQuest.IsCompleted = true;
+            }
+
+            await _uow.SaveChangesAsync(ct);
         }
 
         public async Task<bool> DeleteQuestAsync(int questId, CancellationToken ct = default)

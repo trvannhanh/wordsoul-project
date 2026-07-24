@@ -2,6 +2,8 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using WordSoul.Application.DTOs.AnswerRecord;
+using WordSoul.Application.DTOs.SRS;
+using WordSoul.Application.Interfaces.Services;
 using WordSoul.Application.Services;
 using WordSoul.Application.Services.SRS;
 using WordSoul.Domain.Entities;
@@ -145,6 +147,58 @@ namespace WordSoul.IntegrationTests.Services
             history.Grade.Should().BeLessThan(5);
         }
 
+        [Fact]
+        public async Task SubmitAnswer_DownstreamFailure_RollsBackAnswerAndProgression()
+        {
+            var (user, vocab, session) = await SetupReviewSession();
+            var initialConcurrencyToken = await _context.SessionVocabularies
+                .Where(item => item.LearningSessionId == session.Id
+                    && item.VocabularyId == vocab.Id)
+                .Select(item => item.ConcurrencyToken)
+                .SingleAsync();
+            var service = new LearningSessionService(
+                _unitOfWork,
+                NullLogger<LearningSessionService>.Instance,
+                new FakeUserOwnedPetService(),
+                new FakeUserVocabularyProgressService(),
+                new FakeActivityLogService(),
+                new FakeSetRewardPetService(),
+                new ThrowingSrsService(),
+                new FakeDailyQuestService(),
+                new FakePetBuffService(),
+                _timeProvider,
+                new FakeGymLeaderService(),
+                new FakeSystemConfigurationService());
+
+            var request = new SubmitAnswerRequestDto
+            {
+                SubmissionId = Guid.NewGuid(),
+                VocabularyId = vocab.Id,
+                Answer = vocab.Word,
+                QuestionType = QuestionType.Listening,
+                ResponseTimeSeconds = 2
+            };
+
+            var act = () => service.SubmitAnswerAsync(user.Id, session.Id, request);
+
+            await act.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("forced SRS failure");
+
+            var persistedSessionVocabulary = await _context.SessionVocabularies
+                .AsNoTracking()
+                .SingleAsync(item => item.LearningSessionId == session.Id
+                    && item.VocabularyId == vocab.Id);
+            persistedSessionVocabulary.CurrentStageIndex.Should().Be(3);
+            persistedSessionVocabulary.IsCompleted.Should().BeFalse();
+            persistedSessionVocabulary.ConcurrencyToken
+                .Should().Be(initialConcurrencyToken);
+            var answerCount = await _context.AnswerRecords
+                .AsNoTracking()
+                .CountAsync(answer => answer.LearningSessionId == session.Id);
+            answerCount.Should().Be(0);
+            _context.VocabularyReviewHistories.Should().BeEmpty();
+        }
+
         // ======================================================
         // HELPER: Setup Review Session
         // ======================================================
@@ -170,7 +224,7 @@ namespace WordSoul.IntegrationTests.Services
                 LearningSessionId = session.Id,
                 VocabularyId = vocab.Id,
                 Vocabulary = vocab,
-                CurrentLevel = 3,
+                CurrentStageIndex = 3,
                 IsCompleted = false,
                 Order = 1
             };
@@ -189,6 +243,33 @@ namespace WordSoul.IntegrationTests.Services
             await _context.SaveChangesAsync();
 
             return (user, vocab, session);
+        }
+
+        private sealed class ThrowingSrsService : ISRSService
+        {
+            public Task<SRSUpdateResult> UpdateAfterReviewAsync(
+                int userId,
+                int vocabularyId,
+                int grade,
+                CancellationToken ct = default)
+            {
+                throw new InvalidOperationException("forced SRS failure");
+            }
+
+            public Task<List<VocabularyDueDto>> GetDueVocabulariesAsync(
+                int userId,
+                int limit = 20,
+                CancellationToken ct = default) => throw new NotSupportedException();
+
+            public Task<decimal> GetOverallRetentionScoreAsync(
+                int userId,
+                CancellationToken ct = default) => throw new NotSupportedException();
+
+            public Task ApplyPronunciationEffectAsync(
+                int userId,
+                int vocabularyId,
+                PronunciationResult result,
+                CancellationToken ct = default) => throw new NotSupportedException();
         }
     }
 }

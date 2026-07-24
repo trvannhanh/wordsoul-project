@@ -33,9 +33,10 @@ namespace WordSoul.Application.Interfaces
         IUserGroupRepository UserGroup { get; }
         IPronunciationAttemptRepository PronunciationAttempt { get; }
 
-
+        bool HasActiveTransaction { get; }
 
         Task<int> SaveChangesAsync(CancellationToken ct = default);
         Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken ct = default);
+        void ClearTrackedChanges();
     }
 }

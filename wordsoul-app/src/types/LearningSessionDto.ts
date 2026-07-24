@@ -54,7 +54,7 @@ export interface AnswerResponseDto {
   isCorrect: boolean;
   correctAnswer: string;
   attemptNumber: number;
-  newLevel: number; // 0-3: Flashcard → Listening
+  newStageIndex: number; // 0-3: Flashcard → Listening
   isVocabularyCompleted: boolean;
 }
 

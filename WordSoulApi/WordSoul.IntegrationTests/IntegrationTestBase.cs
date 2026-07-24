@@ -115,6 +115,8 @@ namespace WordSoul.IntegrationTests
         public IUserGroupRepository UserGroup { get; }
         public IPronunciationAttemptRepository PronunciationAttempt { get; }
 
+        public bool HasActiveTransaction => _context.Database.CurrentTransaction != null;
+
         public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             return _context.SaveChangesAsync(cancellationToken);
@@ -123,6 +125,11 @@ namespace WordSoul.IntegrationTests
         public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken ct = default)
         {
             return await _context.Database.BeginTransactionAsync(ct);
+        }
+
+        public void ClearTrackedChanges()
+        {
+            _context.ChangeTracker.Clear();
         }
 
         public void Dispose()

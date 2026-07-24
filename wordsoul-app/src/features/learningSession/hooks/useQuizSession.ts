@@ -202,6 +202,7 @@ export const useQuizSession = (
 
       const response: AnswerResponseDto = await answerQuiz(sessionId, requestPayload);
       submissionIdsRef.current.delete(question);
+      const newStageIndex = response.newStageIndex;
 
       if (setCurrentCorrectAnswered) {
         setCurrentCorrectAnswered(
@@ -211,7 +212,7 @@ export const useQuizSession = (
 
       if (response.isCorrect) {
         setComboCount(c => c + 1);
-        const nextLevelType = levelToType[response.newLevel] || QuestionTypeEnum.Listening;
+        const nextLevelType = levelToType[newStageIndex] || QuestionTypeEnum.Listening;
         if (response.isVocabularyCompleted) {
           setLevelFeedback({
             message: `🎉 Mastered "${question.word}"!`,
@@ -219,13 +220,13 @@ export const useQuizSession = (
           });
         } else {
           setLevelFeedback({
-            message: `✅ Level ${response.newLevel + 1}: ${nextLevelType}`,
+            message: `✅ Stage ${newStageIndex + 1}: ${nextLevelType}`,
           });
         }
       } else {
         setComboCount(0);
-        const prevLevel = Math.max(0, response.newLevel);
-        const retryType = levelToType[prevLevel];
+        const previousStageIndex = Math.max(0, newStageIndex);
+        const retryType = levelToType[previousStageIndex];
         setLevelFeedback({
           message: `🔄 Retry ${retryType} for "${question.word}"`,
         });
