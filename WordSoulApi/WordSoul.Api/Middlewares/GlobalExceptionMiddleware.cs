@@ -1,40 +1,27 @@
-using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
-using Serilog;
-using System.Diagnostics;
-using System.Net;
-using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
+using WordSoul.Api.Errors;
+using WordSoul.Api.Routing;
 using WordSoul.Application.Exceptions;
 
 namespace WordSoul.Api.Middlewares;
 
 /// <summary>
-/// Global exception handling middleware.
-/// Implements <see cref="IMiddleware"/> for DI-friendly registration (transient).
-/// <para>
-/// Pipeline position: must be registered FIRST (outermost) so that it wraps
-/// all subsequent middleware including authentication and routing.
-/// </para>
-/// <para>
-/// Thread-safety: all state is request-scoped via the injected
-/// <see cref="HttpContext"/>; no shared mutable state exists.
-/// </para>
+/// Converts all unhandled HTTP request exceptions to the canonical RFC 7807
+/// response. SignalR owns error propagation for hub requests, so those failures
+/// are logged but no HTTP body is written.
 /// </summary>
-public sealed class GlobalExceptionMiddleware : IMiddleware
+public sealed class GlobalExceptionMiddleware(
+    ILogger<GlobalExceptionMiddleware> logger,
+    IWebHostEnvironment environment) : IMiddleware
 {
-    // SignalR hub path prefix – errors inside hubs are handled by the SignalR
-    // pipeline itself; we only log and skip writing an HTTP problem-details body.
-    private const string HubPathPrefix = "/hubs/";
-
-    // Known SignalR hub paths in this application.
-    private static readonly string[] KnownHubPaths =
+    private static readonly string[] HubPaths =
     [
-        "/notificationHub",
-        "/battleHub"
+        ApiRoutes.ConventionalHubPrefix,
+        ApiRoutes.NotificationHub,
+        ApiRoutes.BattleHub
     ];
-
-    // Stateless: IWebHostEnvironment is injected per-request via InvokeAsync
-    // to keep the middleware thread-safe (no stored instance state).
 
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
@@ -42,234 +29,138 @@ public sealed class GlobalExceptionMiddleware : IMiddleware
         {
             await next(context);
         }
+        catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+        {
+            logger.LogDebug(
+                "Request cancelled by client | {Method} {Path} | TraceId={TraceId}",
+                context.Request.Method,
+                context.Request.Path,
+                context.TraceIdentifier);
+        }
         catch (Exception exception)
         {
             await HandleExceptionAsync(context, exception);
         }
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    //  Core dispatch
-    // ──────────────────────────────────────────────────────────────────────────
-
-    private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        var path = context.Request.Path.Value ?? string.Empty;
-        var isHubPath = IsSignalRHubPath(path);
+        var problem = MapException(context, exception);
+        var status = problem.Status ?? StatusCodes.Status500InternalServerError;
+        var code = problem.Extensions["code"]?.ToString();
+        var traceId = problem.Extensions["traceId"]?.ToString()
+            ?? context.TraceIdentifier;
+        var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        if (exception is WordSoulException wordSoulEx)
+        if (status >= StatusCodes.Status500InternalServerError)
         {
-            var statusCode = (int)wordSoulEx.StatusCode;
-
-            // 4xx → Warning; 5xx → Error (WordSoulException subtypes are all 4xx/502)
-            if (statusCode >= 500)
-            {
-                Log.Error(exception,
-                    "Server-side WordSoulException | {ExceptionType} | {Path} | {StatusCode}",
-                    exception.GetType().Name, path, statusCode);
-            }
-            else
-            {
-                Log.Warning(
-                    "Client error | {ExceptionType} | {Path} | {StatusCode} | {Message}",
-                    exception.GetType().Name, path, statusCode, exception.Message);
-            }
-
-            if (isHubPath)
-            {
-                // SignalR manages its own error propagation to clients.
-                // Log is sufficient; do not overwrite the response stream.
-                return;
-            }
-
-            // Resolve environment from DI (IWebHostEnvironment is always registered)
-            var env = context.RequestServices
-                .GetRequiredService<IWebHostEnvironment>();
-
-            if (wordSoulEx is ValidationException validationEx)
-            {
-                await WriteValidationProblemAsync(context, validationEx, env);
-            }
-            else
-            {
-                await WriteWordSoulProblemAsync(context, wordSoulEx, env);
-            }
+            logger.LogError(
+                exception,
+                "Unhandled server error | {Method} {Path} | Status={Status} | Code={Code} | UserId={UserId} | TraceId={TraceId}",
+                context.Request.Method,
+                context.Request.Path,
+                status,
+                code,
+                userId,
+                traceId);
         }
         else
         {
-            // Unknown / unhandled exception → 500
-            Log.Error(exception,
-                "Unhandled exception | {ExceptionType} | {Path}",
-                exception.GetType().Name, path);
-
-            if (isHubPath)
-            {
-                return;
-            }
-
-            var env = context.RequestServices
-                .GetRequiredService<IWebHostEnvironment>();
-
-            await WriteInternalServerErrorAsync(context, exception, env);
-        }
-    }
-
-    // ──────────────────────────────────────────────────────────────────────────
-    //  Writers
-    // ──────────────────────────────────────────────────────────────────────────
-
-    /// <summary>Writes a standard <see cref="ProblemDetails"/> body for typed WordSoul exceptions.</summary>
-    private static async Task WriteWordSoulProblemAsync(
-        HttpContext context,
-        WordSoulException ex,
-        IWebHostEnvironment env)
-    {
-        var statusCode = (int)ex.StatusCode;
-
-        var problem = new ProblemDetails
-        {
-            Type     = ex.Type,
-            Title    = ex.Title,
-            Status   = statusCode,
-            Detail   = ex.Message,
-            Instance = context.Request.Path
-        };
-
-        problem.Extensions["traceId"] =
-            Activity.Current?.Id ?? context.TraceIdentifier;
-
-        // Add Retry-After hint for rate-limit responses
-        if (ex is RateLimitException rateLimitEx && rateLimitEx.RetryAfterSeconds.HasValue)
-        {
-            context.Response.Headers["Retry-After"] =
-                rateLimitEx.RetryAfterSeconds.Value.ToString();
+            logger.LogWarning(
+                "Request failed | {ExceptionType} | {Method} {Path} | Status={Status} | Code={Code} | UserId={UserId} | TraceId={TraceId}",
+                exception.GetType().Name,
+                context.Request.Method,
+                context.Request.Path,
+                status,
+                code,
+                userId,
+                traceId);
         }
 
-        // In Development: attach full debug info; in Production: omit entirely
-        if (env.IsDevelopment())
+        if (IsHubRequest(context.Request.Path))
         {
-            problem.Extensions["debugInfo"] = ex.ToString();
-        }
-
-        await WriteProblemJsonAsync(context, statusCode, problem);
-    }
-
-    /// <summary>
-    /// Writes a <see cref="ValidationProblemDetails"/> body that includes
-    /// field-level error messages from <see cref="ValidationException.Errors"/>.
-    /// </summary>
-    private static async Task WriteValidationProblemAsync(
-        HttpContext context,
-        ValidationException ex,
-        IWebHostEnvironment env)
-    {
-        var statusCode = (int)ex.StatusCode;
-
-        // Build the field-level errors dictionary (string[] values required by ValidationProblemDetails)
-        var errors = ex.Errors.ToDictionary(
-            kvp => kvp.Key,
-            kvp => kvp.Value,
-            StringComparer.OrdinalIgnoreCase);
-
-        var problem = new ValidationProblemDetails(errors)
-        {
-            Type     = ex.Type,
-            Title    = ex.Title,
-            Status   = statusCode,
-            Detail   = ex.Message,
-            Instance = context.Request.Path
-        };
-
-        problem.Extensions["traceId"] =
-            Activity.Current?.Id ?? context.TraceIdentifier;
-
-        if (env.IsDevelopment())
-        {
-            problem.Extensions["debugInfo"] = ex.ToString();
-        }
-
-        await WriteProblemJsonAsync(context, statusCode, problem);
-    }
-
-    /// <summary>
-    /// Writes a production-safe 500 <see cref="ProblemDetails"/> body.
-    /// Stack traces are never exposed outside Development.
-    /// </summary>
-    private static async Task WriteInternalServerErrorAsync(
-        HttpContext context,
-        Exception ex,
-        IWebHostEnvironment env)
-    {
-        const int statusCode = (int)HttpStatusCode.InternalServerError;
-
-        var problem = new ProblemDetails
-        {
-            Type     = "https://wordsoul.app/errors/internal-server-error",
-            Title    = "Internal Server Error",
-            Status   = statusCode,
-            Detail   = "An unexpected error occurred. Please try again later.",
-            Instance = context.Request.Path
-        };
-
-        problem.Extensions["traceId"] =
-            Activity.Current?.Id ?? context.TraceIdentifier;
-
-        if (env.IsDevelopment())
-        {
-            problem.Extensions["debugInfo"] = ex.ToString();
-        }
-
-        await WriteProblemJsonAsync(context, statusCode, problem);
-    }
-
-    // ──────────────────────────────────────────────────────────────────────────
-    //  Low-level HTTP write helper
-    // ──────────────────────────────────────────────────────────────────────────
-
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNamingPolicy        = JsonNamingPolicy.CamelCase,
-        DefaultIgnoreCondition      = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-        WriteIndented               = false
-    };
-
-    private static async Task WriteProblemJsonAsync(
-        HttpContext context,
-        int statusCode,
-        object problem)
-    {
-        // Guard: if response has already started (e.g., streaming), we cannot
-        // change headers or write a problem body.
-        if (context.Response.HasStarted)
-        {
-            Log.Warning(
-                "Response has already started; cannot write ProblemDetails. " +
-                "TraceId: {TraceId}", context.TraceIdentifier);
             return;
         }
 
-        context.Response.StatusCode  = statusCode;
-        context.Response.ContentType = "application/problem+json";
-
-        var json = JsonSerializer.Serialize(problem, JsonOptions);
-        await context.Response.WriteAsync(json);
-    }
-
-    // ──────────────────────────────────────────────────────────────────────────
-    //  Helpers
-    // ──────────────────────────────────────────────────────────────────────────
-
-    private static bool IsSignalRHubPath(string path)
-    {
-        if (path.StartsWith(HubPathPrefix, StringComparison.OrdinalIgnoreCase))
-            return true;
-
-        foreach (var hubPath in KnownHubPaths)
+        if (environment.IsDevelopment())
         {
-            if (path.StartsWith(hubPath, StringComparison.OrdinalIgnoreCase))
-                return true;
+            problem.Extensions["debugInfo"] = exception.ToString();
         }
 
-        return false;
+        if (exception is RateLimitException { RetryAfterSeconds: int retryAfter })
+        {
+            context.Response.Headers.RetryAfter = retryAfter.ToString();
+            problem.Extensions["retryAfter"] = retryAfter;
+        }
+
+        if (exception is ExternalServiceException externalServiceException)
+        {
+            problem.Extensions["service"] = externalServiceException.ServiceName;
+        }
+
+        await ApiProblemDetails.WriteAsync(
+            context,
+            problem,
+            context.RequestAborted);
+    }
+
+    private static ProblemDetails MapException(HttpContext context, Exception exception)
+    {
+        if (exception is WordSoulException wordSoulException)
+        {
+            IDictionary<string, string[]>? errors =
+                wordSoulException is ValidationException validationException
+                    ? validationException.Errors.ToDictionary(
+                        pair => pair.Key,
+                        pair => pair.Value,
+                        StringComparer.OrdinalIgnoreCase)
+                    : null;
+            var descriptor = ApiErrorCatalog.ForApplicationCode(
+                wordSoulException.Code);
+            var safeDetail = ReferenceEquals(
+                descriptor,
+                ApiErrorCatalog.InternalServerError)
+                    ? null
+                    : wordSoulException.Message;
+
+            return ApiProblemDetails.Create(
+                context,
+                descriptor,
+                safeDetail,
+                errors);
+        }
+
+        return exception switch
+        {
+            KeyNotFoundException => ApiProblemDetails.Create(
+                context,
+                ApiErrorCatalog.ResourceNotFound,
+                exception.Message),
+
+            ArgumentException => ApiProblemDetails.Create(
+                context,
+                ApiErrorCatalog.BadRequest,
+                exception.Message),
+
+            UnauthorizedAccessException => ApiProblemDetails.Create(
+                context,
+                ApiErrorCatalog.AccessForbidden,
+                exception.Message),
+
+            DbUpdateConcurrencyException => ApiProblemDetails.Create(
+                context,
+                ApiErrorCatalog.Conflict,
+                "The resource was modified by another request. Please reload and try again."),
+
+            _ => ApiProblemDetails.CreateForStatus(
+                context,
+                StatusCodes.Status500InternalServerError)
+        };
+    }
+
+    private static bool IsHubRequest(PathString path)
+    {
+        return HubPaths.Any(prefix =>
+            path.StartsWithSegments(prefix, StringComparison.OrdinalIgnoreCase));
     }
 }

@@ -3,7 +3,7 @@ using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
 using WordSoul.Domain.Entities;
 using WordSoul.Domain.Enums;
-using WordSoul.Domain.Exceptions;
+using WordSoul.Application.Exceptions;
 
 namespace WordSoul.Application.Services
 {

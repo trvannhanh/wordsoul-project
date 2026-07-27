@@ -4,7 +4,7 @@ using WordSoul.Api.Extensions;
 using WordSoul.Application.DTOs.Achievement;
 using WordSoul.Application.Interfaces.Services;
 using WordSoul.Domain.Enums;
-using WordSoul.Domain.Exceptions;
+using WordSoul.Application.Exceptions;
 
 namespace WordSoul.Api.Controllers
 {

@@ -9,8 +9,10 @@ using StackExchange.Redis;
 using System.Text;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
+using WordSoul.Api.Errors;
 using WordSoul.Api.Extensions;
 using WordSoul.Api.Hubs;
+using WordSoul.Api.Routing;
 using WordSoul.Api.Services;
 using WordSoul.Application.Common;
 using WordSoul.Application.Interfaces;
@@ -143,7 +145,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 var accessToken = context.Request.Query["access_token"];
                 var path = context.HttpContext.Request.Path;
                 if (!string.IsNullOrEmpty(accessToken) &&
-                    (path.StartsWithSegments("/notificationHub") || path.StartsWithSegments("/battleHub")))
+                    (path.StartsWithSegments(ApiRoutes.NotificationHub) ||
+                     path.StartsWithSegments(ApiRoutes.BattleHub)))
                 {
                     context.Token = accessToken;
                 }
@@ -163,8 +166,7 @@ builder.Services.AddSignalR(options =>
 });
 
 // Problem Details (RFC 7807) + Global Exception Handling
-builder.Services.AddProblemDetails();
-builder.Services.AddTransient<GlobalExceptionMiddleware>();
+builder.Services.AddWordSoulProblemDetails();
 
 // Add in-memory caching service
 builder.Services.AddMemoryCache();
@@ -342,19 +344,22 @@ app.MapScalarApiReference(options =>
     options.WithTitle("WordSoul API");
     options.WithTheme(ScalarTheme.Purple);
 });
+app.MapGet(ApiRoutes.Root, () => Results.Redirect(ApiRoutes.ScalarReference))
+   .DisableRateLimiting();
 
 // ╔══════════════════════════════════════════════════════════════════════════╗
 // ║  MIDDLEWARE PIPELINE ORDER — WordSoulApi                               ║
 // ║                                                                        ║
 // ║  1. GlobalExceptionMiddleware  — outermost, catches ALL downstream     ║
 // ║     exceptions including 429s that bubble up unexpectedly.             ║
-// ║  2. SerilogRequestLogging      — log after exception handler wraps it  ║
-// ║  3. RequestResponseLogging     — detailed body logging                 ║
-// ║  4. ActivityTrackingMiddleware — user last-seen telemetry              ║
-// ║  5. CORS                       — must precede HTTPS redirect so        ║
+// ║  2. StatusCodePages            — canonical body for empty 4xx/5xx       ║
+// ║  3. SerilogRequestLogging      — log after exception handler wraps it  ║
+// ║  4. RequestResponseLogging     — detailed body logging                 ║
+// ║  5. ActivityTrackingMiddleware — user last-seen telemetry              ║
+// ║  6. CORS                       — must precede HTTPS redirect so        ║
 // ║     OPTIONS preflight is not redirected                                ║
-// ║  6. HTTPS redirect             — production only                       ║
-// ║  7. UseRateLimiter             — AFTER exception handler (so 429       ║
+// ║  7. HTTPS redirect             — production only                       ║
+// ║  8. UseRateLimiter             — AFTER exception handler (so 429       ║
 // ║     responses are logged) but BEFORE authentication.                   ║
 // ║     WHY before auth: the "auth-endpoints" policy partitions by IP and  ║
 // ║     acts on login/register before any identity is resolved.            ║
@@ -364,64 +369,64 @@ app.MapScalarApiReference(options =>
 // ║     limiter inspects HttpContext.User. Placing UseRateLimiter here     ║
 // ║     ensures the 429 response bypasses UseAuthorization (no 401        ║
 // ║     interference) and that the GlobalExceptionMiddleware can log it.   ║
-// ║  8. UseAuthentication + UseAuthorization                               ║
+// ║  9. UseAuthentication + UseAuthorization                               ║
 // ╚══════════════════════════════════════════════════════════════════════════╝
 
 // 1. Global Exception Handler (must be FIRST to catch everything downstream)
-app.UseMiddleware<GlobalExceptionMiddleware>();
+app.UseWordSoulProblemDetails();
 
-// 2. HTTP request logging
+// 3. HTTP request logging
 app.UseSerilogRequestLogging();
 
-// 3. Detailed Request/Response logging
+// 4. Detailed Request/Response logging
 app.UseMiddleware<RequestResponseLoggingMiddleware>();
 
-// 4. User activity tracking
+// 5. User activity tracking
 app.UseMiddleware<ActivityTrackingMiddleware>();
 
-// 5. CORS must be before HTTPS redirect
+// 6. CORS must be before HTTPS redirect
 // On Azure App Service, HTTPS is terminated at the load balancer, so
 // UseHttpsRedirection would redirect OPTIONS preflight before CORS processes it.
 app.UseCors("AllowFrontend");
 
-// 6. HTTPS redirect (production/staging only — not when developing locally)
+// 7. HTTPS redirect (production/staging only — not when developing locally)
 if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
 
-// 7. Rate Limiting — placed AFTER exception middleware (so 429 responses are
+// 8. Rate Limiting — placed AFTER exception middleware (so 429 responses are
 //    properly logged) and BEFORE authentication (so IP-based auth endpoint
 //    protection works without requiring a valid JWT first).
 app.UseRateLimiter();
 
-// 8. Auth
+// 9. Auth
 app.UseAuthentication();
 app.UseAuthorization();
 
-// 9. Controllers — no global rate limiting policy here; individual endpoints
+// 10. Controllers — no global rate limiting policy here; individual endpoints
 //    are decorated with [EnableRateLimiting("policy-name")] attributes.
 app.MapControllers();
 
-// 10. Health check endpoints — explicitly exempt from rate limiting.
+// 11. Health check endpoints — explicitly exempt from rate limiting.
 //     These are called by Azure App Service probes and must never be blocked.
 app.MapGet("/health",  () => Results.Ok(new { status = "healthy" }))
    .DisableRateLimiting();
 app.MapGet("/healthz", () => Results.Ok(new { status = "healthy" }))
    .DisableRateLimiting();
 
-// 11. SignalR Hubs — MUST use DisableRateLimiting on the negotiate path.
+// 12. SignalR Hubs — MUST use DisableRateLimiting on the negotiate path.
 //     Rate limiting the /negotiate endpoint breaks SignalR connection establishment
 //     because the client retries negotiation aggressively and will hit limits
 //     before the real-time connection can be established.
-app.MapHub<NotificationHub>("/notificationHub")
+app.MapHub<NotificationHub>(ApiRoutes.NotificationHub)
    .RequireCors("AllowFrontend")
    .DisableRateLimiting();  // ← critical: negotiate + hub traffic must not be rate-limited
-app.MapHub<BattleHub>("/battleHub")
+app.MapHub<BattleHub>(ApiRoutes.BattleHub)
    .RequireCors("AllowFrontend")
    .DisableRateLimiting();  // ← critical: same reason
 
-// 7. Migration
+// 13. Migration
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<WordSoulDbContext>();

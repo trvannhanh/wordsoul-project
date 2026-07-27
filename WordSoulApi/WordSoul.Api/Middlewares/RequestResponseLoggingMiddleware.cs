@@ -51,6 +51,7 @@ namespace WordSoul.Api.Middlewares
             var originalBodyStream = context.Response.Body;
             using var responseBodyStream = new MemoryStream();
             context.Response.Body = responseBodyStream;
+            var responsePayload = string.Empty;
 
             try
             {
@@ -60,37 +61,67 @@ namespace WordSoul.Api.Middlewares
             finally
             {
                 stopWatch.Stop();
-                
-                // 3. Read Response
-                context.Response.Body.Position = 0;
-                var responsePayload = await ReadStreamInChunks(context.Response.Body);
-                context.Response.Body.Position = 0;
-                
-                // Copy back to original stream
-                await responseBodyStream.CopyToAsync(originalBodyStream);
 
-                // 4. Send to Queue
-                var userId = context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                var ipAddress = context.Connection.RemoteIpAddress?.ToString();
-
-                // Truncate payloads if they are excessively large to prevent DB issues
-                if (requestPayload.Length > 4000) requestPayload = requestPayload.Substring(0, 4000) + "...[truncated]";
-                if (responsePayload.Length > 4000) responsePayload = responsePayload.Substring(0, 4000) + "...[truncated]";
-
-                var systemLog = new SystemLog
+                try
                 {
-                    Timestamp = DateTime.UtcNow,
-                    Method = context.Request.Method,
-                    Path = context.Request.Path.Value ?? string.Empty,
-                    StatusCode = context.Response.StatusCode,
-                    DurationMs = stopWatch.ElapsedMilliseconds,
-                    RequestPayload = requestPayload,
-                    ResponsePayload = responsePayload,
-                    IpAddress = ipAddress,
-                    UserId = userId
-                };
+                    // 3. Read the intercepted response and copy it to the real stream.
+                    responseBodyStream.Position = 0;
+                    responsePayload = await ReadStreamInChunks(responseBodyStream);
+                    responseBodyStream.Position = 0;
+                    await responseBodyStream.CopyToAsync(
+                        originalBodyStream,
+                        context.RequestAborted);
+                }
+                catch (Exception ex)
+                {
+                    // Observability must never replace the actual request exception
+                    // or turn a valid response into a server error.
+                    _logger.LogWarning(
+                        ex,
+                        "Could not capture response body for {Method} {Path}",
+                        context.Request.Method,
+                        context.Request.Path);
+                }
+                finally
+                {
+                    // Outer middleware (for example StatusCodePages or the global
+                    // exception handler) may still need to write to the response.
+                    context.Response.Body = originalBodyStream;
+                }
 
-                await logQueue.EnqueueAsync(systemLog);
+                try
+                {
+                    // 4. Send to Queue
+                    var userId = context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                    var ipAddress = context.Connection.RemoteIpAddress?.ToString();
+
+                    // Truncate payloads if they are excessively large to prevent DB issues
+                    if (requestPayload.Length > 4000) requestPayload = requestPayload.Substring(0, 4000) + "...[truncated]";
+                    if (responsePayload.Length > 4000) responsePayload = responsePayload.Substring(0, 4000) + "...[truncated]";
+
+                    var systemLog = new SystemLog
+                    {
+                        Timestamp = DateTime.UtcNow,
+                        Method = context.Request.Method,
+                        Path = context.Request.Path.Value ?? string.Empty,
+                        StatusCode = context.Response.StatusCode,
+                        DurationMs = stopWatch.ElapsedMilliseconds,
+                        RequestPayload = requestPayload,
+                        ResponsePayload = responsePayload,
+                        IpAddress = ipAddress,
+                        UserId = userId
+                    };
+
+                    await logQueue.EnqueueAsync(systemLog, context.RequestAborted);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(
+                        ex,
+                        "Could not enqueue request log for {Method} {Path}",
+                        context.Request.Method,
+                        context.Request.Path);
+                }
             }
         }
 

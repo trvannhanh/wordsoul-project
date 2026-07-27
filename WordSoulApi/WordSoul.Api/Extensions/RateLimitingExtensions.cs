@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.RateLimiting;
 using System.Net;
 using System.Security.Claims;
-using System.Text.Json;
 using System.Threading.RateLimiting;
+using WordSoul.Api.Errors;
 using WordSoul.Api.Options;
+using Microsoft.Extensions.Options;
 
 namespace WordSoul.Api.Extensions;
 
@@ -83,10 +84,17 @@ public static class RateLimitingExtensions
             // This runs for any endpoint that has a rate limiter policy but no
             // per-policy OnRejected override. Policies below override individually.
             limiterOptions.OnRejected = async (context, cancellationToken) =>
+            {
+                var policyName = context.HttpContext.GetEndpoint()?
+                    .Metadata.GetMetadata<EnableRateLimitingAttribute>()?
+                    .PolicyName ?? "default";
+
                 await WriteRateLimitRejectionAsync(
                     context.HttpContext,
-                    "default",
-                    cancellationToken);
+                    policyName,
+                    cancellationToken,
+                    context.Lease);
+            };
 
             // ── Policy A: global-ip ──────────────────────────────────────────
             // Fixed Window, partitioned by remote IP.
@@ -264,20 +272,34 @@ public static class RateLimitingExtensions
     public static async Task WriteRateLimitRejectionAsync(
         HttpContext httpContext,
         string      policyName,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        RateLimitLease? lease = null)
     {
         // Guard: response headers/body cannot be changed once streaming has started.
         if (httpContext.Response.HasStarted)
             return;
 
         // ── Resolve Retry-After from the rate limit lease metadata ───────────
-        int retryAfterSeconds = 60; // safe fallback
+        int retryAfterSeconds;
 
-        // Try to obtain retryAfter from the OnRejected context (set by the caller)
+        // Explicit override remains useful for deterministic tests and custom limiters.
         if (httpContext.Items.TryGetValue("_rl_retry_after", out var retryObj) &&
             retryObj is int retryFromLease && retryFromLease > 0)
         {
             retryAfterSeconds = retryFromLease;
+        }
+        else if (lease is not null &&
+                 lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+        {
+            retryAfterSeconds = Math.Max(
+                1,
+                (int)Math.Ceiling(retryAfter.TotalSeconds));
+        }
+        else
+        {
+            retryAfterSeconds = ResolveConfiguredRetryAfterSeconds(
+                httpContext,
+                policyName);
         }
 
         // ── Structured logging ────────────────────────────────────────────────
@@ -290,27 +312,39 @@ public static class RateLimitingExtensions
             policyName, userId, ip, path, retryAfterSeconds);
 
         // ── Write HTTP response ───────────────────────────────────────────────
-        httpContext.Response.StatusCode  = StatusCodes.Status429TooManyRequests;
-        httpContext.Response.ContentType = "application/problem+json";
         httpContext.Response.Headers["Retry-After"] = retryAfterSeconds.ToString();
 
-        var problemDetails = new
+        var problem = ApiProblemDetails.Create(
+            httpContext,
+            ApiErrorCatalog.RateLimitExceeded);
+        problem.Extensions["retryAfter"] = retryAfterSeconds;
+        problem.Extensions["policy"] = policyName;
+
+        await ApiProblemDetails.WriteAsync(
+            httpContext,
+            problem,
+            cancellationToken);
+    }
+
+    private static int ResolveConfiguredRetryAfterSeconds(
+        HttpContext context,
+        string policyName)
+    {
+        var options = context.RequestServices?
+            .GetService<IOptions<RateLimitingOptions>>()?.Value
+            ?? new RateLimitingOptions();
+
+        return policyName switch
         {
-            type       = "https://wordsoul.app/errors/rate-limit",
-            title      = "Too Many Requests",
-            status     = 429,
-            detail     = "You have exceeded the request limit. Please try again later.",
-            instance   = path,
-            retryAfter = retryAfterSeconds,
+            GlobalIp => options.GlobalIp.WindowSeconds,
+            AuthenticatedUser => options.AuthenticatedUser.WindowSeconds,
+            AiVocabulary => options.AiVocabulary.RefillSeconds,
+            AudioGeneration => options.AudioGeneration.WindowSeconds,
+            MatchmakingJoin => options.MatchmakingJoin.WindowSeconds,
+            AuthEndpoints => options.AuthEndpoints.WindowSeconds,
+            GymBattleStart => options.GymBattleStart.RefillSeconds,
+            _ => options.GlobalIp.WindowSeconds
         };
-
-        var json = JsonSerializer.Serialize(problemDetails, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented        = false,
-        });
-
-        await httpContext.Response.WriteAsync(json, cancellationToken);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
