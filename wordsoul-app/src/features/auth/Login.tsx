@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../hooks/Auth/useAuth";
 import { BASE_URL } from "../../services/api";
+import { extractApiError } from "../../shared/errors";
 
 /** Icon Google SVG (official colors) */
 const GoogleIcon: React.FC = () => (
@@ -33,11 +34,8 @@ const Login: React.FC = () => {
     try {
       await login(username, password);
       navigate("/home");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      setError(
-        err?.response?.data?.message || "Tên đăng nhập hoặc mật khẩu không hợp lệ"
-      );
+    } catch (err: unknown) {
+      setError(extractApiError(err).message);
     } finally {
       setIsLoading(false);
     }

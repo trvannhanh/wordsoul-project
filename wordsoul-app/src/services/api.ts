@@ -1,4 +1,10 @@
-import axios, { AxiosError } from 'axios';
+import axios, {
+  type AxiosError,
+  type AxiosRequestConfig,
+  type InternalAxiosRequestConfig,
+} from 'axios';
+import { extractApiError, type AppError } from '../shared/errors';
+import { queueToastAfterNavigation, toast } from '../shared/toast';
 // Trong development: Vite proxy forward /api → https://localhost:63982/api (tránh CORS)
 // Trong production: dùng biến môi trường VITE_API_URL
 export const BASE_URL = import.meta.env.VITE_API_URL || '/api';
@@ -109,6 +115,11 @@ const clearToken = () => {
   document.cookie = `${REFRESH_TOKEN_KEY}=; Max-Age=0; path=/`;
 };
 
+interface TokenResponse {
+  accessToken: string;
+  refreshToken?: string;
+}
+
 // ---- API instances ----
 const api = axios.create({
   baseURL: BASE_URL,
@@ -119,6 +130,51 @@ export const authApi = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
 });
+
+const notifyApiError = (error: AppError, config?: AxiosRequestConfig) => {
+  if (config?.errorHandling?.suppressToast || error.kind === 'cancelled') {
+    return;
+  }
+
+  const shouldNotify =
+    Boolean(config?.errorHandling?.toastMessage) ||
+    error.kind === 'network' ||
+    error.kind === 'timeout' ||
+    error.status === 403 ||
+    error.status === 429 ||
+    (error.status !== undefined && error.status >= 500);
+
+  if (!shouldNotify) {
+    return;
+  }
+
+  const retryMessage =
+    error.status === 429 && error.retryAfterSeconds !== undefined
+      ? ` Vui lòng thử lại sau ${error.retryAfterSeconds} giây.`
+      : '';
+
+  toast.error(
+    `${config?.errorHandling?.toastMessage ?? error.message}${retryMessage}`,
+    {
+      id: `api-error:${error.code}`,
+      description: error.traceId ? `Mã đối soát: ${error.traceId}` : undefined,
+    },
+  );
+};
+
+const rejectNormalizedError = (
+  error: unknown,
+  config?: AxiosRequestConfig,
+) => {
+  const appError = extractApiError(error);
+  notifyApiError(appError, config);
+  return Promise.reject(appError);
+};
+
+api.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError) => rejectNormalizedError(error, error.config),
+);
 
 // ---- Request interceptor ----
 authApi.interceptors.request.use(
@@ -132,76 +188,79 @@ authApi.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+let refreshPromise: Promise<TokenResponse> | null = null;
+let isRedirectingToLogin = false;
+
+const refreshAccessToken = () => {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
+  const refreshToken = getToken(REFRESH_TOKEN_KEY);
+  if (!refreshToken) {
+    return Promise.reject(new Error('Refresh token is not available.'));
+  }
+
+  refreshPromise = api
+    .post<TokenResponse>(
+      endpoints.refreshToken,
+      { refreshToken },
+      { errorHandling: { suppressToast: true } },
+    )
+    .then((response) => response.data)
+    .finally(() => {
+      refreshPromise = null;
+    });
+
+  return refreshPromise;
+};
+
+const redirectToLogin = () => {
+  clearToken();
+
+  if (isRedirectingToLogin || window.location.pathname === '/login') {
+    return;
+  }
+
+  isRedirectingToLogin = true;
+  queueToastAfterNavigation(
+    'warning',
+    'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
+    { id: 'session-expired' },
+  );
+  window.location.assign('/login');
+};
+
 // ---- Response interceptor ----
 authApi.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    const originalRequest = error.config as typeof error.config & { _retry?: boolean };
+    const originalRequest = error.config as
+      | InternalAxiosRequestConfig
+      | undefined;
 
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
-        const refreshToken = getToken(REFRESH_TOKEN_KEY);
-        if (!refreshToken) {
-          clearToken();
-          window.location.href = '/login';
-          return Promise.reject(error);
-        }
+        const {
+          accessToken,
+          refreshToken: newRefreshToken,
+        } = await refreshAccessToken();
 
-        // gọi API refresh token
-        const response = await api.post(endpoints.refreshToken, { refreshToken });
-        const { accessToken, refreshToken: newRefreshToken } = response.data as {
-          accessToken: string;
-          refreshToken: string;
-        };
-
-        // lưu token mới
         setToken(ACCESS_TOKEN_KEY, accessToken);
         if (newRefreshToken) setToken(REFRESH_TOKEN_KEY, newRefreshToken);
 
-        // gắn lại header cho request ban đầu
-        if (originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-        }
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
 
         return authApi(originalRequest);
       } catch (refreshError) {
-        clearToken();
-        window.location.href = '/login';
-        return Promise.reject(refreshError);
+        redirectToLogin();
+        return Promise.reject(extractApiError(refreshError));
       }
     }
 
-    return Promise.reject(error);
-  }
-);
-
-authApi.interceptors.request.use((config) => {
-  console.log('🚀 REQUEST');
-  console.log('URL:', config.url);
-  console.log('METHOD:', config.method);
-  console.log('DATA:', config.data);
-  console.log('PARAMS:', config.params);
-  console.log('HEADERS:', config.headers);
-  return config;
-});
-
-authApi.interceptors.response.use(
-  (response) => {
-    console.log('✅ RESPONSE');
-    console.log('URL:', response.config.url);
-    console.log('STATUS:', response.status);
-    console.log('DATA:', response.data);
-    return response;
-  },
-  (error) => {
-    console.log('❌ ERROR RESPONSE');
-    console.log('URL:', error.config?.url);
-    console.log('STATUS:', error.response?.status);
-    console.log('DATA:', error.response?.data);
-    console.log('FULL ERROR:', error);
-    return Promise.reject(error);
+    return rejectNormalizedError(error, originalRequest);
   }
 );
 
