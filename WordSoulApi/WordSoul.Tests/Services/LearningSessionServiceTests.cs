@@ -609,6 +609,7 @@ namespace WordSoul.Tests.Services
         }
 
         [Theory]
+        [Trait("Suite", "MandatoryQuestionFlow")]
         [MemberData(nameof(CurrentQuestionFlowCases))]
         public async Task GetSessionQuestions_CurrentV1Flow_CreatesExpectedQuestionPayload(
             SessionType sessionType,
@@ -705,6 +706,7 @@ namespace WordSoul.Tests.Services
         }
 
         [Theory]
+        [Trait("Suite", "MandatoryQuestionFlow")]
         [MemberData(nameof(VersionedReviewQuestionFlowCases))]
         public async Task GetSessionQuestions_VersionedReview_UsesReviewPolicy(
             int currentStageIndex,
@@ -1159,6 +1161,7 @@ namespace WordSoul.Tests.Services
         }
 
         [Fact]
+        [Trait("Suite", "MandatoryQuestionFlow")]
         public async Task SubmitAnswer_DuplicateSubmission_ReturnsStoredResultWithoutAdvancingProgress()
         {
             var (service, deps) = CreateService();
@@ -1239,6 +1242,7 @@ namespace WordSoul.Tests.Services
         }
 
         [Fact]
+        [Trait("Suite", "MandatoryQuestionFlow")]
         public async Task SubmitAnswer_ConcurrentStateChange_ReturnsActionableConflict()
         {
             var (service, deps, request) = CreateAnswerEvaluationScenario(

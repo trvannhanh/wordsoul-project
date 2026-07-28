@@ -53,6 +53,7 @@ namespace WordSoul.IntegrationTests.Services
         // CASE 1 — PERFECT RECALL → Grade = 5
         // ======================================================
         [Fact]
+        [Trait("Suite", "MandatoryQuestionFlow")]
         public async Task SubmitAnswer_PerfectRecall_ShouldCreateHistory_WithGrade5()
         {
             var (user, vocab, session) = await SetupReviewSession();
@@ -80,6 +81,7 @@ namespace WordSoul.IntegrationTests.Services
         // CASE 2 — ONE FINAL CORRECT AT LEVEL 3 → Grade = 5
         // ======================================================
         [Fact]
+        [Trait("Suite", "MandatoryQuestionFlow")]
         public async Task SubmitAnswer_CompleteFromLevel3_ShouldCreateHistory()
         {
             var (user, vocab, session) = await SetupReviewSession();
@@ -106,6 +108,7 @@ namespace WordSoul.IntegrationTests.Services
         // CASE 3 — FAIL → NO HISTORY
         // ======================================================
         [Fact]
+        [Trait("Suite", "MandatoryQuestionFlow")]
         public async Task SubmitAnswer_Failed_ShouldNotCreateHistory()
         {
             var (user, vocab, session) = await SetupReviewSession();
@@ -129,6 +132,7 @@ namespace WordSoul.IntegrationTests.Services
         // CASE 4 — HINT USED → Grade < 5
         // ======================================================
         [Fact]
+        [Trait("Suite", "MandatoryQuestionFlow")]
         public async Task SubmitAnswer_WithHints_ShouldLowerGrade()
         {
             var (user, vocab, session) = await SetupReviewSession();
@@ -150,6 +154,7 @@ namespace WordSoul.IntegrationTests.Services
         }
 
         [Fact]
+        [Trait("Suite", "MandatoryQuestionFlow")]
         public async Task SubmitAnswer_VersionedReview_FirstRecallCorrect_CompletesWithLockedGrade()
         {
             var (user, vocab, session) = await SetupReviewSession(
@@ -198,6 +203,7 @@ namespace WordSoul.IntegrationTests.Services
         }
 
         [Fact]
+        [Trait("Suite", "MandatoryQuestionFlow")]
         public async Task SubmitAnswer_VersionedReview_FailedRecall_UsesLockedGradeAfterRemediation()
         {
             var (user, vocab, session) = await SetupReviewSession(
@@ -283,6 +289,7 @@ namespace WordSoul.IntegrationTests.Services
         }
 
         [Fact]
+        [Trait("Suite", "MandatoryQuestionFlow")]
         public async Task SubmitAnswer_DownstreamFailure_RollsBackAnswerAndProgression()
         {
             var (user, vocab, session) = await SetupReviewSession();

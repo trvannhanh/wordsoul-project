@@ -21,6 +21,13 @@ namespace WordSoul.Application.Services
     /// </summary>
     public class LearningSessionService : ILearningSessionService
     {
+        private static readonly EventId FlowTransitionEvent =
+            new(4100, "QuestionFlowTransition");
+        private static readonly EventId InitialRecallEvent =
+            new(4101, "InitialRecallCaptured");
+        private static readonly EventId SubmissionReplayEvent =
+            new(4102, "AnswerSubmissionReplayed");
+
         private readonly IUnitOfWork _uow;
         private readonly ILogger<LearningSessionService> _logger;
         private readonly IUserOwnedPetService _userOwnedPetService;
@@ -643,7 +650,10 @@ namespace WordSoul.Application.Services
 
             var replay = await FindExistingSubmissionAsync(sessionId, request, ct);
             if (replay != null)
+            {
+                LogSubmissionReplay(sessionId, request);
                 return replay;
+            }
 
             await using var transaction = await _uow.BeginTransactionAsync(ct);
             try
@@ -652,6 +662,7 @@ namespace WordSoul.Application.Services
                 if (replay != null)
                 {
                     await transaction.CommitAsync(ct);
+                    LogSubmissionReplay(sessionId, request);
                     return replay;
                 }
 
@@ -677,6 +688,7 @@ namespace WordSoul.Application.Services
                 session.FlowVersion);
             var flowStep = flowPolicy.GetStep(
                 sessionVocab.CurrentStageIndex);
+            var previousStageIndex = sessionVocab.CurrentStageIndex;
             var expectedQuestionType = flowStep.QuestionType;
             if (request.QuestionType != expectedQuestionType)
                 throw new InvalidOperationException(
@@ -862,6 +874,44 @@ namespace WordSoul.Application.Services
                 };
 
                 await transaction.CommitAsync(ct);
+                _logger.LogInformation(
+                    FlowTransitionEvent,
+                    "Question flow transition: SessionId={SessionId}, UserId={UserId}, "
+                    + "VocabularyId={VocabularyId}, SessionType={SessionType}, "
+                    + "FlowVersion={FlowVersion}, Phase={Phase}, FromStage={FromStage}, "
+                    + "ToStage={ToStage}, IsCorrect={IsCorrect}, IsCompleted={IsCompleted}, "
+                    + "IsRemediation={IsRemediation}",
+                    sessionId,
+                    userId,
+                    vocab.Id,
+                    session.Type,
+                    session.FlowVersion,
+                    flowStep.Phase,
+                    previousStageIndex,
+                    sessionVocab.CurrentStageIndex,
+                    isCorrect,
+                    sessionVocab.IsCompleted,
+                    flowStep.IsRemediation);
+
+                if (session.Type == SessionType.Review
+                    && flowStep.Phase == QuestionPhase.InitialRecall)
+                {
+                    _logger.LogInformation(
+                        InitialRecallEvent,
+                        "Initial recall captured: SessionId={SessionId}, UserId={UserId}, "
+                        + "VocabularyId={VocabularyId}, FlowVersion={FlowVersion}, "
+                        + "IsCorrect={IsCorrect}, Grade={Grade}, "
+                        + "ResponseTimeSeconds={ResponseTimeSeconds}, HintCount={HintCount}",
+                        sessionId,
+                        userId,
+                        vocab.Id,
+                        session.FlowVersion,
+                        sessionVocab.InitialRecallCorrect,
+                        sessionVocab.InitialRecallGrade,
+                        request.ResponseTimeSeconds,
+                        request.HintCount);
+                }
+
                 return response;
             }
             catch (DbUpdateConcurrencyException ex)
@@ -894,6 +944,21 @@ namespace WordSoul.Application.Services
                 _uow.ClearTrackedChanges();
                 throw;
             }
+        }
+
+        private void LogSubmissionReplay(
+            int sessionId,
+            SubmitAnswerRequestDto request)
+        {
+            _logger.LogInformation(
+                SubmissionReplayEvent,
+                "Answer submission replayed: SessionId={SessionId}, "
+                + "VocabularyId={VocabularyId}, SubmissionId={SubmissionId}, "
+                + "QuestionType={QuestionType}",
+                sessionId,
+                request.VocabularyId,
+                request.SubmissionId,
+                request.QuestionType);
         }
 
         private async Task<SubmitAnswerResponseDto?> FindExistingSubmissionAsync(
