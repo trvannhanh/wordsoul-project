@@ -14,6 +14,11 @@ namespace WordSoul.Domain.Entities
 
         // Position in the question flow, not a QuestionType enum value.
         public int CurrentStageIndex { get; set; } = 0;
+
+        // Captured once from the first unaided recall in a review flow.
+        // Null for learning sessions and legacy review sessions.
+        public bool? InitialRecallCorrect { get; set; }
+        public int? InitialRecallGrade { get; set; }
         
         public bool IsCompleted { get; set; } = false;
 

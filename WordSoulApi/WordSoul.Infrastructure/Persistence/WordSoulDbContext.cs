@@ -76,6 +76,10 @@ namespace WordSoul.Infrastructure.Persistence
                 .HasForeignKey(a => a.LearningSessionId)
                 .OnDelete(DeleteBehavior.Cascade); // Cascade: deleting a session removes its answer records
 
+            modelBuilder.Entity<LearningSession>()
+                .Property(ls => ls.FlowVersion)
+                .HasDefaultValue(1);
+
 
             // User 1 - N LearningSession relationship
             modelBuilder.Entity<User>() 

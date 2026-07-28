@@ -18,6 +18,7 @@ using WordSoul.Application.Common;
 using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Repositories;
 using WordSoul.Application.Interfaces.Services;
+using WordSoul.Application.Learning.QuestionFlow;
 using WordSoul.Application.Services;
 using WordSoul.Application.Services.SRS;
 using WordSoul.Infrastructure.BackgroundServices;
@@ -256,6 +257,11 @@ builder.Services.AddScoped<IRealtimeNotificationService, SignalRNotificationServ
 
 // Register SRSAlgorithm
 builder.Services.AddScoped<SRSAlgorithm>();
+
+builder.Services.AddSingleton<LegacyQuestionFlowPolicy>();
+builder.Services.AddSingleton<LearningQuestionFlowPolicy>();
+builder.Services.AddSingleton<ReviewQuestionFlowPolicy>();
+builder.Services.AddSingleton<IQuestionFlowResolver, QuestionFlowResolver>();
 
 builder.Services.AddScoped<ITimeProvider, SystemTimeProvider>();
 builder.Services.AddScoped<IDailyQuestService, DailyQuestService>();

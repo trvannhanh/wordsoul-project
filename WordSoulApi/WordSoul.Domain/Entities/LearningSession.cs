@@ -6,6 +6,7 @@ namespace WordSoul.Domain.Entities
     {
         public int Id { get; set; }
         public SessionType Type { get; set; }
+        public int FlowVersion { get; set; } = 1;
         public DateTime StartTime { get; set; } = DateTime.UtcNow;
         public DateTime EndTime { get; set; } = DateTime.UtcNow.AddHours(1); 
         public bool IsCompleted { get; set; } = false;
