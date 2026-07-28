@@ -663,12 +663,20 @@ namespace WordSoul.Tests.Services
 
             question.VocabularyId.Should().Be(target.Id);
             question.QuestionType.Should().Be(expectedType);
-            question.Word.Should().Be(target.Word);
+            question.RevealsAnswer.Should().Be(currentLevel == 0);
+            question.CountsAsRecall.Should().Be(currentLevel > 0);
+            question.Word.Should().Be(currentLevel == 0 ? target.Word : null);
             question.Meaning.Should().Be(target.Meaning);
-            question.PronunciationUrl.Should().Be(target.PronunciationUrl);
+            question.PronunciationUrl.Should().Be(
+                expectedType is QuestionType.Flashcard or QuestionType.Listening
+                    ? target.PronunciationUrl
+                    : null);
             question.ImageUrl.Should().Be(target.ImageUrl);
-            question.ExampleSentence.Should().Be(target.ExampleSentence);
+            question.ExampleSentence.Should().Be(
+                currentLevel == 0 ? target.ExampleSentence : null);
             question.IsRetry.Should().Be(currentLevel > 0);
+            question.HintText.Should().Be(
+                "Bắt đầu: E · Kết thúc: L · 9 ký tự");
 
             switch (expectedType)
             {
@@ -741,6 +749,18 @@ namespace WordSoul.Tests.Services
 
             question.QuestionType.Should().Be(expectedType);
             question.IsRetry.Should().Be(expectedRetry);
+            question.Phase.Should().Be(currentStageIndex switch
+            {
+                0 => QuestionPhase.InitialRecall,
+                1 => QuestionPhase.Feedback,
+                _ => QuestionPhase.CorrectiveRecall
+            });
+            question.RevealsAnswer.Should().Be(currentStageIndex == 1);
+            question.CountsAsRecall.Should().Be(currentStageIndex != 1);
+            question.Word.Should().Be(
+                currentStageIndex == 1 ? vocabulary.Word : null);
+            question.Description.Should().Be(
+                currentStageIndex == 1 ? vocabulary.Description : null);
         }
 
         [Fact]

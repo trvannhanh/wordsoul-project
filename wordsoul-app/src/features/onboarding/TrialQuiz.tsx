@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { QuestionTypeEnum, type QuizQuestionDto } from '../../types/LearningSessionDto';
+import { QuestionPhaseEnum, QuestionTypeEnum, type QuizQuestionDto } from '../../types/LearningSessionDto';
 import GameScreen from '../learningSession/components/GameScreen';
 import AnswerScreen from '../learningSession/components/AnswerScreen';
 import PokemonProgressBar from '../learningSession/components/PetProgressBar';
@@ -10,6 +10,9 @@ const TRIAL_QUESTIONS: QuizQuestionDto[] = [
     {
         vocabularyId: -1,
         questionType: QuestionTypeEnum.Flashcard,
+        phase: QuestionPhaseEnum.Study,
+        revealsAnswer: true,
+        countsAsRecall: false,
         word: 'Apple',
         meaning: 'Quả táo',
         pronunciation: '/ˈæp.əl/',
@@ -20,6 +23,9 @@ const TRIAL_QUESTIONS: QuizQuestionDto[] = [
     {
         vocabularyId: -2,
         questionType: QuestionTypeEnum.MultipleChoice,
+        phase: QuestionPhaseEnum.Recognition,
+        revealsAnswer: true,
+        countsAsRecall: true,
         word: 'Sun',
         meaning: 'Mặt trời',
         pronunciation: '/sʌn/',
@@ -29,6 +35,9 @@ const TRIAL_QUESTIONS: QuizQuestionDto[] = [
     {
         vocabularyId: -3,
         questionType: QuestionTypeEnum.FillInBlank,
+        phase: QuestionPhaseEnum.GuidedRecall,
+        revealsAnswer: true,
+        countsAsRecall: true,
         word: 'Water',
         meaning: 'Nước',
         pronunciation: '/ˈwɔː.tər/',

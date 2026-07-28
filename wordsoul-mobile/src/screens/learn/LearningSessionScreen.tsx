@@ -15,7 +15,6 @@ import Animated, {
   withSpring,
   withSequence,
   withTiming,
-  runOnJS,
 } from 'react-native-reanimated';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { LearnStackParamList } from '../../navigation/MainTabs';
@@ -23,9 +22,10 @@ import {
   fetchQuizOfSession,
   answerQuiz,
   completeLearningSession,
+  completeReviewSession,
 } from '../../services/learningSession';
 import type { QuizQuestionDto, AnswerResponseDto } from '../../types/LearningSessionDto';
-import { QuestionTypeEnum } from '../../types/LearningSessionDto';
+import { QuestionPhaseEnum, QuestionTypeEnum } from '../../types/LearningSessionDto';
 import { ProgressBar } from '../../components/ui/ProgressBar';
 import { Ionicons } from '@expo/vector-icons';
 import { createAudioPlayer } from 'expo-audio';
@@ -34,8 +34,15 @@ type Props = NativeStackScreenProps<LearnStackParamList, 'LearningSession'>;
 
 type AnswerState = 'idle' | 'correct' | 'wrong';
 
+const createSubmissionId = (): string =>
+  'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (char) => {
+    const random = Math.floor(Math.random() * 16);
+    const value = char === 'x' ? random : (random & 0x3) | 0x8;
+    return value.toString(16);
+  });
+
 export const LearningSessionScreen: React.FC<Props> = ({ navigation, route }) => {
-  const { sessionId } = route.params;
+  const { sessionId, mode = 'learning' } = route.params;
 
   const [questions, setQuestions] = useState<QuizQuestionDto[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -48,6 +55,21 @@ export const LearningSessionScreen: React.FC<Props> = ({ navigation, route }) =>
   const [completedCount, setCompletedCount] = useState(0);
   const [finishing, setFinishing] = useState(false);
   const startTime = useRef(Date.now());
+  const submissionId = useRef<string | null>(null);
+  const totalVocabularyCount = useRef(0);
+
+  const handleComplete = useCallback(async () => {
+    setFinishing(true);
+    try {
+      if (mode === 'review') {
+        await completeReviewSession(sessionId);
+      } else {
+        await completeLearningSession(sessionId);
+      }
+    } finally {
+      navigation.replace('VocabSetList');
+    }
+  }, [mode, sessionId, navigation]);
 
   // Animation values
   const shakeX = useSharedValue(0);
@@ -56,13 +78,22 @@ export const LearningSessionScreen: React.FC<Props> = ({ navigation, route }) =>
 
   useEffect(() => {
     fetchQuizOfSession(sessionId)
-      .then((q) => setQuestions(q))
+      .then((q) => {
+        if (q.length === 0) {
+          void handleComplete();
+          return;
+        }
+        totalVocabularyCount.current = q.length;
+        setQuestions(q);
+      })
       .catch(() => Alert.alert('Lỗi', 'Không thể tải câu hỏi'))
       .finally(() => setLoading(false));
-  }, [sessionId]);
+  }, [handleComplete, sessionId]);
 
   const currentQ = questions[currentIndex];
-  const progress = questions.length > 0 ? (completedCount / questions.length) * 100 : 0;
+  const progress = totalVocabularyCount.current > 0
+    ? (completedCount / totalVocabularyCount.current) * 100
+    : 0;
 
   const playAudio = useCallback(async (url: string) => {
     try {
@@ -104,7 +135,9 @@ export const LearningSessionScreen: React.FC<Props> = ({ navigation, route }) =>
       startTime.current = Date.now();
 
       try {
+        submissionId.current ??= createSubmissionId();
         const res = await answerQuiz(sessionId, {
+          submissionId: submissionId.current,
           vocabularyId: currentQ.vocabularyId,
           questionType: currentQ.questionType,
           answer,
@@ -112,6 +145,8 @@ export const LearningSessionScreen: React.FC<Props> = ({ navigation, route }) =>
           hintCount,
         });
 
+        submissionId.current = null;
+        currentQ.word = res.correctAnswer;
         setAnswerResponse(res);
         if (res.isCorrect) {
           setAnswerState('correct');
@@ -131,31 +166,35 @@ export const LearningSessionScreen: React.FC<Props> = ({ navigation, route }) =>
     [answerState, currentQ, sessionId, hintCount, playAudio],
   );
 
-  const handleNext = useCallback(() => {
+  const handleNext = useCallback(async () => {
     setAnswerState('idle');
     setAnswerResponse(null);
     setFlipped(false);
     setFillInput('');
     setHintCount(0);
+    submissionId.current = null;
     startTime.current = Date.now();
 
     if (currentIndex + 1 >= questions.length) {
-      // All questions done — complete session
-      handleComplete();
+      // Finish the current batch, then ask the server for each word's next phase.
+      setLoading(true);
+      try {
+        const nextQuestions = await fetchQuizOfSession(sessionId);
+        if (nextQuestions.length === 0) {
+          await handleComplete();
+          return;
+        }
+        setQuestions(nextQuestions);
+        setCurrentIndex(0);
+      } catch {
+        Alert.alert('Lỗi', 'Không thể tải bước học tiếp theo');
+      } finally {
+        setLoading(false);
+      }
     } else {
       setCurrentIndex((i) => i + 1);
     }
-  }, [currentIndex, questions.length]);
-
-  const handleComplete = useCallback(async () => {
-    setFinishing(true);
-    try {
-      await completeLearningSession(sessionId);
-      navigation.replace('VocabSetList');
-    } catch {
-      navigation.replace('VocabSetList');
-    }
-  }, [sessionId, navigation]);
+  }, [currentIndex, handleComplete, questions.length, sessionId]);
 
   const handleExit = () => {
     Alert.alert(
@@ -214,7 +253,13 @@ export const LearningSessionScreen: React.FC<Props> = ({ navigation, route }) =>
       <View className="px-4 mb-3">
         <View className="self-start bg-blue-100 dark:bg-blue-900/40 px-3 py-1 rounded-full">
           <Text className="text-blue-600 dark:text-blue-300 text-xs font-bold">
-            {isFlashcard
+            {currentQ.phase === QuestionPhaseEnum.InitialRecall
+              ? 'Kiểm tra trí nhớ'
+              : currentQ.phase === QuestionPhaseEnum.Feedback
+                ? 'Xem lại đáp án'
+                : currentQ.phase === QuestionPhaseEnum.CorrectiveRecall
+                  ? 'Kiểm tra lại'
+                  : isFlashcard
               ? 'Flashcard'
               : isListening
                 ? 'Nghe'
@@ -287,7 +332,7 @@ export const LearningSessionScreen: React.FC<Props> = ({ navigation, route }) =>
         )}
 
         {/* ── Multiple Choice & Listening options ── */}
-        {(isMultipleChoice || isListening) && (
+        {isMultipleChoice && (
           <>
             {!isListening && (
               <View className="bg-white dark:bg-gray-800 rounded-3xl p-6 mb-4 shadow-sm items-center">
@@ -326,13 +371,15 @@ export const LearningSessionScreen: React.FC<Props> = ({ navigation, route }) =>
         )}
 
         {/* ── Fill in Blank ── */}
-        {isFillInBlank && (
+        {(isFillInBlank || isListening) && (
           <>
-            <View className="bg-white dark:bg-gray-800 rounded-3xl p-6 mb-4 shadow-sm">
-              <Text className="text-lg font-semibold text-gray-900 dark:text-white text-center leading-7">
-                {currentQ.questionPrompt ?? currentQ.description ?? `_____ (${currentQ.meaning})`}
-              </Text>
-            </View>
+            {isFillInBlank && (
+              <View className="bg-white dark:bg-gray-800 rounded-3xl p-6 mb-4 shadow-sm">
+                <Text className="text-lg font-semibold text-gray-900 dark:text-white text-center leading-7">
+                  {currentQ.questionPrompt ?? currentQ.description ?? `_____ (${currentQ.meaning})`}
+                </Text>
+              </View>
+            )}
             <Animated.View style={shakeStyle}>
               <TextInput
                 className={`border-2 rounded-2xl px-5 py-4 text-base text-gray-900 dark:text-white bg-white dark:bg-gray-800 ${answerState === 'correct'

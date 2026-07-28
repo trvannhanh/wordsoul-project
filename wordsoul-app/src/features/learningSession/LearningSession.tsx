@@ -443,7 +443,7 @@ const LearningSession: React.FC = () => {
                   </span>
                 )}
                 <button
-                  onClick={() => playWordAudio(answeredQuestion.word, answeredQuestion.pronunciationUrl)}
+                  onClick={() => playWordAudio(answeredQuestion.word ?? "", answeredQuestion.pronunciationUrl)}
                   disabled={isPlayingWordAudio}
                   className="text-yellow-400 hover:text-yellow-300 disabled:opacity-50 transition-colors p-1"
                   title="Phát âm từ"
@@ -478,7 +478,7 @@ const LearningSession: React.FC = () => {
               {answeredQuestion.imageUrl && (
                 <img
                   src={answeredQuestion.imageUrl}
-                  alt={answeredQuestion.word}
+                  alt={answeredQuestion.word ?? "Vocabulary illustration"}
                   className="w-32 h-32 object-contain mx-auto mb-4 rounded border border-gray-600 shadow"
                 />
               )}

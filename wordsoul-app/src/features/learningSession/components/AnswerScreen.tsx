@@ -76,10 +76,8 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
       await consumeHint();
       setHintBalance?.(hintBalance - 1);
       setUsedHint(true);
-      if (question.questionType === QuestionTypeEnum.MultipleChoice && question.options) {
-        const wrongOptions = question.options.filter((opt) => opt !== question.word);
-        const toEliminate = wrongOptions.sort(() => 0.5 - Math.random()).slice(0, 2);
-        setEliminatedOptions(toEliminate);
+      if (question.questionType === QuestionTypeEnum.MultipleChoice) {
+        setEliminatedOptions(question.hintOptionsToEliminate ?? []);
       }
     } catch (e) {
       console.error("Failed to use hint", e);
@@ -285,8 +283,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
                         exit={{ opacity: 0 }}
                         className="bg-amber-950 border border-amber-700 text-amber-300 font-pixel text-sm px-4 py-2 rounded-lg text-center"
                       >
-                        Bắt đầu: <strong>{question.word.charAt(0).toUpperCase()}</strong>
-                        {" "}... Cuối: <strong>{question.word.charAt(question.word.length - 1).toUpperCase()}</strong>
+                        {question.hintText ?? "Hãy dựa vào nghĩa và ngữ cảnh của từ."}
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -400,7 +397,7 @@ const AnswerScreen: React.FC<AnswerScreenProps> = ({
                         exit={{ opacity: 0 }}
                         className="bg-amber-950 border border-amber-700 text-amber-300 font-pixel text-sm px-4 py-2 rounded-lg tracking-widest"
                       >
-                        {Array(question.word.length).fill("_").join(" ")} ({question.word.length} chữ)
+                        {question.hintText ?? "Nghe lại chậm và chú ý từng âm tiết."}
                       </motion.div>
                     )}
                   </AnimatePresence>

@@ -304,7 +304,11 @@ namespace WordSoul.Application.Services
             }
 
             // Tạo danh sách câu hỏi quiz từ từ vựng chưa hoàn thành
-            var allWords = sessionVocabs.Select(sv => sv.Vocabulary!.Word).ToList();
+            var allWords = sessionVocabs
+                .Select(sv => sv.Vocabulary?.Word)
+                .Where(word => !string.IsNullOrWhiteSpace(word))
+                .Select(word => word!)
+                .ToList();
             var flowPolicy = _questionFlowResolver.Resolve(
                 session.Type,
                 session.FlowVersion);
@@ -320,7 +324,7 @@ namespace WordSoul.Application.Services
                 var flowStep = flowPolicy.GetStep(sv.CurrentStageIndex);
                 questions.Add(CreateQuizQuestionDto(
                     vocab,
-                    flowStep.QuestionType,
+                    flowStep,
                     allWords,
                     flowStep.IsRemediation));
             }
@@ -329,8 +333,16 @@ namespace WordSoul.Application.Services
         }
 
         // Helper: tạo QuizQuestionDto từ Vocabulary và QuestionType
-        private QuizQuestionDto CreateQuizQuestionDto(Vocabulary vocab, QuestionType type, List<string> allWords, bool isRetry)
+        private QuizQuestionDto CreateQuizQuestionDto(
+            Vocabulary vocab,
+            FlowStep flowStep,
+            List<string> allWords,
+            bool isRetry)
         {
+            var type = flowStep.QuestionType;
+            var word = vocab.Word
+                ?? throw new InvalidOperationException(
+                    $"Vocabulary {vocab.Id} does not have a word.");
             // ── Proposal A: MCQ ──────────────────────────────────────────────────────────
             // Đối với MultipleChoice: QuestionPrompt = Meaning của từ (người dùng xem nghĩa → chọn từ đúng)
             // Options vẫn là danh sách các Word, đảm bảo luôn có đủ 3 distractors.
@@ -344,18 +356,19 @@ namespace WordSoul.Application.Services
 
                 QuestionType.FillInBlank when
                     !string.IsNullOrWhiteSpace(vocab.Description) &&
-                    vocab.Description.Contains(vocab.Word, StringComparison.OrdinalIgnoreCase)
-                    => BuildContextSentence(vocab.Description, vocab.Word),
+                    vocab.Description.Contains(word, StringComparison.OrdinalIgnoreCase)
+                    => BuildContextSentence(vocab.Description, word),
 
                 _ => null
             };
 
             // Đảm bảo MCQ luôn có đủ 3 distractor words (loại trừ từ đúng)
             List<string>? options = null;
+            List<string>? hintOptionsToEliminate = null;
             if (type == QuestionType.MultipleChoice)
             {
                 var distractors = allWords
-                    .Where(w => !string.Equals(w, vocab.Word, StringComparison.OrdinalIgnoreCase))
+                    .Where(w => !string.Equals(w, word, StringComparison.OrdinalIgnoreCase))
                     .OrderBy(_ => Guid.NewGuid())
                     .Take(3)
                     .ToList();
@@ -364,27 +377,56 @@ namespace WordSoul.Application.Services
                 while (distractors.Count < 3)
                     distractors.Add($"—");
 
-                options = distractors.Append(vocab.Word).OrderBy(_ => Guid.NewGuid()).ToList();
+                options = distractors.Append(word).OrderBy(_ => Guid.NewGuid()).ToList();
+                hintOptionsToEliminate = distractors
+                    .Where(option => allWords.Contains(
+                        option,
+                        StringComparer.OrdinalIgnoreCase))
+                    .Take(2)
+                    .ToList();
             }
 
+            var revealsAnswer = flowStep.RevealsAnswer;
             return new QuizQuestionDto
             {
                 VocabularyId = vocab.Id,
-                Word = vocab.Word,
+                Phase = flowStep.Phase,
+                RevealsAnswer = revealsAnswer,
+                CountsAsRecall = flowStep.CountsAsRecall,
+                Word = revealsAnswer ? word : null,
                 Meaning = vocab.Meaning,
-                Pronunciation = vocab.Pronunciation,
-                PronunciationUrl = vocab.PronunciationUrl,
+                Pronunciation = revealsAnswer ? vocab.Pronunciation : null,
+                PronunciationUrl =
+                    type == QuestionType.Listening || revealsAnswer
+                        ? vocab.PronunciationUrl
+                        : null,
                 ImageUrl = vocab.ImageUrl,
-                Description = vocab.Description,
-                ExampleSentence = vocab.ExampleSentence,
-                ExampleSentenceAudioUrl = vocab.ExampleSentenceAudioUrl,
+                Description = revealsAnswer ? vocab.Description : null,
+                ExampleSentence = revealsAnswer ? vocab.ExampleSentence : null,
+                ExampleSentenceAudioUrl =
+                    revealsAnswer ? vocab.ExampleSentenceAudioUrl : null,
                 PartOfSpeech = vocab.PartOfSpeech?.ToString(),
                 CEFRLevel = vocab.CEFRLevel?.ToString(),
                 QuestionType = type,
                 Options = options,
+                HintOptionsToEliminate = hintOptionsToEliminate,
+                HintText = BuildAnswerShapeHint(word),
                 IsRetry = isRetry,
                 QuestionPrompt = questionPrompt,
             };
+        }
+
+        private static string? BuildAnswerShapeHint(string? word)
+        {
+            if (string.IsNullOrWhiteSpace(word))
+                return null;
+
+            var trimmedWord = word.Trim();
+            return trimmedWord.Length == 1
+                ? $"1 ký tự: {char.ToUpperInvariant(trimmedWord[0])}"
+                : $"Bắt đầu: {char.ToUpperInvariant(trimmedWord[0])} · "
+                    + $"Kết thúc: {char.ToUpperInvariant(trimmedWord[^1])} · "
+                    + $"{trimmedWord.Length} ký tự";
         }
 
         /// <summary>

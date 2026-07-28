@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchQuizOfSession, completeLearningSession, completeReviewSession, answerQuiz } from "../../../services/learningSession";
 import { getCurrentUser } from "../../../services/user";
 import { fetchPetById } from "../../../services/pet";
-import { QuestionTypeEnum, type AnswerResponseDto, type CompleteLearningSessionResponseDto, type CompleteReviewSessionResponseDto, type QuizQuestionDto } from "../../../types/LearningSessionDto";
+import { QuestionPhaseEnum, type AnswerResponseDto, type CompleteLearningSessionResponseDto, type CompleteReviewSessionResponseDto, type QuizQuestionDto } from "../../../types/LearningSessionDto";
 import type { AnswerRequestDto } from "../../../types/LearningSessionDto";
 
 export const useQuizSession = (
@@ -65,13 +65,6 @@ export const useQuizSession = (
     };
     fetchUserHints();
   }, []);
-
-  const levelToType = useMemo<Record<number, QuestionTypeEnum>>(() => ({
-    0: QuestionTypeEnum.Flashcard,
-    1: QuestionTypeEnum.FillInBlank,
-    2: QuestionTypeEnum.MultipleChoice,
-    3: QuestionTypeEnum.Listening,
-  }), []);
 
   const handleCompleteSession = useCallback(async () => {
     try {
@@ -188,7 +181,9 @@ export const useQuizSession = (
 
       const response: AnswerResponseDto = await answerQuiz(sessionId, requestPayload);
       submissionIdsRef.current.delete(question);
-      const newStageIndex = response.newStageIndex;
+      // The answer is intentionally absent from recall-question payloads.
+      // Reveal it only after the server has graded the submission.
+      question.word = response.correctAnswer;
 
       if (setCurrentCorrectAnswered) {
         setCurrentCorrectAnswered(
@@ -198,23 +193,26 @@ export const useQuizSession = (
 
       if (response.isCorrect) {
         setComboCount(c => c + 1);
-        const nextLevelType = levelToType[newStageIndex] || QuestionTypeEnum.Listening;
         if (response.isVocabularyCompleted) {
           setLevelFeedback({
-            message: `🎉 Mastered "${question.word}"!`,
+            message: mode === "review"
+              ? `🎉 Đã nhớ "${response.correctAnswer}"!`
+              : `🎉 Hoàn thành "${response.correctAnswer}"!`,
             isCompleted: true,
           });
         } else {
           setLevelFeedback({
-            message: `✅ Stage ${newStageIndex + 1}: ${nextLevelType}`,
+            message: question.phase === QuestionPhaseEnum.Feedback
+              ? "✅ Đã xem lại, tiếp tục kiểm tra"
+              : "✅ Chính xác, tiếp tục bước kế tiếp",
           });
         }
       } else {
         setComboCount(0);
-        const previousStageIndex = Math.max(0, newStageIndex);
-        const retryType = levelToType[previousStageIndex];
         setLevelFeedback({
-          message: `🔄 Retry ${retryType} for "${question.word}"`,
+          message: mode === "review"
+            ? `🔄 Chưa nhớ "${response.correctAnswer}" — chuyển sang củng cố`
+            : `🔄 Thử lại "${response.correctAnswer}"`,
         });
         // Only apply catch rate penalty if buff does NOT reduce penalty
         if (!petReducePenalty) {
@@ -235,7 +233,7 @@ export const useQuizSession = (
     } finally {
       setLoading(false);
     }
-  }, [sessionId, currentQuestionIndex, questionsBatch.length, currentCorrectAnswered, setCurrentCorrectAnswered, petReducePenalty, levelToType]);
+  }, [sessionId, currentQuestionIndex, questionsBatch.length, currentCorrectAnswered, setCurrentCorrectAnswered, petReducePenalty, mode]);
 
   // Called by AnswerScreen when user clicks "Tiếp theo" — loads next question
   const confirmAndNext = useCallback(() => {

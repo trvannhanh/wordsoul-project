@@ -1,5 +1,6 @@
 
 
+using WordSoul.Application.Learning.QuestionFlow;
 using WordSoul.Domain.Enums;
 
 namespace WordSoul.Application.DTOs.QuizQuestion
@@ -8,7 +9,11 @@ namespace WordSoul.Application.DTOs.QuizQuestion
     {
         public int VocabularyId { get; set; }        
         public QuestionType QuestionType { get; set; }
-        public string? Word { get; set; }          // đáp án đúng
+        public QuestionPhase Phase { get; set; }
+        public bool RevealsAnswer { get; set; }
+        public bool CountsAsRecall { get; set; }
+        // Chỉ được gửi ở các phase chủ động hiển thị đáp án.
+        public string? Word { get; set; }
         public string? Meaning { get; set; }
         public string? Pronunciation { get; set; }
         public string? PartOfSpeech { get; set; }
@@ -18,6 +23,8 @@ namespace WordSoul.Application.DTOs.QuizQuestion
 
         // Cho MultipleChoice
         public List<string>? Options { get; set; }
+        public List<string>? HintOptionsToEliminate { get; set; }
+        public string? HintText { get; set; }
 
         // Cho Listening
         public string? PronunciationUrl { get; set; }

@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import type { QuizQuestionDto } from "../../../types/LearningSessionDto";
-import { QuestionTypeEnum } from "../../../types/LearningSessionDto";
+import { QuestionPhaseEnum, QuestionTypeEnum } from "../../../types/LearningSessionDto";
 
 interface GameScreenProps {
   question: QuizQuestionDto | null;
@@ -64,7 +64,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ question, loading, error }) => 
   if (error) return <div className="text-red-400 font-pixel text-sm">{error}</div>;
   if (!question) return <div className="text-white font-pixel text-sm">Hoàn thành session!</div>;
 
-  const { questionType, questionPrompt, word, meaning, pronunciation, partOfSpeech, imageUrl } = question;
+  const { questionType, questionPrompt, word, meaning, pronunciation, partOfSpeech, imageUrl, phase } = question;
 
   // ── MultipleChoice ────────────────────────────────────────────────
   if (questionType === QuestionTypeEnum.MultipleChoice) {
@@ -76,7 +76,10 @@ const GameScreen: React.FC<GameScreenProps> = ({ question, loading, error }) => 
         transition={{ duration: 0.3 }}
         key={word + "mc"}
       >
-        <TypeBadge label="Chọn từ đúng" variant="green" />
+        <TypeBadge
+          label={phase === QuestionPhaseEnum.Recognition ? "Nhận diện từ" : "Chọn từ đúng"}
+          variant="green"
+        />
 
         {/* Decorative divider */}
         <div className="w-16 h-px bg-gradient-to-r from-transparent via-gray-500 to-transparent" />
@@ -112,7 +115,10 @@ const GameScreen: React.FC<GameScreenProps> = ({ question, loading, error }) => 
         transition={{ duration: 0.3 }}
         key={word + "fib"}
       >
-        <TypeBadge label="Điền từ vào chỗ trống" variant="blue" />
+        <TypeBadge
+          label={phase === QuestionPhaseEnum.InitialRecall ? "Kiểm tra trí nhớ" : "Điền từ vào chỗ trống"}
+          variant="blue"
+        />
 
         <div className="w-16 h-px bg-gradient-to-r from-transparent via-gray-500 to-transparent" />
 
@@ -148,7 +154,10 @@ const GameScreen: React.FC<GameScreenProps> = ({ question, loading, error }) => 
         transition={{ duration: 0.35 }}
         key={word + "fc"}
       >
-        <TypeBadge label="Ghi nhớ từ mới" variant="gray" />
+        <TypeBadge
+          label={phase === QuestionPhaseEnum.Feedback ? "Xem lại đáp án" : "Ghi nhớ từ mới"}
+          variant="gray"
+        />
 
         <div className="w-16 h-px bg-gradient-to-r from-transparent via-gray-500 to-transparent" />
 
@@ -185,7 +194,10 @@ const GameScreen: React.FC<GameScreenProps> = ({ question, loading, error }) => 
       transition={{ duration: 0.3 }}
       key={word + "ls"}
     >
-      <TypeBadge label="Nghe và gõ lại từ" variant="purple" />
+      <TypeBadge
+        label={phase === QuestionPhaseEnum.CorrectiveRecall ? "Kiểm tra lại sau củng cố" : "Nghe và gõ lại từ"}
+        variant="purple"
+      />
 
       <div className="w-16 h-px bg-gradient-to-r from-transparent via-gray-500 to-transparent" />
 
