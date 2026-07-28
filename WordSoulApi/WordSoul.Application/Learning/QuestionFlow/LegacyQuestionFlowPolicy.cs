@@ -7,9 +7,9 @@ public sealed class LegacyQuestionFlowPolicy : IQuestionFlowPolicy
     private static readonly IReadOnlyList<FlowStep> Steps =
     [
         new(QuestionType.Flashcard, QuestionPhase.Study, true, false, false),
-        new(QuestionType.FillInBlank, QuestionPhase.GuidedRecall, false, true, false),
-        new(QuestionType.MultipleChoice, QuestionPhase.Recognition, false, true, false),
-        new(QuestionType.Listening, QuestionPhase.ProductiveRecall, false, true, false)
+        new(QuestionType.FillInBlank, QuestionPhase.GuidedRecall, false, true, true),
+        new(QuestionType.MultipleChoice, QuestionPhase.Recognition, false, true, true),
+        new(QuestionType.Listening, QuestionPhase.ProductiveRecall, false, true, true)
     ];
 
     public int Version => QuestionFlowVersions.Legacy;

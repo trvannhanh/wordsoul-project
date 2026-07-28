@@ -10,6 +10,7 @@ using WordSoul.Application.DTOs.SRS;
 using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Repositories;
 using WordSoul.Application.Interfaces.Services;
+using WordSoul.Application.Learning.QuestionFlow;
 using WordSoul.Application.Services;
 using WordSoul.Domain.Entities;
 using WordSoul.Domain.Enums;
@@ -46,6 +47,13 @@ namespace WordSoul.Tests.Services
             { 2, QuestionType.MultipleChoice, "ephemeral", true },
             { 2, QuestionType.MultipleChoice, "Ｅｐｈｅｍｅｒａｌ", true },
             { 3, QuestionType.Listening, "  EPHEMERAL  ", true }
+        };
+
+        public static TheoryData<int, QuestionType, bool> VersionedReviewQuestionFlowCases => new()
+        {
+            { 0, QuestionType.FillInBlank, false },
+            { 1, QuestionType.Flashcard, true },
+            { 2, QuestionType.Listening, true }
         };
 
         // ─── Inline ITimeProvider ─────────────────────────────────────────
@@ -144,7 +152,8 @@ namespace WordSoul.Tests.Services
                 petBuffService.Object,
                 new FixedTime(),
                 gymLeaderService.Object,
-                sysConfig.Object);
+                sysConfig.Object,
+                CreateQuestionFlowResolver());
 
             var deps = new Deps(
                 uowMock, sessionRepo, sessionVocabRepo, answerRecordRepo,
@@ -155,6 +164,12 @@ namespace WordSoul.Tests.Services
 
             return (service, deps);
         }
+
+        private static IQuestionFlowResolver CreateQuestionFlowResolver() =>
+            new QuestionFlowResolver(
+                new LegacyQuestionFlowPolicy(),
+                new LearningQuestionFlowPolicy(),
+                new ReviewQuestionFlowPolicy());
 
         // ──────────────────────────────────────────────────────────────────
         #region CreateLearningSessionAsync — Validation
@@ -343,7 +358,8 @@ namespace WordSoul.Tests.Services
 
             result.Id.Should().Be(42);
             createdSession.Should().NotBeNull();
-            createdSession!.SessionVocabularies.Should().ContainSingle()
+            createdSession!.FlowVersion.Should().Be(QuestionFlowVersions.Current);
+            createdSession.SessionVocabularies.Should().ContainSingle()
                 .Which.CurrentStageIndex.Should().Be(0);
         }
 
@@ -678,6 +694,53 @@ namespace WordSoul.Tests.Services
                     question.PronunciationUrl.Should().Be("https://audio.test/ephemeral.mp3");
                     break;
             }
+        }
+
+        [Theory]
+        [MemberData(nameof(VersionedReviewQuestionFlowCases))]
+        public async Task GetSessionQuestions_VersionedReview_UsesReviewPolicy(
+            int currentStageIndex,
+            QuestionType expectedType,
+            bool expectedRetry)
+        {
+            var (service, deps) = CreateService();
+            var vocabulary = new Vocabulary
+            {
+                Id = 10,
+                Word = "Ephemeral",
+                Meaning = "lasting for a short time",
+                Description = "The moment was ephemeral."
+            };
+            deps.SessionRepo
+                .Setup(r => r.GetLearningSessionByIdAsync(1, default))
+                .ReturnsAsync(new LearningSession
+                {
+                    Id = 1,
+                    UserId = 1,
+                    Type = SessionType.Review,
+                    FlowVersion = QuestionFlowVersions.Current,
+                    IsCompleted = false
+                });
+            deps.SessionVocabRepo
+                .Setup(r => r.GetSessionVocabulariesBySessionIdAsync(1, default))
+                .ReturnsAsync(new[]
+                {
+                    new SessionVocabulary
+                    {
+                        LearningSessionId = 1,
+                        VocabularyId = vocabulary.Id,
+                        Order = 1,
+                        CurrentStageIndex = currentStageIndex,
+                        IsCompleted = false,
+                        Vocabulary = vocabulary
+                    }
+                });
+
+            var question = (await service.GetSessionQuestionsAsync(1, 1))
+                .Should().ContainSingle().Which;
+
+            question.QuestionType.Should().Be(expectedType);
+            question.IsRetry.Should().Be(expectedRetry);
         }
 
         [Fact]

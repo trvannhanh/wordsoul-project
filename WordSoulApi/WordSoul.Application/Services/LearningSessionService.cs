@@ -33,6 +33,7 @@ namespace WordSoul.Application.Services
         private readonly IPetBuffService _petBuffService;
         private readonly IGymLeaderService _gymLeaderService;
         private readonly ISystemConfigurationService _sysConfig;
+        private readonly IQuestionFlowResolver _questionFlowResolver;
 
         /// <summary>
         /// Khởi tạo LearningSessionService.
@@ -49,7 +50,8 @@ namespace WordSoul.Application.Services
             IPetBuffService petBuffService,
             ITimeProvider timeProvider,
             IGymLeaderService gymLeaderService,
-            ISystemConfigurationService sysConfig)
+            ISystemConfigurationService sysConfig,
+            IQuestionFlowResolver questionFlowResolver)
         {
             _uow = uow;
             _logger = logger;
@@ -63,6 +65,7 @@ namespace WordSoul.Application.Services
             _petBuffService = petBuffService;
             _gymLeaderService = gymLeaderService;
             _sysConfig = sysConfig;
+            _questionFlowResolver = questionFlowResolver;
         }
 
         // ------------------------------------CREATE-----------------------------------------
@@ -213,6 +216,7 @@ namespace WordSoul.Application.Services
                 UserId = userId,
                 VocabularySetId = setId,
                 Type = type,
+                FlowVersion = QuestionFlowVersions.Current,
                 StartTime = _timeProvider.UtcNow,
                 IsCompleted = false,
                 SessionVocabularies = vocabularies.Select((v, index) => new SessionVocabulary
@@ -301,6 +305,9 @@ namespace WordSoul.Application.Services
 
             // Tạo danh sách câu hỏi quiz từ từ vựng chưa hoàn thành
             var allWords = sessionVocabs.Select(sv => sv.Vocabulary!.Word).ToList();
+            var flowPolicy = _questionFlowResolver.Resolve(
+                session.Type,
+                session.FlowVersion);
 
             var questions = new List<QuizQuestionDto>();
 
@@ -310,12 +317,12 @@ namespace WordSoul.Application.Services
                 var vocab = sv.Vocabulary;
                 if (vocab == null) continue;
 
-                var questionType = QuestionFlowPolicy.GetQuestionType(sv.CurrentStageIndex);
+                var flowStep = flowPolicy.GetStep(sv.CurrentStageIndex);
                 questions.Add(CreateQuizQuestionDto(
                     vocab,
-                    questionType,
+                    flowStep.QuestionType,
                     allWords,
-                    sv.CurrentStageIndex > 0));
+                    flowStep.IsRemediation));
             }
 
             return questions.OrderBy(q => sessionVocabs.First(sv => sv.VocabularyId == q.VocabularyId).Order);
@@ -623,8 +630,12 @@ namespace WordSoul.Application.Services
             if (sessionVocab.IsCompleted)
                 throw new InvalidOperationException("Vocabulary is already completed in this session.");
 
-            var expectedQuestionType = QuestionFlowPolicy.GetQuestionType(
+            var flowPolicy = _questionFlowResolver.Resolve(
+                session.Type,
+                session.FlowVersion);
+            var flowStep = flowPolicy.GetStep(
                 sessionVocab.CurrentStageIndex);
+            var expectedQuestionType = flowStep.QuestionType;
             if (request.QuestionType != expectedQuestionType)
                 throw new InvalidOperationException(
                     $"Question type mismatch. Expected {expectedQuestionType}, received {request.QuestionType}.");
@@ -632,13 +643,24 @@ namespace WordSoul.Application.Services
             // Kiểm tra câu trả lời
             var isCorrect = CheckAnswer(expectedQuestionType, request.Answer, vocab);
 
+            if (session.Type == SessionType.Review
+                && flowStep.Phase == QuestionPhase.InitialRecall
+                && sessionVocab.InitialRecallGrade == null)
+            {
+                sessionVocab.InitialRecallCorrect = isCorrect;
+                sessionVocab.InitialRecallGrade = CalculateInitialRecallGrade(
+                    isCorrect,
+                    request.ResponseTimeSeconds,
+                    request.HintCount);
+            }
+
             // Đảm bảo UserVocabularyProgress tồn tại
             await EnsureUserVocabularyProgressAsync(userId, vocab.Id, ct);
 
             var progress = await _uow.UserVocabularyProgress
             .GetUserVocabularyProgressAsync(userId, vocab.Id, ct);
 
-            if (progress != null)
+            if (progress != null && flowStep.CountsAsRecall)
             {
                 progress.TotalAttempt++;
 
@@ -655,19 +677,18 @@ namespace WordSoul.Application.Services
 
             // Lưu AnswerRecord
             // Cập nhật SessionVocabulary
-            if (isCorrect)
-            {
-                sessionVocab.CurrentStageIndex++;
-                sessionVocab.IsCompleted =
-                    sessionVocab.CurrentStageIndex >= QuestionFlowPolicy.TotalStages;
-            }
-            else
-            {
-                sessionVocab.CurrentStageIndex = Math.Max(
-                    0,
-                    sessionVocab.CurrentStageIndex - 1);
-                sessionVocab.IsCompleted = false;
+            var transition = flowPolicy.Evaluate(
+                sessionVocab.CurrentStageIndex,
+                isCorrect);
+            sessionVocab.IsCompleted = transition.IsCompleted;
+            sessionVocab.CurrentStageIndex = transition.IsCompleted
+                ? flowPolicy.TotalStages
+                : transition.NextStageIndex
+                    ?? throw new InvalidOperationException(
+                        "An incomplete flow transition must provide the next stage.");
 
+            if (!isCorrect)
+            {
                 if (session.CatchRate.HasValue && !session.PetReducePenalty)
                 {
                     var penalty = await _sysConfig.GetValueAsync("CatchWrongPenalty", 0.05, ct);
@@ -701,16 +722,32 @@ namespace WordSoul.Application.Services
                     .GetAllAnswerRecordAttemptsForVocabInSession(sessionId, vocab.Id, ct);
 
                 // Tính toán grade SM-2
-                int grade = CalculateSm2Grade(
-                    isCorrect: sessionVocab.IsCompleted,
-                    attemptCount: allAttempts.Count,
-                    avgResponseTime: allAttempts.Average(a => a.ResponseTimeSeconds),
-                    totalHints: allAttempts.Sum(a => a.HintCount),
-                    requiredCorrectAnswers: QuestionFlowPolicy.TotalStages
-                );
+                var isVersionedReview =
+                    session.FlowVersion == QuestionFlowVersions.Current;
+                var reviewSignal = isVersionedReview
+                    ? allAttempts.FirstOrDefault(attempt =>
+                        attempt.QuestionType ==
+                        flowPolicy.GetStep(0).QuestionType) ?? answerRecord
+                    : answerRecord;
+
+                // Version 2 locks the SRS grade at the first unaided recall.
+                // Legacy sessions retain the previous aggregate grading behavior.
+                int grade = isVersionedReview
+                    ? sessionVocab.InitialRecallGrade
+                        ?? throw new InvalidOperationException(
+                            "A versioned review must capture an initial recall grade.")
+                    : CalculateSm2Grade(
+                        isCorrect: sessionVocab.IsCompleted,
+                        attemptCount: allAttempts.Count,
+                        avgResponseTime: allAttempts.Average(a => a.ResponseTimeSeconds),
+                        totalHints: allAttempts.Sum(a => a.HintCount),
+                        requiredCorrectAnswers: flowPolicy.TotalStages
+                    );
 
                 //cần xem lại phần tính accuracy, có thể chỉ tính cho lần thử cuối cùng hoặc tính theo công thức khác để phản ánh đúng hơn mức độ ghi nhớ của người dùng
-                double accuracy = allAttempts.Count(a => a.IsCorrect) / (double)allAttempts.Count;
+                double accuracy = isVersionedReview
+                    ? sessionVocab.InitialRecallCorrect == true ? 1 : 0
+                    : allAttempts.Count(a => a.IsCorrect) / (double)allAttempts.Count;
 
                 await _dailyQuestService.UpdateQuestProgressAsync(
                     userId,
@@ -721,7 +758,11 @@ namespace WordSoul.Application.Services
 
                 // Cập nhật SRS
                 var srsResult = await _srsService.UpdateAfterReviewAsync(
-                    userId, vocab.Id, grade, ct);
+                    userId,
+                    vocab.Id,
+                    grade,
+                    ct,
+                    recordAttempt: false);
 
                 _logger.LogInformation(
                     "Updated SRS for User {UserId}, Vocab {VocabId}: Grade={Grade}, NextReview={NextReview}",
@@ -734,9 +775,11 @@ namespace WordSoul.Application.Services
                     UserId = userId,
                     VocabularyId = sessionVocab.VocabularyId,
                     ReviewTime = _timeProvider.UtcNow,
-                    IsCorrect = isCorrect,
-                    ResponseTimeSeconds = request.ResponseTimeSeconds,
-                    HintCount = request.HintCount,
+                    IsCorrect = isVersionedReview
+                        ? sessionVocab.InitialRecallCorrect == true
+                        : isCorrect,
+                    ResponseTimeSeconds = reviewSignal.ResponseTimeSeconds,
+                    HintCount = reviewSignal.HintCount,
                     Grade = grade,
                     EaseFactorBefore = srsResult.OldEaseFactor,
                     EaseFactorAfter = srsResult.NewEaseFactor,
@@ -858,6 +901,23 @@ namespace WordSoul.Application.Services
         }
 
         // Helper: tính grade SM-2 dựa trên số lần sai, độ chính xác, thời gian phản hồi trung bình và tổng số gợi ý đã dùng
+        private static int CalculateInitialRecallGrade(
+            bool isCorrect,
+            double responseTimeSeconds,
+            int hintCount)
+        {
+            if (!isCorrect)
+                return hintCount > 0 ? 1 : 2;
+
+            if (hintCount == 0 && responseTimeSeconds <= 5)
+                return 5;
+
+            if (hintCount == 0 && responseTimeSeconds <= 10)
+                return 4;
+
+            return 3;
+        }
+
         private static int CalculateSm2Grade(
             bool isCorrect,
             int attemptCount,

@@ -30,7 +30,8 @@ namespace WordSoul.Application.Services.SRS
             int userId,
             int vocabularyId,
             int grade,
-            CancellationToken ct = default)
+            CancellationToken ct = default,
+            bool recordAttempt = true)
         {
             // 1. Get current progress
             var progress = await _uow.UserVocabularyProgress
@@ -73,10 +74,13 @@ namespace WordSoul.Application.Services.SRS
             progress.LastGrade = grade;
             progress.LastUpdated = _timeProvider.UtcNow;
 
-            progress.TotalAttempt++;
-            if (grade >= 3)
+            if (recordAttempt)
             {
-                progress.CorrectAttempt++;
+                progress.TotalAttempt++;
+                if (grade >= 3)
+                {
+                    progress.CorrectAttempt++;
+                }
             }
 
             // Calculate retention score
