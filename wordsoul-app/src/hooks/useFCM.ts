@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { messaging, getToken, onMessage } from '../config/firebase';
 import { authApi } from '../services/api';
+import { toast } from '../shared/toast';
 
 export const useFCM = (isAuthenticated: boolean) => {
   const [fcmToken, setFcmToken] = useState<string | null>(null);
@@ -18,15 +19,12 @@ export const useFCM = (isAuthenticated: boolean) => {
             setFcmToken(token);
             // Send token to backend
             await authApi.put('/users/me/fcm-token', { token });
-            console.log("FCM Token sent to backend:", token);
-          } else {
-            console.log('No registration token available. Request permission to generate one.');
           }
-        } else {
-          console.log('Unable to get permission to notify.');
         }
       } catch (error) {
-        console.error('An error occurred while retrieving token. ', error);
+        if (import.meta.env.DEV) {
+          console.error('Unable to configure push notifications.', error);
+        }
       }
     };
 
@@ -34,8 +32,13 @@ export const useFCM = (isAuthenticated: boolean) => {
 
     // Lắng nghe thông báo khi ứng dụng đang mở (Foreground)
     const unsubscribe = onMessage(messaging, (payload) => {
-      console.log('Message received. ', payload);
-      // Có thể custom việc hiển thị toast notification ở đây nếu muốn
+      toast.info(
+        payload.notification?.body ?? 'Bạn có một thông báo mới.',
+        {
+          id: payload.messageId,
+          description: payload.notification?.title,
+        },
+      );
     });
 
     return () => {

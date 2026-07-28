@@ -6,6 +6,7 @@ import { VocabularyDifficultyLevelEnum as difficultyValues } from '../../types/V
 import type { VocabularyDifficultyLevelEnum } from '../../types/VocabularyDto';
 import type { VocabularySetThemeEnum, AiCreateVocabularySetResultDto, VocabularyPreviewDto } from '../../types/VocabularySetDto';
 import LoadingScreen from '../learningSession/components/LoadingScreen';
+import { extractApiError } from '../../shared/errors';
 
 const MAX_TITLE_LENGTH = 100;
 const MAX_SET_DESC_LENGTH = 300;
@@ -125,22 +126,6 @@ const CreateVocabularySet: React.FC = () => {
     setStep(2);
   };
 
-  const extractErrorMessage = (err: unknown): string => {
-    if (err && typeof err === 'object') {
-      const e = err as Record<string, unknown>;
-      // Axios error: message is in response.data
-      const data = (e.response as Record<string, unknown> | undefined)?.data;
-      if (typeof data === 'string' && data.length > 0) return data;
-      if (data && typeof data === 'object') {
-        const d = data as Record<string, unknown>;
-        if (typeof d.message === 'string') return d.message;
-        if (typeof d.title === 'string') return d.title;
-      }
-      if (typeof e.message === 'string') return e.message;
-    }
-    return 'Lỗi không xác định';
-  };
-
   const handleSkipToStep3 = () => {
     setPreviewList([]);
     setOriginalPreviewList([]);
@@ -185,9 +170,8 @@ const CreateVocabularySet: React.FC = () => {
       // Mặc định chọn tất cả
       setSelectedWordIndices(previewResult.map((_, i) => i));
       setStep(3);
-    } catch (err) {
-      setError(extractErrorMessage(err));
-      console.error('Preview error:', err);
+    } catch (err: unknown) {
+      setError(extractApiError(err).message);
     } finally {
       setLoading(false);
     }
@@ -332,9 +316,8 @@ const CreateVocabularySet: React.FC = () => {
       setStep(4);
       // Signal the list page to refresh after creation
       localStorage.setItem('vocabSetListDirty', Date.now().toString());
-    } catch (err) {
-      setError(extractErrorMessage(err));
-      console.error('Create error:', err);
+    } catch (err: unknown) {
+      setError(extractApiError(err).message);
     } finally {
       setLoading(false);
     }

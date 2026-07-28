@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../hooks/Auth/useAuth";
+import { extractApiError, type ValidationErrors } from "../../shared/errors";
 
 const STARTER_NAMES: Record<string, string> = {
   '1': 'Bulbasaur 🌿',
@@ -13,6 +14,7 @@ const Register: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<ValidationErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -23,6 +25,7 @@ const Register: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setFieldErrors({});
     setIsLoading(true);
     try {
       const petIdRaw = localStorage.getItem('onboarding_starter_pet_id');
@@ -30,16 +33,19 @@ const Register: React.FC = () => {
       await register(username, email, password, starterPetId);
       localStorage.removeItem('onboarding_starter_pet_id');
       navigate("/home");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      setError(
-        err?.response?.data?.message ||
-        "Đăng ký thất bại. Vui lòng kiểm tra lại thông tin."
-      );
+    } catch (err: unknown) {
+      const appError = extractApiError(err);
+      setError(appError.message);
+      setFieldErrors(appError.fieldErrors ?? {});
     } finally {
       setIsLoading(false);
     }
   };
+
+  const fieldError = (field: string) =>
+    Object.entries(fieldErrors).find(
+      ([key]) => key.toLowerCase() === field.toLowerCase(),
+    )?.[1]?.[0];
 
   return (
     <div className="w-full h-screen bg-[url('https://res.cloudinary.com/dqpkxxzaf/image/upload/v1756565536/dark-cloud_rzn2xf.webp'),linear-gradient(to_bottom,rgb(3,7,33),rgb(5,11,75))] bg-cover bg-center flex items-center justify-center">
@@ -81,6 +87,9 @@ const Register: React.FC = () => {
                 disabled={isLoading}
                 required
               />
+              {fieldError('username') && (
+                <p className="mt-1 text-xs text-red-500">{fieldError('username')}</p>
+              )}
             </div>
             <div className="mb-4">
               <label
@@ -99,6 +108,9 @@ const Register: React.FC = () => {
                 disabled={isLoading}
                 required
               />
+              {fieldError('email') && (
+                <p className="mt-1 text-xs text-red-500">{fieldError('email')}</p>
+              )}
             </div>
             <div className="mb-6">
               <label
@@ -117,6 +129,9 @@ const Register: React.FC = () => {
                 disabled={isLoading}
                 required
               />
+              {fieldError('password') && (
+                <p className="mt-1 text-xs text-red-500">{fieldError('password')}</p>
+              )}
             </div>
             <button
               className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded w-full disabled:bg-blue-300"

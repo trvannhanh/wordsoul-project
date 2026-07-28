@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { isAxiosError } from 'axios';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { extractApiError } from '../../shared/errors';
 import StatCard from '../../shared/components/UserProfile/StatCard';
 import SrsStatsDashboard from '../../shared/components/UserDashboard/SrsStatsDashboard';
 import ThemeRadarChart from '../../shared/components/UserDashboard/ThemeRadarChart';
@@ -139,12 +139,7 @@ const ProfilePage: React.FC = () => {
         setSuccessMsg(null);
       }, 1500);
     } catch (err: unknown) {
-      console.error('Error saving profile:', err);
-      const responseMessage = isAxiosError<{ message?: string }>(err)
-        ? err.response?.data?.message
-        : undefined;
-      const message = err instanceof Error ? err.message : undefined;
-      setErrorMsg(responseMessage || message || 'Có lỗi xảy ra khi lưu hồ sơ.');
+      setErrorMsg(extractApiError(err).message);
     } finally {
       setIsSaving(false);
     }

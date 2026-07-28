@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/Auth/useAuth';
 import { fetchPets } from '../../services/pet';
 import { createPvpSession, joinPvpSession } from '../../services/pvp';
+import { extractApiError } from '../../shared/errors';
 
 interface OwnedPet {
     id: number;
@@ -38,7 +39,7 @@ export default function PvpPetSelector() {
                 }));
                 setPets(mapped);
             })
-            .catch(err => console.error(err))
+            .catch((err: unknown) => setError(extractApiError(err).message))
             .finally(() => setLoading(false));
     }, [user]);
 
@@ -68,9 +69,7 @@ export default function PvpPetSelector() {
                 navigate('/pvp/matchmaking', { state: { selectedPetIds: selected } });
             }
         } catch (err: unknown) {
-            const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
-                ?? 'Could not start.';
-            setError(msg);
+            setError(extractApiError(err).message);
             setStarting(false);
         }
     };

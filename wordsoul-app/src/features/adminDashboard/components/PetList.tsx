@@ -4,6 +4,8 @@ import { assignPetToUser, createPet, createPetsBulk, deletePet, getAllPets, upda
 import { getAllUsers } from '../../../services/user';
 import type { PetDto } from '../../../types/PetDto';
 import type { UserDto } from '../../../types/UserDto';
+import { extractApiError } from '../../../shared/errors';
+import { toast } from '../../../shared/toast';
 
 
 const PetList = () => {
@@ -24,7 +26,7 @@ const PetList = () => {
         const data = await getAllPets();
         setPets(data);
       } catch (error) {
-        console.error('Error fetching pets:', error);
+        toast.error(extractApiError(error).message);
       } finally {
         setLoading(false);
       }
@@ -36,7 +38,7 @@ const PetList = () => {
         const data = await getAllUsers();
         setUsers(data);
       } catch (error) {
-        console.error('Error fetching users:', error);
+        toast.error(extractApiError(error).message);
       }
     };
     fetchUsers();
@@ -57,8 +59,9 @@ const PetList = () => {
       const newPet = await createPet(fd);
       setPets([...pets, newPet]);
       setFormData({ name: '', description: '', imageFile: null, rarity: '', type: '', baseFormId: null, nextEvolutionId: null, requiredLevel: null }); // Reset form
+      toast.success('Tạo thú cưng thành công.');
     } catch (error) {
-      console.error('Error creating pet:', error);
+      toast.error(extractApiError(error).message);
     }
   };
 
@@ -72,8 +75,9 @@ const PetList = () => {
       const newPets = await createPetsBulk(data);
       setPets([...pets, ...newPets]);
       setBulkPets([]); // Reset
+      toast.success('Tạo danh sách thú cưng thành công.');
     } catch (error) {
-      console.error('Error creating bulk pets:', error);
+      toast.error(extractApiError(error).message);
     }
   };
 
@@ -82,7 +86,7 @@ const PetList = () => {
       const pet = await getAllPets().then(pets => pets.find(p => p.id === id)); 
       setSelectedPet(pet || null);
     } catch (error) {
-      console.error('Error fetching pet detail:', error);
+      toast.error(extractApiError(error).message);
     }
   };
 
@@ -100,8 +104,9 @@ const PetList = () => {
         const updatedPet = await updatePet(selectedPet.id, fd);
         setPets(pets.map(p => p.id === updatedPet.id ? updatedPet : p));
         setSelectedPet(updatedPet);
+        toast.success('Cập nhật thú cưng thành công.');
       } catch (error) {
-        console.error('Error updating pet:', error);
+        toast.error(extractApiError(error).message);
       }
     }
   };
@@ -112,8 +117,9 @@ const PetList = () => {
       setPets(pets.filter((pet) => pet.id !== id));
       setSelectedPet(null);
       setIsModalOpen(false);
+      toast.success('Xoá thú cưng thành công.');
     } catch (error) {
-      console.error('Error deleting pet:', error);
+      toast.error(extractApiError(error).message);
     }
   };
 
@@ -121,9 +127,9 @@ const PetList = () => {
     if (selectedPet) {
       try {
         await assignPetToUser(assignForm.userId, selectedPet.id, { initialLevel: assignForm.initialLevel, initialExperience: assignForm.initialExperience });
-        alert('Pet assigned successfully');
+        toast.success('Gán thú cưng thành công.');
       } catch (error) {
-        console.error('Error assigning pet:', error);
+        toast.error(extractApiError(error).message);
       }
     }
   };

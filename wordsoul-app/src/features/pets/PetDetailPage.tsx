@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { activePet, fetchPetDetailById, upgradePet } from '../../services/pet';
@@ -6,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ProfileCard from '../../shared/components/UserProfile/ProfileCard';
 import { typeBackgrounds, type PetDetailDto, type UpgradePetResponseDto } from '../../types/PetDto';
 import type { UserDto } from '../../types/UserDto';
+import { extractApiError } from '../../shared/errors';
+import { toast } from '../../shared/toast';
 import { useAuth } from '../../hooks/Auth/useAuth';
 
 type BerryType = "oran" | "sitrus" | "pecha";
@@ -122,8 +123,8 @@ const PetDetailPage: React.FC = () => {
         const data = await fetchPetDetailById(Number(id));
         setPet(data);
         setCurrentImage(data.imageUrl);
-      } catch (err: any) {
-        setError(`Không thể tải thông tin thú cưng: ${err.message}`);
+      } catch (err: unknown) {
+        setError(extractApiError(err).message);
       } finally {
         setIsLoading(false);
       }
@@ -158,7 +159,7 @@ const PetDetailPage: React.FC = () => {
           setEvolveAnimation(true);
           const evolveSound = new Audio('https://res.cloudinary.com/dqpkxxzaf/video/upload/v1757584431/pokemon-evolve_vzpzqg.mp3');
           evolveSound.play().catch(() => console.warn('Autoplay âm thanh bị chặn'));
-          setTimeout(() => {
+      setTimeout(() => {
             setEvolveAnimation(false);
           }, 3000);
         } else {
@@ -181,11 +182,11 @@ const PetDetailPage: React.FC = () => {
 
         setUser({ ...user, totalAP: response.ap } as UserDto);
         setIsUpgrading(false);
+        toast.success('Nâng cấp thú cưng thành công.');
       }, 920);
 
-    } catch (err: any) {
-      console.error('Lỗi khi nâng cấp thú cưng:', err);
-      setError(err.response?.data?.message || 'Không thể nâng cấp thú cưng');
+    } catch (err: unknown) {
+      setError(extractApiError(err).message);
       setIsUpgrading(false);
     }
   };
@@ -196,9 +197,9 @@ const PetDetailPage: React.FC = () => {
     try {
       await activePet(pet.id);
       setUser({ ...user, petActiveId: pet.id } as UserDto);
-    } catch (err: any) {
-      console.error('Lỗi khi kích hoạt thú cưng:', err);
-      setError(err.response?.data?.message || 'Không thể kích hoạt thú cưng');
+      toast.success('Đã chọn thú cưng đồng hành.');
+    } catch (err: unknown) {
+      setError(extractApiError(err).message);
     } finally {
       setIsActive(false);
     }

@@ -103,18 +103,15 @@ export const useQuizSession = (
       setLoading(true);
       setError(null);
 
-      console.log("🔄 Fetching NEW batch of questions...");
       const questions = await fetchQuizOfSession(sessionId);
 
       if (questions.length === 0) {
-        console.log("✅ No more questions, completing session...");
         await handleCompleteSession();
         setCurrentQuestion(null);
         setQuestionsBatch([]);
         return;
       }
 
-      console.log(`✅ Loaded ${questions.length} new questions`);
       setQuestionsBatch(questions);
       setCurrentQuestionIndex(0);
       setCurrentQuestion(questions[0]);
@@ -141,17 +138,14 @@ export const useQuizSession = (
 
   const loadNextQuestion = useCallback(() => {
     if (questionsBatch.length === 0) {
-      console.log("⚠️ No questions in batch");
       return;
     }
 
     const nextIndex = currentQuestionIndex + 1;
 
     if (nextIndex >= questionsBatch.length) {
-      console.log("📦 Current batch finished, loading new batch...");
       loadNewQuestionsBatch();
     } else {
-      console.log(`📄 Loading question ${nextIndex + 1}/${questionsBatch.length}`);
       setCurrentQuestionIndex(nextIndex);
       setCurrentQuestion(questionsBatch[nextIndex]);
     }
@@ -172,7 +166,6 @@ export const useQuizSession = (
       setLoading(true);
       setError(null);
 
-      console.log(`💭 Answering question ${currentQuestionIndex + 1}/${questionsBatch.length}`);
 
       let submissionId = submissionIdsRef.current.get(question);
       if (!submissionId) {
@@ -191,13 +184,6 @@ export const useQuizSession = (
 
       // ── Debug log ──
       console.group(`📤 [AnswerRequest] Q${currentQuestionIndex + 1}/${questionsBatch.length}`);
-      console.log("🔤 Word:              ", question.word);
-      console.log("❓ QuestionType:      ", question.questionType);
-      console.log("✏️  Answer:            ", answer);
-      console.log("⏱️  ResponseTime (s):  ", requestPayload.responseTimeSeconds);
-      console.log("💡 HintCount:         ", requestPayload.hintCount);
-      console.log("🆔 VocabularyId:      ", requestPayload.vocabularyId);
-      console.log("📦 Full payload:      ", requestPayload);
       console.groupEnd();
 
       const response: AnswerResponseDto = await answerQuiz(sessionId, requestPayload);
@@ -263,7 +249,6 @@ export const useQuizSession = (
     }
   }, [questionsBatch.length, currentQuestion, loading, sessionData, handleCompleteSession]);
 
-  console.log(`📊 Session State: ${questionsBatch.length} questions, index ${currentQuestionIndex}, current: ${!!currentQuestion}`);
 
   return {
     currentQuestion,

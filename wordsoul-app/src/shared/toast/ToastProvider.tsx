@@ -42,7 +42,12 @@ export const ToastProvider = ({ children }: PropsWithChildren) => {
     const unsubscribe = subscribeToToasts((nextToast) => {
         setItems((current) => {
           const withoutDuplicate = current.filter(
-            (item) => item.id !== nextToast.id,
+            (item) =>
+              item.id !== nextToast.id &&
+              !(
+                item.variant === nextToast.variant &&
+                item.message === nextToast.message
+              ),
           );
           return [...withoutDuplicate, nextToast].slice(-MAX_VISIBLE_TOASTS);
         });

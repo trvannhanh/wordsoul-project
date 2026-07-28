@@ -8,6 +8,8 @@ import {
   getUserActivities,
 } from '../../../services/user';
 import type { ActivityLogDto, UserDto } from '../../../types/UserDto';
+import { extractApiError } from '../../../shared/errors';
+import { toast } from '../../../shared/toast';
 
 
 
@@ -26,7 +28,7 @@ const UserDetail = () => {
         setUser(userData);
         setActivities(activitiesData);
       } catch (error) {
-        console.error('Error fetching user details:', error);
+        toast.error(extractApiError(error).message);
       } finally {
         setLoading(false);
       }
@@ -36,24 +38,36 @@ const UserDetail = () => {
 
   const handleUpdate = async () => {
     if (user) {
-      await updateUser(Number(userId), user);
-      alert('User updated successfully');
+      try {
+        await updateUser(Number(userId), user);
+        toast.success('Cập nhật người dùng thành công.');
+      } catch (error: unknown) {
+        toast.error(extractApiError(error).message);
+      }
     }
   };
 
   const handleAssignRole = async () => {
     if (role && user) {
-      await assignRoleToUser(Number(userId), role);
-      alert('Role assigned successfully');
-      window.location.reload();
+      try {
+        await assignRoleToUser(Number(userId), role);
+        setUser({ ...user, role });
+        toast.success('Gán vai trò thành công.');
+      } catch (error: unknown) {
+        toast.error(extractApiError(error).message);
+      }
     }
   };
 
   const handleRemoveRole = async () => {
     if (user?.role && user.role !== 'User') {
-      await removeRoleFromUser(Number(userId), user.role);
-      alert('Role removed successfully');
-      window.location.reload();
+      try {
+        await removeRoleFromUser(Number(userId), user.role);
+        setUser({ ...user, role: 'User' });
+        toast.success('Xoá vai trò thành công.');
+      } catch (error: unknown) {
+        toast.error(extractApiError(error).message);
+      }
     }
   };
 

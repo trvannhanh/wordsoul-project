@@ -9,6 +9,7 @@ import ProfileCard from '../shared/components/UserProfile/ProfileCard';
 import QuestList from '../shared/components/DailyQuest/QuestList';
 import PronunciationWidget from '../shared/components/UserDashboard/PronunciationWidget';
 import type { UserProgressDto } from '../types/UserDto';
+import { extractApiError } from '../shared/errors';
 
 const dashboardParticles = Array.from({ length: 20 }, (_, index) => ({
   id: index,
@@ -34,9 +35,8 @@ const UserDashboard: React.FC = () => {
       navigate(`/learningSession/${session.id}?mode=review`, {
         state: { currentCorrectAnswered: session.currentCorrectAnswered },
       });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      setError(error?.response?.data?.message || 'Lỗi tạo phiên ôn tập');
+    } catch (error: unknown) {
+      setError(extractApiError(error).message);
     } finally {
       setLoading(false);
     }
@@ -52,9 +52,8 @@ const UserDashboard: React.FC = () => {
           return { level, count: found ? found.count : 0 };
         });
         setDashboard({ ...data, vocabularyStats: filledStats });
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (err) {
-        setError('Không thể tải dữ liệu tiến trình');
+      } catch (err: unknown) {
+        setError(extractApiError(err).message);
       } finally {
         setLoading(false);
       }
@@ -73,7 +72,16 @@ const UserDashboard: React.FC = () => {
   if (error) {
     return (
       <div className="bg-black text-white h-screen flex items-center justify-center">
-        <div className="font-pixel text-red-500 text-xl">{error}</div>
+        <div className="text-center">
+          <div className="font-pixel text-red-500 text-xl">{error}</div>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="mt-6 rounded-lg bg-blue-600 px-4 py-2 font-pixel text-sm text-white hover:bg-blue-500"
+          >
+            Thử lại
+          </button>
+        </div>
       </div>
     );
   }

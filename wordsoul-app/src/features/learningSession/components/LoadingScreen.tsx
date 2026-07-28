@@ -9,9 +9,8 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ disableAudio = false }) =
 
   useEffect(() => {
     if (audioRef.current && !disableAudio) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      audioRef.current.play().catch((error: any) => {
-        console.error("Audio playback failed:", error);
+      audioRef.current.play().catch(() => {
+        // Autoplay can be blocked until the user interacts with the page.
       });
     }
   }, [disableAudio]);
