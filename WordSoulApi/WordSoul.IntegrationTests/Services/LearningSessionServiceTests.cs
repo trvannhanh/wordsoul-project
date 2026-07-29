@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using WordSoul.Application.DTOs.AnswerRecord;
 using WordSoul.Application.DTOs.SRS;
 using WordSoul.Application.Interfaces.Services;
+using WordSoul.Application.Learning.InitialRecall;
 using WordSoul.Application.Learning.QuestionFlow;
 using WordSoul.Application.Services;
 using WordSoul.Application.Services.SRS;
@@ -45,7 +46,8 @@ namespace WordSoul.IntegrationTests.Services
                 _timeProvider,
                 new FakeGymLeaderService(),
                 new FakeSystemConfigurationService(),
-                CreateQuestionFlowResolver()
+                CreateQuestionFlowResolver(),
+                CreateInitialRecallRecorder()
             );
         }
 
@@ -184,10 +186,24 @@ namespace WordSoul.IntegrationTests.Services
                     && item.VocabularyId == vocab.Id);
             sessionVocabulary.InitialRecallCorrect.Should().BeTrue();
             sessionVocabulary.InitialRecallGrade.Should().Be(5);
+            sessionVocabulary.InitialRecallAnswerRecordId.Should().NotBeNull();
+            sessionVocabulary.InitialRecallAt.Should().Be(_timeProvider.UtcNow);
+
+            var initialAnswer = await _context.AnswerRecords
+                .AsNoTracking()
+                .SingleAsync();
+            initialAnswer.Id.Should().Be(
+                sessionVocabulary.InitialRecallAnswerRecordId);
+            initialAnswer.QuestionPhase.Should().Be(QuestionPhase.InitialRecall);
+            initialAnswer.FlowVersion.Should().Be(QuestionFlowVersions.Current);
+            initialAnswer.StageIndexBefore.Should().Be(0);
+            initialAnswer.ResponseTimeSeconds.Should().Be(2);
+            initialAnswer.HintCount.Should().Be(0);
 
             var history = await _context.VocabularyReviewHistories
                 .AsNoTracking()
                 .SingleAsync();
+            history.InitialRecallAnswerRecordId.Should().Be(initialAnswer.Id);
             history.IsCorrect.Should().BeTrue();
             history.Grade.Should().Be(5);
             history.ResponseTimeSeconds.Should().Be(2);
@@ -267,10 +283,25 @@ namespace WordSoul.IntegrationTests.Services
                     && item.VocabularyId == vocab.Id);
             sessionVocabulary.InitialRecallCorrect.Should().BeFalse();
             sessionVocabulary.InitialRecallGrade.Should().Be(2);
+            sessionVocabulary.InitialRecallAnswerRecordId.Should().NotBeNull();
+
+            var attempts = await _context.AnswerRecords
+                .AsNoTracking()
+                .OrderBy(answer => answer.CreatedAt)
+                .ThenBy(answer => answer.Id)
+                .ToListAsync();
+            var initialAnswer = attempts.Single(answer =>
+                answer.Id == sessionVocabulary.InitialRecallAnswerRecordId);
+            initialAnswer.QuestionPhase.Should().Be(QuestionPhase.InitialRecall);
+            initialAnswer.StageIndexBefore.Should().Be(0);
+            attempts.Single(answer =>
+                answer.QuestionPhase == QuestionPhase.CorrectiveRecall)
+                .StageIndexBefore.Should().Be(2);
 
             var history = await _context.VocabularyReviewHistories
                 .AsNoTracking()
                 .SingleAsync();
+            history.InitialRecallAnswerRecordId.Should().Be(initialAnswer.Id);
             history.IsCorrect.Should().BeFalse();
             history.Grade.Should().Be(2);
             history.ResponseTimeSeconds.Should().Be(7);
@@ -290,9 +321,50 @@ namespace WordSoul.IntegrationTests.Services
 
         [Fact]
         [Trait("Suite", "MandatoryQuestionFlow")]
+        public async Task SubmitAnswer_VersionedReview_ReplayKeepsSingleInitialRecall()
+        {
+            var (user, vocab, session) = await SetupReviewSession(
+                QuestionFlowVersions.Current,
+                currentStageIndex: 0);
+            var request = new SubmitAnswerRequestDto
+            {
+                SubmissionId = Guid.NewGuid(),
+                VocabularyId = vocab.Id,
+                Answer = vocab.Word,
+                QuestionType = QuestionType.FillInBlank,
+                HintCount = 1,
+                ResponseTimeSeconds = 3
+            };
+
+            var first = await _service.SubmitAnswerAsync(user.Id, session.Id, request);
+            var replay = await _service.SubmitAnswerAsync(user.Id, session.Id, request);
+
+            replay.Should().BeEquivalentTo(first);
+            var answers = await _context.AnswerRecords
+                .AsNoTracking()
+                .ToListAsync();
+            answers.Should().ContainSingle();
+
+            var sessionVocabulary = await _context.SessionVocabularies
+                .AsNoTracking()
+                .SingleAsync();
+            sessionVocabulary.InitialRecallAnswerRecordId
+                .Should().Be(answers[0].Id);
+            sessionVocabulary.InitialRecallGrade.Should().Be(3);
+
+            var history = await _context.VocabularyReviewHistories
+                .AsNoTracking()
+                .SingleAsync();
+            history.InitialRecallAnswerRecordId.Should().Be(answers[0].Id);
+        }
+
+        [Fact]
+        [Trait("Suite", "MandatoryQuestionFlow")]
         public async Task SubmitAnswer_DownstreamFailure_RollsBackAnswerAndProgression()
         {
-            var (user, vocab, session) = await SetupReviewSession();
+            var (user, vocab, session) = await SetupReviewSession(
+                QuestionFlowVersions.Current,
+                currentStageIndex: 0);
             var initialConcurrencyToken = await _context.SessionVocabularies
                 .Where(item => item.LearningSessionId == session.Id
                     && item.VocabularyId == vocab.Id)
@@ -311,14 +383,15 @@ namespace WordSoul.IntegrationTests.Services
                 _timeProvider,
                 new FakeGymLeaderService(),
                 new FakeSystemConfigurationService(),
-                CreateQuestionFlowResolver());
+                CreateQuestionFlowResolver(),
+                CreateInitialRecallRecorder());
 
             var request = new SubmitAnswerRequestDto
             {
                 SubmissionId = Guid.NewGuid(),
                 VocabularyId = vocab.Id,
                 Answer = vocab.Word,
-                QuestionType = QuestionType.Listening,
+                QuestionType = QuestionType.FillInBlank,
                 ResponseTimeSeconds = 2
             };
 
@@ -331,8 +404,11 @@ namespace WordSoul.IntegrationTests.Services
                 .AsNoTracking()
                 .SingleAsync(item => item.LearningSessionId == session.Id
                     && item.VocabularyId == vocab.Id);
-            persistedSessionVocabulary.CurrentStageIndex.Should().Be(3);
+            persistedSessionVocabulary.CurrentStageIndex.Should().Be(0);
             persistedSessionVocabulary.IsCompleted.Should().BeFalse();
+            persistedSessionVocabulary.InitialRecallAnswerRecordId.Should().BeNull();
+            persistedSessionVocabulary.InitialRecallAt.Should().BeNull();
+            persistedSessionVocabulary.InitialRecallGrade.Should().BeNull();
             persistedSessionVocabulary.ConcurrencyToken
                 .Should().Be(initialConcurrencyToken);
             var answerCount = await _context.AnswerRecords
@@ -424,5 +500,8 @@ namespace WordSoul.IntegrationTests.Services
                 new LegacyQuestionFlowPolicy(),
                 new LearningQuestionFlowPolicy(),
                 new ReviewQuestionFlowPolicy());
+
+        private static IInitialRecallRecorder CreateInitialRecallRecorder() =>
+            new InitialRecallRecorder(new InitialRecallGradingPolicy());
     }
 }

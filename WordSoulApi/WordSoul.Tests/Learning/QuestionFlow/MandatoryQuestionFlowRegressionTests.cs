@@ -1,5 +1,6 @@
 using FluentAssertions;
 using WordSoul.Application.Learning.QuestionFlow;
+using WordSoul.Domain.Enums;
 
 namespace WordSoul.Tests.Learning.QuestionFlow;
 

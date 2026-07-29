@@ -12,6 +12,10 @@ namespace WordSoul.Domain.Entities
         public int VocabularyId { get; set; } // Foreign key to Vocabulary
         public Vocabulary? Vocabulary { get; set; } // Navigation property to Vocabulary
 
+        // Direct audit link for versioned review flows.
+        public int? InitialRecallAnswerRecordId { get; set; }
+        public AnswerRecord? InitialRecallAnswerRecord { get; set; }
+
         public DateTime ReviewTime { get; set; } = DateTime.UtcNow; // Timestamp of the review
 
         public bool IsCorrect { get; set; } // Whether the answer was correct

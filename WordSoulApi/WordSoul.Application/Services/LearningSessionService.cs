@@ -9,6 +9,7 @@ using WordSoul.Application.DTOs.QuizQuestion;
 using WordSoul.Application.DTOs.SRS;
 using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
+using WordSoul.Application.Learning.InitialRecall;
 using WordSoul.Application.Learning.QuestionFlow;
 using WordSoul.Domain.Entities;
 using WordSoul.Domain.Enums;
@@ -41,6 +42,7 @@ namespace WordSoul.Application.Services
         private readonly IGymLeaderService _gymLeaderService;
         private readonly ISystemConfigurationService _sysConfig;
         private readonly IQuestionFlowResolver _questionFlowResolver;
+        private readonly IInitialRecallRecorder _initialRecallRecorder;
 
         /// <summary>
         /// Khởi tạo LearningSessionService.
@@ -58,7 +60,8 @@ namespace WordSoul.Application.Services
             ITimeProvider timeProvider,
             IGymLeaderService gymLeaderService,
             ISystemConfigurationService sysConfig,
-            IQuestionFlowResolver questionFlowResolver)
+            IQuestionFlowResolver questionFlowResolver,
+            IInitialRecallRecorder initialRecallRecorder)
         {
             _uow = uow;
             _logger = logger;
@@ -73,6 +76,7 @@ namespace WordSoul.Application.Services
             _gymLeaderService = gymLeaderService;
             _sysConfig = sysConfig;
             _questionFlowResolver = questionFlowResolver;
+            _initialRecallRecorder = initialRecallRecorder;
         }
 
         // ------------------------------------CREATE-----------------------------------------
@@ -697,17 +701,6 @@ namespace WordSoul.Application.Services
             // Kiểm tra câu trả lời
             var isCorrect = CheckAnswer(expectedQuestionType, request.Answer, vocab);
 
-            if (session.Type == SessionType.Review
-                && flowStep.Phase == QuestionPhase.InitialRecall
-                && sessionVocab.InitialRecallGrade == null)
-            {
-                sessionVocab.InitialRecallCorrect = isCorrect;
-                sessionVocab.InitialRecallGrade = CalculateInitialRecallGrade(
-                    isCorrect,
-                    request.ResponseTimeSeconds,
-                    request.HintCount);
-            }
-
             // Đảm bảo UserVocabularyProgress tồn tại
             await EnsureUserVocabularyProgressAsync(userId, vocab.Id, ct);
 
@@ -752,17 +745,26 @@ namespace WordSoul.Application.Services
             }
 
             sessionVocab.ConcurrencyToken = Guid.NewGuid();
-            await _uow.SessionVocabulary.UpdateSessionVocabularyAsync(sessionVocab, ct);
 
             var answerRecord = await SaveAnswerRecordAsync(
                 sessionId,
                 vocab.Id,
                 request,
                 isCorrect,
+                session.FlowVersion,
+                flowStep.Phase,
+                previousStageIndex,
                 sessionVocab.CurrentStageIndex,
                 sessionVocab.IsCompleted,
                 ct);
 
+            var initialRecall = _initialRecallRecorder.Capture(
+                session,
+                sessionVocab,
+                answerRecord,
+                flowStep);
+
+            await _uow.SessionVocabulary.UpdateSessionVocabularyAsync(sessionVocab, ct);
          
             await _uow.SaveChangesAsync(ct);
 
@@ -778,18 +780,17 @@ namespace WordSoul.Application.Services
                 // Tính toán grade SM-2
                 var isVersionedReview =
                     session.FlowVersion == QuestionFlowVersions.Current;
+                var capturedInitialRecall = isVersionedReview
+                    ? _initialRecallRecorder.GetRequiredSnapshot(sessionVocab)
+                    : null;
                 var reviewSignal = isVersionedReview
-                    ? allAttempts.FirstOrDefault(attempt =>
-                        attempt.QuestionType ==
-                        flowPolicy.GetStep(0).QuestionType) ?? answerRecord
+                    ? capturedInitialRecall!.AnswerRecord
                     : answerRecord;
 
                 // Version 2 locks the SRS grade at the first unaided recall.
                 // Legacy sessions retain the previous aggregate grading behavior.
                 int grade = isVersionedReview
-                    ? sessionVocab.InitialRecallGrade
-                        ?? throw new InvalidOperationException(
-                            "A versioned review must capture an initial recall grade.")
+                    ? capturedInitialRecall!.Grade
                     : CalculateSm2Grade(
                         isCorrect: sessionVocab.IsCompleted,
                         attemptCount: allAttempts.Count,
@@ -800,7 +801,7 @@ namespace WordSoul.Application.Services
 
                 //cần xem lại phần tính accuracy, có thể chỉ tính cho lần thử cuối cùng hoặc tính theo công thức khác để phản ánh đúng hơn mức độ ghi nhớ của người dùng
                 double accuracy = isVersionedReview
-                    ? sessionVocab.InitialRecallCorrect == true ? 1 : 0
+                    ? capturedInitialRecall!.IsCorrect ? 1 : 0
                     : allAttempts.Count(a => a.IsCorrect) / (double)allAttempts.Count;
 
                 await _dailyQuestService.UpdateQuestProgressAsync(
@@ -828,9 +829,12 @@ namespace WordSoul.Application.Services
                 {
                     UserId = userId,
                     VocabularyId = sessionVocab.VocabularyId,
+                    InitialRecallAnswerRecordId = isVersionedReview
+                        ? reviewSignal.Id
+                        : null,
                     ReviewTime = _timeProvider.UtcNow,
                     IsCorrect = isVersionedReview
-                        ? sessionVocab.InitialRecallCorrect == true
+                        ? capturedInitialRecall!.IsCorrect
                         : isCorrect,
                     ResponseTimeSeconds = reviewSignal.ResponseTimeSeconds,
                     HintCount = reviewSignal.HintCount,
@@ -893,23 +897,24 @@ namespace WordSoul.Application.Services
                     sessionVocab.IsCompleted,
                     flowStep.IsRemediation);
 
-                if (session.Type == SessionType.Review
-                    && flowStep.Phase == QuestionPhase.InitialRecall)
+                if (initialRecall != null)
                 {
                     _logger.LogInformation(
                         InitialRecallEvent,
                         "Initial recall captured: SessionId={SessionId}, UserId={UserId}, "
-                        + "VocabularyId={VocabularyId}, FlowVersion={FlowVersion}, "
+                        + "VocabularyId={VocabularyId}, AnswerRecordId={AnswerRecordId}, "
+                        + "FlowVersion={FlowVersion}, "
                         + "IsCorrect={IsCorrect}, Grade={Grade}, "
                         + "ResponseTimeSeconds={ResponseTimeSeconds}, HintCount={HintCount}",
                         sessionId,
                         userId,
                         vocab.Id,
+                        initialRecall.AnswerRecord.Id,
                         session.FlowVersion,
-                        sessionVocab.InitialRecallCorrect,
-                        sessionVocab.InitialRecallGrade,
-                        request.ResponseTimeSeconds,
-                        request.HintCount);
+                        initialRecall.IsCorrect,
+                        initialRecall.Grade,
+                        initialRecall.AnswerRecord.ResponseTimeSeconds,
+                        initialRecall.AnswerRecord.HintCount);
                 }
 
                 return response;
@@ -1008,23 +1013,6 @@ namespace WordSoul.Application.Services
         }
 
         // Helper: tính grade SM-2 dựa trên số lần sai, độ chính xác, thời gian phản hồi trung bình và tổng số gợi ý đã dùng
-        private static int CalculateInitialRecallGrade(
-            bool isCorrect,
-            double responseTimeSeconds,
-            int hintCount)
-        {
-            if (!isCorrect)
-                return hintCount > 0 ? 1 : 2;
-
-            if (hintCount == 0 && responseTimeSeconds <= 5)
-                return 5;
-
-            if (hintCount == 0 && responseTimeSeconds <= 10)
-                return 4;
-
-            return 3;
-        }
-
         private static int CalculateSm2Grade(
             bool isCorrect,
             int attemptCount,
@@ -1130,6 +1118,9 @@ namespace WordSoul.Application.Services
             int vocabId,
             SubmitAnswerRequestDto request,
             bool isCorrect,
+            int flowVersion,
+            QuestionPhase questionPhase,
+            int stageIndexBefore,
             int resultingLevel,
             bool isVocabularyCompleted,
             CancellationToken ct)
@@ -1143,6 +1134,9 @@ namespace WordSoul.Application.Services
                 LearningSessionId = sessionId,
                 VocabularyId = vocabId,
                 QuestionType = request.QuestionType,
+                QuestionPhase = questionPhase,
+                FlowVersion = flowVersion,
+                StageIndexBefore = stageIndexBefore,
                 Answer = request.Answer,
                 AttemptCount = attempt + 1,
                 IsCorrect = isCorrect,

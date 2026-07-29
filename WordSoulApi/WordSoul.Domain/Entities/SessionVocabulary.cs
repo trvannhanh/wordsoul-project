@@ -17,6 +17,9 @@ namespace WordSoul.Domain.Entities
 
         // Captured once from the first unaided recall in a review flow.
         // Null for learning sessions and legacy review sessions.
+        public int? InitialRecallAnswerRecordId { get; set; }
+        public AnswerRecord? InitialRecallAnswerRecord { get; set; }
+        public DateTime? InitialRecallAt { get; set; }
         public bool? InitialRecallCorrect { get; set; }
         public int? InitialRecallGrade { get; set; }
         

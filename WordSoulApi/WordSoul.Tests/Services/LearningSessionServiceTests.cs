@@ -10,6 +10,7 @@ using WordSoul.Application.DTOs.SRS;
 using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Repositories;
 using WordSoul.Application.Interfaces.Services;
+using WordSoul.Application.Learning.InitialRecall;
 using WordSoul.Application.Learning.QuestionFlow;
 using WordSoul.Application.Services;
 using WordSoul.Domain.Entities;
@@ -153,7 +154,8 @@ namespace WordSoul.Tests.Services
                 new FixedTime(),
                 gymLeaderService.Object,
                 sysConfig.Object,
-                CreateQuestionFlowResolver());
+                CreateQuestionFlowResolver(),
+                CreateInitialRecallRecorder());
 
             var deps = new Deps(
                 uowMock, sessionRepo, sessionVocabRepo, answerRecordRepo,
@@ -170,6 +172,9 @@ namespace WordSoul.Tests.Services
                 new LegacyQuestionFlowPolicy(),
                 new LearningQuestionFlowPolicy(),
                 new ReviewQuestionFlowPolicy());
+
+        private static IInitialRecallRecorder CreateInitialRecallRecorder() =>
+            new InitialRecallRecorder(new InitialRecallGradingPolicy());
 
         // ──────────────────────────────────────────────────────────────────
         #region CreateLearningSessionAsync — Validation

@@ -12,6 +12,10 @@ namespace WordSoul.Domain.Entities
         public int LearningSessionId { get; set; }
         public LearningSession? LearningSession { get; set; }
         public QuestionType QuestionType { get; set; } // Loại câu hỏi (Flashcard, MCQ, v.v.)
+        // Nullable for records created before versioned question-flow telemetry.
+        public QuestionPhase? QuestionPhase { get; set; }
+        public int? FlowVersion { get; set; }
+        public int? StageIndexBefore { get; set; }
         [MaxLength(100)]
         public required string Answer { get; set; }
         public bool IsCorrect { get; set; }

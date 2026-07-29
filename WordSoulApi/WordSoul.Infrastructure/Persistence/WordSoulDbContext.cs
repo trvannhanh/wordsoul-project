@@ -254,6 +254,16 @@ namespace WordSoul.Infrastructure.Persistence
                 .HasForeignKey(sv => sv.VocabularyId)
                 .OnDelete(DeleteBehavior.Restrict); // Restrict delete if vocabulary is deleted, to prevent accidental loss of session vocabularies
 
+            modelBuilder.Entity<SessionVocabulary>()
+                .HasOne(sv => sv.InitialRecallAnswerRecord)
+                .WithMany()
+                .HasForeignKey(sv => sv.InitialRecallAnswerRecordId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<SessionVocabulary>()
+                .HasIndex(sv => sv.InitialRecallAnswerRecordId)
+                .IsUnique();
+
             modelBuilder.Entity<AnswerRecord>()
                 .HasIndex(a => new { a.LearningSessionId, a.SubmissionId })
                 .IsUnique();
@@ -274,6 +284,12 @@ namespace WordSoul.Infrastructure.Persistence
                 .WithMany()
                 .HasForeignKey(vrh => vrh.VocabularyId)
                 .OnDelete(DeleteBehavior.Restrict); // Prevent accidental deletion of vocabulary
+
+            modelBuilder.Entity<VocabularyReviewHistory>()
+                .HasOne(vrh => vrh.InitialRecallAnswerRecord)
+                .WithMany()
+                .HasForeignKey(vrh => vrh.InitialRecallAnswerRecordId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Indexes for ActivityLog to optimize common queries
             modelBuilder.Entity<ActivityLog>()
