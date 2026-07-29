@@ -48,6 +48,9 @@ namespace WordSoul.IntegrationTests.Services.SRS
                 interval: 6,
                 repetition: 2
             );
+            progress.InitialRecallCount = 1;
+            progress.InitialRecallCorrectCount = 1;
+            await _context.SaveChangesAsync();
 
             int grade = 5;  // Perfect recall
 
@@ -282,6 +285,10 @@ namespace WordSoul.IntegrationTests.Services.SRS
                 .CorrectAttempt = 10;
             _context.UserVocabularyProgresses.First(p => p.VocabularyId == vocab1.Id)
                 .TotalAttempt = 10;
+            _context.UserVocabularyProgresses.First(p => p.VocabularyId == vocab1.Id)
+                .InitialRecallCorrectCount = 10;
+            _context.UserVocabularyProgresses.First(p => p.VocabularyId == vocab1.Id)
+                .InitialRecallCount = 10;
 
             // Word 2: 50% accuracy
             var vocab2 = await _dataBuilder.CreateVocabularyAsync("word2", "từ 2");
@@ -290,6 +297,10 @@ namespace WordSoul.IntegrationTests.Services.SRS
                 .CorrectAttempt = 5;
             _context.UserVocabularyProgresses.First(p => p.VocabularyId == vocab2.Id)
                 .TotalAttempt = 10;
+            _context.UserVocabularyProgresses.First(p => p.VocabularyId == vocab2.Id)
+                .InitialRecallCorrectCount = 5;
+            _context.UserVocabularyProgresses.First(p => p.VocabularyId == vocab2.Id)
+                .InitialRecallCount = 10;
 
             await _context.SaveChangesAsync();
 

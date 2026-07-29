@@ -30,8 +30,7 @@ namespace WordSoul.Application.Services.SRS
             int userId,
             int vocabularyId,
             int grade,
-            CancellationToken ct = default,
-            bool recordAttempt = true)
+            CancellationToken ct = default)
         {
             // 1. Get current progress
             var progress = await _uow.UserVocabularyProgress
@@ -63,7 +62,8 @@ namespace WordSoul.Application.Services.SRS
                 grade,
                 progress.EasinessFactor,
                 progress.Interval,
-                progress.Repetition
+                progress.Repetition,
+                _timeProvider.UtcNow
             );
 
             // 4. Update progress entity
@@ -74,19 +74,10 @@ namespace WordSoul.Application.Services.SRS
             progress.LastGrade = grade;
             progress.LastUpdated = _timeProvider.UtcNow;
 
-            if (recordAttempt)
-            {
-                progress.TotalAttempt++;
-                if (grade >= 3)
-                {
-                    progress.CorrectAttempt++;
-                }
-            }
-
             // Calculate retention score
             var retentionScore = _algorithm.CalculateRetentionScore(
-                progress.CorrectAttempt,
-                progress.TotalAttempt - progress.CorrectAttempt,
+                progress.InitialRecallCorrectCount,
+                progress.InitialRecallCount - progress.InitialRecallCorrectCount,
                 progress.Repetition
             );
 
@@ -176,8 +167,8 @@ namespace WordSoul.Application.Services.SRS
 
             var scores = allProgresses
                 .Select(p => _algorithm.CalculateRetentionScore(
-                    p.CorrectAttempt,
-                    p.TotalAttempt - p.CorrectAttempt,
+                    p.InitialRecallCorrectCount,
+                    p.InitialRecallCount - p.InitialRecallCorrectCount,
                     p.Repetition
                 ))
                 .ToList();
@@ -188,8 +179,8 @@ namespace WordSoul.Application.Services.SRS
         private decimal CalculateRetentionScore(UserVocabularyProgress p)
         {
             return _algorithm.CalculateRetentionScore(
-                p.CorrectAttempt,
-                p.TotalAttempt - p.CorrectAttempt,
+                p.InitialRecallCorrectCount,
+                p.InitialRecallCount - p.InitialRecallCorrectCount,
                 p.Repetition
             );
         }

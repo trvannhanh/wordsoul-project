@@ -291,6 +291,10 @@ namespace WordSoul.Infrastructure.Persistence
                 .HasForeignKey(vrh => vrh.InitialRecallAnswerRecordId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<VocabularyReviewHistory>()
+                .HasIndex(vrh => vrh.InitialRecallAnswerRecordId)
+                .IsUnique();
+
             // Indexes for ActivityLog to optimize common queries
             modelBuilder.Entity<ActivityLog>()
                 .HasIndex(al => al.UserId);

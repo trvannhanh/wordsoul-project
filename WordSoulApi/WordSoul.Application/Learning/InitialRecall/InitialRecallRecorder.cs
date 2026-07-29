@@ -23,7 +23,7 @@ public sealed class InitialRecallRecorder(
             return null;
         }
 
-        var grade = gradingPolicy.CalculateGrade(
+        var gradeResult = gradingPolicy.Evaluate(
             answerRecord.IsCorrect,
             answerRecord.ResponseTimeSeconds,
             answerRecord.HintCount);
@@ -31,32 +31,17 @@ public sealed class InitialRecallRecorder(
         sessionVocabulary.InitialRecallAnswerRecord = answerRecord;
         sessionVocabulary.InitialRecallAt = answerRecord.CreatedAt;
         sessionVocabulary.InitialRecallCorrect = answerRecord.IsCorrect;
-        sessionVocabulary.InitialRecallGrade = grade;
+        sessionVocabulary.InitialRecallGrade = gradeResult.Grade;
+        sessionVocabulary.InitialRecallGradingPolicyVersion =
+            gradeResult.PolicyVersion;
+        sessionVocabulary.InitialRecallGradeReason = gradeResult.Reason;
 
         return new InitialRecallSnapshot(
             answerRecord,
             answerRecord.IsCorrect,
-            grade,
+            gradeResult.Grade,
+            gradeResult.PolicyVersion,
+            gradeResult.Reason,
             answerRecord.CreatedAt);
-    }
-
-    public InitialRecallSnapshot GetRequiredSnapshot(
-        SessionVocabulary sessionVocabulary)
-    {
-        var answerRecord = sessionVocabulary.InitialRecallAnswerRecord
-            ?? throw new InvalidOperationException(
-                "A versioned review must link its initial recall answer record.");
-        var grade = sessionVocabulary.InitialRecallGrade
-            ?? throw new InvalidOperationException(
-                "A versioned review must preserve its initial recall grade.");
-        var capturedAt = sessionVocabulary.InitialRecallAt
-            ?? throw new InvalidOperationException(
-                "A versioned review must preserve its initial recall timestamp.");
-
-        return new InitialRecallSnapshot(
-            answerRecord,
-            answerRecord.IsCorrect,
-            grade,
-            capturedAt);
     }
 }

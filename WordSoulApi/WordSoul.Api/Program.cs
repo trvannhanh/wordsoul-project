@@ -21,6 +21,7 @@ using WordSoul.Application.Interfaces.Services;
 using WordSoul.Application.Learning.QuestionFlow;
 using WordSoul.Application.Learning.InitialRecall;
 using WordSoul.Application.Services;
+using WordSoul.Application.Learning.ReviewOutcome;
 using WordSoul.Application.Services.SRS;
 using WordSoul.Infrastructure.BackgroundServices;
 using WordSoul.Infrastructure.Common;
@@ -265,6 +266,7 @@ builder.Services.AddSingleton<ReviewQuestionFlowPolicy>();
 builder.Services.AddSingleton<IQuestionFlowResolver, QuestionFlowResolver>();
 builder.Services.AddSingleton<IInitialRecallGradingPolicy, InitialRecallGradingPolicy>();
 builder.Services.AddScoped<IInitialRecallRecorder, InitialRecallRecorder>();
+builder.Services.AddScoped<IReviewOutcomeProcessor, ReviewOutcomeProcessor>();
 
 builder.Services.AddScoped<ITimeProvider, SystemTimeProvider>();
 builder.Services.AddScoped<IDailyQuestService, DailyQuestService>();

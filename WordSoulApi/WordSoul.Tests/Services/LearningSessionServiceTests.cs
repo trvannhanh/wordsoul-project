@@ -12,6 +12,7 @@ using WordSoul.Application.Interfaces.Repositories;
 using WordSoul.Application.Interfaces.Services;
 using WordSoul.Application.Learning.InitialRecall;
 using WordSoul.Application.Learning.QuestionFlow;
+using WordSoul.Application.Learning.ReviewOutcome;
 using WordSoul.Application.Services;
 using WordSoul.Domain.Entities;
 using WordSoul.Domain.Enums;
@@ -155,7 +156,8 @@ namespace WordSoul.Tests.Services
                 gymLeaderService.Object,
                 sysConfig.Object,
                 CreateQuestionFlowResolver(),
-                CreateInitialRecallRecorder());
+                CreateInitialRecallRecorder(),
+                new Mock<IReviewOutcomeProcessor>().Object);
 
             var deps = new Deps(
                 uowMock, sessionRepo, sessionVocabRepo, answerRecordRepo,

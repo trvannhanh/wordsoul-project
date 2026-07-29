@@ -13,17 +13,18 @@ public class InitialRecallRecorderTests
         new(new InitialRecallGradingPolicy());
 
     [Theory]
-    [InlineData(true, 2, 0, 5)]
-    [InlineData(true, 8, 0, 4)]
-    [InlineData(true, 12, 0, 3)]
-    [InlineData(true, 2, 1, 3)]
-    [InlineData(false, 2, 0, 2)]
-    [InlineData(false, 2, 1, 1)]
+    [InlineData(true, 2, 0, 5, ReviewGradeReason.FastUnaidedRecall)]
+    [InlineData(true, 8, 0, 4, ReviewGradeReason.HesitantUnaidedRecall)]
+    [InlineData(true, 12, 0, 3, ReviewGradeReason.DifficultOrAssistedRecall)]
+    [InlineData(true, 2, 1, 3, ReviewGradeReason.DifficultOrAssistedRecall)]
+    [InlineData(false, 2, 0, 0, ReviewGradeReason.FailedInitialRecall)]
+    [InlineData(false, 2, 1, 0, ReviewGradeReason.FailedInitialRecall)]
     public void Capture_ReviewV2InitialRecall_PersistsRawSignalAndGrade(
         bool isCorrect,
         double responseTimeSeconds,
         int hintCount,
-        int expectedGrade)
+        int expectedGrade,
+        ReviewGradeReason expectedReason)
     {
         var session = CreateSession(SessionType.Review, QuestionFlowVersions.Current);
         var sessionVocabulary = new SessionVocabulary();
@@ -40,6 +41,9 @@ public class InitialRecallRecorderTests
         sessionVocabulary.InitialRecallAt.Should().Be(answer.CreatedAt);
         sessionVocabulary.InitialRecallCorrect.Should().Be(isCorrect);
         sessionVocabulary.InitialRecallGrade.Should().Be(expectedGrade);
+        sessionVocabulary.InitialRecallGradingPolicyVersion
+            .Should().Be(InitialRecallGradingPolicy.Version);
+        sessionVocabulary.InitialRecallGradeReason.Should().Be(expectedReason);
     }
 
     [Theory]
@@ -79,7 +83,9 @@ public class InitialRecallRecorderTests
         secondCapture.Should().BeNull();
         sessionVocabulary.InitialRecallAnswerRecord.Should().BeSameAs(firstAnswer);
         sessionVocabulary.InitialRecallCorrect.Should().BeFalse();
-        sessionVocabulary.InitialRecallGrade.Should().Be(2);
+        sessionVocabulary.InitialRecallGrade.Should().Be(0);
+        sessionVocabulary.InitialRecallGradeReason
+            .Should().Be(ReviewGradeReason.FailedInitialRecall);
     }
 
     private static LearningSession CreateSession(

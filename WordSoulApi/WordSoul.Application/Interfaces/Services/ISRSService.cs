@@ -16,8 +16,7 @@ namespace WordSoul.Application.Interfaces.Services
             int userId,
             int vocabularyId,
             int grade,
-            CancellationToken ct = default,
-            bool recordAttempt = true);
+            CancellationToken ct = default);
 
         /// <summary>
         /// Get vocabularies due for review

@@ -1,4 +1,5 @@
 ﻿
+using WordSoul.Domain.Enums;
 
 namespace WordSoul.Domain.Entities
 {
@@ -11,7 +12,6 @@ namespace WordSoul.Domain.Entities
 
         public int VocabularyId { get; set; } // Foreign key to Vocabulary
         public Vocabulary? Vocabulary { get; set; } // Navigation property to Vocabulary
-
         // Direct audit link for versioned review flows.
         public int? InitialRecallAnswerRecordId { get; set; }
         public AnswerRecord? InitialRecallAnswerRecord { get; set; }
@@ -25,6 +25,8 @@ namespace WordSoul.Domain.Entities
         public int HintCount { get; set; } = 0; // Number of hints used during the review
 
         public int Grade { get; set; } = 0; // Grade inferred from the review (0-5, based on SM-2)
+        public int? GradingPolicyVersion { get; set; }
+        public ReviewGradeReason? GradeReason { get; set; }
 
         public string? Notes { get; set; } // Optional notes for additional context (e.g., "User struggled with synonyms")
 

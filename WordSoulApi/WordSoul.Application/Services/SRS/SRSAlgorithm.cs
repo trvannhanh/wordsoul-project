@@ -30,7 +30,8 @@ namespace WordSoul.Application.Services.SRS
             int grade,
             double currentEF,
             int currentInterval,
-            int currentRepetition)
+            int currentRepetition,
+            DateTime? referenceTime = null)
         {
             // Validate input
             if (grade < 0 || grade > 5)
@@ -59,7 +60,8 @@ namespace WordSoul.Application.Services.SRS
             );
 
             // Step 4: Calculate next review date
-            result.NextReviewDate = DateTime.UtcNow.AddDays(result.NewInterval);
+            result.NextReviewDate =
+                (referenceTime ?? DateTime.UtcNow).AddDays(result.NewInterval);
 
             // Step 5: Determine memory state
             result.MemoryState = DetermineMemoryState(

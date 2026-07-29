@@ -1,6 +1,7 @@
 ﻿
 
 using System.ComponentModel.DataAnnotations;
+using WordSoul.Domain.Enums;
 
 namespace WordSoul.Domain.Entities
 {
@@ -22,6 +23,8 @@ namespace WordSoul.Domain.Entities
         public DateTime? InitialRecallAt { get; set; }
         public bool? InitialRecallCorrect { get; set; }
         public int? InitialRecallGrade { get; set; }
+        public int? InitialRecallGradingPolicyVersion { get; set; }
+        public ReviewGradeReason? InitialRecallGradeReason { get; set; }
         
         public bool IsCompleted { get; set; } = false;
 

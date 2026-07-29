@@ -10,7 +10,4 @@ public interface IInitialRecallRecorder
         SessionVocabulary sessionVocabulary,
         AnswerRecord answerRecord,
         FlowStep flowStep);
-
-    InitialRecallSnapshot GetRequiredSnapshot(
-        SessionVocabulary sessionVocabulary);
 }

@@ -2,7 +2,7 @@ namespace WordSoul.Application.Learning.InitialRecall;
 
 public interface IInitialRecallGradingPolicy
 {
-    int CalculateGrade(
+    InitialRecallGradeResult Evaluate(
         bool isCorrect,
         double responseTimeSeconds,
         int hintCount);

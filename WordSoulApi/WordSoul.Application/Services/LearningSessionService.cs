@@ -11,6 +11,7 @@ using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Services;
 using WordSoul.Application.Learning.InitialRecall;
 using WordSoul.Application.Learning.QuestionFlow;
+using WordSoul.Application.Learning.ReviewOutcome;
 using WordSoul.Domain.Entities;
 using WordSoul.Domain.Enums;
 
@@ -43,6 +44,7 @@ namespace WordSoul.Application.Services
         private readonly ISystemConfigurationService _sysConfig;
         private readonly IQuestionFlowResolver _questionFlowResolver;
         private readonly IInitialRecallRecorder _initialRecallRecorder;
+        private readonly IReviewOutcomeProcessor _reviewOutcomeProcessor;
 
         /// <summary>
         /// Khởi tạo LearningSessionService.
@@ -61,7 +63,8 @@ namespace WordSoul.Application.Services
             IGymLeaderService gymLeaderService,
             ISystemConfigurationService sysConfig,
             IQuestionFlowResolver questionFlowResolver,
-            IInitialRecallRecorder initialRecallRecorder)
+            IInitialRecallRecorder initialRecallRecorder,
+            IReviewOutcomeProcessor reviewOutcomeProcessor)
         {
             _uow = uow;
             _logger = logger;
@@ -77,6 +80,7 @@ namespace WordSoul.Application.Services
             _sysConfig = sysConfig;
             _questionFlowResolver = questionFlowResolver;
             _initialRecallRecorder = initialRecallRecorder;
+            _reviewOutcomeProcessor = reviewOutcomeProcessor;
         }
 
         // ------------------------------------CREATE-----------------------------------------
@@ -709,16 +713,35 @@ namespace WordSoul.Application.Services
 
             if (progress != null && flowStep.CountsAsRecall)
             {
-                progress.TotalAttempt++;
-
-                if (isCorrect)
+                if (session.FlowVersion == QuestionFlowVersions.Current)
                 {
-                    progress.CorrectAttempt++;
-                    progress.CorrectCount++;
+                    if (session.Type == SessionType.Learning)
+                    {
+                        progress.LearningPracticeAttemptCount++;
+                        if (isCorrect)
+                            progress.LearningPracticeSuccessCount++;
+                    }
+                    else if (flowStep.Phase == QuestionPhase.CorrectiveRecall)
+                    {
+                        progress.RemediationAttemptCount++;
+                        if (isCorrect)
+                            progress.RemediationSuccessCount++;
+                    }
                 }
                 else
                 {
-                    progress.WrongCount++;
+                    // Preserve legacy metrics for sessions created before
+                    // versioned learning and review outcomes.
+                    progress.TotalAttempt++;
+                    if (isCorrect)
+                    {
+                        progress.CorrectAttempt++;
+                        progress.CorrectCount++;
+                    }
+                    else
+                    {
+                        progress.WrongCount++;
+                    }
                 }
             }
 
@@ -768,41 +791,55 @@ namespace WordSoul.Application.Services
          
             await _uow.SaveChangesAsync(ct);
 
+            ReviewOutcomeResult? reviewOutcome = null;
+            if (initialRecall != null)
+            {
+                reviewOutcome = await _reviewOutcomeProcessor.ProcessAsync(
+                    userId,
+                    sessionVocab,
+                    progress
+                        ?? throw new InvalidOperationException(
+                            "Review progress must exist before recording an outcome."),
+                    initialRecall,
+                    ct);
+
+                await _uow.SaveChangesAsync(ct);
+                await _activityLogService
+                    .TrackVocabularyReviewedAsync(userId, vocab.Id, ct);
+
+                _logger.LogInformation(
+                    "Updated SRS from initial recall for User {UserId}, "
+                    + "Vocab {VocabId}: Grade={Grade}, NextReview={NextReview}",
+                    userId,
+                    vocab.Id,
+                    initialRecall.Grade,
+                    reviewOutcome.SrsResult.NextReviewDate);
+            }
 
 
             // Cập nhật SRS và lưu lịch sử ôn tập nếu là session ôn tập và từ đã hoàn thành
-            if (session.Type == SessionType.Review && sessionVocab.IsCompleted)
+            if (session.Type == SessionType.Review
+                && sessionVocab.IsCompleted
+                && session.FlowVersion == QuestionFlowVersions.Legacy)
             {
                 // Lấy tất cả các lần thử của từ này trong session
                 var allAttempts = await _uow.AnswerRecord
                     .GetAllAnswerRecordAttemptsForVocabInSession(sessionId, vocab.Id, ct);
 
                 // Tính toán grade SM-2
-                var isVersionedReview =
-                    session.FlowVersion == QuestionFlowVersions.Current;
-                var capturedInitialRecall = isVersionedReview
-                    ? _initialRecallRecorder.GetRequiredSnapshot(sessionVocab)
-                    : null;
-                var reviewSignal = isVersionedReview
-                    ? capturedInitialRecall!.AnswerRecord
-                    : answerRecord;
-
-                // Version 2 locks the SRS grade at the first unaided recall.
                 // Legacy sessions retain the previous aggregate grading behavior.
-                int grade = isVersionedReview
-                    ? capturedInitialRecall!.Grade
-                    : CalculateSm2Grade(
-                        isCorrect: sessionVocab.IsCompleted,
-                        attemptCount: allAttempts.Count,
-                        avgResponseTime: allAttempts.Average(a => a.ResponseTimeSeconds),
-                        totalHints: allAttempts.Sum(a => a.HintCount),
-                        requiredCorrectAnswers: flowPolicy.TotalStages
-                    );
+                int grade = CalculateSm2Grade(
+                    isCorrect: sessionVocab.IsCompleted,
+                    attemptCount: allAttempts.Count,
+                    avgResponseTime: allAttempts.Average(a => a.ResponseTimeSeconds),
+                    totalHints: allAttempts.Sum(a => a.HintCount),
+                    requiredCorrectAnswers: flowPolicy.TotalStages
+                );
 
                 //cần xem lại phần tính accuracy, có thể chỉ tính cho lần thử cuối cùng hoặc tính theo công thức khác để phản ánh đúng hơn mức độ ghi nhớ của người dùng
-                double accuracy = isVersionedReview
-                    ? capturedInitialRecall!.IsCorrect ? 1 : 0
-                    : allAttempts.Count(a => a.IsCorrect) / (double)allAttempts.Count;
+                double accuracy =
+                    allAttempts.Count(a => a.IsCorrect)
+                    / (double)allAttempts.Count;
 
                 await _dailyQuestService.UpdateQuestProgressAsync(
                     userId,
@@ -816,8 +853,7 @@ namespace WordSoul.Application.Services
                     userId,
                     vocab.Id,
                     grade,
-                    ct,
-                    recordAttempt: false);
+                    ct);
 
                 _logger.LogInformation(
                     "Updated SRS for User {UserId}, Vocab {VocabId}: Grade={Grade}, NextReview={NextReview}",
@@ -829,15 +865,10 @@ namespace WordSoul.Application.Services
                 {
                     UserId = userId,
                     VocabularyId = sessionVocab.VocabularyId,
-                    InitialRecallAnswerRecordId = isVersionedReview
-                        ? reviewSignal.Id
-                        : null,
                     ReviewTime = _timeProvider.UtcNow,
-                    IsCorrect = isVersionedReview
-                        ? capturedInitialRecall!.IsCorrect
-                        : isCorrect,
-                    ResponseTimeSeconds = reviewSignal.ResponseTimeSeconds,
-                    HintCount = reviewSignal.HintCount,
+                    IsCorrect = isCorrect,
+                    ResponseTimeSeconds = answerRecord.ResponseTimeSeconds,
+                    HintCount = answerRecord.HintCount,
                     Grade = grade,
                     EaseFactorBefore = srsResult.OldEaseFactor,
                     EaseFactorAfter = srsResult.NewEaseFactor,
@@ -905,6 +936,8 @@ namespace WordSoul.Application.Services
                         + "VocabularyId={VocabularyId}, AnswerRecordId={AnswerRecordId}, "
                         + "FlowVersion={FlowVersion}, "
                         + "IsCorrect={IsCorrect}, Grade={Grade}, "
+                        + "GradingPolicyVersion={GradingPolicyVersion}, "
+                        + "GradeReason={GradeReason}, "
                         + "ResponseTimeSeconds={ResponseTimeSeconds}, HintCount={HintCount}",
                         sessionId,
                         userId,
@@ -913,6 +946,8 @@ namespace WordSoul.Application.Services
                         session.FlowVersion,
                         initialRecall.IsCorrect,
                         initialRecall.Grade,
+                        initialRecall.GradingPolicyVersion,
+                        initialRecall.GradeReason,
                         initialRecall.AnswerRecord.ResponseTimeSeconds,
                         initialRecall.AnswerRecord.HintCount);
                 }
