@@ -212,36 +212,8 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                 columns: new[] { "Description", "Name" },
                 values: new object[] { "Defeated Giovanni, Viridian Gym Leader", "Earth Badge" });
 
-            migrationBuilder.InsertData(
-                table: "GymLeaderPets",
-                columns: new[] { "Id", "BotAccuracy", "BotAvgResponseMs", "GymLeaderId", "Nickname", "PetId", "SlotIndex" },
-                values: new object[,]
-                {
-                    { 1, 0.55000000000000004, 7000, 1, null, 50, 0 },
-                    { 2, 0.55000000000000004, 7000, 1, null, 51, 1 },
-                    { 3, 0.55000000000000004, 7000, 1, null, 52, 2 },
-                    { 4, 0.59999999999999998, 6500, 2, null, 53, 0 },
-                    { 5, 0.59999999999999998, 6500, 2, null, 54, 1 },
-                    { 6, 0.59999999999999998, 6500, 2, null, 55, 2 },
-                    { 7, 0.65000000000000002, 6000, 3, null, 56, 0 },
-                    { 8, 0.65000000000000002, 6000, 3, null, 57, 1 },
-                    { 9, 0.65000000000000002, 6000, 3, null, 58, 2 },
-                    { 10, 0.69999999999999996, 5500, 4, null, 59, 0 },
-                    { 11, 0.69999999999999996, 5500, 4, null, 60, 1 },
-                    { 12, 0.69999999999999996, 5500, 4, null, 61, 2 },
-                    { 13, 0.75, 5000, 5, null, 62, 0 },
-                    { 14, 0.75, 5000, 5, null, 63, 1 },
-                    { 15, 0.75, 5000, 5, null, 64, 2 },
-                    { 16, 0.80000000000000004, 4500, 6, null, 65, 0 },
-                    { 17, 0.80000000000000004, 4500, 6, null, 66, 1 },
-                    { 18, 0.80000000000000004, 4500, 6, null, 67, 2 },
-                    { 19, 0.84999999999999998, 3500, 7, null, 68, 0 },
-                    { 20, 0.84999999999999998, 3500, 7, null, 69, 1 },
-                    { 21, 0.84999999999999998, 3500, 7, null, 70, 2 },
-                    { 22, 0.90000000000000002, 3000, 8, null, 71, 0 },
-                    { 23, 0.90000000000000002, 3000, 8, null, 72, 1 },
-                    { 24, 0.90000000000000002, 3000, 8, null, 73, 2 }
-                });
+            // GymLeaderPets are application data and depend on Pets imported outside
+            // migrations. Seeding PetIds 50-73 here breaks fresh database creation.
 
             migrationBuilder.UpdateData(
                 table: "GymLeaders",
