@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using WordSoul.Application.DTOs.Admin;
 using WordSoul.Application.Interfaces.Services;
 using WordSoul.Domain.Entities;
 
@@ -19,7 +20,10 @@ namespace WordSoul.IntegrationTests.Fakes
             throw new NotImplementedException();
         }
 
-        public Task UpdateConfigurationsAsync(IEnumerable<SystemConfiguration> configurations, CancellationToken cancellationToken = default)
+        public Task UpdateConfigurationsAsync(
+            IEnumerable<UpdateSystemConfigurationDto> configurations,
+            string updatedBy,
+            CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

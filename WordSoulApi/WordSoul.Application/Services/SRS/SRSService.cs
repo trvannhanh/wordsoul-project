@@ -13,17 +13,20 @@ namespace WordSoul.Application.Services.SRS
         private readonly SRSAlgorithm _algorithm;
         private readonly ILogger<SRSService> _logger;
         private readonly ITimeProvider _timeProvider;
+        private readonly ISrsAlgorithmSettingsProvider _settingsProvider;
 
         public SRSService(
             IUnitOfWork uow,
             SRSAlgorithm algorithm,
             ILogger<SRSService> logger,
-            ITimeProvider timeProvider)
+            ITimeProvider timeProvider,
+            ISrsAlgorithmSettingsProvider settingsProvider)
         {
             _uow = uow;
             _algorithm = algorithm;
             _logger = logger;
             _timeProvider = timeProvider;
+            _settingsProvider = settingsProvider;
         }
 
         public async Task<SRSUpdateResult> UpdateAfterReviewAsync(
@@ -43,6 +46,7 @@ namespace WordSoul.Application.Services.SRS
                     $"Progress not found for User {userId}, Vocab {vocabularyId}");
             }
 
+            var settings = await _settingsProvider.GetSettingsAsync(ct);
             var oldEF = progress.EasinessFactor;
             var oldInterval = progress.Interval;
             var oldRep = progress.Repetition;
@@ -63,7 +67,8 @@ namespace WordSoul.Application.Services.SRS
                 progress.EasinessFactor,
                 progress.Interval,
                 progress.Repetition,
-                _timeProvider.UtcNow
+                _timeProvider.UtcNow,
+                settings
             );
 
             // 4. Update progress entity
@@ -78,7 +83,8 @@ namespace WordSoul.Application.Services.SRS
             var retentionScore = _algorithm.CalculateRetentionScore(
                 progress.InitialRecallCorrectCount,
                 progress.InitialRecallCount - progress.InitialRecallCorrectCount,
-                progress.Repetition
+                progress.Repetition,
+                settings
             );
 
             progress.RetentionScore = retentionScore;
@@ -110,6 +116,7 @@ namespace WordSoul.Application.Services.SRS
             return new SRSUpdateResult
             {
                 Success = true,
+                PolicyVersion = settings.PolicyVersion,
                 NewEaseFactor = srsResult.NewEaseFactor,
                 NewInterval = srsResult.NewInterval,
                 NextReviewDate = srsResult.NextReviewDate,
@@ -130,6 +137,7 @@ namespace WordSoul.Application.Services.SRS
             CancellationToken ct = default)
         {
             var now = _timeProvider.UtcNow;
+            var settings = await _settingsProvider.GetSettingsAsync(ct);
 
             var dueProgresses = await _uow.UserVocabularyProgress
                 .GetDueVocabulariesAsync(userId, now, ct);
@@ -139,7 +147,7 @@ namespace WordSoul.Application.Services.SRS
             // 2. Low retention score (struggling words)
             var sorted = dueProgresses
                 .OrderBy(p => p.NextReviewTime)
-                .ThenBy(p => CalculateRetentionScore(p))
+                .ThenBy(p => CalculateRetentionScore(p, settings))
                 .Take(limit)
                 .Select(p => new VocabularyDueDto
                 {
@@ -147,7 +155,7 @@ namespace WordSoul.Application.Services.SRS
                     Word = p.Vocabulary?.Word,
                     NextReviewDate = p.NextReviewTime,
                     Repetition = p.Repetition,
-                    RetentionScore = CalculateRetentionScore(p),
+                    RetentionScore = CalculateRetentionScore(p, settings),
                     DaysOverdue = (int)(now - p.NextReviewTime).TotalDays
                 })
                 .ToList();
@@ -165,23 +173,28 @@ namespace WordSoul.Application.Services.SRS
             if (!allProgresses.Any())
                 return 0;
 
+            var settings = await _settingsProvider.GetSettingsAsync(ct);
             var scores = allProgresses
                 .Select(p => _algorithm.CalculateRetentionScore(
                     p.InitialRecallCorrectCount,
                     p.InitialRecallCount - p.InitialRecallCorrectCount,
-                    p.Repetition
+                    p.Repetition,
+                    settings
                 ))
                 .ToList();
 
             return scores.Average();
         }
 
-        private decimal CalculateRetentionScore(UserVocabularyProgress p)
+        private decimal CalculateRetentionScore(
+            UserVocabularyProgress p,
+            SrsAlgorithmSettings settings)
         {
             return _algorithm.CalculateRetentionScore(
                 p.InitialRecallCorrectCount,
                 p.InitialRecallCount - p.InitialRecallCorrectCount,
-                p.Repetition
+                p.Repetition,
+                settings
             );
         }
 
@@ -222,6 +235,7 @@ namespace WordSoul.Application.Services.SRS
                 return;
             }
 
+            var settings = await _settingsProvider.GetSettingsAsync(ct);
             switch (result)
             {
                 case Domain.Enums.PronunciationResult.Perfect:
@@ -233,7 +247,7 @@ namespace WordSoul.Application.Services.SRS
                     if (progress.PronunciationPerfectStreak >= 2)
                     {
                         progress.EasinessFactor = Math.Min(
-                            SRSAlgorithm.MAX_EASE_FACTOR,
+                            settings.MaxEaseFactor,
                             progress.EasinessFactor + 0.05
                         );
                         progress.PronunciationPerfectStreak = 0; // Reset sau khi áp dụng bonus

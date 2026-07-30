@@ -29,7 +29,8 @@ namespace WordSoul.IntegrationTests.Services.SRS
                 _unitOfWork,
                 _srsAlgorithm,
                 NullLogger<SRSService>.Instance,
-                _timeProvider
+                _timeProvider,
+                new FakeSrsAlgorithmSettingsProvider()
             );
         }
 

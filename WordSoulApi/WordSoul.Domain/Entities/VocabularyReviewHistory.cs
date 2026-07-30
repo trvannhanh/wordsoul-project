@@ -27,6 +27,7 @@ namespace WordSoul.Domain.Entities
         public int Grade { get; set; } = 0; // Grade inferred from the review (0-5, based on SM-2)
         public int? GradingPolicyVersion { get; set; }
         public ReviewGradeReason? GradeReason { get; set; }
+        public int? SrsPolicyVersion { get; set; }
 
         public string? Notes { get; set; } // Optional notes for additional context (e.g., "User struggled with synonyms")
 

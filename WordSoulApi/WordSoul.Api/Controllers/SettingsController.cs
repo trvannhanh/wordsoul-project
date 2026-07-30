@@ -100,6 +100,10 @@ namespace WordSoul.Api.Controllers
             {
                 return BadRequest(ex.Message);
             }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating setting '{Key}'", dto.Key);
@@ -142,6 +146,10 @@ namespace WordSoul.Api.Controllers
             {
                 return BadRequest(ex.Message);
             }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating setting '{Key}'", key);
@@ -162,6 +170,10 @@ namespace WordSoul.Api.Controllers
                     return NotFound($"Configuration with key '{key}' not found.");
                 }
                 return NoContent();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {

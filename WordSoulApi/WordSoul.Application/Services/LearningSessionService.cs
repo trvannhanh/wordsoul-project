@@ -12,6 +12,7 @@ using WordSoul.Application.Interfaces.Services;
 using WordSoul.Application.Learning.InitialRecall;
 using WordSoul.Application.Learning.QuestionFlow;
 using WordSoul.Application.Learning.ReviewOutcome;
+using WordSoul.Application.Services.SRS;
 using WordSoul.Domain.Entities;
 using WordSoul.Domain.Enums;
 
@@ -761,7 +762,10 @@ namespace WordSoul.Application.Services
             {
                 if (session.CatchRate.HasValue && !session.PetReducePenalty)
                 {
-                    var penalty = await _sysConfig.GetValueAsync("CatchWrongPenalty", 0.05, ct);
+                    var penalty = await _sysConfig.GetValueAsync(
+                        "CatchRateWrongPenalty",
+                        0.05,
+                        ct);
                     session.CatchRate = Math.Max(0, session.CatchRate.Value - penalty);
                 }    
                     
@@ -870,6 +874,7 @@ namespace WordSoul.Application.Services
                     ResponseTimeSeconds = answerRecord.ResponseTimeSeconds,
                     HintCount = answerRecord.HintCount,
                     Grade = grade,
+                    SrsPolicyVersion = srsResult.PolicyVersion,
                     EaseFactorBefore = srsResult.OldEaseFactor,
                     EaseFactorAfter = srsResult.NewEaseFactor,
                     IntervalBefore = srsResult.OldInterval,
@@ -1133,14 +1138,23 @@ namespace WordSoul.Application.Services
 
             if (progress != null) return;
 
+            var defaultEaseFactor = await _sysConfig.GetValueAsync(
+                SrsAlgorithmSettings.DefaultEaseFactorKey,
+                SrsAlgorithmSettings.Default.DefaultEaseFactor,
+                ct);
+            var firstIntervalDays = await _sysConfig.GetValueAsync(
+                SrsAlgorithmSettings.FirstIntervalKey,
+                SrsAlgorithmSettings.Default.FirstIntervalDays,
+                ct);
             progress = new UserVocabularyProgress
             {
                 UserId = userId,
                 VocabularyId = vocabId,
-                EasinessFactor = 2.5,
-                Interval = 1,
+                EasinessFactor = defaultEaseFactor,
+                Interval = firstIntervalDays,
                 Repetition = 0,
-                NextReviewTime = _timeProvider.UtcNow.AddDays(1)
+                NextReviewTime = _timeProvider.UtcNow.AddDays(
+                    firstIntervalDays)
             };
 
             await _uow.UserVocabularyProgress

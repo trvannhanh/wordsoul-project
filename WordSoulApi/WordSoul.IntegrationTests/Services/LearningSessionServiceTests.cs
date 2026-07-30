@@ -31,7 +31,8 @@ namespace WordSoul.IntegrationTests.Services
                 _unitOfWork,
                 _srsAlgorithm,
                 NullLogger<SRSService>.Instance,
-                _timeProvider
+                _timeProvider,
+                new FakeSrsAlgorithmSettingsProvider()
             );
 
             _service = new LearningSessionService(
@@ -220,6 +221,8 @@ namespace WordSoul.IntegrationTests.Services
                 .Should().Be(InitialRecallGradingPolicy.Version);
             history.GradeReason
                 .Should().Be(ReviewGradeReason.FastUnaidedRecall);
+            history.SrsPolicyVersion.Should().Be(
+                SrsAlgorithmSettings.Default.PolicyVersion);
             history.ResponseTimeSeconds.Should().Be(2);
             history.HintCount.Should().Be(0);
 
@@ -268,6 +271,8 @@ namespace WordSoul.IntegrationTests.Services
                 .Should().Be(InitialRecallGradingPolicy.Version);
             outcomeAfterInitial.GradeReason
                 .Should().Be(ReviewGradeReason.FailedInitialRecall);
+            outcomeAfterInitial.SrsPolicyVersion.Should().Be(
+                SrsAlgorithmSettings.Default.PolicyVersion);
 
             var progressAfterInitial = await _context.UserVocabularyProgresses
                 .AsNoTracking()

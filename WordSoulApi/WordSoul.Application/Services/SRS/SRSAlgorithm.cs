@@ -13,11 +13,6 @@ namespace WordSoul.Application.Services.SRS
     /// </summary>
     public class SRSAlgorithm
     {
-        // Constants
-        private const double MIN_EASE_FACTOR = 1.3;
-        private const double DEFAULT_EASE_FACTOR = 2.5;
-        public const double MAX_EASE_FACTOR = 4.0;
-
         /// <summary>
         /// Calculate next review parameters based on SM-2
         /// </summary>
@@ -31,16 +26,22 @@ namespace WordSoul.Application.Services.SRS
             double currentEF,
             int currentInterval,
             int currentRepetition,
-            DateTime? referenceTime = null)
+            DateTime? referenceTime = null,
+            SrsAlgorithmSettings? settings = null)
         {
             // Validate input
             if (grade < 0 || grade > 5)
                 throw new ArgumentException("Grade must be 0-5", nameof(grade));
 
+            var policy = settings ?? SrsAlgorithmSettings.Default;
+            policy.Validate();
             var result = new SRSResult();
 
             // Step 1: Calculate new Easiness Factor
-            result.NewEaseFactor = CalculateNewEaseFactor(grade, currentEF);
+            result.NewEaseFactor = CalculateNewEaseFactor(
+                grade,
+                currentEF,
+                policy);
 
             // Step 2: Update Repetition count
             if (grade >= 3)  // Passed (Good or better)
@@ -56,7 +57,8 @@ namespace WordSoul.Application.Services.SRS
             result.NewInterval = CalculateNewInterval(
                 result.NewRepetition,
                 currentInterval,
-                result.NewEaseFactor
+                result.NewEaseFactor,
+                policy
             );
 
             // Step 4: Calculate next review date
@@ -66,7 +68,8 @@ namespace WordSoul.Application.Services.SRS
             // Step 5: Determine memory state
             result.MemoryState = DetermineMemoryState(
                 result.NewRepetition,
-                result.NewInterval
+                result.NewInterval,
+                policy
             );
 
             return result;
@@ -76,20 +79,29 @@ namespace WordSoul.Application.Services.SRS
         /// SM-2 Easiness Factor calculation
         /// EF' = EF + (0.1 - (5-q) * (0.08 + (5-q) * 0.02))
         /// </summary>
-        private double CalculateNewEaseFactor(int grade, double currentEF)
+        private static double CalculateNewEaseFactor(
+            int grade,
+            double currentEF,
+            SrsAlgorithmSettings settings)
         {
             // SM-2 formula
             double change = 0.1 - (5 - grade) * (0.08 + (5 - grade) * 0.02);
             double newEF = currentEF + change;
 
             // Clamp between min and max
-            return Math.Max(MIN_EASE_FACTOR, Math.Min(MAX_EASE_FACTOR, newEF));
+            return Math.Max(
+                settings.MinEaseFactor,
+                Math.Min(settings.MaxEaseFactor, newEF));
         }
 
         /// <summary>
         /// SM-2 Interval calculation
         /// </summary>
-        private int CalculateNewInterval(int repetition, int currentInterval, double easeFactor)
+        private static int CalculateNewInterval(
+            int repetition,
+            int currentInterval,
+            double easeFactor,
+            SrsAlgorithmSettings settings)
         {
             switch (repetition)
             {
@@ -97,10 +109,10 @@ namespace WordSoul.Application.Services.SRS
                     return 0;  // Review immediately (same day or next session)
 
                 case 1:
-                    return 1;  // Review after 1 day
+                    return settings.FirstIntervalDays;
 
                 case 2:
-                    return 6;  // Review after 6 days
+                    return settings.SecondIntervalDays;
 
                 default:
                     // I(n) = I(n-1) * EF
@@ -111,7 +123,10 @@ namespace WordSoul.Application.Services.SRS
         /// <summary>
         /// Determine memory state based on repetitions and interval
         /// </summary>
-        private string DetermineMemoryState(int repetition, int interval)
+        private static string DetermineMemoryState(
+            int repetition,
+            int interval,
+            SrsAlgorithmSettings settings)
         {
             if (repetition == 0)
                 return "Relearning";  // Failed → need to relearn
@@ -119,7 +134,7 @@ namespace WordSoul.Application.Services.SRS
             if (repetition <= 2)
                 return "Learning";  // Just started
 
-            if (interval >= 21)
+            if (interval >= settings.MasteredIntervalDays)
                 return "Mastered";  // 3+ weeks → long-term memory
 
             return "Review";  // In progress
@@ -132,24 +147,35 @@ namespace WordSoul.Application.Services.SRS
         public decimal CalculateRetentionScore(
             int correctCount,
             int wrongCount,
-            int repetition)
+            int repetition,
+            SrsAlgorithmSettings? settings = null)
         {
             if (correctCount + wrongCount == 0)
                 return 0;
+
+            var policy = settings ?? SrsAlgorithmSettings.Default;
+            policy.Validate();
 
             // Base accuracy (0-100)
             decimal accuracy = (decimal)correctCount / (correctCount + wrongCount) * 100;
 
             // Bonus for consecutive correct recalls (max +20)
-            decimal repetitionBonus = Math.Min(repetition * 2, 20);
+            decimal repetitionBonus = Math.Min(
+                repetition * policy.RetentionBonusPerRepetition,
+                policy.RetentionBonusMaximum);
 
             // Combined score (capped at 100)
             return Math.Min(accuracy + repetitionBonus, 100);
         }
 
-        public string GetMemoryState(int repetition, int interval)
+        public string GetMemoryState(
+            int repetition,
+            int interval,
+            SrsAlgorithmSettings? settings = null)
         {
-            return DetermineMemoryState(repetition, interval);
+            var policy = settings ?? SrsAlgorithmSettings.Default;
+            policy.Validate();
+            return DetermineMemoryState(repetition, interval, policy);
         }
     }
 

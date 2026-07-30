@@ -4,6 +4,7 @@ using Moq;
 using WordSoul.Application.Common;
 using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Repositories;
+using WordSoul.Application.Interfaces.Services;
 using WordSoul.Application.Services.SRS;
 using WordSoul.Domain.Entities;
 
@@ -32,7 +33,9 @@ namespace WordSoul.Tests.Services.SRS
             SRSService service,
             Mock<IUnitOfWork> uowMock,
             Mock<IUserVocabularyProgressRepository> progressRepoMock)
-            CreateService(DateTime? now = null)
+            CreateService(
+                DateTime? now = null,
+                SrsAlgorithmSettings? settings = null)
         {
             var uowMock = new Mock<IUnitOfWork>();
             var progressRepoMock = new Mock<IUserVocabularyProgressRepository>();
@@ -50,9 +53,18 @@ namespace WordSoul.Tests.Services.SRS
             var algorithm = new SRSAlgorithm();
             var logger = new Mock<ILogger<SRSService>>();
             var timeProvider = new FixedTime(now ?? FakeNow);
+            var settingsProvider = new Mock<ISrsAlgorithmSettingsProvider>();
+            settingsProvider
+                .Setup(provider => provider.GetSettingsAsync(
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(settings ?? SrsAlgorithmSettings.Default);
 
             var service = new SRSService(
-                uowMock.Object, algorithm, logger.Object, timeProvider);
+                uowMock.Object,
+                algorithm,
+                logger.Object,
+                timeProvider,
+                settingsProvider.Object);
 
             return (service, uowMock, progressRepoMock);
         }
@@ -177,6 +189,31 @@ namespace WordSoul.Tests.Services.SRS
             progress.CorrectAttempt.Should().Be(7);
             progress.CorrectCount.Should().Be(12);
             progress.WrongCount.Should().Be(4);
+        }
+
+        [Fact]
+        public async Task UpdateAfterReviewAsync_UsesConfiguredPolicyAndReturnsVersion()
+        {
+            var settings = SrsAlgorithmSettings.Default with
+            {
+                PolicyVersion = 7,
+                FirstIntervalDays = 3
+            };
+            var (service, _, progressRepoMock) = CreateService(
+                settings: settings);
+            var progress = MakeProgress(interval: 0, rep: 0);
+            progressRepoMock
+                .Setup(r => r.GetUserVocabularyProgressAsync(1, 1, default))
+                .ReturnsAsync(progress);
+
+            var result = await service.UpdateAfterReviewAsync(
+                1,
+                1,
+                grade: 5);
+
+            result.PolicyVersion.Should().Be(7);
+            result.NewInterval.Should().Be(3);
+            progress.Interval.Should().Be(3);
         }
 
         [Fact]

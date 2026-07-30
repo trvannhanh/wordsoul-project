@@ -232,6 +232,9 @@ builder.Services.AddScoped<IUserAchievementService, UserAchievementService>();
 
 builder.Services.AddScoped<IPetBuffService, PetBuffService>();
 builder.Services.AddScoped<ISystemConfigurationService, SystemConfigurationService>();
+builder.Services.AddScoped<
+    ISrsAlgorithmSettingsProvider,
+    SrsAlgorithmSettingsProvider>();
 builder.Services.AddScoped<IEmailService, SendGridEmailService>();
 builder.Services.AddScoped<IFcmService, FcmService>();
 

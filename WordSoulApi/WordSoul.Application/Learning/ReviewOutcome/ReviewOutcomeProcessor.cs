@@ -52,6 +52,7 @@ public sealed class ReviewOutcomeProcessor(
             Grade = snapshot.Grade,
             GradingPolicyVersion = snapshot.GradingPolicyVersion,
             GradeReason = snapshot.GradeReason,
+            SrsPolicyVersion = srsResult.PolicyVersion,
             EaseFactorBefore = srsResult.OldEaseFactor,
             EaseFactorAfter = srsResult.NewEaseFactor,
             IntervalBefore = srsResult.OldInterval,
