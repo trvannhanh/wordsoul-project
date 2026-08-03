@@ -1,0 +1,9 @@
+{
+  "title": "Vocadex Collection",
+  "search_placeholder": "Search pets...",
+  "level": "Level {{level}}",
+  "exp": "EXP: {{current}}/{{max}}",
+  "active_pet": "Active Pet",
+  "evolve": "Evolve",
+  "stats": "Stats"
+}

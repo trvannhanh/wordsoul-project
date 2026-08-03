@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../hooks/Auth/useAuth";
 import { extractApiError, type ValidationErrors } from "../../shared/errors";
+import { getLocalizedErrorMessage } from "../../utils/errorMapper";
 
 const STARTER_NAMES: Record<string, string> = {
   '1': 'Bulbasaur 🌿',
@@ -10,6 +12,7 @@ const STARTER_NAMES: Record<string, string> = {
 };
 
 const Register: React.FC = () => {
+  const { t } = useTranslation(['auth', 'common']);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,7 +38,7 @@ const Register: React.FC = () => {
       navigate("/home");
     } catch (err: unknown) {
       const appError = extractApiError(err);
-      setError(appError.message);
+      setError(getLocalizedErrorMessage(err));
       setFieldErrors(appError.fieldErrors ?? {});
     } finally {
       setIsLoading(false);
@@ -64,7 +67,7 @@ const Register: React.FC = () => {
           )}
 
           <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
-            Đăng ký
+            {t('auth:register.title')}
           </h2>
           {error && (
             <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
@@ -75,13 +78,13 @@ const Register: React.FC = () => {
                 className="block text-sm font-medium text-gray-700 mb-2"
                 htmlFor="username"
               >
-                Tên đăng nhập
+                {t('auth:register.username')}
               </label>
               <input
                 className="border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 id="username"
                 type="text"
-                placeholder="Tên đăng nhập"
+                placeholder={t('auth:register.username')}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 disabled={isLoading}
@@ -96,13 +99,13 @@ const Register: React.FC = () => {
                 className="block text-sm font-medium text-gray-700 mb-2"
                 htmlFor="email"
               >
-                Email
+                {t('auth:register.email')}
               </label>
               <input
                 className="border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 id="email"
                 type="email"
-                placeholder="Email"
+                placeholder={t('auth:register.email')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
@@ -117,13 +120,13 @@ const Register: React.FC = () => {
                 className="block text-sm font-medium text-gray-700 mb-2"
                 htmlFor="password"
               >
-                Mật khẩu
+                {t('auth:register.password')}
               </label>
               <input
                 className="border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 id="password"
                 type="password"
-                placeholder="Mật khẩu"
+                placeholder={t('auth:register.password')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
@@ -138,13 +141,13 @@ const Register: React.FC = () => {
               type="submit"
               disabled={isLoading}
             >
-              {isLoading ? "Đang đăng ký..." : "Đăng ký"}
+              {isLoading ? t('common:buttons.loading') : t('auth:register.submit')}
             </button>
           </form>
           <p className="text-center mt-4 text-sm text-gray-600">
-            Đã có tài khoản?{" "}
+            {t('auth:register.already_have_account')}{" "}
             <Link to="/login" className="text-blue-500 hover:underline">
-              Đăng nhập
+              {t('auth:register.login_now')}
             </Link>
           </p>
         </div>

@@ -1,0 +1,9 @@
+{
+  "title": "Bộ sưu tập Vocadex",
+  "search_placeholder": "Tìm linh thú...",
+  "level": "Cấp {{level}}",
+  "exp": "EXP: {{current}}/{{max}}",
+  "active_pet": "Linh thú đang chọn",
+  "evolve": "Tiến hóa",
+  "stats": "Chỉ số"
+}

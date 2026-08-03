@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../hooks/Auth/useAuth';
 import { fetchPetDetailById } from '../../../services/pet';
 import { typeBackgrounds, rarityBorders, type PetDetailDto } from '../../../types/PetDto';
 
 const ActivePetWidget: React.FC = () => {
+  const { t } = useTranslation(['pets', 'common']);
   const { user } = useAuth();
   const [pet, setPet] = useState<PetDetailDto | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -37,7 +39,7 @@ const ActivePetWidget: React.FC = () => {
   if (loading) {
     return (
       <div className="bg-black/60 p-5 rounded-xl border-2 border-yellow-400 min-h-[160px] animate-pulse flex flex-col justify-center items-center">
-        <span className="font-pixel text-xs text-yellow-300">Đang tải đồng hành...</span>
+        <span className="font-pixel text-xs text-yellow-300">{t('common:buttons.loading')}</span>
       </div>
     );
   }
@@ -57,7 +59,7 @@ const ActivePetWidget: React.FC = () => {
             className="w-12 h-12 object-contain pixelated grayscale"
           />
         </div>
-        <h3 className="font-pixel text-yellow-500 text-sm mb-1">CHƯA CÓ BẠN ĐỒNG HÀNH</h3>
+        <h3 className="font-pixel text-yellow-500 text-sm mb-1">{t('pets:active_pet').toUpperCase()}</h3>
         <p className="font-pixel text-[10px] text-gray-400 mb-4 leading-relaxed">
           Kích hoạt một Vocamon làm bạn đồng hành để cùng nhận XP khi học tập!
         </p>
@@ -67,7 +69,7 @@ const ActivePetWidget: React.FC = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            CHỌN VOCAMON ➝
+            {t('pets:search_placeholder')} ➝
           </motion.button>
         </Link>
       </motion.div>

@@ -1,0 +1,33 @@
+{
+  "nav": {
+    "vocabulary_sets": "Bộ từ vựng",
+    "vocadex": "Vocadex",
+    "gym": "Chinh phục",
+    "pvp": "Đấu trường",
+    "community": "Cộng đồng"
+  },
+  "user": {
+    "login": "Đăng nhập",
+    "logout": "Đăng xuất",
+    "profile": "Trang cá nhân"
+  },
+  "notifications": {
+    "title": "Thông báo",
+    "mark_all_read": "Đánh dấu tất cả đã đọc",
+    "mark_read": "Đánh dấu đã đọc",
+    "view_now": "Xem ngay",
+    "delete": "Xóa",
+    "no_notifications": "Không có thông báo",
+    "unread_count_one": "Bạn có {{count}} thông báo mới",
+    "unread_count_other": "Bạn có {{count}} thông báo mới"
+  },
+  "theme": {
+    "light": "Chế độ sáng",
+    "dark": "Chế độ tối"
+  },
+  "language": {
+    "vi": "Tiếng Việt",
+    "en": "English",
+    "switch": "Đổi ngôn ngữ"
+  }
+}

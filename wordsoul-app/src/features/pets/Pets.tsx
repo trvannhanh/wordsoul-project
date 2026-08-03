@@ -1,12 +1,15 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useDebounce } from 'use-debounce';
+import { useTranslation } from 'react-i18next';
 import { fetchPets } from '../../services/pet';
 import PetCard from '../../shared/components/PetCard/PetCard';
 import type { PetDto } from '../../types/PetDto';
 
 const rarityOptions = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
 const typeOptions = ['Normal', 'Fire', 'Water', 'Electric', 'Grass', 'Ice', 'Fighting', 'Poison', 'Ground', 'Flying', 'Psychic', 'Bug', 'Rock', 'Ghost', 'Dragon', 'Dark', 'Steel', 'Fairy'];
+
 const Pets: React.FC = () => {
+  const { t } = useTranslation(['pets', 'common']);
   const [pets, setPets] = useState<PetDto[]>([]);
   const [searchName, setSearchName] = useState<string>('');
   const [debouncedSearchName] = useDebounce(searchName, 500);
@@ -50,14 +53,14 @@ const Pets: React.FC = () => {
       setPets((prev) => (reset ? data : [...prev, ...data]));
       setHasMore(data.length === 20);
     } catch {
-      setError('Error loading pets');
+      setError(t('common:errors.general'));
     } finally {
       setIsSearching(false);
       setLoading(false);
     }
-  }, [debouncedSearchName, rarityFilter, typeFilter, ownedOnly]);
+  }, [debouncedSearchName, rarityFilter, typeFilter, ownedOnly, t]);
 
-  // Reset danh sách khi thay đổi bộ lọc
+  // Reset list when filters change
   useEffect(() => {
     setPets([]);
     setPageNumber(1);
@@ -65,27 +68,25 @@ const Pets: React.FC = () => {
     setLoading(true);
   }, [debouncedSearchName, rarityFilter, typeFilter, ownedOnly]);
 
-  // Tải dữ liệu khi bộ lọc hoặc trang thay đổi
+  // Fetch data on page/filter change
   useEffect(() => {
     loadPets(pageNumber, pageNumber === 1);
   }, [pageNumber, loadPets]);
 
-  // Theo dõi cuộn để hiển thị nút Back to Top
   useEffect(() => {
     const handleScroll = () => {
-      setShowBackToTop(window.scrollY > 300); // Hiển thị nút khi cuộn xuống > 300px
+      setShowBackToTop(window.scrollY > 300);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Hàm cuộn lên đầu trang
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   if (loading && pageNumber === 1) {
-    return <div className="text-center py-8">Loading...</div>;
+    return <div className="text-center py-8">{t('common:buttons.loading')}</div>;
   }
 
   if (error) {
@@ -101,7 +102,7 @@ const Pets: React.FC = () => {
               type="text"
               value={searchName}
               onChange={(e) => setSearchName(e.target.value)}
-              placeholder="Tìm kiếm pet theo tên..."
+              placeholder={t('pets:search_placeholder')}
               className="w-full p-2 border background-color rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {isSearching && (
@@ -147,9 +148,9 @@ const Pets: React.FC = () => {
               onChange={(e) => setRarityFilter(e.target.value)}
               className="p-2 border rounded-md w-full background-color custom-cursor"
             >
-              <option value="" >Chọn Độ Hiếm</option>
+              <option value="">Chọn Độ Hiếm</option>
               {rarityOptions.map((rarity) => (
-                <option key={rarity} value={rarity} >
+                <option key={rarity} value={rarity}>
                   {rarity}
                 </option>
               ))}
@@ -206,7 +207,7 @@ const Pets: React.FC = () => {
           <div className="text-center py-4 text-gray-400">Không còn thú nào để tải thêm</div>
         )}
 
-        {/* Nút Back to Top (chỉ hiển thị trên mobile) */}
+        {/* Back to Top button */}
         {showBackToTop && (
           <button
             onClick={scrollToTop}

@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../hooks/Auth/useAuth";
 import { BASE_URL } from "../../services/api";
-import { extractApiError } from "../../shared/errors";
+import { getLocalizedErrorMessage } from "../../utils/errorMapper";
 
 /** Icon Google SVG (official colors) */
 const GoogleIcon: React.FC = () => (
@@ -16,6 +17,7 @@ const GoogleIcon: React.FC = () => (
 );
 
 const Login: React.FC = () => {
+  const { t } = useTranslation(['auth', 'common']);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +37,7 @@ const Login: React.FC = () => {
       await login(username, password);
       navigate("/home");
     } catch (err: unknown) {
-      setError(extractApiError(err).message);
+      setError(getLocalizedErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
@@ -57,7 +59,7 @@ const Login: React.FC = () => {
       <div className="w-2/3 h-2/3 bg-[url('https://res.cloudinary.com/dqpkxxzaf/image/upload/v1756565537/sky-stars_xnmjpc.png')] bg-cover bg-center rounded-2xl flex items-center justify-center">
         <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
           <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
-            Đăng nhập
+            {t('auth:login.title')}
           </h2>
 
           {/* Lỗi Google OAuth */}
@@ -77,13 +79,13 @@ const Login: React.FC = () => {
                 className="block text-sm font-medium text-gray-700 mb-2"
                 htmlFor="username"
               >
-                Tên đăng nhập
+                {t('auth:register.username')}
               </label>
               <input
                 className="border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 id="username"
                 type="text"
-                placeholder="Tên đăng nhập"
+                placeholder={t('auth:register.username')}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 disabled={isLoading}
@@ -95,13 +97,13 @@ const Login: React.FC = () => {
                 className="block text-sm font-medium text-gray-700 mb-2"
                 htmlFor="password"
               >
-                Mật khẩu
+                {t('auth:login.password')}
               </label>
               <input
                 className="border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 id="password"
                 type="password"
-                placeholder="Mật khẩu"
+                placeholder={t('auth:login.password')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
@@ -114,14 +116,14 @@ const Login: React.FC = () => {
               id="login-submit-btn"
               disabled={isLoading}
             >
-              {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
+              {isLoading ? t('common:buttons.loading') : t('auth:login.submit')}
             </button>
           </form>
 
           {/* Divider */}
           <div className="flex items-center my-4 gap-3">
             <div className="flex-1 h-px bg-gray-200" />
-            <span className="text-xs text-gray-400 whitespace-nowrap">hoặc tiếp tục với</span>
+            <span className="text-xs text-gray-400 whitespace-nowrap">{t('auth:login.google_login')}</span>
             <div className="flex-1 h-px bg-gray-200" />
           </div>
 
@@ -133,13 +135,13 @@ const Login: React.FC = () => {
             className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded py-2 px-4 text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-400 active:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150 shadow-sm"
           >
             <GoogleIcon />
-            <span>Đăng nhập bằng Google</span>
+            <span>{t('auth:login.google_login')}</span>
           </button>
 
           <p className="text-center mt-4 text-sm text-gray-600">
-            Chưa có tài khoản?{" "}
+            {t('auth:login.no_account')}{" "}
             <Link to="/register" className="text-blue-500 hover:underline">
-              Đăng ký
+              {t('auth:login.register_now')}
             </Link>
           </p>
         </div>
