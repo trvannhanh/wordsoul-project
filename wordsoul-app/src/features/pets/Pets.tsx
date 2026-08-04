@@ -60,7 +60,6 @@ const Pets: React.FC = () => {
     }
   }, [debouncedSearchName, rarityFilter, typeFilter, ownedOnly, t]);
 
-  // Reset list when filters change
   useEffect(() => {
     setPets([]);
     setPageNumber(1);
@@ -68,7 +67,6 @@ const Pets: React.FC = () => {
     setLoading(true);
   }, [debouncedSearchName, rarityFilter, typeFilter, ownedOnly]);
 
-  // Fetch data on page/filter change
   useEffect(() => {
     loadPets(pageNumber, pageNumber === 1);
   }, [pageNumber, loadPets]);
@@ -138,7 +136,7 @@ const Pets: React.FC = () => {
                   className={`dot absolute w-6 h-6 bg-white rounded-full shadow -left-1 -top-1 transition ${ownedOnly ? 'transform translate-x-full' : ''}`}
                 ></div>
               </div>
-              <span className="ml-2 text-color ">Chỉ hiển thị pet đã sở hữu</span>
+              <span className="ml-2 text-color ">{t('pets:filter_owned_only')}</span>
             </label>
           </div>
 
@@ -148,10 +146,10 @@ const Pets: React.FC = () => {
               onChange={(e) => setRarityFilter(e.target.value)}
               className="p-2 border rounded-md w-full background-color custom-cursor"
             >
-              <option value="">Chọn Độ Hiếm</option>
+              <option value="">{t('pets:select_rarity_placeholder')}</option>
               {rarityOptions.map((rarity) => (
                 <option key={rarity} value={rarity}>
-                  {rarity}
+                  {t(`pets:rarity.${rarity}`, rarity)}
                 </option>
               ))}
             </select>
@@ -163,10 +161,10 @@ const Pets: React.FC = () => {
               onChange={(e) => setTypeFilter(e.target.value)}
               className="p-2 border rounded-md w-full background-color custom-cursor"
             >
-              <option value="">Chọn Loại</option>
+              <option value="">{t('pets:select_type_placeholder')}</option>
               {typeOptions.map((type) => (
                 <option key={type} value={type}>
-                  {type}
+                  {t(`pets:type.${type}`, type)}
                 </option>
               ))}
             </select>
@@ -204,7 +202,7 @@ const Pets: React.FC = () => {
         )}
 
         {!hasMore && pets.length > 0 && (
-          <div className="text-center py-4 text-gray-400">Không còn thú nào để tải thêm</div>
+          <div className="text-center py-4 text-gray-400">{t('pets:no_more_pets')}</div>
         )}
 
         {/* Back to Top button */}

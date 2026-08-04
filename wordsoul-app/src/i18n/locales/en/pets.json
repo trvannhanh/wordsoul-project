@@ -1,9 +1,45 @@
 {
   "title": "Vocadex Collection",
-  "search_placeholder": "Search pets...",
+  "search_placeholder": "Search Vocamon by name...",
+  "filter_owned_only": "Show owned Vocamon only",
+  "select_rarity_placeholder": "Select Rarity",
+  "select_type_placeholder": "Select Type",
+  "no_more_pets": "No more Vocamon to load",
   "level": "Level {{level}}",
   "exp": "EXP: {{current}}/{{max}}",
-  "active_pet": "Active Pet",
+  "active_pet": "Companion Vocamon",
+  "no_active_pet": "NO COMPANION SELECTED",
+  "no_active_pet_desc": "Set a Vocamon as your companion to gain XP while learning!",
+  "select_pet_btn": "SELECT VOCAMON ➝",
+  "detail_btn": "DETAILS ➝",
   "evolve": "Evolve",
-  "stats": "Stats"
+  "stats": "Stats",
+  "skills": "Skills",
+  "rarity": {
+    "Common": "Common",
+    "Uncommon": "Uncommon",
+    "Rare": "Rare",
+    "Epic": "Epic",
+    "Legendary": "Legendary"
+  },
+  "type": {
+    "Normal": "Normal",
+    "Fire": "Fire",
+    "Water": "Water",
+    "Electric": "Electric",
+    "Grass": "Grass",
+    "Ice": "Ice",
+    "Fighting": "Fighting",
+    "Poison": "Poison",
+    "Ground": "Ground",
+    "Flying": "Flying",
+    "Psychic": "Psychic",
+    "Bug": "Bug",
+    "Rock": "Rock",
+    "Ghost": "Ghost",
+    "Dragon": "Dragon",
+    "Dark": "Dark",
+    "Steel": "Steel",
+    "Fairy": "Fairy"
+  }
 }

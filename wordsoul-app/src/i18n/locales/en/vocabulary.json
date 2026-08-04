@@ -1,10 +1,35 @@
 {
   "title": "Vocabulary Sets",
-  "search_placeholder": "Search vocabulary sets...",
-  "create_set": "Create set",
+  "my_sets": "My Vocabulary Sets",
+  "all_sets": "All",
+  "owned_by_me": "Created by Me",
+  "search_placeholder": "Search vocabulary sets by title...",
+  "create_set": "Create New Set",
   "word_count_one": "{{count}} word",
   "word_count_other": "{{count}} words",
   "learn_now": "Learn now",
   "detail": "Details",
-  "recommended": "Recommended for you"
+  "recommended": "Recommended for you",
+  "no_description": "No description available",
+  "themes": {
+    "DailyLife": "Daily Life",
+    "Nature": "Nature & Animals",
+    "Food": "Food & Cooking",
+    "Weather": "Weather",
+    "Technology": "Technology & Electronics",
+    "Travel": "Geography & Travel",
+    "Health": "Health & Medicine",
+    "Sports": "Sports",
+    "Business": "Business & Finance",
+    "Science": "Science",
+    "Art": "Art & Culture",
+    "Communication": "Communication & Social",
+    "Mystery": "Mystery & Lore",
+    "Dark": "Social Dark Side",
+    "Academic": "Academic & Specialized",
+    "Challenge": "Challenge & Hard Words",
+    "TrapWords": "Tricky Words",
+    "System": "Macro System & Laws",
+    "Custom": "Other"
+  }
 }
