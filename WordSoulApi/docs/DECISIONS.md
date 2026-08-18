@@ -16,6 +16,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-008 | Dữ liệu và bí mật được bảo vệ tại ranh giới | SQL là durable store, Redis là cache/coordination; không ghi secret, token, PII hoặc payload thô |
 | D-009 | Task hậu tố `-A` chỉ hoàn thành phạm vi lát A | Không tự đóng parent hoặc phạm vi hoãn còn lại |
 | D-010 | Giữ năng lực AI sinh nội dung và xử lý giọng nói người dùng tắt trong Giai đoạn A/B | Không mở endpoint/UI/job/provider traffic hoặc thu dữ liệu để dùng sau; chỉ thay đổi bằng quyết định mới sau khi REL-01/REL-03 và các cổng liên quan đạt |
+| D-011 | Đóng băng AP và chuẩn bị loại bỏ trong Giai đoạn B | Không cấp, tiêu, điều chỉnh hoặc tạo phụ thuộc AP mới; chỉ giữ lịch sử để phục vụ REL-05/B-G03; xóa số dư phải có kế hoạch dữ liệu, đối soát, truyền thông và rollback |
 
 ## Khi nào cần thêm quyết định
 
