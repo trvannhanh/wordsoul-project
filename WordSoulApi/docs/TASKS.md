@@ -25,7 +25,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | A0-T008 | Điều phối | Ghi nhận CT-03 không dùng payload thô làm bằng chứng hợp lệ | A0-T003 | Hoàn thành | Đầu ra đạt; tự kiểm A-G02, A-G05; REL-02, REL-03 | CT-03 có hiệu lực theo D-001/D-008 sau A0-T003; allowlist và A-G02/G05-L01–L05 đã ánh xạ, task tham chiếu hợp lệ; bằng chứng runtime còn chờ. |
 | A0-T009 | Điều phối | Ghi nhận CT-04 không dùng health giả định để phát hành | Không | Hoàn thành | Đầu ra đạt; tự kiểm A-G04, A-G06; REL-03 | CT-04 có hiệu lực theo D-001; health thật/unknown-degraded và 9 case A-G04/A-G06 đã ánh xạ, task tham chiếu hợp lệ; bằng chứng runtime còn chờ. |
 | A0-T010 | Điều phối | Ghi nhận CT-05 cấm bỏ qua giới hạn lưu lượng | A0-T003 | Hoàn thành | Đầu ra đạt; tự kiểm A-G04; REL-03 | CT-05 có hiệu lực theo D-001 sau A0-T003; trust boundary, G04-R02/R05 và M12-T034/T035 đã ánh xạ; bằng chứng limiter/runtime còn chờ. |
-| A0-T011 | Điều phối | Ghi nhận CT-06 giữ AI/giọng nói tắt trong A/B | A0-T001, A0-T003 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G04, A-G05; REL-01, REL-03 | — |
+| A0-T011 | Điều phối | Ghi nhận CT-06 giữ AI/giọng nói tắt trong A/B | A0-T001, A0-T003 | Hoàn thành | Đầu ra đạt; tự kiểm A-G04, A-G05; REL-01, REL-03 | CT-06/D-010 có hiệu lực sau A0-T001/A0-T003; phạm vi tắt và A-G04/A-G05 đã ánh xạ, task tham chiếu hợp lệ; zero-traffic/runtime còn chờ. |
 | A0-T012 | Điều phối | Ghi nhận CT-07 không mở rộng AP | Không | Chưa bắt đầu | Đầu ra đạt; tự kiểm REL-05; chuẩn bị B-G03 | — |
 | M01-T001 | M01 | Chuẩn hóa từ điển danh tính | Không | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01 | — |
 | M01-T002 | M01 | Xác định vòng đời tài khoản | M01-T001; A0-T001 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01; REL-01 | — |
