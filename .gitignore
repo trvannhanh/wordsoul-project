@@ -104,7 +104,6 @@ Thumbs.db
 ehthumbs.db
 .env
 .env.*
-*.md
 
 # MSBuild Binary and Structured Log
 *.binlog
