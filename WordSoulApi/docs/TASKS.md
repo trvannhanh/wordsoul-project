@@ -20,7 +20,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | A0-T003 | Điều phối | Mở hồ sơ REL-03 bí mật và tích hợp | Không | Hoàn thành | Đầu ra đạt; tự kiểm A-G04–A-G06; REL-03 | Đã mở REL-03 theo D-001/D-008; tự kiểm phạm vi, ranh giới dữ liệu, task tham chiếu và liên kết A-G04–A-G06 đạt; inventory còn mở được giữ rõ. |
 | A0-T004 | Điều phối | Mở hồ sơ REL-04 quyền tài sản | Không | Hoàn thành | Đầu ra đạt; tự kiểm A-G03, A-G05; REL-04 | Đã mở REL-04 theo D-001; tự kiểm phạm vi, ranh giới quyền, task tham chiếu và liên kết A-G03/A-G05 đạt; inventory/kết luận pháp lý còn mở được giữ rõ. |
 | A0-T005 | Điều phối | Mở hồ sơ REL-07 xuất và xóa dữ liệu | A0-T001 | Hoàn thành | Đầu ra đạt; tự kiểm A-G01, A-G02; REL-07 | Đã mở REL-07 theo D-001/D-008 sau A0-T001; tự kiểm phạm vi, dữ liệu an toàn, task tham chiếu và liên kết A-G01/A-G02 đạt; retention/bản đồ dữ liệu còn mở được giữ rõ. |
-| A0-T006 | Điều phối | Ghi nhận CT-01 đóng công khai nội dung chưa duyệt | A0-T004 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G03; REL-04 | — |
+| A0-T006 | Điều phối | Ghi nhận CT-01 đóng công khai nội dung chưa duyệt | A0-T004 | Hoàn thành | Đầu ra đạt; tự kiểm A-G03; REL-04 | CT-01 có hiệu lực theo D-001 sau A0-T004; deny-by-default và 5 case A-G03 đã ánh xạ; bằng chứng runtime/đóng REL-04 còn chờ task sau. |
 | A0-T007 | Điều phối | Ghi nhận CT-02 không tự ghép tài khoản theo email | Không | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01 | — |
 | A0-T008 | Điều phối | Ghi nhận CT-03 không dùng payload thô làm bằng chứng hợp lệ | A0-T003 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02, A-G05; REL-02, REL-03 | — |
 | A0-T009 | Điều phối | Ghi nhận CT-04 không dùng health giả định để phát hành | Không | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G04, A-G06; REL-03 | — |
