@@ -15,7 +15,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 
 | ID | Module | Task | Phụ thuộc | Trạng thái | Hoàn thành khi | Kết quả |
 |---|---|---|---|---|---|---|
-| A0-T001 | Điều phối | Mở hồ sơ REL-01 tuổi và đồng ý | Không | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01; REL-01 | — |
+| A0-T001 | Điều phối | Mở hồ sơ REL-01 tuổi và đồng ý | Không | Hoàn thành | Đầu ra đạt; tự kiểm A-G01; REL-01 | Đã mở REL-01 theo D-001; tự kiểm cấu trúc, phạm vi và liên kết A-G01 đạt; câu hỏi pháp lý/sản phẩm còn mở được giữ rõ. |
 | A0-T002 | Điều phối | Mở hồ sơ REL-02 quyền và audit | Không | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02, A-G06; REL-02 | — |
 | A0-T003 | Điều phối | Mở hồ sơ REL-03 bí mật và tích hợp | Không | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G04–A-G06; REL-03 | — |
 | A0-T004 | Điều phối | Mở hồ sơ REL-04 quyền tài sản | Không | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G03, A-G05; REL-04 | — |
