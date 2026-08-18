@@ -23,7 +23,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | A0-T006 | Điều phối | Ghi nhận CT-01 đóng công khai nội dung chưa duyệt | A0-T004 | Hoàn thành | Đầu ra đạt; tự kiểm A-G03; REL-04 | CT-01 có hiệu lực theo D-001 sau A0-T004; deny-by-default và 5 case A-G03 đã ánh xạ; bằng chứng runtime/đóng REL-04 còn chờ task sau. |
 | A0-T007 | Điều phối | Ghi nhận CT-02 không tự ghép tài khoản theo email | Không | Hoàn thành | Đầu ra đạt; tự kiểm A-G01 | CT-02 có hiệu lực theo D-001/D-008; entry point và G01-C02/C05 đã ánh xạ, task tham chiếu hợp lệ; bằng chứng runtime A-G01 còn chờ task sau. |
 | A0-T008 | Điều phối | Ghi nhận CT-03 không dùng payload thô làm bằng chứng hợp lệ | A0-T003 | Hoàn thành | Đầu ra đạt; tự kiểm A-G02, A-G05; REL-02, REL-03 | CT-03 có hiệu lực theo D-001/D-008 sau A0-T003; allowlist và A-G02/G05-L01–L05 đã ánh xạ, task tham chiếu hợp lệ; bằng chứng runtime còn chờ. |
-| A0-T009 | Điều phối | Ghi nhận CT-04 không dùng health giả định để phát hành | Không | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G04, A-G06; REL-03 | — |
+| A0-T009 | Điều phối | Ghi nhận CT-04 không dùng health giả định để phát hành | Không | Hoàn thành | Đầu ra đạt; tự kiểm A-G04, A-G06; REL-03 | CT-04 có hiệu lực theo D-001; health thật/unknown-degraded và 9 case A-G04/A-G06 đã ánh xạ, task tham chiếu hợp lệ; bằng chứng runtime còn chờ. |
 | A0-T010 | Điều phối | Ghi nhận CT-05 cấm bỏ qua giới hạn lưu lượng | A0-T003 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G04; REL-03 | — |
 | A0-T011 | Điều phối | Ghi nhận CT-06 giữ AI/giọng nói tắt trong A/B | A0-T001, A0-T003 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G04, A-G05; REL-01, REL-03 | — |
 | A0-T012 | Điều phối | Ghi nhận CT-07 không mở rộng AP | Không | Chưa bắt đầu | Đầu ra đạt; tự kiểm REL-05; chuẩn bị B-G03 | — |
