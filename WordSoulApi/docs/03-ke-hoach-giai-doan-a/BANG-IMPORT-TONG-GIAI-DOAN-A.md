@@ -1,5 +1,7 @@
 # Bảng import tổng Giai đoạn A
 
+> Tham chiếu lịch sử về size, điểm và baseline. Không cập nhật trạng thái tại đây; dùng [TASKS.md](../TASKS.md).
+
 ## 1. Phạm vi
 
 - 145 task nguồn thuộc A-WP01–A-WP04.

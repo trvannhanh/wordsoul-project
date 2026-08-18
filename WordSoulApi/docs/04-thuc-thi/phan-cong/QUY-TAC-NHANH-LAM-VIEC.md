@@ -1,5 +1,7 @@
 # Quy tắc làm việc solo
 
+> Tài liệu lịch sử. Quy trình hiện hành nằm trong [PROJECT.md](../../PROJECT.md) và [TASKS.md](../../TASKS.md).
+
 ## Nơi làm việc duy nhất
 
 | Người thực hiện | Repository | Phạm vi |

@@ -1,71 +1,42 @@
 ---
 name: wordsoul-doc-workflow
-description: Read, update, and track WordSoul business documentation under the one-person workflow. Use for files under WordSoulApi/docs, task status, module backlog/decisions, optional evidence, REL/CT, gates, or execution planning. Do not use for source-code implementation unless separately requested.
+description: Execute and track WordSoul tasks with the simplified one-person documentation workflow. Use for task status, project decisions, optional evidence, REL/CT, gates, or files under WordSoulApi/docs. Do not use for source-code implementation unless separately requested.
 ---
 
-# WordSoul documentation workflow — solo
+# WordSoul workflow — one person
 
-## Establish context
+## Read only what is needed
 
-1. Read `../../../docs/README.md`.
-2. Read `../../../docs/04-thuc-thi/phan-cong/QUYET-DINH-THUC-THI-SOLO.md` and `README.md`.
-3. Confirm the Task ID exists with owner `WSA-7K2` in `../../../docs/03-ke-hoach-giai-doan-a/BANG-IMPORT-TONG-GIAI-DOAN-A.md`.
-4. Read `../../../docs/04-thuc-thi/phan-cong/WSA-7K2/DANH-SACH-TASK.md`.
-5. Read the target module overview, decisions, backlog, analysis and assessment when relevant.
-6. Read only the target slice, REL/CT, gate and direct dependency documents.
+1. Read `../../../docs/PROJECT.md` for boundaries and Definition of Done.
+2. Read `../../../docs/DECISIONS.md` for active decisions.
+3. Find the Task ID in `../../../docs/TASKS.md` and inspect its dependency and completion condition.
+4. Read detailed module, REL/CT or gate documents only when the selected task requires them.
 
-Do not begin from an isolated task row. Reconstruct module, dependency, gate and decision context first.
+The numbered documentation folders are references. Do not update old import tables, personal trackers, handoff registers, slice trackers or work logs.
 
-## Use the one-person model
+## Execute one task or one dependency-linked batch
 
-- `WSA-7K2` owns all 167 tasks / 412 points in Giai đoạn A: M01, M02, M11, M12 and coordination.
-- `WSA-9M4` is archived and must not receive new tasks, status updates or handoffs.
-- Cross-module dependencies stay explicit but do not require handoff records.
-- `WSA-7K2` makes all working decisions, performs the checks, and accepts completion. No separate reviewer, authority, approver, or signature is required.
+1. Preserve unrelated changes in the current `vocamon-project` checkout.
+2. Change the selected row in `TASKS.md` to `Đang thực hiện` when work starts.
+3. Perform only the requested documentation or implementation scope.
+4. Run checks appropriate to the changed boundary.
+5. Put the short check result in `Kết quả`; Git supplies the commit history.
+6. Mark `Hoàn thành` when the output exists and checks pass; otherwise use `Bị chặn` with the real missing input and next action.
 
-## Work in the current checkout
+WSA-7K2 makes decisions, performs checks and accepts completion. No reviewer, authority, signature, handoff or mandatory Evidence ID is required.
 
-Before editing, read `../../../docs/04-thuc-thi/phan-cong/QUY-TAC-NHANH-LAM-VIEC.md` and the WSA-7K2 startup prompt.
+## Keep the record small
 
-- Use the current `vocamon-project` checkout. Do not create or require a dedicated worktree or alias branch.
-- Inspect existing changes before editing; preserve unrelated user work.
-- Do not merge, rebase, push, delete branches or rewrite history without explicit authorization.
-
-## Update sources in order
-
-When a decision or scope changes:
-
-1. Decision/analysis source.
-2. Module backlog and Definition of Done.
-3. Stage/slice plan and master import table.
-4. Unified task list and WSA-7K2 work log.
-5. REL/CT, evidence register and gate only when directly affected.
-
-When only status changes, update the unified task list and work log first, then a shared tracker when one exists. Do not maintain duplicate personal trackers.
-
-## Apply status rules
-
-Use only: `Chưa bắt đầu`, `Đang thực hiện`, `Bị chặn`, `Hoàn thành`.
-
-- Move to `Đang thực hiện` when work actually starts.
-- Move to `Hoàn thành` when the output exists and the executor's selected checks pass.
-- Keep a sliced task's parent open while deferred scope remains.
-- For `Bị chặn`, record the missing data, tool, or real technical dependency and the next action.
-- Waiting for another person's approval is never a blocker.
-
-## Keep records minimal
-
-- Use one task list and one work log.
-- Group related work in batches, but record each task whose status changes.
-- Evidence IDs are optional and used only when durable traceability is useful.
-- Do not create new BG handoffs; represent cross-module needs as task dependencies or blockers.
-- Never store secrets, tokens, personal data or raw payloads.
+- `TASKS.md` is the only status tracker; Git is the work log.
+- `DECISIONS.md` changes only for product, architecture, data, security, workflow or release decisions.
+- `PROJECT.md` changes only when project boundaries, architecture, standards or common verification change.
+- Use only `Chưa bắt đầu`, `Đang thực hiện`, `Bị chặn`, `Hoàn thành`.
+- Keep a `-A` parent open while deferred scope remains.
+- Evidence IDs are optional; never store secrets, tokens, personal data or raw payloads.
 
 ## Validate before finishing
 
-- Confirm the master import and unified list each contain exactly 167 unique Task IDs / 412 points.
-- Confirm every master row has exactly one owner, `WSA-7K2`.
-- Confirm task IDs, dependencies, baseline, parent and gates remain synchronized.
-- Check changed Markdown links and tables.
-- Confirm no source-code file changed during a documentation-only request.
-- Summarize status transitions, checks performed, unresolved blockers and next safe action.
+- Confirm the selected Task ID remains unique and its dependency/completion condition is intact.
+- Check changed links, tables and relevant build/test/lint results.
+- Confirm the diff contains no unintended files or sensitive data.
+- Update only the task row and any genuinely affected project/decision documentation, then commit the coherent batch.

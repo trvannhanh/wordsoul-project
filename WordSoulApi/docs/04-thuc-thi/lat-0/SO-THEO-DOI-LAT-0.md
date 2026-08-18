@@ -1,5 +1,7 @@
 # Sổ theo dõi thực thi Lát 0
 
+> Tracker cũ, chỉ để truy vết. Trạng thái hiện hành nằm trong [TASKS.md](../../TASKS.md).
+
 ## Trạng thái
 
 | Chỉ số | Giá trị |

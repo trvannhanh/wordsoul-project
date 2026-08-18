@@ -1,5 +1,7 @@
 # Khu vực thực thi solo WSA-7K2
 
+> Khu vực lịch sử. Bắt đầu từ [PROJECT.md](../../../PROJECT.md), [DECISIONS.md](../../../DECISIONS.md) và [TASKS.md](../../../TASKS.md).
+
 ## Trách nhiệm
 
 WSA-7K2 là người thực hiện, người quyết định và người tự nghiệm thu duy nhất cho toàn bộ **167 task / 412 điểm** thuộc M01, M02, M11, M12 và điều phối Giai đoạn A.

@@ -1,5 +1,7 @@
 # Thực thi solo Giai đoạn A
 
+> Quy trình này đã được thay bằng [PROJECT.md](../../PROJECT.md), [DECISIONS.md](../../DECISIONS.md) và [TASKS.md](../../TASKS.md). Nội dung dưới đây chỉ để truy vết.
+
 ## Mô hình hiện hành
 
 | Người thực hiện | Phạm vi | Số task | Điểm S/M/L | Khu vực làm việc |

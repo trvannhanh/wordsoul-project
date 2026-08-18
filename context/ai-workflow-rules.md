@@ -2,7 +2,7 @@
 
 ## Approach
 
-Build WordSoul incrementally with one accountable executor, one active branch, and evidence-based verification. These context files provide fast orientation; `WordSoulApi/docs/` remains authoritative for product decisions, module scope, Phase A tasks, REL/CT controls, gates, and evidence. Never invent behavior to fill a gap.
+Build WordSoul incrementally with one accountable executor and one active checkout. `WordSoulApi/docs/PROJECT.md`, `DECISIONS.md`, and `TASKS.md` are the active documentation; numbered folders and these context files are references.
 
 ## Scoping Rules
 
@@ -27,7 +27,7 @@ If a change cannot be explained, tested, and safely reverted as one unit, split 
 
 - Make the smallest explicit product, legal, privacy, security, academic, or release decision needed for the current task and record material tradeoffs.
 - Check `WordSoulApi/docs/02-modules/`, the Phase A import table, relevant slice, and REL/CT first.
-- Record unresolved points under **Open Questions** in `progress-tracker.md` and in the canonical task/decision document when scope is affected.
+- Record project-level unresolved decisions in `DECISIONS.md`; record task blockers directly in `TASKS.md`.
 - Use `Bị chặn` only for missing data, tools, or a real technical dependency; otherwise decide, document, and continue.
 
 ## Protected Files and Data
@@ -43,19 +43,15 @@ Never expose `.env` values, appsettings secrets, Firebase credentials, JWTs, ref
 
 ## Keeping Context in Sync
 
-- Goals/scope → `project-overview.md`.
-- Boundaries, stack, storage, auth, invariants → `architecture.md`.
-- Enforced conventions and verification → `code-standards.md`.
-- Tokens, libraries, layout, typography, interaction → `ui-context.md`.
-- Execution policy → `ai-workflow-rules.md`.
-- Current state, decisions, questions, resume point → `progress-tracker.md`.
-
-Update canonical WordSoul docs first when a change affects business decisions, task scope/status, REL/CT, gates, or evidence.
+- Task state/result → `WordSoulApi/docs/TASKS.md` only.
+- Product/architecture/data/security/workflow decision → `WordSoulApi/docs/DECISIONS.md`.
+- Project boundary, common standards or verification → `WordSoulApi/docs/PROJECT.md`.
+- Update the six context files only when their long-lived reference content actually changes; never mirror per-task status into them.
 
 ## Before Moving to the Next Unit
 
 1. The unit works end to end, including important denial/error/retry paths.
 2. No architecture invariant or active CT/REL is violated.
 3. Relevant tests, lint, type checks, and builds pass; record anything not run.
-4. Canonical task status and `progress-tracker.md` reflect reality; WSA-7K2 may self-accept completion after the selected checks pass.
+4. `TASKS.md` reflects reality; WSA-7K2 may self-accept completion after the selected checks pass.
 5. The diff contains no unrelated files, secrets, personal data, generated output, or accidental API/schema changes.

@@ -1,5 +1,7 @@
 # Nhật ký làm việc WSA-7K2
 
+> Đã ngừng cập nhật. Git là nhật ký hiện hành; trạng thái và kết quả nằm trong [TASKS.md](../../../TASKS.md).
+
 | Thời điểm | Task | Trạng thái cũ → mới | Tóm tắt thay đổi | Bằng chứng/bàn giao | Điểm cần xác nhận |
 |---|---|---|---|---|---|
 | 2026-08-15 | A0-T001 | Chưa bắt đầu → Sẵn sàng | Đối chiếu bảng import: task P0 không có phụ thuộc, hồ sơ REL-01 đã có baseline | Chưa có bằng chứng vận hành | Cần gán chủ trì thực tế và người xác nhận pháp lý/sản phẩm trước khi chuyển sang Đang thực hiện |

@@ -1,5 +1,7 @@
 # Quyết định thực thi solo Giai đoạn A
 
+> Quyết định này được giữ để truy vết. Các quyết định hiện hành đã được hợp nhất tại [DECISIONS.md](../../DECISIONS.md).
+
 ## Quyết định
 
 Từ ngày 2026-08-18, Giai đoạn A được thực hiện bởi một người với bí danh duy nhất `WSA-7K2`.

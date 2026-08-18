@@ -1,5 +1,7 @@
 # Kế hoạch thực hiện solo Giai đoạn A
 
+> Kế hoạch chi tiết cũ, chỉ để tham khảo. Thứ tự và trạng thái hiện hành nằm trong [TASKS.md](../../../TASKS.md).
+
 ## Mục tiêu
 
 Hoàn thành 167 task / 412 điểm bằng một backlog, một nhánh và một nhật ký. Trình tự được quyết định bởi phụ thuộc và cổng, không bởi ranh giới người thực hiện cũ.

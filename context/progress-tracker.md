@@ -1,6 +1,6 @@
 # Progress Tracker
 
-Update this file after every meaningful implementation batch. Canonical task status remains in `WordSoulApi/docs/04-thuc-thi/phan-cong/WSA-7K2/DANH-SACH-TASK.md`.
+This is optional session context, not a task tracker. Update it only when the overall goal, resume point, or project-level state changes. Canonical task status is in `WordSoulApi/docs/TASKS.md`.
 
 ## Current Phase
 
@@ -10,8 +10,7 @@ Update this file after every meaningful implementation batch. Canonical task sta
 
 ## Current Goal
 
-- Establish the six-file context methodology without replacing canonical WordSoul business documentation.
-- Select the next small dependency-correct Phase A unit after this baseline is committed.
+- Execute the next dependency-correct task from `WordSoulApi/docs/TASKS.md`.
 
 ## Completed
 
@@ -19,6 +18,7 @@ Update this file after every meaningful implementation batch. Canonical task sta
 - Removed the dedicated WSA-7K2 worktree; execution now uses the current repository checkout.
 - Prepared initial Phase A drafts for REL-01/REL-02/CT-02, M01 identity/account/data/registration, and M11 administration/configuration/metrics.
 - Created this repository-level context baseline from current manifests, source structure, UI tokens, and execution documents.
+- Reduced active documentation to `PROJECT.md`, `DECISIONS.md`, and `TASKS.md`; Git now serves as the work log.
 
 ## In Progress
 
@@ -27,9 +27,9 @@ Update this file after every meaningful implementation batch. Canonical task sta
 
 ## Next Up
 
-1. Choose one small dependency-correct batch from the unified tracker and move it to `Đang thực hiện`.
+1. Choose one small dependency-correct batch from `WordSoulApi/docs/TASKS.md` and move it to `Đang thực hiện`.
 2. Implement it and run boundary-appropriate verification.
-3. Record useful evidence optionally, then self-accept and mark `Hoàn thành` when checks pass.
+3. Record the short check result in the task row, then self-accept and mark `Hoàn thành` when checks pass.
 
 ## Open Questions
 
