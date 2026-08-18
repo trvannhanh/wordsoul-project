@@ -3,9 +3,10 @@
 | Trường | Nội dung khởi tạo |
 |---|---|
 | Task | A0-T007 |
-| Trạng thái | Bản nháp sẵn sàng — chưa kích hoạt |
-| Chủ trì / xác nhận | Chủ M01 / An toàn hệ thống |
-| Cá nhân thực tế | Chưa gán / Chưa gán |
+| Trạng thái | Có hiệu lực từ 2026-08-18; triển khai kỹ thuật và bằng chứng runtime chờ các task liên quan |
+| Chủ trì / tự xác nhận | WSA-7K2 |
+| Cá nhân thực tế | WSA-7K2 |
+| Phạm vi áp dụng | Mọi entry point đăng ký, đăng nhập ngoài, liên kết/gỡ provider, khôi phục và hỗ trợ thủ công trong Giai đoạn A |
 | Rủi ro kiểm soát | Ghép nhầm hoặc chiếm tài khoản khi danh tính ngoài có thư điện tử trùng |
 
 ## Quy tắc tạm thời
@@ -32,31 +33,32 @@
 | A0-E021 | Ma trận toàn bộ entry point đăng nhập/liên kết/gỡ/hỗ trợ và kiểm tra provider trả email trùng | Không entry point nào tự ghép hoặc tạo quyền dựa riêng vào email | Chưa tạo |
 | A0-E022 | Ca từ chối, xác minh lại, gửi lặp, xung đột và audit bằng dữ liệu giả | Không tạo trùng/chuyển quyền; kết quả trung tính; audit không chứa token/PII thật | Chưa tạo |
 
-Các Evidence ID chỉ được đăng ký khi có kết quả thực tế và reviewer; tài liệu chính sách hoặc ảnh chụp riêng lẻ không đủ.
+Các Evidence ID chỉ được đăng ký khi có kết quả thực tế kiểm tra được; tài liệu chính sách hoặc ảnh chụp riêng lẻ không đủ. Dữ liệu thử phải là dữ liệu giả và bằng chứng không được chứa token/PII thật.
 
 ## Duy trì, kiểm tra và gỡ bỏ
 
 | Mục | Yêu cầu |
 |---|---|
-| Cá nhân duy trì / xác nhận | Chưa gán / Chưa gán |
+| Cá nhân duy trì / tự xác nhận | WSA-7K2 / WSA-7K2 theo D-001 |
 | Bằng chứng định kỳ | Danh sách hành trình đăng nhập/liên kết; kịch bản thư trùng; bằng chứng từ chối và audit |
-| Nhịp kiểm tra | Chưa xác định; người điều phối đặt sau khi gán chủ trì/reviewer |
+| Nhịp kiểm tra | Khi thêm/sửa entry point danh tính; trước A-G01; và sau sự cố ghép/liên kết nghi vấn |
 | Khi vi phạm | Thu hồi phiên liên quan, khóa liên kết nghi vấn, điều tra phạm vi và hỗ trợ khôi phục |
 | Điều kiện gỡ | M01-T014–M01-T015 và M12-T007–M12-T009 đạt |
-| Thẩm quyền gỡ | Chủ M01 và an toàn hệ thống |
+| Thẩm quyền gỡ | WSA-7K2 ghi nhận bằng cập nhật task/quyết định phù hợp sau khi điều kiện gỡ và A-G01 đạt |
 
-## Điều kiện kích hoạt và gỡ
+## Kết quả kích hoạt và điều kiện gỡ
 
-- Chuyển A0-T007 sang `Đang thực hiện` khi có cá nhân duy trì/chủ M01, reviewer an toàn và danh sách entry point ban đầu.
-- Chỉ coi CT-02 có hiệu lực khi mọi entry point đã được thông báo phạm vi cấm và có cách kiểm tra định kỳ.
-- Chỉ chuyển `Chờ xác nhận` khi A0-E021/A0-E022 có artifact thật và được đăng ký.
-- Chỉ gỡ sau khi M01-T014–T015, M12-T007–T009 và ca G01-C02/C05 đạt; chủ M01 và an toàn hệ thống xác nhận.
+- WSA-7K2 là người duy trì và tự nghiệm thu theo D-001; ma trận entry point ban đầu và phạm vi cấm đã được ghi nhận trong hồ sơ.
+- CT-02 có hiệu lực ở mức guardrail dự án cho mọi entry point nêu trên; không diễn giải điều này thành bằng chứng hệ thống hiện tại đã đạt.
+- A0-E021/A0-E022 chỉ được đăng ký khi có artifact runtime thật; G01-C02 và G01-C05 phải chứng minh từ chối an toàn bằng dữ liệu giả.
+- Chỉ gỡ sau khi M01-T014–T015, M12-T007–T009 và G01-C02/C05 đạt, không còn finding nghiêm trọng/rất cao liên quan và WSA-7K2 ghi nhận kết luận tự kiểm.
 
 ## Phụ thuộc và lịch sử
 
-- Đọc trực tiếp đầu ra M12-T006–T010 như phụ thuộc nội bộ; CT-02 chỉ được dùng khi chính sách và entry point đã được reviewer xác nhận.
+- Đọc trực tiếp đầu ra M12-T006–T010 như phụ thuộc nội bộ; CT-02 dùng các artifact này cho tự kiểm runtime, không yêu cầu reviewer độc lập.
 - Finding hiện trạng tự ghép email là nghiêm trọng; kiểm soát chưa được coi là đạt trước khi có bằng chứng runtime/re-test.
 
 | Ngày | Người cập nhật | Thay đổi | Quyết định/bằng chứng |
 |---|---|---|---|
 | 2026-08-15 | WSA-7K2 | Chuẩn bị phạm vi entry point, A0-E021/A0-E022 và tiêu chí kích hoạt/gỡ | Không có bằng chứng runtime; chờ gán người |
+| 2026-08-18 | WSA-7K2 | Kích hoạt CT-02 theo workflow một người; chốt chủ trì, phạm vi, nhịp kiểm tra và tự kiểm G01-C02/C05 | D-001, D-008; chưa có bằng chứng runtime |
