@@ -17,6 +17,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-009 | Task hậu tố `-A` chỉ hoàn thành phạm vi lát A | Không tự đóng parent hoặc phạm vi hoãn còn lại |
 | D-010 | Giữ năng lực AI sinh nội dung và xử lý giọng nói người dùng tắt trong Giai đoạn A/B | Không mở endpoint/UI/job/provider traffic hoặc thu dữ liệu để dùng sau; chỉ thay đổi bằng quyết định mới sau khi REL-01/REL-03 và các cổng liên quan đạt |
 | D-011 | Đóng băng AP và chuẩn bị loại bỏ trong Giai đoạn B | Không cấp, tiêu, điều chỉnh hoặc tạo phụ thuộc AP mới; chỉ giữ lịch sử để phục vụ REL-05/B-G03; xóa số dư phải có kế hoạch dữ liệu, đối soát, truyền thông và rollback |
+| D-012 | Dùng chính sách thông tin bảo mật M01 v1.0 cho đăng nhập trực tiếp | Mật khẩu dài 12–128 ký tự, không trim/cắt, không ép tổ hợp hay đổi định kỳ; chặn giá trị hiện tại/phổ biến/đã lộ; creation/change/reset fail-closed khi không kiểm tra được; bí mật không vào log/audit/support |
 
 ## Khi nào cần thêm quyết định
 

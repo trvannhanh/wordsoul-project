@@ -30,7 +30,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | M01-T001 | M01 | Chuẩn hóa từ điển danh tính | Không | Hoàn thành | Đầu ra đạt; tự kiểm A-G01 | Từ điển M01 v1.0 chốt 30 thuật ngữ, 2 chủ ngữ nghĩa, ranh giới M02/M11/M12 và 6 xung đột; tự kiểm đầu vào A-G01 đạt, case runtime/REL còn chờ. |
 | M01-T002 | M01 | Xác định vòng đời tài khoản | M01-T001; A0-T001 | Hoàn thành | Đầu ra đạt; tự kiểm A-G01; REL-01 | Vòng đời v1.0 chốt 8 trạng thái, 13 chuyển hợp lệ, 6 chuyển cấm, 4 finding chính sách và 6 finding mã có task tiếp nhận; REL-01/A-G01 vẫn mở. |
 | M01-T003 | M01 | Lập bản đồ dữ liệu hồ sơ | M01-T001 | Hoàn thành | Đầu ra đạt; tự kiểm A-G01, A-G05; REL-01, REL-07 | Bản đồ v1.0 chốt 22 nhóm dữ liệu, 5 góc nhìn, 4 biên ngoài, 9 finding mã và 4 finding chính sách có task tiếp nhận; A-G01/A-G05/REL vẫn mở. |
-| M01-T004 | M01 | Chốt chính sách thông tin bảo mật | M01-T001 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01, A-G02; REL-02 | — |
+| M01-T004 | M01 | Chốt chính sách thông tin bảo mật | M01-T001 | Hoàn thành | Đầu ra đạt; tự kiểm A-G01, A-G02; REL-02 | M01-CRED-1.0/D-012 chốt policy 12–128, 7 hành trình, 15 case, 7 finding mã và 4 finding mở có task tiếp nhận; A-G01/A-G02/REL-02 vẫn mở. |
 | M01-T005 | M01 | Chuẩn hóa dữ liệu đăng ký | M01-T003, M01-T004 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01; REL-01 | — |
 | M01-T006 | M01 | Thiết kế xác minh thư điện tử | M01-T002, M01-T005; hợp đồng thư tối thiểu | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01 | — |
 | M01-T007 | M01 | Ghi nhận đồng ý và phiên bản chính sách | M01-T002, M01-T003; A0-T001 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01; REL-01, REL-06 | — |
