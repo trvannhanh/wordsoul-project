@@ -28,7 +28,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | A0-T011 | Điều phối | Ghi nhận CT-06 giữ AI/giọng nói tắt trong A/B | A0-T001, A0-T003 | Hoàn thành | Đầu ra đạt; tự kiểm A-G04, A-G05; REL-01, REL-03 | CT-06/D-010 có hiệu lực sau A0-T001/A0-T003; phạm vi tắt và A-G04/A-G05 đã ánh xạ, task tham chiếu hợp lệ; zero-traffic/runtime còn chờ. |
 | A0-T012 | Điều phối | Ghi nhận CT-07 không mở rộng AP | Không | Hoàn thành | Đầu ra đạt; tự kiểm REL-05; chuẩn bị B-G03 | CT-07/D-011 có hiệu lực; 7 nhóm điểm chạm AP hiện hữu đã kiểm kê và khung REL-05/B-G03 đã chuẩn bị; runtime/chuyển đổi Giai đoạn B còn chờ. |
 | M01-T001 | M01 | Chuẩn hóa từ điển danh tính | Không | Hoàn thành | Đầu ra đạt; tự kiểm A-G01 | Từ điển M01 v1.0 chốt 30 thuật ngữ, 2 chủ ngữ nghĩa, ranh giới M02/M11/M12 và 6 xung đột; tự kiểm đầu vào A-G01 đạt, case runtime/REL còn chờ. |
-| M01-T002 | M01 | Xác định vòng đời tài khoản | M01-T001; A0-T001 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01; REL-01 | — |
+| M01-T002 | M01 | Xác định vòng đời tài khoản | M01-T001; A0-T001 | Hoàn thành | Đầu ra đạt; tự kiểm A-G01; REL-01 | Vòng đời v1.0 chốt 8 trạng thái, 13 chuyển hợp lệ, 6 chuyển cấm, 4 finding chính sách và 6 finding mã có task tiếp nhận; REL-01/A-G01 vẫn mở. |
 | M01-T003 | M01 | Lập bản đồ dữ liệu hồ sơ | M01-T001 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01, A-G05; REL-01, REL-07 | — |
 | M01-T004 | M01 | Chốt chính sách thông tin bảo mật | M01-T001 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01, A-G02; REL-02 | — |
 | M01-T005 | M01 | Chuẩn hóa dữ liệu đăng ký | M01-T003, M01-T004 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01; REL-01 | — |
