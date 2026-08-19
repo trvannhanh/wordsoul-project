@@ -19,6 +19,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-011 | Đóng băng AP và chuẩn bị loại bỏ trong Giai đoạn B | Không cấp, tiêu, điều chỉnh hoặc tạo phụ thuộc AP mới; chỉ giữ lịch sử để phục vụ REL-05/B-G03; xóa số dư phải có kế hoạch dữ liệu, đối soát, truyền thông và rollback |
 | D-012 | Dùng chính sách thông tin bảo mật M01 v1.0 cho đăng nhập trực tiếp | Mật khẩu dài 12–128 ký tự, không trim/cắt, không ép tổ hợp hay đổi định kỳ; chặn giá trị hiện tại/phổ biến/đã lộ; creation/change/reset fail-closed khi không kiểm tra được; bí mật không vào log/audit/support |
 | D-013 | Dùng hợp đồng đăng ký trực tiếp M01-REG-1.0 | Email canonical là định danh đăng nhập; tên hiển thị không duy nhất; request bắt buộc idempotency key giữ tối thiểu 24 giờ; email trùng nhận phản hồi trung tính; tài khoản mới chờ xác minh và không cấp token/tài sản inline |
+| D-014 | Dùng luồng xác minh email M01-VER-1.0 | Intent sống 30 phút, mã Base32 10 ký tự chỉ nhận trong body và tối đa 10 lần thử; resend cách 60 giây, tối đa 5 lần/24 giờ, intent mới thu hồi intent cũ; email adapter idempotent và `accepted` không đồng nghĩa `delivered` |
 
 ## Khi nào cần thêm quyết định
 
