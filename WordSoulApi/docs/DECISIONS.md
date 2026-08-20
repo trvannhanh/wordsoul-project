@@ -84,6 +84,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-076 | Dùng M02-SET-PERMISSIONS-1.0 cho ma trận quyền bộ từ | Phân định bộ từ cá nhân (CreatorId ownership) và bộ từ hệ thống (ContentAdmin governance); SetAuthorizationGuard kiểm tra quyền tối thiểu REL-02; cấm xem/sửa bộ từ cá nhân của người khác (Deny 403); cấm self-approval; soft-archive khi xóa bộ từ hệ thống |
 | D-077 | Dùng M02-SET-LIFECYCLE-1.0 cho thiết kế vòng đời bộ từ | Máy trạng thái 7 bước (Draft -> Submitted -> InReview -> Approved -> Published -> Unpublished -> Archived); điều kiện cứng xuất bản: 100% từ thành phần đạt QualityScore >= 80% & rightsCleared == true (REL-04/CT-01); self-approval guard; emergency recall SLA <= 60s purge Redis cache |
 | D-078 | Dùng M02-SET-CLONE-LINEAGE-1.0 cho thiết kế sao chép và nguồn gốc bộ từ | Cấu trúc cây nguồn gốc (ParentSetId, OriginalSetId, CloneDepth); bảo toàn thông tin tác giả gốc OriginalCreatorId (REL-04); tự động tăng CloneCount +1; lan truyền thông báo cập nhật/thu hồi bản quyền tới bộ từ con |
+| D-079 | Dùng M02-SET-ITEM-MUTATION-1.0 cho chuẩn hóa thêm và bỏ mục từ trong bộ | Ràng buộc giới hạn số từ 5 <= ItemCount <= 50; cấm trùng lặp VocabularyId nội bộ bộ từ; tự động hạ về InReview khi ItemCount < 5 trên bộ từ Published; kiểm tra QualityScore >= 80% & rightsCleared == true (REL-04/CT-01) cho bộ từ hệ thống; tự tính D_set & purge Redis cache |
 
 ## Khi nào cần thêm quyết định
 

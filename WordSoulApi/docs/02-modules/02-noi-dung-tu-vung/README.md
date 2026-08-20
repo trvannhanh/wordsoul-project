@@ -21,6 +21,7 @@
 - [Xây dựng ma trận quyền bộ từ M02](MA-TRAN-QUYEN-BO-TU.md)
 - [Thiết kế vòng đời bộ từ M02](THIET-KE-VONG-DOI-BO-TU.md)
 - [Thiết kế sao chép và nguồn gốc bộ từ M02](THIET-KE-SAO-CHEP-VA-NGUON-GOC-BO-TU.md)
+- [Chuẩn hóa thêm và bỏ mục từ trong bộ M02](CHUAN-HOA-THEM-VA-BO-MUC-TU-TRONG-BO.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 - [Đánh giá hiện trạng A-WP02](DANH-GIA-HIEN-TRANG-A-WP02.md)
