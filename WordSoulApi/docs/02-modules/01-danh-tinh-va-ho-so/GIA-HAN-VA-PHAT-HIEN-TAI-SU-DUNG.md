@@ -168,7 +168,7 @@ I01–I06 là release blocker; không có runtime evidence cho rotation/reuse hi
 | Finding ID | Khoảng trống | Baseline an toàn | Task tiếp nhận |
 |---|---|---|---|
 | M01-REF-F01 | Logout/session-list API consuming family model | Revoke remains monotonic/exact; no raw metadata | M01-T018 |
-| M01-REF-F02 | Recovery/change credential after confirmed reuse | Reuse response matrix applies; no family restore | M01-T019–T020 |
+| M01-REF-F02 | Change credential after confirmed reuse | Recovery reset/revoke-all đã chốt ở M01-RECOVERY-1.0; no family restore | M01-T020 |
 | M01-REF-F03 | Risk/user/operational alert integration | Durable dedup intent, state unaffected by delivery | M01-T038–T039 |
 | M01-REF-F04 | Store/escrow/key schema and runtime tests | No raw token; no release on current single-token design | M01-T042-A; M12-T040–T041; REL-03 |
 

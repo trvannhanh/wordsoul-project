@@ -35,6 +35,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-027 | Dùng M01-INACTIVE-1.0 để xử lý đăng nhập theo trạng thái tài khoản | State-specific result chỉ sau credential/session proof; chờ xác minh được limited session học giới hạn + ticket 10 phút, pending state khác chỉ có action đúng purpose; locked/inactive không tự mở, pending deletion chỉ review/cancel khi còn reversible, deleted identity luôn generic failure và không thể phục hồi/liên kết lại |
 | D-028 | Dùng M01-SESSION-1.0 làm chính sách vòng đời phiên | Mỗi login tạo session family riêng; learner access 15 phút/idle 7 ngày/absolute 30 ngày, limited 10 phút/24 giờ/7 ngày, admin 10 phút/30 phút/8 giờ; refresh one-time chỉ lưu digest, access luôn chịu current state/security/policy/restriction và revocation không chờ token hết hạn |
 | D-029 | Dùng M01-REFRESH-1.0 cho rotation và reuse detection | Refresh request không nhận user ID; mỗi generation có một CAS successor; retry cùng operation được trả đúng response mã hóa trong 60 giây, còn reuse bằng operation khác revoke family và cảnh báo; không tái tạo token khi escrow hết hạn hoặc commit chưa chắc chắn |
+| D-030 | Dùng M01-RECOVERY-1.0 cho khôi phục quyền truy cập | Request luôn trung tính; chỉ email đã xác minh đủ điều kiện nhận code 12 ký tự sống 15 phút/tối đa 5 lần thử; reset atomically đổi verifier, tăng security epoch, thu hồi mọi phiên và bắt đăng nhập lại; không tự mở khóa quản trị hoặc phục hồi identity đã xóa |
 
 ## Khi nào cần thêm quyết định
 

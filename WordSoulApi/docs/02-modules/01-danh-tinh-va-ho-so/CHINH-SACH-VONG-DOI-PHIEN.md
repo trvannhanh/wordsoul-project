@@ -186,7 +186,7 @@ I01–I07 là release blocker; tài liệu không thay source/runtime/secret evi
 | Finding ID | Khoảng trống | Baseline an toàn | Task tiếp nhận |
 |---|---|---|---|
 | M01-SESS-F02 | Logout/session-list/device UX và notification binding | Revoke exact family/all, no raw metadata | M01-T018, T026-A–T027-A |
-| M01-SESS-F03 | Recovery/change credential workflow details | D-009 matrix applies; no session before proof | M01-T019–T020 |
+| M01-SESS-F03 | Change-credential workflow details | Recovery/revoke-all đã chốt ở M01-RECOVERY-1.0; đổi chủ động vẫn giữ current family theo D-009 | M01-T020 |
 | M01-SESS-F04 | Store/schema/key runtime implementation/evidence | Current single-token design không release-ready | M01-T042-A; M12-T040–T041; REL-03 |
 
 ## 13. Tự kiểm M01-T016, A-G01 và A-G02
