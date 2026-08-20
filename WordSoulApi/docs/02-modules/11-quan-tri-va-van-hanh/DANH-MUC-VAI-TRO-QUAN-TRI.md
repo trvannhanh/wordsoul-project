@@ -138,7 +138,7 @@ I01–I06 là release gap; catalog không thay permission matrix hoặc migratio
 
 | Finding ID | Khoảng trống | Baseline an toàn | Task tiếp nhận |
 |---|---|---|---|
-| M11-ROLE-F02 | Grant/revoke/review/session invalidation lifecycle | Không self-grant/temp/emergency; stale authorization fail-closed | M11-T005–T006-A; M01-T029–T032 |
+| M11-ROLE-F02 | Source verification no temporary/emergency/bypass và identity-admin convergence | Grant/revoke/review/session lifecycle đã chốt ở M11-GRANT-1.0 | M11-T006-A; M01-T029–T032 |
 | M11-ROLE-F03 | R3/R4 action classification/reason/change workflow | Re-auth ≤5 phút + reason/audit; không two-person giả | M11-T007–T011 |
 | M11-ROLE-F04 | Legacy route/role migration và runtime allow/deny/conflict tests | Freeze broad grants, explicit mapping, deny-most-restrictive | M11-T049; A-G02; REL-02 |
 

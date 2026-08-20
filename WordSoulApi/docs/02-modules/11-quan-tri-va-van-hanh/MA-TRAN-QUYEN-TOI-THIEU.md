@@ -191,7 +191,7 @@ I01–I07 là release blocker; matrix là target contract, không là runtime ev
 
 | Finding ID | Khoảng trống | Baseline an toàn | Task tiếp nhận |
 |---|---|---|---|
-| M11-PERM-F01 | Grant/revoke/review/suspend/session invalidation workflow | Versioned grants, no self/temp/emergency, stale authorization deny | M11-T005–T006-A; M01-T029–T032 |
+| M11-PERM-F01 | Source verification no temporary/emergency/bypass và M01 admin lifecycle | M11-GRANT-1.0 chốt versioned grant/review/suspend/revoke; stale authorization deny | M11-T006-A; M01-T029–T032 |
 | M11-PERM-F02 | R3/R4 change request/effective/rollback behavior | Current matrix obligations mandatory; no two-person assumption | M11-T007–T011 |
 | M11-PERM-F03 | Audit/redaction/query/retention implementation | R2–R4 access/effect without required audit fail-closed | M11-T031–T035; REL-02 |
 | M11-PERM-F04 | Route/job/workload registry, legacy migration và runtime deny suite | Legacy-only authority denied; no orphan entry point | M11-T049; A-G02 |
