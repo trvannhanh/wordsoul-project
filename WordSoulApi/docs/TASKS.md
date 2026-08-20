@@ -78,7 +78,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | M01-T039 | M01 | Thiết kế cảnh báo hành vi danh tính bất thường | M01-T011, T019, T038 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01, A-G06 | — |
 | M01-T040 | M01 | Xác định chỉ số sức khỏe M01 | M01-T038; M11-T022 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01, A-G06 | — |
 | M01-T041 | M01 | Chuẩn hóa quyền tra cứu lịch sử danh tính | M01-T028, T038; M11-T027–T035 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02; REL-02, REL-07 | — |
-| M11-T003 | M11 | Xây dựng vai trò quản trị | M11-T002 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02; REL-02 | — |
+| M11-T003 | M11 | Xây dựng vai trò quản trị | M11-T002 | Hoàn thành | Đầu ra đạt; tự kiểm A-G02; REL-02 | M11-ROLE-1.0/D-034 chốt 13 role, 7 scope dimension, 10 composition/conflict rule, legacy Admin/SuperAdmin migration và 18 case; 6 sai lệch + 4 finding có task tiếp nhận, A-G02/REL-02 chờ permission/lifecycle/runtime evidence. |
 | M11-T004 | M11 | Xây dựng ma trận quyền tối thiểu | M11-T002, T003 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02; REL-02 | — |
 | M11-T005 | M11 | Thiết kế cấp và thu hồi quyền | M11-T004; M01-T016 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02; REL-02 | — |
 | M11-T006-A | M11 | Kiểm chứng không có quyền tạm thời/khẩn cấp | M11-T005 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02, A-G06; REL-02 | — |

@@ -141,7 +141,7 @@ I01–I07 là baseline gap, không phải bằng chứng runtime; action catalog
 
 | Finding ID | Khoảng trống | Baseline an toàn | Task tiếp nhận |
 |---|---|---|---|
-| M11-DICT-F02 | Role, permission, scope và separation-of-duty matrix | Deny by default; không temporary/emergency privilege | M11-T003–T007; M01-T028–T030 |
+| M11-DICT-F02 | Permission/scope matrix và grant lifecycle cho role đã chốt | 13 role theo M11-ROLE-1.0; deny by default, không temporary/emergency privilege | M11-T004–T007; M01-T028–T030 |
 | M11-DICT-F03 | Audit/activity/log schema, integrity, access và retention | Không dùng log/activity thay audit; sensitive mutation thiếu audit fail-closed | M11-T031–T035 |
 | M11-DICT-F04 | Health/job/incident runtime state và evidence | Unknown/degraded không thành healthy; retry/recovery không dựa process memory | M11-T036–T048; A-G06 |
 
