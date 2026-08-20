@@ -86,6 +86,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-078 | Dùng M02-SET-CLONE-LINEAGE-1.0 cho thiết kế sao chép và nguồn gốc bộ từ | Cấu trúc cây nguồn gốc (ParentSetId, OriginalSetId, CloneDepth); bảo toàn thông tin tác giả gốc OriginalCreatorId (REL-04); tự động tăng CloneCount +1; lan truyền thông báo cập nhật/thu hồi bản quyền tới bộ từ con |
 | D-079 | Dùng M02-SET-ITEM-MUTATION-1.0 cho chuẩn hóa thêm và bỏ mục từ trong bộ | Ràng buộc giới hạn số từ 5 <= ItemCount <= 50; cấm trùng lặp VocabularyId nội bộ bộ từ; tự động hạ về InReview khi ItemCount < 5 trên bộ từ Published; kiểm tra QualityScore >= 80% & rightsCleared == true (REL-04/CT-01) cho bộ từ hệ thống; tự tính D_set & purge Redis cache |
 | D-080 | Dùng M02-SET-ITEM-ORDERING-1.0 cho thiết kế sắp xếp thành phần bộ | Thuộc tính DisplayOrder liên tục 1..N; 4 chế độ sắp xếp (Manual, Alphabetical, Difficulty, CEFR); bảo vệ thao tác sắp xếp đồng thời bằng OCC versionDigest (M11-T021/D-053); tự động re-index dồn chỉ số khi gỡ từ; purge Redis cache lesson_payload |
+| D-081 | Dùng M02-SET-VOCAB-OVERRIDE-1.0 cho chuẩn hóa nội dung ghi đè theo bộ | CustomMeaningOverride (max 300 char) & CustomExampleSentence (max 500 char) lưu tại SetVocabulary; không biến đổi từ điển gốc Headwords; chuỗi fallback 3 cấp (Override -> SelectedSense -> PrimarySense); AI safety screening; purge Redis cache lesson_payload |
 
 ## Khi nào cần thêm quyết định
 
