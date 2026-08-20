@@ -23,6 +23,7 @@
 - [Khôi phục quyền truy cập M01](KHOI-PHUC-QUYEN-TRUY-CAP.md)
 - [Thay đổi thông tin bảo mật M01](THAY-DOI-THONG-TIN-BAO-MAT.md)
 - [Ma trận vai trò và quyền M01](MA-TRAN-VAI-TRO-VA-QUYEN.md)
+- [Chuẩn hóa quyền xem và sửa hồ sơ — lát A M01](CHUAN-HOA-QUYEN-XEM-VA-SUA-HO-SO-A.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 

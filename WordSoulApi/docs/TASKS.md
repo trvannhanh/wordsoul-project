@@ -144,7 +144,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | M12-T023 | M12 | Thiết kế metadata và định danh bất biến | M12-T022 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G03, A-G05; REL-04 | — |
 | M12-T024 | M12 | Chốt quyền truy cập và phân phối | M12-T021, T023 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G05 | — |
 | M12-T025 | M12 | Thiết kế thay thế, xóa và orphan cleanup | M12-T023, T024; M11-T020 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G03, A-G05; REL-04, REL-07 | — |
-| M01-T022-A | M01 | Chuẩn hóa quyền xem và sửa hồ sơ — lát A | M01-T003, T028 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01, A-G02; REL-01, REL-07 | — |
+| M01-T022-A | M01 | Chuẩn hóa quyền xem và sửa hồ sơ — lát A | M01-T003, T028 | Hoàn thành | Đầu ra đạt; tự kiểm A-G01, A-G02; REL-01, REL-07 | M01-PROFILE-ACCESS-A-1.0/D-087 chốt separation of Public vs Self Profile DTOs, readonly system fields protection (Role, AccountStatus, SecurityEpoch), profile edit rate limiter 5/day, support agent unmasking requiring valid ticketId (REL-01/REL-07), 10 gate và 20 case. |
 | M01-T023-A | M01 | Thiết kế thay đổi tên hiển thị — lát A | M01-T022-A | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01 | — |
 | M01-T025-A | M01 | Chuẩn hóa múi giờ và giờ học mong muốn — lát A | M01-T022-A | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01; chuẩn bị REL-06 | — |
 | M01-T026-A | M01 | Thiết kế đăng ký nhiều thiết bị nhận tin — lát A | M01-T016, T025-A | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01, A-G05; REL-06 | — |

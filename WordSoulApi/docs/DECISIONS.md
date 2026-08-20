@@ -92,6 +92,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-084 | Dùng M02-PUBLIC-MODERATION-CHECKLIST-1.0 cho xây dựng checklist kiểm duyệt công khai | Khung 4 trụ cột kiểm duyệt (Kỹ thuật, Bản quyền REL-04/CT-01, Sư phạm, AI Safety); zero-violation approval guard (cấm duyệt nếu vi phạm bản quyền); ModerationScorecard bất biến; self-approval guard; audit trail ACT-M11-04 |
 | D-085 | Dùng M02-REJECTION-REVISION-1.0 cho thiết kế yêu cầu sửa và từ chối | Phân định 2 nhánh phản hồi: REQUEST_CHANGES (về Draft, IsMutationLocked=false, ResubmissionCount++) và REJECT (về Archived vĩnh viễn); RejectionReasonCatalog chuẩn hóa; moderatorNotes >= 20 char; giới hạn tối đa N <= 3 lần nộp lại |
 | D-086 | Dùng M02-SET-VERSIONED-PUBLISHING-1.0 cho thiết kế xuất bản theo phiên bản | Snapshots bất biến VocabularySetVersion (SetSnapshotJson, RevisionDigest); đánh số phiên bản SemVer (vX.Y.Z); M03 session pinning; giao thức Rollback khẩn cấp SLA <= 30s xóa Redis cache |
+| D-087 | Dùng M01-PROFILE-ACCESS-A-1.0 cho chuẩn hóa quyền xem và sửa hồ sơ — lát A | Phân tách DTO Public (UserId, DisplayName, Avatar) và DTO Self (CanonicalEmail, Phone, Settings); cấm sửa readonly fields (Role, AccountStatus, SecurityEpoch); profile edit rate limiter 5/day; support agent unmask require ticketId (REL-01/REL-07) |
 
 ## Khi nào cần thêm quyết định
 
