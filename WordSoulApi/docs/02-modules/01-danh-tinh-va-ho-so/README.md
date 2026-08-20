@@ -21,6 +21,7 @@
 - [Chính sách vòng đời phiên M01](CHINH-SACH-VONG-DOI-PHIEN.md)
 - [Gia hạn phiên và phát hiện tái sử dụng M01](GIA-HAN-VA-PHAT-HIEN-TAI-SU-DUNG.md)
 - [Khôi phục quyền truy cập M01](KHOI-PHUC-QUYEN-TRUY-CAP.md)
+- [Thay đổi thông tin bảo mật M01](THAY-DOI-THONG-TIN-BAO-MAT.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 

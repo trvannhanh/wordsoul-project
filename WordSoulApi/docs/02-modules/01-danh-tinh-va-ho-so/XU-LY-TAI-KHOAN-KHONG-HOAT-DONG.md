@@ -141,7 +141,7 @@ I01–I06 là release blocker cho state enforcement; baseline tài liệu không
 
 | Finding ID | Khoảng trống | Baseline an toàn | Task tiếp nhận |
 |---|---|---|---|
-| M01-INACT-F02 | Recovery/support/admin lock và transition priority | Không self-unlock hoặc auto-unlock authorized states | M01-T019–T021, T028–T032 |
+| M01-INACT-F02 | Manual support/admin lock và transition priority | Recovery/security change không self-unlock authorized states | M01-T021, T028–T032 |
 | M01-INACT-F03 | Deletion window/irreversible point/manifest | Không giả số; pending delete không mutation/login | M01-T033–T037 |
 | M01-INACT-F04 | REL-01 market/age/consent final behavior | Policy unknown không Active/session | REL-01; M01-T033 |
 

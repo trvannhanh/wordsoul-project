@@ -173,7 +173,6 @@ Các sai lệch I01–I06 là release blocker cho direct login theo M01-ABUSE-1.
 |---|---|---|---|
 | M01-ABUSE-F02 | Event schema, operational alert owner/response/tuning | Metadata allowlist, no raw identity, threshold chỉ versioned | M01-T038–T041; M11-T031–T037 |
 | M01-ABUSE-F03 | Distributed store, proxy, composite bucket và failure runtime | Không allow-all; direct login chưa đạt release | M12-T047-A; REL-03 |
-| M01-ABUSE-F04 | Change-credential action khi compromise được xác nhận | Recovery/revoke-all đã chốt ở M01-RECOVERY-1.0; failed attempts không revoke | M01-T020 |
 
 ## 13. Tự kiểm M01-T011, A-G01, A-G04 và REL-03
 
@@ -182,7 +181,7 @@ Các sai lệch I01–I06 là release blocker cho direct login theo M01-ABUSE-1.
 - Existing session không bị thu hồi chỉ bởi failures; correct password trong risk state không tự cấp full session; audit/session control vẫn fail-closed.
 - Sáu alert, metric tối thiểu, retention/redaction/HMAC key rules đáp ứng thiết kế điều tra mà không lưu raw password/email/IP.
 - 18 case bao phủ stuffing/spraying/distributed/NAT/spoof/concurrency/failure/recovery/timing; A-G01/A-G04 có baseline nhưng runtime evidence chưa có.
-- 6 sai lệch và 3 finding mở có task tiếp nhận; M01-ABUSE-F01 đã được đóng bởi M01-RECOVERY-1.0; REL-03 vẫn mở đến khi source/host/multi-instance/failure/alert evidence đạt.
+- 6 sai lệch và 2 finding mở có task tiếp nhận; M01-ABUSE-F01 đã được đóng bởi M01-RECOVERY-1.0, M01-ABUSE-F04 bởi M01-SEC-CHANGE-1.0; REL-03 vẫn mở đến khi source/host/multi-instance/failure/alert evidence đạt.
 
 ## Lịch sử
 

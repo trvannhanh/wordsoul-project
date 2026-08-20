@@ -186,7 +186,6 @@ I01–I07 là release blocker; tài liệu không thay source/runtime/secret evi
 | Finding ID | Khoảng trống | Baseline an toàn | Task tiếp nhận |
 |---|---|---|---|
 | M01-SESS-F02 | Logout/session-list/device UX và notification binding | Revoke exact family/all, no raw metadata | M01-T018, T026-A–T027-A |
-| M01-SESS-F03 | Change-credential workflow details | Recovery/revoke-all đã chốt ở M01-RECOVERY-1.0; đổi chủ động vẫn giữ current family theo D-009 | M01-T020 |
 | M01-SESS-F04 | Store/schema/key runtime implementation/evidence | Current single-token design không release-ready | M01-T042-A; M12-T040–T041; REL-03 |
 
 ## 13. Tự kiểm M01-T016, A-G01 và A-G02
@@ -196,7 +195,7 @@ I01–I07 là release blocker; tài liệu không thay source/runtime/secret evi
 - Rotation/revocation matrix bao phủ logout, password change/reset, compromise, state/delete, restriction/role và unlink; access không sống vượt current state.
 - Multi-device không auto-evict; web/mobile storage, new-device alert và session-list privacy đã chốt.
 - 20 case bao phủ TTL, multiple device, concurrency/lost response, revoke/state race, claims/storage/key failure; A-G01/A-G02 có baseline nhưng chưa runtime.
-- 7 sai lệch và 3 finding mở có task tiếp nhận; M01-SESS-F01 đã được đóng bởi M01-REFRESH-1.0; không kết luận gate đạt.
+- 7 sai lệch và 2 finding mở có task tiếp nhận; M01-SESS-F01 đã được đóng bởi M01-REFRESH-1.0, M01-SESS-F03 bởi M01-RECOVERY-1.0/M01-SEC-CHANGE-1.0; không kết luận gate đạt.
 
 ## Lịch sử
 

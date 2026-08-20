@@ -36,6 +36,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-028 | Dùng M01-SESSION-1.0 làm chính sách vòng đời phiên | Mỗi login tạo session family riêng; learner access 15 phút/idle 7 ngày/absolute 30 ngày, limited 10 phút/24 giờ/7 ngày, admin 10 phút/30 phút/8 giờ; refresh one-time chỉ lưu digest, access luôn chịu current state/security/policy/restriction và revocation không chờ token hết hạn |
 | D-029 | Dùng M01-REFRESH-1.0 cho rotation và reuse detection | Refresh request không nhận user ID; mỗi generation có một CAS successor; retry cùng operation được trả đúng response mã hóa trong 60 giây, còn reuse bằng operation khác revoke family và cảnh báo; không tái tạo token khi escrow hết hạn hoặc commit chưa chắc chắn |
 | D-030 | Dùng M01-RECOVERY-1.0 cho khôi phục quyền truy cập | Request luôn trung tính; chỉ email đã xác minh đủ điều kiện nhận code 12 ký tự sống 15 phút/tối đa 5 lần thử; reset atomically đổi verifier, tăng security epoch, thu hồi mọi phiên và bắt đăng nhập lại; không tự mở khóa quản trị hoặc phục hồi identity đã xóa |
+| D-031 | Dùng M01-SEC-CHANGE-1.0 cho thay đổi mật khẩu/email | Security mutation chỉ từ full current session + re-auth tối đa 5 phút; đổi mật khẩu reissue đúng current family và revoke family khác; đổi email cần proof cả kênh cũ/mới, revoke all và login lại; profile/admin endpoint không được kiêm security change |
 
 ## Khi nào cần thêm quyết định
 

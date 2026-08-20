@@ -184,7 +184,6 @@ I01–I07 là release blocker; hiện trạng không có runtime evidence cho re
 
 | Finding ID | Khoảng trống | Baseline an toàn | Task tiếp nhận |
 |---|---|---|---|
-| M01-REC-F01 | Đổi chủ động mật khẩu/email và proof freshness | Không dùng recovery code như session; current credential/channel + re-auth | M01-T020 |
 | M01-REC-F02 | Mất email/mọi kênh và support evidence/authority | Không self-service fallback, support không đặt password/cấp session | M01-T021; M11-T027–T035 |
 | M01-REC-F03 | Alert catalog, recipient fallback và incident closure | Durable mandatory security intent; không rollback reset vì delivery | M01-T038–T039; M10 |
 | M01-REC-F04 | Intent/schema/key/email/session enforcement và runtime tests | Không release trên current no-recovery/single-token design | M01-T042-A; M12-T026–T030, T040–T041, T047-A; REL-03 |
@@ -196,7 +195,7 @@ I01–I07 là release blocker; hiện trạng không có runtime evidence cho re
 - Reset atomically đổi verifier, tăng epoch, revoke mọi family, audit/outbox và bắt login lại; không token/session được cấp từ recovery.
 - State/risk/admin/deletion, dependency failure, commit unknown, late email và notification/revocation propagation đều có fail-safe behavior.
 - 20 case bao phủ success/failure, enumeration, resend, replay, concurrency, policy, state, provider/store và redaction; A-G01 có baseline nhưng chưa runtime.
-- 7 sai lệch và 4 finding mở có task tiếp nhận; không kết luận A-G01 đạt.
+- 7 sai lệch và 3 finding mở có task tiếp nhận; M01-REC-F01 đã được đóng bởi M01-SEC-CHANGE-1.0; không kết luận A-G01 đạt.
 
 ## Lịch sử
 

@@ -113,7 +113,6 @@ Kết quả dưới đây được quan sát từ mã nguồn ngày 2026-08-19; 
 | Mã | Phần cần cụ thể hóa | Baseline an toàn hiện hành | Nguồn/task xử lý |
 |---|---|---|---|
 | M01-SEC-F01 | Implementation/verifier algorithm và tham số triển khai theo môi trường | Dùng implementation chuẩn có version/salt/rehash; không tự viết crypto hoặc hạ tham số | M01-T005, M01-T020; security configuration |
-| M01-SEC-F02 | Freshness và proof cho đổi chủ động credential/email | Recovery proof/TTL đã chốt ở M01-RECOVERY-1.0; không tái dùng recovery code như session hoặc change proof | M01-T020 |
 | M01-SEC-F03 | Contract/khu vực/retention của nguồn breached-password ngoài | Không gửi giá trị thô/PII; không bật provider trước registry và contract | M12-T001–T005, M12-T040–T044; REL-03 |
 | M01-SEC-F04 | Danh mục quyền quản trị/support và audit fail-closed đầy đủ | Support không xem/đặt mật khẩu; mutation nhạy cảm thiếu quyền/case/audit bị từ chối | M01-T028–T032, M11-T027–T035; REL-02 |
 
@@ -122,7 +121,7 @@ Kết quả dưới đây được quan sát từ mã nguồn ngày 2026-08-19; 
 - M01-CRED-1.0 có ngưỡng 12–128, quy tắc Unicode/space, blocklist/breached, reuse, storage, outage và policy change đo được.
 - Bảy hành trình nêu bằng chứng, mutation, tác động phiên và audit; năm thao tác nhạy cảm có yêu cầu xác minh lại/từ chối.
 - Mười lăm case bao phủ boundary, Unicode, dependency outage, replay, session revoke, support/admin, redaction và audit loss.
-- Bảy finding triển khai và bốn finding cấu hình/quyền có baseline an toàn cùng task tiếp nhận; không còn điểm chờ vô chủ trong M01-T004.
+- Bảy finding triển khai và ba finding cấu hình/quyền có baseline an toàn cùng task tiếp nhận; M01-SEC-F02 đã được đóng bởi M01-RECOVERY-1.0/M01-SEC-CHANGE-1.0; không còn điểm chờ vô chủ trong M01-T004.
 - REL-02 vẫn mở: ma trận quyền/audit đầy đủ và bằng chứng runtime A-G02 chưa hoàn thành. Tài liệu này không kết luận A-G01/A-G02/REL-02 đạt và không thay thế kiểm thử runtime.
 
 ## Lịch sử
