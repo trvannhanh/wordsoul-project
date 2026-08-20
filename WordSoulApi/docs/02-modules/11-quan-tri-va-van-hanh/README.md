@@ -21,6 +21,7 @@
 - [Phiên bản cấu hình bất biến M11](PHIEN-BAN-CAU-HINH-BAT-BIEN.md)
 - [Xem trước và mô phỏng tác động M11](XEM-TRUOC-VA-MO-PHONG-TAC-DONG.md)
 - [Triển khai giới hạn và quan sát M11](TRIEN-KHAI-GIOI-HAN-VA-QUAN-SAT.md)
+- [Quay lại và xử lý khóa ngừng dùng M11](QUAY-LAI-VA-XU-LY-KHOA-NGUNG-DUNG.md)
 - [Từ điển chỉ số quản trị M11](TU-DIEN-CHI-SO-QUAN-TRI.md)
 - [Ma trận nội dung quản trị chéo module M11](MA-TRAN-NOI-DUNG-QUAN-TRI-CHEO-MODULE.md)
 - [Task backlog](TASK-BACKLOG.md)
