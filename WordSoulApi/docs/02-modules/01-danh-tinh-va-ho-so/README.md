@@ -22,6 +22,7 @@
 - [Gia hạn phiên và phát hiện tái sử dụng M01](GIA-HAN-VA-PHAT-HIEN-TAI-SU-DUNG.md)
 - [Khôi phục quyền truy cập M01](KHOI-PHUC-QUYEN-TRUY-CAP.md)
 - [Thay đổi thông tin bảo mật M01](THAY-DOI-THONG-TIN-BAO-MAT.md)
+- [Ma trận vai trò và quyền M01](MA-TRAN-VAI-TRO-VA-QUYEN.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 
