@@ -47,6 +47,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-039 | Dùng M11-CHANGE-REQUEST-1.0 làm hồ sơ ý định trước mutation quản trị | 31 mutation action phải dùng revision bất biến + digest, typed operation, validation/evidence, schedule/expiry và RB-1..3; sealed input đổi tạo revision mới, request không cấp authority, không có approver/two-person/temp/emergency bypass |
 | D-040 | Dùng M11-CHANGE-DECISION-1.0 cho vòng đời quyết định một actor | Mỗi revision có state/CAS riêng và decision bất biến khóa digest; creator được tự authorize bằng fixed current permission + re-auth, TTL EC-2/3/4 là 30 ngày/7 ngày/24 giờ; input/authority/control đổi invalidates, partial/unknown không thành success |
 | D-041 | Dùng M11-CHANGE-SCHEDULE-1.0 cho conflict và lịch hiệu lực | SQL giữ durable reservation/lease/fencing; write/guard/barrier overlap hoặc unknown fail-closed, UTC là execution truth và DST mơ hồ bị reject; đổi instant/window tạo revision+decision mới, missed window không chạy muộn và role cao không override conflict |
+| D-042 | Dùng M11-CHANGE-EXECUTION-1.0 cho thực thi và rollback quản trị | Exact revision/decision bind stable operation; source adapter bắt buộc expected version/fencing/dedupe/reconcile/verify, 2xx/accepted không phải success; partial/unknown giữ block, retry chỉ proven no-effect + retrySafe, RB-1..3 dùng recovery operation và verified target |
 
 ## Khi nào cần thêm quyết định
 

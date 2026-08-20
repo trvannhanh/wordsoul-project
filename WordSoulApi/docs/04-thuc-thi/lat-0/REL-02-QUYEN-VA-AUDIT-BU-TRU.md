@@ -89,3 +89,4 @@ Các mã trên chỉ là định danh dự kiến; không đăng ký như bằng
 | 2026-08-20 | WSA-7K2 | Bổ sung immutable change-request schema, evidence/schedule/rollback gate cho 31 mutation action | D-039; M11-T008; chưa phải runtime evidence |
 | 2026-08-20 | WSA-7K2 | Chốt state machine quyết định một actor theo revision/digest, TTL/invalidation/CAS/recovery | D-040; M11-T009; chưa phải runtime evidence |
 | 2026-08-20 | WSA-7K2 | Chốt conflict set/key/mode, durable reservation/fencing và UTC/DST/cancel-reschedule semantics | D-041; M11-T010; chưa phải runtime evidence |
+| 2026-08-20 | WSA-7K2 | Chốt execution/source-adapter/idempotency/reconcile/verify và RB-1..3 recovery semantics | D-042; M11-T011; chưa phải runtime evidence |

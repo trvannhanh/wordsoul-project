@@ -155,7 +155,7 @@ Phân bố: EC-1 = 2, EC-2 = 5, EC-3 = 14, EC-4 = 23; tổng 44, không có Acti
 | M11-EC-I02 | Mutation trực tiếp chưa đồng nhất re-auth/reason/case/version/preview | EC-3/EC-4 fail-closed | M11-T008–T021, T030, T038–T044 |
 | M11-EC-I03 | Activity/System log chưa chứng minh immutable audit reservation | EC-4 không effect khi audit bắt buộc lỗi | M11-T031–T035 |
 | M11-EC-I04 | Chưa có runtime limit registry/coverage tests cho 44 action | Safety ceiling và missing-limit deny giữ nguyên | M11-T012–T017, T049; M12-T034 |
-| M11-EC-F01 | Execution API và runtime enhanced-control context | Request/decision/schedule đã chốt; protected refs, server-derived actor/resource | M11-T011; M11-T049 |
+| M11-EC-F01 | Runtime execution API và enhanced-control enforcement | Request/decision/schedule/execution design đã chốt; protected refs, server-derived actor/resource | M11-T049 |
 | M11-EC-F02 | Runtime allow/deny/audit-loss/concurrency evidence | EC-G01–G10 và EC07-01–16 | M11-T031–T035, T049; A-G02 |
 | M11-EC-F03 | Module-specific value/audience/job ceilings | Missing/unverified limit deny; stricter module limit wins | M06; M10; M11-T012–T017, T038–T042 |
 | M11-EC-F04 | REL-02 audit/redaction/durability/retention closure | Không kết luận REL-02/A-G02 đạt từ design artifact | M11-T031–T035; REL-02 |

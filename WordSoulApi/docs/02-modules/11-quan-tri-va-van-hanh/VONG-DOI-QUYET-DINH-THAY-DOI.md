@@ -200,7 +200,6 @@ Thay đổi chỉ ở display metadata không thuộc canonical digest có thể
 | M11-CD-I04 | Placeholder maintenance trả success và log text | Không có operation/reconcile/recovery state | M11-T011, T036, T041–T044 |
 | M11-CD-I05 | Activity/System log không chứng minh immutable lifecycle audit | Transition nhạy cảm có thể thiếu/mất dấu vết | M11-T031–T035 |
 | M11-CD-F01 | Durable aggregate/event/outbox schema, indexes và migration | StateVersion CAS, append-only decision/event, unique idempotency | M11-T011; M11-T049 |
-| M11-CD-F03 | Execution/partial/unknown/retry/rollback implementation | Exact revision/decision/operation và verified result | M11-T011 |
 | M11-CD-F04 | Current-authority/session invalidation integration | Revoke/suspend/policy drift chặn claim ngay | M01-T029–T032; M11-T049 |
 | M11-CD-F05 | Audit durability/redaction/runtime transition suite | Sensitive transition audit loss fail-closed | M11-T031–T035, T049; A-G02 |
 

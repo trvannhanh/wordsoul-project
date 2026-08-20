@@ -190,15 +190,15 @@ Không dùng “last write wins”, route order, in-memory mutex, Redis-only loc
 
 | Finding ID | Quan sát tĩnh | Sai lệch | Task tiếp nhận |
 |---|---|---|---|
-| M11-CS-I01 | Configuration bulk chỉ chặn duplicate key trong cùng request | Không expected version/CAS hoặc conflict giữa request/instance | M11-T011, T014; M11-T049 |
-| M11-CS-I02 | Không thấy schedule/reservation/lease/fencing aggregate | Không có durable ordering/cancel/claim semantics | M11-T011, T014–T017; M11-T049 |
+| M11-CS-I01 | Configuration bulk chỉ chặn duplicate key trong cùng request | Không expected version/CAS hoặc conflict giữa request/instance | M11-T014; M11-T049 |
+| M11-CS-I02 | Không thấy schedule/reservation/lease/fencing aggregate | Không có durable ordering/cancel/claim semantics | M11-T014–T017; M11-T049 |
 | M11-CS-I03 | Không thấy timezone/DST conversion contract cho admin change | Local time có thể mơ hồ; scheduler chưa có source | M01-T025-A; M11-T049 |
-| M11-CS-I04 | Maintenance/config/broadcast mutation gọi trực tiếp | Bỏ schedule/conflict/window guard | M11-T011, T016, T041–T044 |
-| M11-CS-I05 | Không thấy source adapter fencing token check | Worker stale có thể effect sau lease loss | M11-T011; module adapters |
-| M11-CS-F01 | Durable reservation/index/key-tree/fencing schema và migration | SQL truth, atomic multi-key acquire, monotonic fencing | M11-T011; M11-T049 |
-| M11-CS-F02 | Scheduler/outbox/worker claim và missed-window implementation | Exact decision/revision, UTC DB time, no late execution | M11-T011; M11-T049 |
+| M11-CS-I04 | Maintenance/config/broadcast mutation gọi trực tiếp | Bỏ schedule/conflict/window guard | M11-T016, T041–T044; M11-T049 |
+| M11-CS-I05 | Không thấy source adapter fencing token check | Worker stale có thể effect sau lease loss | Module adapters; M11-T049 |
+| M11-CS-F01 | Durable reservation/index/key-tree/fencing schema và migration | SQL truth, atomic multi-key acquire, monotonic fencing | M11-T049 |
+| M11-CS-F02 | Scheduler/outbox/worker claim và missed-window implementation | Exact decision/revision, UTC DB time, no late execution | M11-T049 |
 | M11-CS-F03 | Module conflict-key/commutativity/barrier registry | Unknown overlap/mode fail-closed | M11-T012–T021, T038–T044 |
-| M11-CS-F04 | Source adapter operation/fencing/reconcile support | Stale token reject; partial/unknown keeps block | M11-T011; module-owner tasks |
+| M11-CS-F04 | Source adapter operation/fencing/reconcile support | Execution contract đã chốt; stale token reject, partial/unknown keeps block | Module-owner tasks; M11-T049 |
 | M11-CS-F05 | Runtime race/failure/DST/audit evidence | CS-G01–G10, CS10-01–20 | M11-T049; A-G02/A-G06 |
 
 ## 13. Tự kiểm M11-T010
