@@ -5,6 +5,7 @@
 - [Prompt phân tích chuyên sâu](../../90-luu-tru/PROMPT-PHAN-TICH-MODULE-MAU.md)
 - [Kết quả phân tích chuyên sâu](PHAN-TICH-CHUYEN-SAU.md)
 - [Từ điển học liệu M02](TU-DIEN-HOC-LIEU.md)
+- [Thiết kế mô hình nhiều nghĩa và loại từ M02](MO-HINH-NHIEU-NGHIA-VA-LOAI-TU.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 - [Đánh giá hiện trạng A-WP02](DANH-GIA-HIEN-TRANG-A-WP02.md)
