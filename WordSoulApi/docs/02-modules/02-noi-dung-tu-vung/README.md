@@ -20,6 +20,7 @@
 - [Thiết kế xử lý tài sản lỗi hoặc thiếu M02](THIET-KE-XU-LY-TAI-SAN-LOI-HOAC-THIEU.md)
 - [Xây dựng ma trận quyền bộ từ M02](MA-TRAN-QUYEN-BO-TU.md)
 - [Thiết kế vòng đời bộ từ M02](THIET-KE-VONG-DOI-BO-TU.md)
+- [Xử lý chủ sở hữu không còn hoạt động M02](XU-LY-CHU-SO-HUU-KHONG-CON-HOAT-DONG.md)
 - [Thiết kế sao chép và nguồn gốc bộ từ M02](THIET-KE-SAO-CHEP-VA-NGUON-GOC-BO-TU.md)
 - [Chuẩn hóa thêm và bỏ mục từ trong bộ M02](CHUAN-HOA-THEM-VA-BO-MUC-TU-TRONG-BO.md)
 - [Thiết kế sắp xếp thành phần bộ M02](THIET-KE-SAP-XEP-THANH-PHAN-BO.md)
