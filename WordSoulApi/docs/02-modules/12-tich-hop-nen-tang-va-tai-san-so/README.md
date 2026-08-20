@@ -7,6 +7,7 @@
 - [Quyết định mở](QUYET-DINH-MO.md)
 - [Đánh giá hiện trạng A-WP04](DANH-GIA-HIEN-TRANG-A-WP04.md)
 - [Từ điển tích hợp M12](TU-DIEN-TICH-HOP.md)
+- [Sổ đăng ký năng lực tích hợp M12](SO-DANG-KY-NANG-LUC-TICH-HOP.md)
 
 ## Mô tả module
 
