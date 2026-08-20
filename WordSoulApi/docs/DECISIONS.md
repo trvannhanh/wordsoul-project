@@ -75,6 +75,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-067 | Dùng M12-ASSET-CATALOG-1.0 cho danh mục loại tài sản số | Chốt 8 loại tài sản số (AUDIO_HEADWORD, AUDIO_EXAMPLE, AUDIO_ATTEMPT, IMAGE_HEADWORD, IMAGE_AVATAR, IMAGE_SET_COVER, IMAGE_PET_SKIN, DOC_TERMS); phân tách Public Bucket (CDN) và Private Bucket (Signed Presigned URL TTL <= 15m); xác minh bản quyền REL-04/CT-01 (rightsCleared == true); dọn dẹp file tạm 14 ngày |
 | D-068 | Dùng M12-ASSET-RIGHTS-LEDGER-1.0 cho sổ quyền tài sản — lát A | Mô hình AssetRightsLedger bất biến append-only; Dịch vụ tự động xác minh bản quyền VerifyAssetRights; chốt CT-01 & REL-04 cấm xuất bản khi rightsCleared == false; cảnh báo hết hạn trước 30 ngày; thu hồi tự động takedown <= 60s khi vi phạm bản quyền |
 | D-069 | Dùng M12-SECRET-INVENTORY-1.0 cho kiểm kê và phân loại bí mật | Kiểm kê bí mật hệ thống với 4 cấp độ rủi ro S0-S3; cấm lưu secret thô trong code/git/config; nạp 100% từ Secret Manager vào RAM; bộ lọc Serilog enrichment masking [REDACTED_SECRET]; quy trình xoay vòng Dual-Key (S0 90d, S1 180d, S2/S3 365d) |
+| D-070 | Dùng M12-OUTBOUND-DATA-MAP-1.0 cho lập bản đồ dữ liệu rời hệ thống — lát A | Kiểm kiểm 6 luồng dữ liệu egress (TTS, AI, STT, FCM, SMTP, OAuth); quy tắc Zero PII Egress to AI bằng PromptAnonymizerFilter; làm sạch audio stream; mã hóa TLS 1.3 cho SMTP/OAuth; Prometheus Egress Byte Counter & cảnh báo spike > 300% |
 
 ## Khi nào cần thêm quyết định
 
