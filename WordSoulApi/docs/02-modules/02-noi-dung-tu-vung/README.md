@@ -9,6 +9,7 @@
 - [Chuẩn hóa mặt chữ và biến thể M02](CHUAN-HOA-MAT-CHU-VA-BIEN-THE.md)
 - [Thiết kế phát hiện nội dung trùng M02](PHAT-HIEN-NOI-DUNG-TRUNG.md)
 - [Chuẩn hóa cấp độ và độ khó M02](CHUAN-HOA-CAP-DO-VA-DO-KHO.md)
+- [Xác định chuẩn chất lượng mục từ M02](XAC-DINH-CHUAN-CHAT-LUONG-MUC-TU.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 - [Đánh giá hiện trạng A-WP02](DANH-GIA-HIEN-TRANG-A-WP02.md)
