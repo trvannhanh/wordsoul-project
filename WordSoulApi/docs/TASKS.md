@@ -38,7 +38,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | M01-T009 | M01 | Xây dựng tiêu chí nghiệm thu đăng ký | M01-T005–T008 | Hoàn thành | Đầu ra đạt; tự kiểm A-G01; REL-01 | M01-REG-ACC-1.0 chốt 32 case xuyên luồng, trace đủ 77 case nguồn, 9 finding test/mã và 4 finding mở có task tiếp nhận; A-G01/REL-01 vẫn mở. |
 | M02-T001 | M02 | Chuẩn hóa từ điển học liệu | M01-T001 | Hoàn thành | Đầu ra đạt; tự kiểm A-G03 | M02-VOCAB-DICT-1.0/D-056 chốt 35 thuật ngữ học liệu, WordCanonical normalization, tách Master Vocabulary & VocabularySense, cách ly custom vs public set, REL-04/CT-01 asset rights verification, 10 gate và 20 case. |
 | M02-T002 | M02 | Thiết kế mô hình nhiều nghĩa và loại từ | M02-T001 | Hoàn thành | Đầu ra đạt; tự kiểm A-G03 | M02-MULTI-SENSE-1.0/D-057 chốt quan hệ 1-N Vocabulary-VocabularySense, 9 loại từ POS, SelectedSenseIds lọc nét nghĩa theo bộ từ (fallback SenseOrder=1), 4 bước migration từ trường Meaning cũ, 10 gate và 20 case. |
-| M02-T003 | M02 | Chuẩn hóa mặt chữ và biến thể | M02-T001, M02-T002 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G03 | — |
+| M02-T003 | M02 | Chuẩn hóa mặt chữ và biến thể | M02-T001, M02-T002 | Hoàn thành | Đầu ra đạt; tự kiểm A-G03 | M02-WORD-VARIANTS-1.0/D-058 chốt WordCanonical normalization, 10 loại biến thể (VocabularyVariant), Variant Matcher Engine tự động ánh xạ biến thể nhập vào về Master Headword, 10 gate và 20 case. |
 | M02-T004 | M02 | Thiết kế phát hiện nội dung trùng | M02-T002, M02-T003 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G03 | — |
 | M02-T005 | M02 | Chuẩn hóa cấp độ và độ khó | M02-T002 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G03 | — |
 | M02-T006 | M02 | Xác định chuẩn chất lượng mục từ | M02-T002, M02-T005 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G03; REL-04 khi có tài sản | — |
