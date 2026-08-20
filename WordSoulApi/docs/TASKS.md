@@ -33,7 +33,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | M01-T004 | M01 | Chốt chính sách thông tin bảo mật | M01-T001 | Hoàn thành | Đầu ra đạt; tự kiểm A-G01, A-G02; REL-02 | M01-CRED-1.0/D-012 chốt policy 12–128, 7 hành trình, 15 case, 7 finding mã và 4 finding mở có task tiếp nhận; A-G01/A-G02/REL-02 vẫn mở. |
 | M01-T005 | M01 | Chuẩn hóa dữ liệu đăng ký | M01-T003, M01-T004 | Hoàn thành | Đầu ra đạt; tự kiểm A-G01; REL-01 | M01-REG-1.0/D-013 chốt 7 input, 5 nhóm field cấm, idempotency/response trung tính, 19 case, 10 finding mã và 4 finding mở; A-G01/REL-01 vẫn mở. |
 | M01-T006 | M01 | Thiết kế xác minh thư điện tử | M01-T002, M01-T005; hợp đồng thư tối thiểu | Hoàn thành | Đầu ra đạt; tự kiểm A-G01 | M01-VER-1.0/D-014 và MAIL-A-1.0 chốt TTL, limiter, replay/idempotency, 20 case, 9 finding mã và 4 finding mở có task tiếp nhận; A-G01 vẫn mở. |
-| M01-T007 | M01 | Ghi nhận đồng ý và phiên bản chính sách | M01-T002, M01-T003; A0-T001 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01; REL-01, REL-06 | — |
+| M01-T007 | M01 | Ghi nhận đồng ý và phiên bản chính sách | M01-T002, M01-T003; A0-T001 | Hoàn thành | Đầu ra đạt; tự kiểm A-G01; REL-01, REL-06 | M01-CONS-1.0/D-015 chốt registry bất biến, ledger append-only, grant/decline/withdraw/re-consent, 20 case, 8 finding mã và 4 finding mở; A-G01/REL-01/REL-06 vẫn mở. |
 | M01-T008 | M01 | Điều phối khởi tạo người dùng mới | M01-T005–T007; hợp đồng tối thiểu M06 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01; chuẩn bị B-G03 | — |
 | M01-T009 | M01 | Xây dựng tiêu chí nghiệm thu đăng ký | M01-T005–T008 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01; REL-01 | — |
 | M02-T001 | M02 | Chuẩn hóa từ điển học liệu | M01-T001 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G03 | — |
