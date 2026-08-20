@@ -28,6 +28,7 @@
 - [Thiết kế quy trình gửi duyệt M02](THIET-KE-QUY-TRINH-GUI-DUYET.md)
 - [Xây dựng checklist kiểm duyệt công khai M02](XAY-DUNG-CHECKLIST-KIEM-DUYET-CONG-KHAI.md)
 - [Thiết kế yêu cầu sửa và từ chối M02](THIET-KE-YEU-CAU-SUA-VA-TU-CHOI.md)
+- [Thiết kế xuất bản theo phiên bản M02](THIET-KE-XUAT-BAN-THEO-PHIEN-BAN.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 - [Đánh giá hiện trạng A-WP02](DANH-GIA-HIEN-TRANG-A-WP02.md)

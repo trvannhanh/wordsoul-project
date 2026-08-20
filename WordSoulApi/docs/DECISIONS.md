@@ -91,6 +91,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-083 | Dùng M02-SET-SUBMISSION-FLOW-1.0 cho thiết kế quy trình gửi duyệt | Pre-submission checklist (5<=N<=50, QualityScore>=80%, rightsCleared==true REL-04/CT-01, AI safety); IsMutationLocked == true khi nộp bài; tự động tạo Ticket M11; self-approval guard; hỗ trợ tác giả rút bài (Withdraw) về Draft |
 | D-084 | Dùng M02-PUBLIC-MODERATION-CHECKLIST-1.0 cho xây dựng checklist kiểm duyệt công khai | Khung 4 trụ cột kiểm duyệt (Kỹ thuật, Bản quyền REL-04/CT-01, Sư phạm, AI Safety); zero-violation approval guard (cấm duyệt nếu vi phạm bản quyền); ModerationScorecard bất biến; self-approval guard; audit trail ACT-M11-04 |
 | D-085 | Dùng M02-REJECTION-REVISION-1.0 cho thiết kế yêu cầu sửa và từ chối | Phân định 2 nhánh phản hồi: REQUEST_CHANGES (về Draft, IsMutationLocked=false, ResubmissionCount++) và REJECT (về Archived vĩnh viễn); RejectionReasonCatalog chuẩn hóa; moderatorNotes >= 20 char; giới hạn tối đa N <= 3 lần nộp lại |
+| D-086 | Dùng M02-SET-VERSIONED-PUBLISHING-1.0 cho thiết kế xuất bản theo phiên bản | Snapshots bất biến VocabularySetVersion (SetSnapshotJson, RevisionDigest); đánh số phiên bản SemVer (vX.Y.Z); M03 session pinning; giao thức Rollback khẩn cấp SLA <= 30s xóa Redis cache |
 
 ## Khi nào cần thêm quyết định
 
