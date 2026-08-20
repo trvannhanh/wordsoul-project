@@ -17,6 +17,7 @@
 - [Xung đột và lịch hiệu lực thay đổi quản trị M11](XUNG-DOT-VA-LICH-HIEU-LUC.md)
 - [Thực thi và rollback thay đổi quản trị M11](THUC-THI-VA-ROLLBACK-THAY-DOI.md)
 - [Sổ đăng ký cấu hình M11](SO-DANG-KY-CAU-HINH.md)
+- [Kiểm tra giá trị và phụ thuộc cấu hình M11](KIEM-TRA-GIA-TRI-VA-PHU-THUOC-CAU-HINH.md)
 - [Từ điển chỉ số quản trị M11](TU-DIEN-CHI-SO-QUAN-TRI.md)
 - [Ma trận nội dung quản trị chéo module M11](MA-TRAN-NOI-DUNG-QUAN-TRI-CHEO-MODULE.md)
 - [Task backlog](TASK-BACKLOG.md)
