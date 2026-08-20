@@ -24,6 +24,7 @@
 - [Quay lại và xử lý khóa ngừng dùng M11](QUAY-LAI-VA-XU-LY-KHOA-NGUNG-DUNG.md)
 - [Từ điển chỉ số quản trị M11](TU-DIEN-CHI-SO-QUAN-TRI.md)
 - [Ma trận nội dung quản trị chéo module M11](MA-TRAN-NOI-DUNG-QUAN-TRI-CHEO-MODULE.md)
+- [Vòng đời nội dung quản trị M11](VONG-DOI-NOI-DUNG-QUAN-TRI.md)
 - [Task backlog](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 
