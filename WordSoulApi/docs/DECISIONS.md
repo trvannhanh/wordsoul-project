@@ -34,6 +34,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-026 | Dùng M01-ABUSE-1.0 để kiểm soát thử đăng nhập bất thường | Áp composite source/account/device/spray/distributed buckets; automated risk chỉ có trạng thái tạm thời và recovery, không dùng khóa quản trị/vĩnh viễn; correct credential trong risk state cần step-up, còn failed attempts đơn thuần không tự thu hồi phiên hiện có |
 | D-027 | Dùng M01-INACTIVE-1.0 để xử lý đăng nhập theo trạng thái tài khoản | State-specific result chỉ sau credential/session proof; chờ xác minh được limited session học giới hạn + ticket 10 phút, pending state khác chỉ có action đúng purpose; locked/inactive không tự mở, pending deletion chỉ review/cancel khi còn reversible, deleted identity luôn generic failure và không thể phục hồi/liên kết lại |
 | D-028 | Dùng M01-SESSION-1.0 làm chính sách vòng đời phiên | Mỗi login tạo session family riêng; learner access 15 phút/idle 7 ngày/absolute 30 ngày, limited 10 phút/24 giờ/7 ngày, admin 10 phút/30 phút/8 giờ; refresh one-time chỉ lưu digest, access luôn chịu current state/security/policy/restriction và revocation không chờ token hết hạn |
+| D-029 | Dùng M01-REFRESH-1.0 cho rotation và reuse detection | Refresh request không nhận user ID; mỗi generation có một CAS successor; retry cùng operation được trả đúng response mã hóa trong 60 giây, còn reuse bằng operation khác revoke family và cảnh báo; không tái tạo token khi escrow hết hạn hoặc commit chưa chắc chắn |
 
 ## Khi nào cần thêm quyết định
 

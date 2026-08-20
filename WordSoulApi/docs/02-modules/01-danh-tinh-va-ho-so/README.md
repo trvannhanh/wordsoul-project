@@ -19,6 +19,7 @@
 - [Kiểm soát thử đăng nhập bất thường M01](KIEM-SOAT-THU-DANG-NHAP-BAT-THUONG.md)
 - [Xử lý tài khoản không hoạt động M01](XU-LY-TAI-KHOAN-KHONG-HOAT-DONG.md)
 - [Chính sách vòng đời phiên M01](CHINH-SACH-VONG-DOI-PHIEN.md)
+- [Gia hạn phiên và phát hiện tái sử dụng M01](GIA-HAN-VA-PHAT-HIEN-TAI-SU-DUNG.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 
