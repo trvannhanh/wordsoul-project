@@ -19,6 +19,7 @@
 - [Chuẩn hóa kiểm duyệt tài sản M02](CHUAN-HOA-KIEM-DUYET-TAI-SAN.md)
 - [Thiết kế xử lý tài sản lỗi hoặc thiếu M02](THIET-KE-XU-LY-TAI-SAN-LOI-HOAC-THIEU.md)
 - [Xây dựng ma trận quyền bộ từ M02](MA-TRAN-QUYEN-BO-TU.md)
+- [Thiết kế vòng đời bộ từ M02](THIET-KE-VONG-DOI-BO-TU.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 - [Đánh giá hiện trạng A-WP02](DANH-GIA-HIEN-TRANG-A-WP02.md)
