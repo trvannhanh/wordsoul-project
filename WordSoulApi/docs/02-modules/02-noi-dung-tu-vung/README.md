@@ -11,6 +11,7 @@
 - [Chuẩn hóa cấp độ và độ khó M02](CHUAN-HOA-CAP-DO-VA-DO-KHO.md)
 - [Xác định chuẩn chất lượng mục từ M02](XAC-DINH-CHUAN-CHAT-LUONG-MUC-TU.md)
 - [Xác định vòng đời mục từ M02](VONG-DOI-MUC-TU.md)
+- [Thiết kế phiên bản hóa mục từ — Lát A M02](THIET-KE-PHIEN-BAN-HOA-MUC-TU-A.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 - [Đánh giá hiện trạng A-WP02](DANH-GIA-HIEN-TRANG-A-WP02.md)

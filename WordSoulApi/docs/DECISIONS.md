@@ -68,6 +68,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-060 | Dùng M02-CEFR-DIFFICULTY-1.0 cho chuẩn hóa cấp độ và độ khó | Bắt buộc gán 1 trong 6 cấp độ CEFR chuẩn (A1-C2) khi xuất bản mục từ master; chỉ số độ khó động ItemDifficultyScore D_item [1.0, 10.0] cập nhật theo tỷ lệ trả lời sai E_rate và latency (với N_total >= 30); chỉ số độ khó bộ từ D_set tính theo trung bình trọng số để gợi ý bộ từ theo vùng thử thách ZPD |
 | D-061 | Dùng M02-ITEM-QUALITY-1.0 cho chuẩn chất lượng mục từ | QualityScore [0-100%] dựa trên 7 tiêu chí thành phần; điều kiện cứng xuất bản: QualityScore >= 80% AND rightsCleared == true (REL-04/CT-01); phân cấp 3 huy hiệu (Gold 100%, Standard 80-99%, Substandard <80%); cấm xuất bản bộ từ chứa từ Substandard |
 | D-062 | Dùng M02-HEADWORD-LIFECYCLE-1.0 cho vòng đời mục từ | Đồng bộ 8 trạng thái vòng đời chuẩn M11 (Draft -> Submitted -> InReview -> Approved -> Scheduled -> Published -> Deprecated -> Archived/Recalled); cấm tác giả tự duyệt (Self-Approval Guard); chốt QualityScore >= 80% & rightsCleared == true; lệnh Thu hồi Khẩn cấp <= 60s gỡ cache công khai |
+| D-063 | Dùng M02-HEADWORD-VERSIONING-1.0 cho phiên bản hóa mục từ — lát A | Mô hình 1-N VocabularyRevision bất biến append-only; mã băm payload revisionDigest; ghim phiên bản cho phiên học M03 (Session Revision Pinning); bảo toàn M04 progress theo VocabularyId; rollback tạo version N+1 preserving audit history |
 
 ## Khi nào cần thêm quyết định
 
