@@ -53,7 +53,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | M12-T004 | M12 | Đặc tả hợp đồng dữ liệu chuẩn | M12-T002, M12-T003 | Hoàn thành | Đầu ra đạt; tự kiểm A-G04, A-G05; REL-03 | M12-CONTRACT-1.0/D-021 chốt request/result/attempt/event envelope, protected refs, keyed fingerprint, data classes/versioning và 12 case; 5 finding có task tiếp nhận, A-G04/A-G05/REL-03 còn chờ enforcement/runtime evidence. |
 | M12-T005 | M12 | Chuẩn hóa trạng thái kết quả và lỗi | M12-T004 | Hoàn thành | Đầu ra đạt; tự kiểm A-G04; REL-03 | M12-RESULT-1.0/D-022 chốt 8 status, 26 reason code, finality/transition, retry/reconcile advice, adapter mapping và 14 case; 5 finding có task tiếp nhận, A-G04/REL-03 còn chờ runtime mapping/evidence. |
 | M12-T021 | M12 | Lập danh mục loại tài sản số | M12-T002; A0-T004 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G03, A-G05; REL-04 | — |
-| M12-T031 | M12 | Lập danh mục use case trạng thái chia sẻ | M12-T002 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G04; REL-03 | — |
+| M12-T031 | M12 | Lập danh mục use case trạng thái chia sẻ | M12-T002 | Hoàn thành | Đầu ra đạt; tự kiểm A-G04; REL-03 | M12-STATE-REG-1.0/D-023 kiểm kê 19 use case cache/queue/lock/realtime/limiter/operation state với truth, namespace, lifetime, consistency/quota, criticality/fail mode; 10 finding có task tiếp nhận, A-G04/REL-03 còn chờ runtime evidence. |
 | M12-T040 | M12 | Kiểm kê và phân loại bí mật | A0-T003; M12-T002 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G05; REL-03 | — |
 | M12-T042-A | M12 | Lập bản đồ dữ liệu rời hệ thống — lát A | M12-T004; A0-T001, A0-T003 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G05; REL-01, REL-03 | — |
 | M12-T044-A | M12 | Xây dựng sổ quyền tài sản — lát A | M12-T021; A0-T004 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G03, A-G05; REL-04 | — |
