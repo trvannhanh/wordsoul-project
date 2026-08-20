@@ -27,6 +27,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-019 | Dùng M12-CAP-REG-1.0 làm registry năng lực tích hợp | Tách implementation, configuration và activation; DI/config/credential presence không chứng minh enabled hay healthy; capability chưa có runtime evidence giữ `unknown`/`unverified`; AI sinh nội dung và xử lý giọng nói người dùng vẫn tắt theo D-010 |
 | D-020 | Dùng M12-CRIT-1.0 để phân loại criticality theo lát use case | C0 bảo vệ safety/quyền/durable truth phải fail-closed hoặc dừng lát khi không chắc chắn; C1 giữ hành trình lõi bằng pending/reconcile; C2 được suy giảm mà không đổi truth; C3 không có traffic/thu dữ liệu; severity sự cố được đánh giá riêng theo tác động thật |
 | D-021 | Dùng M12-CONTRACT-1.0 làm envelope dữ liệu chuẩn qua ranh giới tích hợp | Source module sở hữu operation ID/fingerprint/purpose/deadline; M12 sở hữu attempt và provider mapping; consumer chỉ nhận result versioned, protected refs và metadata allowlist; secret/provider payload không được vượt boundary |
+| D-022 | Dùng M12-RESULT-1.0 làm taxonomy kết quả/lỗi tích hợp | Chỉ tám status chuẩn đi qua consumer boundary; `unknown` buộc reconcile khi effect chưa biết, `noData` không là lỗi, chỉ temporary failure đã chứng minh retry-safe mới có thể retry và final result không bị late/duplicate outcome ghi đè |
 
 ## Khi nào cần thêm quyết định
 
