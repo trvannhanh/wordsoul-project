@@ -27,6 +27,7 @@
 - [Thiết kế thay đổi tên hiển thị — lát A M01](THIET-KE-THAY-DOI-TEN-HIEN-THI-A.md)
 - [Chuẩn hóa múi giờ và giờ học mong muốn — lát A M01](CHUAN-HOA-MUI-GIO-VA-GIO-HOC-MONG-MUON-A.md)
 - [Thiết kế đăng ký nhiều thiết bị nhận tin — lát A M01](THIET-KE-DANG-KY-NHIEU-THIET-BI-NHAN-TIN-A.md)
+- [Thiết kế thu hồi thiết bị nhận tin — lát A M01](THIET-KE-THU-HOI-THIET-BI-NHAN-TIN-A.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 
