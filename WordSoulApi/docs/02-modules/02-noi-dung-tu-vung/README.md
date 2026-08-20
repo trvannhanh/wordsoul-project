@@ -26,6 +26,7 @@
 - [Chuẩn hóa nội dung ghi đè theo bộ M02](CHUAN-HOA-NOI-DUNG-GHI-DE-THEO-BO.md)
 - [Xác định tác động thay đổi bộ đang học — lát A M02](XAC-DINH-TAC-DONG-THAY-DOI-BO-DANG-HOC-A.md)
 - [Thiết kế quy trình gửi duyệt M02](THIET-KE-QUY-TRINH-GUI-DUYET.md)
+- [Xây dựng checklist kiểm duyệt công khai M02](XAY-DUNG-CHECKLIST-KIEM-DUYET-CONG-KHAI.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 - [Đánh giá hiện trạng A-WP02](DANH-GIA-HIEN-TRANG-A-WP02.md)
