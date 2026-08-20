@@ -37,6 +37,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-029 | Dùng M01-REFRESH-1.0 cho rotation và reuse detection | Refresh request không nhận user ID; mỗi generation có một CAS successor; retry cùng operation được trả đúng response mã hóa trong 60 giây, còn reuse bằng operation khác revoke family và cảnh báo; không tái tạo token khi escrow hết hạn hoặc commit chưa chắc chắn |
 | D-030 | Dùng M01-RECOVERY-1.0 cho khôi phục quyền truy cập | Request luôn trung tính; chỉ email đã xác minh đủ điều kiện nhận code 12 ký tự sống 15 phút/tối đa 5 lần thử; reset atomically đổi verifier, tăng security epoch, thu hồi mọi phiên và bắt đăng nhập lại; không tự mở khóa quản trị hoặc phục hồi identity đã xóa |
 | D-031 | Dùng M01-SEC-CHANGE-1.0 cho thay đổi mật khẩu/email | Security mutation chỉ từ full current session + re-auth tối đa 5 phút; đổi mật khẩu reissue đúng current family và revoke family khác; đổi email cần proof cả kênh cũ/mới, revoke all và login lại; profile/admin endpoint không được kiêm security change |
+| D-032 | Dùng M11-DICT-1.0 làm từ điển quản trị | Role không phải permission, permission phải có scope và enforcement current-state; M11 không chiếm source truth module; audit/activity/log và các namespace account/session/change/config/job/case/incident/capability không được dùng thay nhau |
 
 ## Khi nào cần thêm quyết định
 
