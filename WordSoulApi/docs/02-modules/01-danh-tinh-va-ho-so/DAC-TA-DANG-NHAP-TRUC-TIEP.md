@@ -49,7 +49,7 @@ Unknown fields bị từ chối. Body không nhận username, role, remember-me 
 | State/điều kiện | Full session | Public result | Next action |
 |---|---|---|---|
 | `Hoạt động`, email verified, policy current, không restriction chặn | Có, qua M01-T016 | `200 authenticated` | Session response theo contract riêng |
-| `Chờ xác minh thư` | Không | `403 LOGIN_ACTION_REQUIRED` sau credential đúng | Action ticket phạm vi resend/verify, không full token |
+| `Chờ xác minh thư` | Không full session; có limited session theo M01-INACTIVE-1.0 | `200 LOGIN_LIMITED` sau credential đúng và session/audit commit | Limited learning envelope + action ticket resend/verify; không full token/scope |
 | `Chờ điều kiện tuổi/đồng ý` | Không | `403 LOGIN_ACTION_REQUIRED` sau credential đúng | Action ticket chỉ cho policy journey đã resolve |
 | `Tạm khóa do rủi ro` | Không | `403 LOGIN_UNAVAILABLE` | Recovery/support generic; không tiết lộ rule/tín hiệu |
 | `Khóa quản trị` / `Ngừng hoạt động` | Không | `403 LOGIN_UNAVAILABLE` | Kênh support chung nếu policy cho phép |
@@ -64,6 +64,7 @@ Action ticket là opaque, TTL ngắn, audience/purpose/account generation bound,
 | Trường hợp | HTTP/semantic | Nội dung tối đa |
 |---|---|---|
 | Eligible và session commit | `200 LOGIN_AUTHENTICATED` | Session envelope versioned; subject/role tối thiểu theo M01-T016 |
+| Chờ xác minh và limited session commit | `200 LOGIN_LIMITED` | Session scope học giới hạn + verify action ticket; không full role/capability |
 | Email không tồn tại/no direct credential/password sai | `401 LOGIN_INVALID_CREDENTIALS` | Thông điệp và latency envelope chung |
 | Credential đúng nhưng cần verify/policy | `403 LOGIN_ACTION_REQUIRED` | Generic nextAction + action ticket; không role/tài sản/internal state |
 | Credential đúng nhưng blocked state | `403 LOGIN_UNAVAILABLE` | Support/retry guidance chung; không reason nội bộ |
@@ -113,7 +114,7 @@ Không dùng khác biệt status/body/header/cookie dễ quan sát để phân b
 | LOGIN-C06 | Dùng display name/username | Reject schema hoặc generic failure; không lookup username |
 | LOGIN-C07 | Password có leading/trailing whitespace | Verify nguyên trạng; không trim/normalize |
 | LOGIN-C08 | Password/body quá giới hạn hoặc unknown fields | 400 trước lookup; không log/echo secret |
-| LOGIN-C09 | Chờ xác minh, credential đúng | Không full session; action-required ticket đúng purpose/TTL |
+| LOGIN-C09 | Chờ xác minh, credential đúng | Limited session đúng scope sau commit + verify ticket đúng purpose/TTL; không full session |
 | LOGIN-C10 | Chờ consent/policy, credential đúng | Không full session; policy action fail-closed nếu resolver unknown |
 | LOGIN-C11 | Tạm khóa/khóa quản trị/ngừng hoạt động | Không session; generic unavailable, audit state denial |
 | LOGIN-C12 | Chờ xóa/đã xóa | Không session/khôi phục ngầm; response theo retention policy |
@@ -146,7 +147,7 @@ Kết quả quan sát ngày 2026-08-20; chưa phải bằng chứng runtime.
 
 | Mã | Phần chưa chốt | Baseline an toàn | Nguồn/task xử lý |
 |---|---|---|---|
-| M01-LOGIN-F02 | State-specific UX/action ticket/recovery | Không full session; ticket TTL ngắn, purpose-bound, không lộ state nội bộ | M01-T012, M01-T019 |
+| M01-LOGIN-F02 | Recovery proof/session handoff phía sau action ticket | Ticket 10 phút/purpose-bound theo M01-INACTIVE-1.0; không full session ngoài state; recovery không hạ chuẩn | M01-T016, M01-T019 |
 | M01-LOGIN-F03 | Session/token claim, TTL, rotation và multi-device | Không dùng token cũ/shared field làm truth; session store/audit fail-closed | M01-T016–T018 |
 | M01-LOGIN-F04 | Market/age/consent eligibility cuối | Policy unknown/stale không cấp session; không tự coi adult/consented | REL-01; M01-T012 |
 

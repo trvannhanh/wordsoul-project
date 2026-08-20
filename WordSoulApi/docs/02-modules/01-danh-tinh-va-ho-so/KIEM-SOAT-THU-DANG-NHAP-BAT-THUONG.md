@@ -171,7 +171,7 @@ Các sai lệch I01–I06 là release blocker cho direct login theo M01-ABUSE-1.
 
 | Finding ID | Khoảng trống | Baseline an toàn | Task tiếp nhận |
 |---|---|---|---|
-| M01-ABUSE-F01 | Action ticket/UX cho Elevated/Protected và account lifecycle interaction | Không full session; generic public response; risk state khác admin lock | M01-T012, M01-T016, M01-T019 |
+| M01-ABUSE-F01 | Session encoding và recovery proof phía sau risk action ticket | Ticket/state interaction đã chốt ở M01-INACTIVE-1.0; không full session; risk state khác admin lock | M01-T016, M01-T019 |
 | M01-ABUSE-F02 | Event schema, operational alert owner/response/tuning | Metadata allowlist, no raw identity, threshold chỉ versioned | M01-T038–T041; M11-T031–T037 |
 | M01-ABUSE-F03 | Distributed store, proxy, composite bucket và failure runtime | Không allow-all; direct login chưa đạt release | M12-T047-A; REL-03 |
 | M01-ABUSE-F04 | Session action khi compromise được xác nhận | Failed attempts không revoke; confirmed compromise theo D-009 | M01-T016–T020 |

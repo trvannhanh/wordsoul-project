@@ -117,7 +117,6 @@ Kết quả dưới đây được quan sát từ mã nguồn ngày 2026-08-19. 
 | Mã | Phần chưa chốt | Trạng thái an toàn trong baseline này | Nguồn/task xử lý |
 |---|---|---|---|
 | M01-LC-F01 | Thị trường, nhóm tuổi, bằng chứng và quyền khi thiếu/rút đồng ý | Không kích hoạt nhánh hoặc mở năng lực nhạy cảm khi chưa có kết luận | REL01-Q01–Q07; M01-T007 |
-| M01-LC-F02 | Ngưỡng/rule đưa tài khoản vào tạm khóa do rủi ro | Không tự khóa từ tín hiệu vô chủ; sự cố xác nhận vẫn có thể khóa quản trị đúng quyền | M01-T011, M01-T039 |
 | M01-LC-F03 | Thời hạn phiên quản trị, khóa, thời gian chờ xóa và điểm không thể hủy | Không đặt số giả; dùng cấu hình đã duyệt, thiếu cấu hình thì không mở hành trình liên quan | M01-T016, M01-T031, M01-T035–T036; M11 cấu hình |
 | M01-LC-F04 | Cơ chế rotation, phát hiện reuse và thứ tự thu hồi access/refresh | Baseline yêu cầu chặn/revoke; không coi một refresh token là toàn bộ phiên | M01-T016–T018 |
 
@@ -127,7 +126,7 @@ Kết quả dưới đây được quan sát từ mã nguồn ngày 2026-08-19. 
 - Tám trạng thái chính có điều kiện vào/ra, hành động cho phép/từ chối, tác động phiên và hiển thị dữ liệu rõ; lớp phủ hạn chế được tách riêng.
 - Mười ba chuyển hợp lệ và sáu chuyển bị cấm bao phủ đăng ký, xác minh, điều kiện tuổi/đồng ý, khóa, mở lại, ngừng hoạt động và xóa.
 - Tên sáu trạng thái trọng tâm khớp ma trận A-G01; khóa/xóa không dựa vào token còn hạn và không tự mở lại.
-- Bốn phần chưa chốt đã chuyển thành finding có trạng thái an toàn và task/REL tiếp nhận; không còn điểm chờ vô chủ.
+- Ba phần chưa chốt còn lại có trạng thái an toàn và task/REL tiếp nhận; M01-LC-F02 đã đóng bằng M01-ABUSE-1.0/M01-INACTIVE-1.0, không còn điểm chờ vô chủ.
 - Sáu sai lệch triển khai tĩnh có task tiếp nhận; vì chưa có sửa mã hoặc kiểm thử runtime, chúng vẫn là finding mở cho A-G01.
 - REL-01 vẫn mở: nhánh tuổi/đồng ý là điều kiện, không phải kết luận pháp lý hoặc bằng chứng phát hành. Tài liệu này không kết luận A-G01 hay REL-01 đạt và không thay thế G01-C01–G01-C10.
 
