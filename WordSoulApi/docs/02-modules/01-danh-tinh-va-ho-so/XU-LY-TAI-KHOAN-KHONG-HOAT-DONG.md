@@ -141,7 +141,6 @@ I01–I06 là release blocker cho state enforcement; baseline tài liệu không
 
 | Finding ID | Khoảng trống | Baseline an toàn | Task tiếp nhận |
 |---|---|---|---|
-| M01-INACT-F01 | Session family/refresh/claim/current-state enforcement | Không dùng single token/User field; state change fail-closed | M01-T016–T018 |
 | M01-INACT-F02 | Recovery/support/admin lock và transition priority | Không self-unlock hoặc auto-unlock authorized states | M01-T019–T021, T028–T032 |
 | M01-INACT-F03 | Deletion window/irreversible point/manifest | Không giả số; pending delete không mutation/login | M01-T033–T037 |
 | M01-INACT-F04 | REL-01 market/age/consent final behavior | Policy unknown không Active/session | REL-01; M01-T033 |
@@ -153,7 +152,7 @@ I01–I06 là release blocker cho state enforcement; baseline tài liệu không
 - Action ticket 10 phút, purpose/audience/state/security/policy bound, one-time/CAS và không là access/refresh token.
 - Failed attempts không tự lifecycle-lock/revoke; confirmed risk/admin/deletion không auto-unlock; current-state truth thắng token/provider.
 - 18 case bao phủ state/race/failure/notification/restriction/deletion/enumeration; A-G01 có baseline nhưng runtime evidence còn thiếu.
-- 6 sai lệch và 4 finding mở có task tiếp nhận; không kết luận A-G01 đạt.
+- 6 sai lệch và 3 finding mở có task tiếp nhận; M01-INACT-F01 đã đóng bằng M01-SESSION-1.0, chưa có runtime evidence nên không kết luận A-G01 đạt.
 
 ## Lịch sử
 

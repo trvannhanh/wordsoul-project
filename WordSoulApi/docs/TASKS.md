@@ -63,7 +63,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | M01-T013 | M01 | Chuẩn hóa đăng nhập bằng danh tính bên ngoài | M01-T002, T003; M12-T006–T010 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01, A-G04; REL-03 | — |
 | M01-T014 | M01 | Bảo vệ liên kết tài khoản hiện có | M01-T006, T010, T013 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01 | — |
 | M01-T015 | M01 | Xử lý xung đột và gỡ liên kết | M01-T014, T019 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01 | — |
-| M01-T016 | M01 | Chốt chính sách vòng đời phiên | M01-T002, T004 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01, A-G02 | — |
+| M01-T016 | M01 | Chốt chính sách vòng đời phiên | M01-T002, T004 | Hoàn thành | Đầu ra đạt; tự kiểm A-G01, A-G02 | M01-SESSION-1.0/D-028 chốt 4 session class/TTL, family/refresh digest/claim allowlist, multi-device, current-state enforcement, revocation matrix và 20 case; 7 sai lệch + 4 finding có task tiếp nhận. |
 | M01-T017 | M01 | Chuẩn hóa gia hạn và phát hiện tái sử dụng | M01-T012, T016 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01 | — |
 | M01-T018 | M01 | Thiết kế đăng xuất và quản lý phiên | M01-T016; hợp đồng M01-T025 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01 | — |
 | M01-T019 | M01 | Thiết kế khôi phục quyền truy cập | M01-T004, T006, T016; M12 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01 | — |

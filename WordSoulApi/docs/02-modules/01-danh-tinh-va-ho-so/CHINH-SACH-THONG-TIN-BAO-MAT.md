@@ -113,7 +113,7 @@ Kết quả dưới đây được quan sát từ mã nguồn ngày 2026-08-19; 
 | Mã | Phần cần cụ thể hóa | Baseline an toàn hiện hành | Nguồn/task xử lý |
 |---|---|---|---|
 | M01-SEC-F01 | Implementation/verifier algorithm và tham số triển khai theo môi trường | Dùng implementation chuẩn có version/salt/rehash; không tự viết crypto hoặc hạ tham số | M01-T005, M01-T020; security configuration |
-| M01-SEC-F02 | TTL reset token, “phiên còn mới” và ngưỡng/rule rủi ro | Không đặt số giả; thiếu cấu hình thì không mở hành trình, token một lần luôn có hạn | M01-T011, M01-T016, M01-T019–T020, M01-T039 |
+| M01-SEC-F02 | TTL reset token và recovery/change-credential proof | Phiên freshness/risk đã chốt ở M01-SESSION-1.0/M01-ABUSE-1.0; proof một lần luôn có hạn, thiếu policy thì không mở hành trình | M01-T019–T020 |
 | M01-SEC-F03 | Contract/khu vực/retention của nguồn breached-password ngoài | Không gửi giá trị thô/PII; không bật provider trước registry và contract | M12-T001–T005, M12-T040–T044; REL-03 |
 | M01-SEC-F04 | Danh mục quyền quản trị/support và audit fail-closed đầy đủ | Support không xem/đặt mật khẩu; mutation nhạy cảm thiếu quyền/case/audit bị từ chối | M01-T028–T032, M11-T027–T035; REL-02 |
 

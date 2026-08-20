@@ -148,7 +148,6 @@ Kết quả quan sát ngày 2026-08-20; chưa phải bằng chứng runtime.
 | Mã | Phần chưa chốt | Baseline an toàn | Nguồn/task xử lý |
 |---|---|---|---|
 | M01-LOGIN-F02 | Recovery proof/session handoff phía sau action ticket | Ticket 10 phút/purpose-bound theo M01-INACTIVE-1.0; không full session ngoài state; recovery không hạ chuẩn | M01-T016, M01-T019 |
-| M01-LOGIN-F03 | Session/token claim, TTL, rotation và multi-device | Không dùng token cũ/shared field làm truth; session store/audit fail-closed | M01-T016–T018 |
 | M01-LOGIN-F04 | Market/age/consent eligibility cuối | Policy unknown/stale không cấp session; không tự coi adult/consented | REL-01; M01-T012 |
 
 ## Tự kiểm M01-T010 và A-G01
@@ -156,7 +155,7 @@ Kết quả quan sát ngày 2026-08-20; chưa phải bằng chứng runtime.
 - M01-T002/M01-T004 đã hoàn thành; email canonical, generic failure và eligibility gate khớp các contract trước.
 - Request/pipeline/response/session handoff/audit boundary xác định rõ và không mở rộng sang threshold/session lifecycle.
 - Hai mươi case bao phủ enumeration, canonicalization, state/policy, limiter, concurrency, audit/session failure, hash migration và timing/redaction.
-- Chín finding triển khai và ba finding mở có baseline an toàn cùng task/module tiếp nhận; M01-LOGIN-F01 đã được đóng bằng M01-ABUSE-1.0/M12-RATE-1.0/M12-FAIL-1.0.
+- Chín finding triển khai và hai finding mở có baseline an toàn cùng task/module tiếp nhận; M01-LOGIN-F01 đã đóng bằng M01-ABUSE-1.0/M12-RATE-1.0/M12-FAIL-1.0, M01-LOGIN-F03 đã đóng bằng M01-SESSION-1.0.
 - A-G01 vẫn mở vì code hiện tại chưa thực thi contract và chưa có runtime evidence.
 
 ## Lịch sử

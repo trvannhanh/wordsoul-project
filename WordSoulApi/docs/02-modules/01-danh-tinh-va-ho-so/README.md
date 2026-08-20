@@ -18,6 +18,7 @@
 - [Đặc tả đăng nhập trực tiếp M01](DAC-TA-DANG-NHAP-TRUC-TIEP.md)
 - [Kiểm soát thử đăng nhập bất thường M01](KIEM-SOAT-THU-DANG-NHAP-BAT-THUONG.md)
 - [Xử lý tài khoản không hoạt động M01](XU-LY-TAI-KHOAN-KHONG-HOAT-DONG.md)
+- [Chính sách vòng đời phiên M01](CHINH-SACH-VONG-DOI-PHIEN.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 
