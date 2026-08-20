@@ -93,6 +93,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-085 | Dùng M02-REJECTION-REVISION-1.0 cho thiết kế yêu cầu sửa và từ chối | Phân định 2 nhánh phản hồi: REQUEST_CHANGES (về Draft, IsMutationLocked=false, ResubmissionCount++) và REJECT (về Archived vĩnh viễn); RejectionReasonCatalog chuẩn hóa; moderatorNotes >= 20 char; giới hạn tối đa N <= 3 lần nộp lại |
 | D-086 | Dùng M02-SET-VERSIONED-PUBLISHING-1.0 cho thiết kế xuất bản theo phiên bản | Snapshots bất biến VocabularySetVersion (SetSnapshotJson, RevisionDigest); đánh số phiên bản SemVer (vX.Y.Z); M03 session pinning; giao thức Rollback khẩn cấp SLA <= 30s xóa Redis cache |
 | D-087 | Dùng M01-PROFILE-ACCESS-A-1.0 cho chuẩn hóa quyền xem và sửa hồ sơ — lát A | Phân tách DTO Public (UserId, DisplayName, Avatar) và DTO Self (CanonicalEmail, Phone, Settings); cấm sửa readonly fields (Role, AccountStatus, SecurityEpoch); profile edit rate limiter 5/day; support agent unmask require ticketId (REL-01/REL-07) |
+| D-088 | Dùng M01-DISPLAY-NAME-CHANGE-A-1.0 cho thiết kế thay đổi tên hiển thị — lát A | 7-day cooldown between display name changes (LastDisplayNameChangedAtUtc); Impersonation Guard blocking reserved keywords (Admin, WordSoul, System); AI toxicity screening (< 0.05); length 3..50 chars; audit log ACT-M11-05 |
 
 ## Khi nào cần thêm quyết định
 
