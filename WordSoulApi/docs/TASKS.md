@@ -72,7 +72,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | M01-T028 | M01 | Xây dựng ma trận vai trò và quyền | M01-T001; M11-T004 | Hoàn thành | Đầu ra đạt; tự kiểm A-G02; REL-02 | M01-ROLE-MATRIX-1.0/D-075 chốt 6 vai trò tiêu chuẩn (Learner, ContentCreator, SupportAgent, ContentAdmin, SecurityAdmin, SuperAdmin), least privilege REL-02, SecurityEpoch claim invalidation SLA <= 30s in Redis, dual-approval gate for SuperAdmin M01-T030, 10 gate và 20 case. |
 | M01-T029 | M01 | Chuẩn hóa thay đổi vai trò | M01-T016, T028; M11-T031 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02; REL-02 | — |
 | M01-T030 | M01 | Bảo vệ vai trò quản trị cao nhất | M01-T028, T029; M11-T006-A | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02; REL-02 | — |
-| M01-T031 | M01 | Chuẩn hóa khóa và mở tài khoản | M01-T012, T016, T028 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01, A-G02 | — |
+| M01-T031 | M01 | Chuẩn hóa khóa và mở tài khoản | M01-T012, T016, T028 | Hoàn thành | Đầu ra đạt; tự kiểm A-G01, A-G02 | M01-ACCOUNT-LOCK-UNLOCK-1.0/D-092 chốt 2 lock mechanisms (30m TEMPORARY_AUTO_LOCK on 5 failed attempts & ADMIN_PERMANENT_LOCK with lockReason >= 15 chars & ticketId), automatic SecurityEpoch += 1 & Push device deactivation SLA <= 5s, admin unlock protocol, audit trail ACT-M11-31, 10 gate và 20 case. |
 | M01-T032 | M01 | Thiết kế xử lý thay đổi quản trị đồng thời | M01-T029, T031 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02; REL-02 | — |
 | M01-T038 | M01 | Xây dựng danh mục sự kiện danh tính | M01-T002, T028, T033; M11-T031 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01, A-G02 | — |
 | M01-T039 | M01 | Thiết kế cảnh báo hành vi danh tính bất thường | M01-T011, T019, T038 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01, A-G06 | — |

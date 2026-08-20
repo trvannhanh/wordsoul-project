@@ -28,6 +28,7 @@
 - [Chuẩn hóa múi giờ và giờ học mong muốn — lát A M01](CHUAN-HOA-MUI-GIO-VA-GIO-HOC-MONG-MUON-A.md)
 - [Thiết kế đăng ký nhiều thiết bị nhận tin — lát A M01](THIET-KE-DANG-KY-NHIEU-THIET-BI-NHAN-TIN-A.md)
 - [Thiết kế thu hồi thiết bị nhận tin — lát A M01](THIET-KE-THU-HOI-THIET-BI-NHAN-TIN-A.md)
+- [Chuẩn hóa khóa và mở tài khoản M01](CHUAN-HOA-KHOA-VA-MO-TAI-KHOAN.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 
