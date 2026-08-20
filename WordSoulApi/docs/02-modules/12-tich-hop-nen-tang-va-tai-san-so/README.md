@@ -15,6 +15,7 @@
 - [Ma trận giới hạn lưu lượng M12](MA-TRAN-GIOI-HAN-LUU-LUONG.md)
 - [Ma trận fail mode và suy giảm M12](MA-TRAN-FAIL-MODE-VA-SUY-GIAM.md)
 - [Danh mục loại tài sản số M12](DANH-MUC-LOAI-TAI-SAN-SO.md)
+- [Xây dựng sổ quyền tài sản — Lát A M12](SO-QUYEN-TAI-SAN-A.md)
 
 ## Mô tả module
 
