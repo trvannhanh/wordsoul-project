@@ -13,6 +13,7 @@
 - [Xác định vòng đời mục từ M02](VONG-DOI-MUC-TU.md)
 - [Thiết kế phiên bản hóa mục từ — Lát A M02](THIET-KE-PHIEN-BAN-HOA-MUC-TU-A.md)
 - [Chuẩn hóa nội dung cung cấp module học — Lát A M02](CHUAN-HOA-NOI-DUNG-CUNG-CAP-MODULE-HOC-A.md)
+- [Thiết kế ngừng dùng, hợp nhất và thay thế M02](THIET-KE-NGUNG-DUNG-HOP-NHAT-VA-THAY-THE.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 - [Đánh giá hiện trạng A-WP02](DANH-GIA-HIEN-TRANG-A-WP02.md)

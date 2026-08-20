@@ -70,6 +70,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-062 | Dùng M02-HEADWORD-LIFECYCLE-1.0 cho vòng đời mục từ | Đồng bộ 8 trạng thái vòng đời chuẩn M11 (Draft -> Submitted -> InReview -> Approved -> Scheduled -> Published -> Deprecated -> Archived/Recalled); cấm tác giả tự duyệt (Self-Approval Guard); chốt QualityScore >= 80% & rightsCleared == true; lệnh Thu hồi Khẩn cấp <= 60s gỡ cache công khai |
 | D-063 | Dùng M02-HEADWORD-VERSIONING-1.0 cho phiên bản hóa mục từ — lát A | Mô hình 1-N VocabularyRevision bất biến append-only; mã băm payload revisionDigest; ghim phiên bản cho phiên học M03 (Session Revision Pinning); bảo toàn M04 progress theo VocabularyId; rollback tạo version N+1 preserving audit history |
 | D-064 | Dùng M02-LESSON-CONTENT-1.0 cho nội dung cung cấp module học — lát A | Chuẩn hóa DTO LessonContentPayloadDto cung cấp cho M03; lọc activeSense ngữ cảnh theo bộ từ; ghim revisionDigest bất biến; chốt chỉ nạp từ Published đạt QualityScore >= 80% & rightsCleared == true (REL-04/CT-01); Redis caching key lesson_payload đạt SLA sub-50ms |
+| D-065 | Dùng M02-DEPRECATION-REPLACEMENT-1.0 cho ngừng dùng, hợp nhất và thay thế | Chuẩn hóa 3 giao thức (Deprecate pointer ReplacementVocabId, Merge Headwords reassign SetVocab & SRS progress, Replace in Set); bắt buộc quét tác động tham chiếu 5 tầng (M11-T020/D-052); cấm physical delete; tự động bổ sung WordCanonical cũ làm Variant của từ đích |
 
 ## Khi nào cần thêm quyết định
 
