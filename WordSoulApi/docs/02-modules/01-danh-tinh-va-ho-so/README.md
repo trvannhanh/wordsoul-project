@@ -25,6 +25,7 @@
 - [Ma trận vai trò và quyền M01](MA-TRAN-VAI-TRO-VA-QUYEN.md)
 - [Chuẩn hóa quyền xem và sửa hồ sơ — lát A M01](CHUAN-HOA-QUYEN-XEM-VA-SUA-HO-SO-A.md)
 - [Thiết kế thay đổi tên hiển thị — lát A M01](THIET-KE-THAY-DOI-TEN-HIEN-THI-A.md)
+- [Chuẩn hóa múi giờ và giờ học mong muốn — lát A M01](CHUAN-HOA-MUI-GIO-VA-GIO-HOC-MONG-MUON-A.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 

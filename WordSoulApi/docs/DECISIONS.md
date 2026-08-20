@@ -94,6 +94,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-086 | Dùng M02-SET-VERSIONED-PUBLISHING-1.0 cho thiết kế xuất bản theo phiên bản | Snapshots bất biến VocabularySetVersion (SetSnapshotJson, RevisionDigest); đánh số phiên bản SemVer (vX.Y.Z); M03 session pinning; giao thức Rollback khẩn cấp SLA <= 30s xóa Redis cache |
 | D-087 | Dùng M01-PROFILE-ACCESS-A-1.0 cho chuẩn hóa quyền xem và sửa hồ sơ — lát A | Phân tách DTO Public (UserId, DisplayName, Avatar) và DTO Self (CanonicalEmail, Phone, Settings); cấm sửa readonly fields (Role, AccountStatus, SecurityEpoch); profile edit rate limiter 5/day; support agent unmask require ticketId (REL-01/REL-07) |
 | D-088 | Dùng M01-DISPLAY-NAME-CHANGE-A-1.0 cho thiết kế thay đổi tên hiển thị — lát A | 7-day cooldown between display name changes (LastDisplayNameChangedAtUtc); Impersonation Guard blocking reserved keywords (Admin, WordSoul, System); AI toxicity screening (< 0.05); length 3..50 chars; audit log ACT-M11-05 |
+| D-089 | Dùng M01-TIMEZONE-PREFERENCE-A-1.0 cho chuẩn hóa múi giờ và giờ học mong muốn — lát A | Chuỗi múi giờ IANA chuẩn (TimeZoneId); tự động quy đổi PreferredLearningHourLocal (0..23) sang PreferredLearningHourUtc; targetStudyMinutesPerDay 5..300 min; phát sự kiện UserTimezoneUpdatedIntegrationEvent cho M10 (REL-06) |
 
 ## Khi nào cần thêm quyết định
 
