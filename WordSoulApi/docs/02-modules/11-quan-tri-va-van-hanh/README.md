@@ -8,6 +8,7 @@
 - [Từ điển quản trị M11](TU-DIEN-QUAN-TRI.md)
 - [Danh mục hành động quản trị M11](DANH-MUC-HANH-DONG-QUAN-TRI.md)
 - [Danh mục vai trò quản trị M11](DANH-MUC-VAI-TRO-QUAN-TRI.md)
+- [Ma trận quyền tối thiểu M11](MA-TRAN-QUYEN-TOI-THIEU.md)
 - [Sổ đăng ký cấu hình M11](SO-DANG-KY-CAU-HINH.md)
 - [Từ điển chỉ số quản trị M11](TU-DIEN-CHI-SO-QUAN-TRI.md)
 - [Ma trận nội dung quản trị chéo module M11](MA-TRAN-NOI-DUNG-QUAN-TRI-CHEO-MODULE.md)

@@ -165,7 +165,7 @@ I01–I08 là release gap; catalog mô tả target contract và không xác nh�
 
 | Finding ID | Khoảng trống | Baseline an toàn | Task tiếp nhận |
 |---|---|---|---|
-| M11-ACT-F01 | Permission/scope assignment và grant lifecycle cho 13 role | 44 action deny-by-default, role catalog M11-ROLE-1.0 không authorize trực tiếp | M11-T004–T007; M01-T028–T030 |
+| M11-ACT-F01 | Grant/revoke/review lifecycle cho permission matrix đã chốt | M11-PERM-1.0 deny-by-default; stale authorization không có hiệu lực | M11-T005–T007; M01-T029–T030 |
 | M11-ACT-F02 | Change/case/config/content/job/incident lifecycle details | R3/R4 giữ re-auth/reason/version/preview/audit/reconcile tối thiểu | M11-T008–T021, T027–T030, T038–T048 |
 | M11-ACT-F03 | Audit/redaction/access/retention enforcement | Sensitive action/read thiếu immutable audit bị fail-closed | M11-T031–T035; REL-02 |
 | M11-ACT-F04 | Route/job/CLI coverage mapping và runtime deny tests | Entry point không catalog bị chặn phát hành | M11-T049; A-G02 |

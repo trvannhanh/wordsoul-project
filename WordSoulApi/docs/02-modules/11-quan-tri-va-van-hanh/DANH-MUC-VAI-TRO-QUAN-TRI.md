@@ -138,7 +138,6 @@ I01–I06 là release gap; catalog không thay permission matrix hoặc migratio
 
 | Finding ID | Khoảng trống | Baseline an toàn | Task tiếp nhận |
 |---|---|---|---|
-| M11-ROLE-F01 | Permission/action/scope assignment cho 13 role | Role không authorize trực tiếp; deny-by-default | M11-T004; M01-T028 |
 | M11-ROLE-F02 | Grant/revoke/review/session invalidation lifecycle | Không self-grant/temp/emergency; stale authorization fail-closed | M11-T005–T006-A; M01-T029–T032 |
 | M11-ROLE-F03 | R3/R4 action classification/reason/change workflow | Re-auth ≤5 phút + reason/audit; không two-person giả | M11-T007–T011 |
 | M11-ROLE-F04 | Legacy route/role migration và runtime allow/deny/conflict tests | Freeze broad grants, explicit mapping, deny-most-restrictive | M11-T049; A-G02; REL-02 |
@@ -149,7 +148,7 @@ I01–I06 là release gap; catalog không thay permission matrix hoặc migratio
 - Bảy scope dimension, 10 composition/conflict rule và assignment payload chặn missing-global, self-grant, self-audit và stale authorization.
 - Legacy User/Admin/SuperAdmin có migration/freeze/canary/rollback rõ; không auto-map broad role sang target permission.
 - 18 case bao phủ least privilege, multi-role, conflict, review, emergency request, migration, current state và catalog version.
-- 6 sai lệch + 4 finding mở có task tiếp nhận; A-G02/REL-02 còn chờ permission matrix, lifecycle và runtime evidence.
+- 6 sai lệch + 3 finding mở có task tiếp nhận; M11-ROLE-F01 đã được đóng bởi M11-PERM-1.0; A-G02/REL-02 còn chờ grant lifecycle và runtime evidence.
 
 ## Lịch sử
 

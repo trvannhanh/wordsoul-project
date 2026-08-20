@@ -40,6 +40,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-032 | Dùng M11-DICT-1.0 làm từ điển quản trị | Role không phải permission, permission phải có scope và enforcement current-state; M11 không chiếm source truth module; audit/activity/log và các namespace account/session/change/config/job/case/incident/capability không được dùng thay nhau |
 | D-033 | Dùng M11-ACTION-1.0 làm catalog hành động quản trị | 44 action có owner/resource/data class/risk floor/control; R3/R4 cần admin session current-state, re-auth ≤5 phút, reason, audit và CAS/reconcile; entry point không Action ID bị deny release, role/route/UI hiện tại không tự thành permission |
 | D-034 | Dùng M11-ROLE-1.0 làm catalog vai trò quản trị | 13 role chuyên biệt có scope ceiling/exclusion; không wildcard/temp/emergency privilege; multi-role chỉ union trong scope không xung đột, cấm tự cấp–tự kiểm toán; Admin/SuperAdmin legacy phải freeze và migrate explicit, deny-most-restrictive khi overlap |
+| D-035 | Dùng M11-PERM-1.0 làm ma trận quyền tối thiểu | 44 Action ID map Permission ID/role/mode/scope/data/obligation; default deny, read không suy từ write, role không wildcard; R3/R4 cần current admin session + re-auth ≤5 phút/reason/audit; legacy claim, null scope, orphan route và unknown policy đều deny |
 
 ## Khi nào cần thêm quyết định
 
