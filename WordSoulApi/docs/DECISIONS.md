@@ -38,6 +38,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-030 | Dùng M01-RECOVERY-1.0 cho khôi phục quyền truy cập | Request luôn trung tính; chỉ email đã xác minh đủ điều kiện nhận code 12 ký tự sống 15 phút/tối đa 5 lần thử; reset atomically đổi verifier, tăng security epoch, thu hồi mọi phiên và bắt đăng nhập lại; không tự mở khóa quản trị hoặc phục hồi identity đã xóa |
 | D-031 | Dùng M01-SEC-CHANGE-1.0 cho thay đổi mật khẩu/email | Security mutation chỉ từ full current session + re-auth tối đa 5 phút; đổi mật khẩu reissue đúng current family và revoke family khác; đổi email cần proof cả kênh cũ/mới, revoke all và login lại; profile/admin endpoint không được kiêm security change |
 | D-032 | Dùng M11-DICT-1.0 làm từ điển quản trị | Role không phải permission, permission phải có scope và enforcement current-state; M11 không chiếm source truth module; audit/activity/log và các namespace account/session/change/config/job/case/incident/capability không được dùng thay nhau |
+| D-033 | Dùng M11-ACTION-1.0 làm catalog hành động quản trị | 44 action có owner/resource/data class/risk floor/control; R3/R4 cần admin session current-state, re-auth ≤5 phút, reason, audit và CAS/reconcile; entry point không Action ID bị deny release, role/route/UI hiện tại không tự thành permission |
 
 ## Khi nào cần thêm quyết định
 

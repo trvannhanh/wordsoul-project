@@ -43,7 +43,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | M02-T005 | M02 | Chuẩn hóa cấp độ và độ khó | M02-T002 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G03 | — |
 | M02-T006 | M02 | Xác định chuẩn chất lượng mục từ | M02-T002, M02-T005 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G03; REL-04 khi có tài sản | — |
 | M11-T001 | M11 | Thống nhất từ điển quản trị | Không | Hoàn thành | Đầu ra đạt; tự kiểm A-G02, A-G06 | M11-DICT-1.0/D-032 chốt 38 thuật ngữ, 5 ranh owner, 8 namespace state, 10 xung đột, 16 case và 7 sai lệch + 4 finding có task tiếp nhận; A-G02/A-G06 còn chờ matrix/runtime evidence. |
-| M11-T002 | M11 | Lập danh mục hành động quản trị | M11-T001 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02; REL-02 | — |
+| M11-T002 | M11 | Lập danh mục hành động quản trị | M11-T001 | Hoàn thành | Đầu ra đạt; tự kiểm A-G02; REL-02 | M11-ACTION-1.0/D-033 chốt 17 group/44 action xuyên M01–M12, R0–R4 + 10 control, entry-point lifecycle, 16 case và 8 sai lệch + 4 finding có task tiếp nhận; A-G02/REL-02 còn chờ role/audit/runtime evidence. |
 | M11-T012 | M11 | Lập sổ đăng ký cấu hình | M11-T001 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02, A-G06 | — |
 | M11-T018 | M11 | Lập ma trận nội dung quản trị chéo module | M11-T002 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02, A-G03; REL-04 | — |
 | M11-T022 | M11 | Lập từ điển chỉ số quản trị | M11-T001 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G06 | — |

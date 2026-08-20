@@ -141,7 +141,6 @@ I01–I07 là baseline gap, không phải bằng chứng runtime; action catalog
 
 | Finding ID | Khoảng trống | Baseline an toàn | Task tiếp nhận |
 |---|---|---|---|
-| M11-DICT-F01 | Action/resource/risk/data-class catalog đầy đủ | Không cấp permission từ role tên rộng; endpoint chưa đăng ký deny release | M11-T002 |
 | M11-DICT-F02 | Role, permission, scope và separation-of-duty matrix | Deny by default; không temporary/emergency privilege | M11-T003–T007; M01-T028–T030 |
 | M11-DICT-F03 | Audit/activity/log schema, integrity, access và retention | Không dùng log/activity thay audit; sensitive mutation thiếu audit fail-closed | M11-T031–T035 |
 | M11-DICT-F04 | Health/job/incident runtime state và evidence | Unknown/degraded không thành healthy; retry/recovery không dựa process memory | M11-T036–T048; A-G06 |
@@ -150,7 +149,7 @@ I01–I07 là baseline gap, không phải bằng chứng runtime; action catalog
 
 - 38 thuật ngữ chuẩn có một định nghĩa, owner và anti-meaning; actor/subject/resource/action/permission/scope/enforcement được tách rõ.
 - Năm nhóm owner và tám namespace state giữ ranh M01/module nguồn/M11/M12/privacy, không dùng status/role chung làm business truth.
-- M11-DICT-C01–C10 khóa cách dùng gây bypass hoặc nhập nhằng; 7 sai lệch tĩnh và 4 finding mở có task tiếp nhận.
+- M11-DICT-C01–C10 khóa cách dùng gây bypass hoặc nhập nhằng; 7 sai lệch tĩnh và 3 finding mở có task tiếp nhận; M11-DICT-F01 đã được đóng bởi M11-ACTION-1.0.
 - 16 case bao phủ role/permission/scope, stale claim, audit/log, config/job/incident/health và module-source boundary.
 - A-G02/A-G06 có vocabulary baseline nhưng chưa permission matrix/runtime evidence; không kết luận gate đạt.
 
