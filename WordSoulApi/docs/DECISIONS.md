@@ -48,6 +48,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-040 | Dùng M11-CHANGE-DECISION-1.0 cho vòng đời quyết định một actor | Mỗi revision có state/CAS riêng và decision bất biến khóa digest; creator được tự authorize bằng fixed current permission + re-auth, TTL EC-2/3/4 là 30 ngày/7 ngày/24 giờ; input/authority/control đổi invalidates, partial/unknown không thành success |
 | D-041 | Dùng M11-CHANGE-SCHEDULE-1.0 cho conflict và lịch hiệu lực | SQL giữ durable reservation/lease/fencing; write/guard/barrier overlap hoặc unknown fail-closed, UTC là execution truth và DST mơ hồ bị reject; đổi instant/window tạo revision+decision mới, missed window không chạy muộn và role cao không override conflict |
 | D-042 | Dùng M11-CHANGE-EXECUTION-1.0 cho thực thi và rollback quản trị | Exact revision/decision bind stable operation; source adapter bắt buộc expected version/fencing/dedupe/reconcile/verify, 2xx/accepted không phải success; partial/unknown giữ block, retry chỉ proven no-effect + retrySafe, RB-1..3 dùng recovery operation và verified target |
+| D-043 | Dùng M11-CONFIG-REG-1.0 làm registry cấu hình nghiệp vụ/runtime | 29 SystemConfigurations key map CFG-001–029, 7 policy set và 5 exposure profile; category/IsLiveEditable/seed không chứng minh public/live/safe, AP key disabled, access/maintenance/community/retention key fail-closed đến khi consumer/policy/runtime evidence đạt |
 
 ## Khi nào cần thêm quyết định
 
