@@ -98,7 +98,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | M12-T009 | M12 | Đặc tả liên kết và ngắt liên kết | M12-T008; M01-T014–T015 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01 | — |
 | M12-T010 | M12 | Thiết kế suy giảm khi danh tính ngoài lỗi | M12-T003, T009 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01, A-G04; REL-03 | — |
 | M12-T034 | M12 | Xây dựng ma trận giới hạn lưu lượng | M12-T003, T031 | Hoàn thành | Đầu ra đạt; tự kiểm A-G01, A-G04; REL-03 | M12-RATE-1.0/D-024 chốt 23 policy với trusted partition, window/quota, aggregate/local guard, 429/Retry-After và governance; 9 sai lệch + 4 finding có task tiếp nhận, A-G01/A-G04/REL-03 còn chờ enforcement/runtime evidence. |
-| M12-T035 | M12 | Chốt fail-open/fail-closed theo năng lực | M12-T003, T034 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G04; REL-03 | — |
+| M12-T035 | M12 | Chốt fail-open/fail-closed theo năng lực | M12-T003, T034 | Hoàn thành | Đầu ra đạt; tự kiểm A-G04; REL-03 | M12-FAIL-1.0/D-025 chốt 7 mode cho 15 capability/23 rate policy, recovery state và 12 case; FO không được phép, 8 sai lệch + 4 finding có task tiếp nhận; CT-05 vẫn giữ đến runtime evidence. |
 | M12-T041 | M12 | Thiết kế vòng đời bí mật | M12-T040; M11-T004 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G05; REL-03 | — |
 | M12-T043 | M12 | Chốt che dữ liệu và chính sách log | M12-T040–T042-A; M11-T031–T033 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02, A-G05; REL-03 | — |
 | M11-T008 | M11 | Đặc tả yêu cầu thay đổi | M11-T007 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02, A-G06; REL-02 | — |

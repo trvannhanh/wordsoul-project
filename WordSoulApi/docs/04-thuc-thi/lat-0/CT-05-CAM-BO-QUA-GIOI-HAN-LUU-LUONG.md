@@ -3,7 +3,7 @@
 | Trường | Nội dung khởi tạo |
 |---|---|
 | Task | A0-T010 |
-| Trạng thái | Có hiệu lực từ 2026-08-18; ma trận limiter và bằng chứng runtime chờ các task liên quan |
+| Trạng thái | Có hiệu lực từ 2026-08-18; M12-T034/T035 đã hoàn thành baseline thiết kế ngày 2026-08-20, bằng chứng runtime vẫn chờ |
 | Dependency | A0-T003 đã hoàn thành; REL-03 đã mở và chưa đóng |
 | Chủ trì / tự xác nhận | WSA-7K2 |
 | Phạm vi áp dụng | API công khai/nội bộ, callback provider, tác vụ quản trị, batch/job và mọi năng lực có quota/chi phí/rủi ro lạm dụng trong Giai đoạn A |
@@ -32,7 +32,7 @@
 
 | Phạm vi kiểm tra | Kết quả yêu cầu | Trạng thái |
 |---|---|---|
-| Registry năng lực A-G04 | Mỗi năng lực có chủ, nguồn gọi, hạn mức, budget, failure mode, suy giảm và metric/cảnh báo | Tiêu chí đã ghi; chờ M12-T034/M12-T035 và registry runtime |
+| Registry năng lực A-G04 | Mỗi năng lực có chủ, nguồn gọi, hạn mức, budget, failure mode, suy giảm và metric/cảnh báo | Baseline M12-RATE-1.0/M12-FAIL-1.0 đã có; chờ enforcement, metric/cảnh báo và registry runtime |
 | Giả mạo dấu hiệu trusted/internal | Header/claim/nhãn do caller cung cấp không làm đổi bucket hoặc bỏ qua giới hạn | Tiêu chí đã ghi; chờ bằng chứng runtime |
 | G04-R02 | 429/hết quota không gây retry vô hạn, ghi lặp hoặc chuyển sang đường miễn | Tiêu chí đã ghi; chờ bằng chứng runtime |
 | G04-R05 | Redis/shared state lỗi không mặc định allow-all; failure mode đúng criticality và không ghi đôi | Tiêu chí đã ghi; chờ bằng chứng runtime |
@@ -60,3 +60,4 @@
 | Ngày | Người cập nhật | Thay đổi | Bằng chứng |
 |---|---|---|---|
 | 2026-08-18 | WSA-7K2 | Kích hoạt CT-05 theo workflow một người; chốt trust boundary, failure mode, ma trận nguồn gọi và tự kiểm A-G04 | A0-T003 hoàn thành; REL-03 đã mở; chưa có bằng chứng runtime |
+| 2026-08-20 | WSA-7K2 | Ghi nhận M12-T034/T035 hoàn thành baseline rate/fail-mode; tiếp tục giữ CT-05 vì G04-R02/R05 và runtime coverage chưa đạt | M12-RATE-1.0; M12-FAIL-1.0; D-024–D-025 |

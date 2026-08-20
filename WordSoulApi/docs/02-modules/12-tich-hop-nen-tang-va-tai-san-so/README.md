@@ -13,6 +13,7 @@
 - [Trạng thái kết quả và lỗi chuẩn M12](TRANG-THAI-KET-QUA-VA-LOI.md)
 - [Sổ đăng ký use case trạng thái chia sẻ M12](SO-DANG-KY-TRANG-THAI-CHIA-SE.md)
 - [Ma trận giới hạn lưu lượng M12](MA-TRAN-GIOI-HAN-LUU-LUONG.md)
+- [Ma trận fail mode và suy giảm M12](MA-TRAN-FAIL-MODE-VA-SUY-GIAM.md)
 
 ## Mô tả module
 
