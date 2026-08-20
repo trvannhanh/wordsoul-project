@@ -95,6 +95,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-087 | Dùng M01-PROFILE-ACCESS-A-1.0 cho chuẩn hóa quyền xem và sửa hồ sơ — lát A | Phân tách DTO Public (UserId, DisplayName, Avatar) và DTO Self (CanonicalEmail, Phone, Settings); cấm sửa readonly fields (Role, AccountStatus, SecurityEpoch); profile edit rate limiter 5/day; support agent unmask require ticketId (REL-01/REL-07) |
 | D-088 | Dùng M01-DISPLAY-NAME-CHANGE-A-1.0 cho thiết kế thay đổi tên hiển thị — lát A | 7-day cooldown between display name changes (LastDisplayNameChangedAtUtc); Impersonation Guard blocking reserved keywords (Admin, WordSoul, System); AI toxicity screening (< 0.05); length 3..50 chars; audit log ACT-M11-05 |
 | D-089 | Dùng M01-TIMEZONE-PREFERENCE-A-1.0 cho chuẩn hóa múi giờ và giờ học mong muốn — lát A | Chuỗi múi giờ IANA chuẩn (TimeZoneId); tự động quy đổi PreferredLearningHourLocal (0..23) sang PreferredLearningHourUtc; targetStudyMinutesPerDay 5..300 min; phát sự kiện UserTimezoneUpdatedIntegrationEvent cho M10 (REL-06) |
+| D-090 | Dùng M01-MULTI-DEVICE-PUSH-REGISTER-A-1.0 cho thiết kế đăng ký nhiều thiết bị nhận tin — lát A | Giới hạn tối đa 5 thiết bị active (MaxActivePushDevices = 5); tự động hủy active thiết bị cũ nhất khi đăng ký thiết bị 6; duy nhất (UserId, DeviceId) UPSERT token; phân loại Platform (iOS/Android/Web); phát sự kiện cho M10 (REL-06) |
 
 ## Khi nào cần thêm quyết định
 
