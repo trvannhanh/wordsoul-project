@@ -81,6 +81,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-073 | Dùng M02-ASSET-DEGRADATION-1.0 cho xử lý tài sản lỗi hoặc thiếu | Hạ tầng fallback 3 cấp (Client Web Speech API, POS SVG icon placeholder, Text-only mode) cấm crash phiên học M03 SLA < 50ms; minus 25% QualityScore khi thiếu audio; tự động chuyển về InReview khi QualityScore < 80%; cảnh báo > 48h WARN_VOCAB_MISSING_AUDIO & Prometheus metric |
 | D-074 | Dùng M11-SAFE-USER-SEARCH-1.0 cho đặc tả tìm kiếm người dùng an toàn | Tìm kiếm theo exact (UserId/Email/Phone) hoặc wildcard (DisplayName >= 3 char); PII masking mặc định (maskedEmail/maskedPhone); chỉ unmask khi có ticketId vụ việc mở hợp lệ (REL-07); anti-scraping rate limiter max 10 req/min/agent; audit trail ACT-M11-27 |
 | D-075 | Dùng M01-ROLE-MATRIX-1.0 cho ma trận vai trò và quyền | Chuẩn hóa 6 vai trò (Learner, ContentCreator, SupportAgent, ContentAdmin, SecurityAdmin, SuperAdmin); tuân thủ phân quyền tối thiểu REL-02; cơ chế thu hồi quyền tức thời qua SecurityEpoch trong Redis SLA <= 30s; bảo vệ SuperAdmin bằng phê duyệt kép M01-T030 |
+| D-076 | Dùng M02-SET-PERMISSIONS-1.0 cho ma trận quyền bộ từ | Phân định bộ từ cá nhân (CreatorId ownership) và bộ từ hệ thống (ContentAdmin governance); SetAuthorizationGuard kiểm tra quyền tối thiểu REL-02; cấm xem/sửa bộ từ cá nhân của người khác (Deny 403); cấm self-approval; soft-archive khi xóa bộ từ hệ thống |
 
 ## Khi nào cần thêm quyết định
 
