@@ -24,6 +24,7 @@
 - [Chuẩn hóa thêm và bỏ mục từ trong bộ M02](CHUAN-HOA-THEM-VA-BO-MUC-TU-TRONG-BO.md)
 - [Thiết kế sắp xếp thành phần bộ M02](THIET-KE-SAP-XEP-THANH-PHAN-BO.md)
 - [Chuẩn hóa nội dung ghi đè theo bộ M02](CHUAN-HOA-NOI-DUNG-GHI-DE-THEO-BO.md)
+- [Xác định tác động thay đổi bộ đang học — lát A M02](XAC-DINH-TAC-DONG-THAY-DOI-BO-DANG-HOC-A.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 - [Đánh giá hiện trạng A-WP02](DANH-GIA-HIEN-TRANG-A-WP02.md)
