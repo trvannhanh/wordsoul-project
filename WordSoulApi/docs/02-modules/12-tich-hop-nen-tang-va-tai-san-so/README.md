@@ -9,6 +9,7 @@
 - [Từ điển tích hợp M12](TU-DIEN-TICH-HOP.md)
 - [Sổ đăng ký năng lực tích hợp M12](SO-DANG-KY-NANG-LUC-TICH-HOP.md)
 - [Phân loại mức quan trọng và tác động tích hợp M12](PHAN-LOAI-MUC-QUAN-TRONG-VA-TAC-DONG.md)
+- [Hợp đồng dữ liệu chuẩn tích hợp M12](HOP-DONG-DU-LIEU-CHUAN.md)
 
 ## Mô tả module
 
