@@ -116,7 +116,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | M11-T038 | M11 | Lập sổ đăng ký công việc nền | M11-T036 thuộc Lát 4 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G06; REL-03, REL-07 | — |
 | M11-T039 | M11 | Thiết kế lịch sử chạy và phục hồi công việc | M11-T004, T038 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02, A-G06; REL-07 | — |
 | M11-T040-A | M11 | Thiết kế đối soát và cảnh báo sai lệch — lát A | M11-T039; M11-T024 ở B cho bản đầy đủ | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G06; REL-07 | — |
-| M02-T007 | M02 | Xác định vòng đời mục từ | M02-T001; M11-T019 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G03 | — |
+| M02-T007 | M02 | Xác định vòng đời mục từ | M02-T001; M11-T019 | Hoàn thành | Đầu ra đạt; tự kiểm A-G03 | M02-HEADWORD-LIFECYCLE-1.0/D-062 chốt 8 trạng thái vòng đời chuẩn M11, Self-Approval Guard (cấm tác giả tự duyệt), QualityScore >= 80% & rightsCleared == true (REL-04/CT-01), Emergency Recall <= 60s, 10 gate và 20 case. |
 | M02-T008-A | M02 | Thiết kế phiên bản hóa mục từ — lát A | M02-T006, T007 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G03 | — |
 | M02-T009-A | M02 | Chuẩn hóa nội dung cung cấp module học — lát A | M02-T002, T006, T008-A | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G03 | — |
 | M02-T010 | M02 | Thiết kế ngừng dùng, hợp nhất và thay thế | M02-T004, T008-A, T009-A | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G03 | — |
