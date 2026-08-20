@@ -15,6 +15,7 @@
 - [Quy tắc ghi nhận đồng ý M01](QUY-TAC-GHI-NHAN-DONG-Y.md)
 - [Điều phối khởi tạo người dùng mới M01](DIEU-PHOI-KHOI-TAO-NGUOI-DUNG.md)
 - [Tiêu chí nghiệm thu đăng ký M01](TIEU-CHI-NGHIEM-THU-DANG-KY.md)
+- [Đặc tả đăng nhập trực tiếp M01](DAC-TA-DANG-NHAP-TRUC-TIEP.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 

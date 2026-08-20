@@ -57,7 +57,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | M12-T040 | M12 | Kiểm kê và phân loại bí mật | A0-T003; M12-T002 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G05; REL-03 | — |
 | M12-T042-A | M12 | Lập bản đồ dữ liệu rời hệ thống — lát A | M12-T004; A0-T001, A0-T003 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G05; REL-01, REL-03 | — |
 | M12-T044-A | M12 | Xây dựng sổ quyền tài sản — lát A | M12-T021; A0-T004 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G03, A-G05; REL-04 | — |
-| M01-T010 | M01 | Chuẩn hóa luồng đăng nhập trực tiếp | M01-T002, T004 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01 | — |
+| M01-T010 | M01 | Chuẩn hóa luồng đăng nhập trực tiếp | M01-T002, T004 | Hoàn thành | Đầu ra đạt; tự kiểm A-G01 | M01-LOGIN-1.0/D-017 chốt email canonical, response trung tính, eligibility/session boundary, 20 case, 9 finding mã và 4 finding mở; A-G01 vẫn mở. |
 | M01-T011 | M01 | Thiết kế kiểm soát thử đăng nhập bất thường | M01-T010; M12-T034 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01, A-G04; REL-03 | — |
 | M01-T012 | M01 | Chuẩn hóa xử lý tài khoản không hoạt động | M01-T002, T010 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01 | — |
 | M01-T013 | M01 | Chuẩn hóa đăng nhập bằng danh tính bên ngoài | M01-T002, T003; M12-T006–T010 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01, A-G04; REL-03 | — |
