@@ -50,6 +50,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-042 | Dùng M11-CHANGE-EXECUTION-1.0 cho thực thi và rollback quản trị | Exact revision/decision bind stable operation; source adapter bắt buộc expected version/fencing/dedupe/reconcile/verify, 2xx/accepted không phải success; partial/unknown giữ block, retry chỉ proven no-effect + retrySafe, RB-1..3 dùng recovery operation và verified target |
 | D-043 | Dùng M11-CONFIG-REG-1.0 làm registry cấu hình nghiệp vụ/runtime | 29 SystemConfigurations key map CFG-001–029, 7 policy set và 5 exposure profile; category/IsLiveEditable/seed không chứng minh public/live/safe, AP key disabled, access/maintenance/community/retention key fail-closed đến khi consumer/policy/runtime evidence đạt |
 | D-044 | Dùng M11-CONFIG-VALIDATION-1.0 cho kiểm tra cấu hình | 29 key phải qua CV-01–CV-12, scalar/cross/owner/dependency/exposure/consumer checks; MaxGroupSize target 2–500, operational LogRetentionDays 30–90 nên seed 7 là legacy-invalid; unknown/stale/partial batch fail-closed và validator không echo raw value |
+| D-045 | Dùng M11-CONFIG-VERSION-1.0 cho phiên bản cấu hình bất biến | Bảy policy set dùng full-member immutable version/digest, effective assignment interval và current pointer CAS; consumer snapshot version tại operation boundary, rollback tạo assignment/recovery mới không sửa history, legacy AP/log-retention invalid không auto-promote khi bootstrap |
 
 ## Khi nào cần thêm quyết định
 

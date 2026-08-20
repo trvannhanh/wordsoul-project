@@ -204,7 +204,6 @@ Same revision/digest/versions có thể trả cached immutable result. Cùng ide
 | M11-CV-I05 | GENERAL anonymous exposure dựa category | Không field exposure validator/allowlist | M11-T033; M11-T049 |
 | M11-CV-I06 | MaxGroupSize/LogRetentionDays metadata thiếu range | Unsafe values parse được; cleanup có thể xóa quá mức | M09; M11-T035; M11-T049 |
 | M11-CV-I07 | Không thấy validator result/version/freshness/consumer compatibility record | Không bind evidence vào revision/execution | M11-T014–T017; M11-T049 |
-| M11-CV-F01 | Immutable config version/schema và validation evidence persistence | Candidate/result không update row tại chỗ | M11-T014 |
 | M11-CV-F02 | Preview/simulation/consumer compatibility implementations | CV result + exact policy version | M11-T015–T017; module tasks |
 | M11-CV-F03 | Public/redaction/audit runtime controls | Field allowlist, safe errors, audit fail-closed | M11-T031–T035; M11-T049 |
 | M11-CV-F04 | Runtime DB drift/current-value validation | Không thu secret/sensitive value vào docs | M11-T049; REL-03 |
@@ -216,7 +215,7 @@ Same revision/digest/versions có thể trả cached immutable result. Cùng ide
 - Bổ sung range target CFG-018 = 2–500 và CFG-029 = 30–90 operational days; seed 7 được ghi legacy-invalid, không tự sửa.
 - Pipeline CV-01–CV-12 và 15 error code phân biệt reject/unknown/stale/storage/exposure mà không echo raw value.
 - 10 gate và 24 case bao phủ numeric/canonical/SRS/batch/economy/AP/access/community/retention/public/data-boundary/freshness.
-- Bảy sai lệch + năm finding có task tiếp nhận. A-G02 vẫn chờ immutable version/preview/execution/audit/runtime evidence; không kết luận gate đạt.
+- Bảy sai lệch + bốn finding còn mở có task tiếp nhận; immutable version design đã chốt. A-G02 vẫn chờ preview/execution/audit/runtime evidence; không kết luận gate đạt.
 
 ## 13. Lịch sử
 

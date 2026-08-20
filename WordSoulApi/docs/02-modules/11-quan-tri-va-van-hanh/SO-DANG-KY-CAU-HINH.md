@@ -177,7 +177,6 @@ Precedence target: sealed operation/session snapshot > scoped published policy v
 | M11-CFG-I06 | Không thấy consumer business cho access/community/maintenance switches | Seed/public visibility không chứng minh effect | M01/M09/M11-T043; M11-T049 |
 | M11-CFG-I07 | Create arbitrary key/category và delete vật lý qua SuperAdmin route | Orphan/public exposure/reference loss có thể phát sinh | M11-T014, T017; M11-T049 |
 | M11-CFG-I08 | Không có runtime DB inventory/drift evidence trong docs | Snapshot không chứng minh deployed values/schema | M11-T049; REL-03 |
-| M11-CFG-F02 | Immutable policy-set version/current/scheduled history | Không update row tại chỗ | M11-T014 |
 | M11-CFG-F03 | Preview/impact/metric/rollout/deprecation implementation | Target contract đã xác định theo policy set | M11-T015–T017 |
 | M11-CFG-F04 | Audit/redaction/access/retention và public allowlist runtime | CP-01..05 + no secret/category exposure | M11-T031–T035; M11-T049 |
 | M11-CFG-F05 | Runtime DB/appsettings/env/provider inventory và consumer coverage | Unknown/drift không active; secret values không thu vào artifact | M11-T049; M12-T040–T043; REL-03 |
@@ -188,7 +187,7 @@ Precedence target: sealed operation/session snapshot > scoped published policy v
 - Bảy policy set, năm permission/exposure profile và năm consumer contract phân tách observed behavior với target.
 - Xác định rõ 9 SRS key atomic set, 5 learning/economy key, AP deprecated, 14 GENERAL key exposure và log-retention gap.
 - 10 gate và 20 case bao phủ orphan/extra/missing key, public exposure, live flag, fallback, version/reference, drift, AP và secret boundary.
-- Tám sai lệch + bốn finding còn mở có task tiếp nhận; validation design đã chốt ở M11-CONFIG-VALIDATION-1.0. A-G02/A-G06 vẫn chờ T014–T017, audit và runtime coverage; không kết luận gate đạt.
+- Tám sai lệch + ba finding còn mở có task tiếp nhận; validation/version design đã chốt. A-G02/A-G06 vẫn chờ T015–T017, audit và runtime coverage; không kết luận gate đạt.
 
 ## 12. Lịch sử
 
