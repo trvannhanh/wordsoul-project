@@ -87,7 +87,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | M11-T028 | M11 | Xây dựng dòng thời gian hỗ trợ | M11-T027; M01-T038 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02; REL-07 | — |
 | M11-T029 | M11 | Thiết kế vòng đời vụ việc hỗ trợ | M11-T027, T028 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02; REL-07 | — |
 | M11-T030 | M11 | Chốt thao tác hỗ trợ có kiểm soát | M11-T029; hợp đồng thay đổi tối thiểu | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02; REL-02, REL-07 | — |
-| M11-T031 | M11 | Đặc tả sự kiện kiểm toán chuẩn | M11-T002 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02, A-G05; REL-02 | — |
+| M11-T031 | M11 | Đặc tả sự kiện kiểm toán chuẩn | M11-T002 | Hoàn thành | Đầu ra đạt; tự kiểm A-G02, A-G05; REL-02 | M11-AUDIT-EVENT-1.0/D-054 chốt Audit Event Envelope 9 nhóm trường, append-only in local transaction, cấm SQL UPDATE/DELETE, Tamper-Evident Cryptographic Hash Chain (previousEventHash->eventHash), secret redaction & PII/IP SHA-256 hashing, 10 gate và 20 case. |
 | M11-T032 | M11 | Phân tách audit, activity và log vận hành | M11-T031 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02, A-G05; REL-02 | — |
 | M11-T033 | M11 | Xây dựng quy tắc che dữ liệu và bí mật | M11-T032; M12-T040–T043 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02, A-G05; REL-03 | — |
 | M11-T034 | M11 | Thiết kế thu nhận log bền vững | M11-T033; M12-T003 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02, A-G06; REL-02, REL-03 | — |

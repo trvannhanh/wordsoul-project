@@ -27,6 +27,7 @@
 - [Vòng đời nội dung quản trị M11](VONG-DOI-NOI-DUNG-QUAN-TRI.md)
 - [Phân tích tham chiếu trước thay đổi M11](PHAN-TICH-THAM-CHIEU-TRUOC-THAY-DOI.md)
 - [Chốt xử lý chỉnh sửa đồng thời M11](XU-LY-CHINH-SUA-DONG-THOI.md)
+- [Đặc tả sự kiện kiểm toán chuẩn M11](DAC-TA-SU-KIEN-KIEM-TOAN-CHUAN.md)
 - [Task backlog](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 
