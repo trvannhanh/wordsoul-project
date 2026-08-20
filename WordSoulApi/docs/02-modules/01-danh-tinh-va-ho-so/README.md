@@ -13,6 +13,7 @@
 - [Đặc tả dữ liệu đăng ký M01](DAC-TA-DANG-KY.md)
 - [Luồng xác minh thư điện tử M01](LUONG-XAC-MINH-THU.md)
 - [Quy tắc ghi nhận đồng ý M01](QUY-TAC-GHI-NHAN-DONG-Y.md)
+- [Điều phối khởi tạo người dùng mới M01](DIEU-PHOI-KHOI-TAO-NGUOI-DUNG.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 
