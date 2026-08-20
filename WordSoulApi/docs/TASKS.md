@@ -136,7 +136,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | M02-T033 | M02 | Thiết kế báo cáo và thu hồi nội dung | M02-T010, T032; M11-T019–T020 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G03, A-G06; REL-04 | — |
 | M02-T034 | M02 | Thiết kế khiếu nại quyết định nội dung | M02-T031, T033 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G03; REL-04 | — |
 | M01-T024 | M01 | Thiết kế vòng đời ảnh đại diện | M01-T022-A; M12-T021–T025 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01, A-G05; REL-04 | — |
-| M02-T011 | M02 | Lập danh mục tài sản học liệu | M02-T006; M12-T021 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G03, A-G05; REL-04 | — |
+| M02-T011 | M02 | Lập danh mục tài sản học liệu | M02-T006; M12-T021 | Hoàn thành | Đầu ra đạt; tự kiểm A-G03, A-G05; REL-04 | M02-VOCAB-ASSET-CATALOG-1.0/D-071 chốt mapping media M02 với M12 AssetType, rightsCleared == true gate (REL-04/CT-01), tech standards MP3/WebP & max file size, QualityScore -25% penalty when missing audio, auto unlinking SLA <= 60s upon asset revocation, 10 gate và 20 case. |
 | M02-T012 | M02 | Chuẩn hóa kiểm duyệt tài sản | M02-T011 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G03; REL-04 | — |
 | M02-T013 | M02 | Thiết kế xử lý tài sản lỗi hoặc thiếu | M02-T011, T012; M12-T003–T005 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G03, A-G04 | — |
 | M02-T014 | M02 | Thiết kế vòng đời thay thế tài sản | M02-T008-A, T011; M12-T025 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G03, A-G05 | — |

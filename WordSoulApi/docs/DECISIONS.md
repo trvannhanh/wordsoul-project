@@ -76,6 +76,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-068 | Dùng M12-ASSET-RIGHTS-LEDGER-1.0 cho sổ quyền tài sản — lát A | Mô hình AssetRightsLedger bất biến append-only; Dịch vụ tự động xác minh bản quyền VerifyAssetRights; chốt CT-01 & REL-04 cấm xuất bản khi rightsCleared == false; cảnh báo hết hạn trước 30 ngày; thu hồi tự động takedown <= 60s khi vi phạm bản quyền |
 | D-069 | Dùng M12-SECRET-INVENTORY-1.0 cho kiểm kê và phân loại bí mật | Kiểm kê bí mật hệ thống với 4 cấp độ rủi ro S0-S3; cấm lưu secret thô trong code/git/config; nạp 100% từ Secret Manager vào RAM; bộ lọc Serilog enrichment masking [REDACTED_SECRET]; quy trình xoay vòng Dual-Key (S0 90d, S1 180d, S2/S3 365d) |
 | D-070 | Dùng M12-OUTBOUND-DATA-MAP-1.0 cho lập bản đồ dữ liệu rời hệ thống — lát A | Kiểm kiểm 6 luồng dữ liệu egress (TTS, AI, STT, FCM, SMTP, OAuth); quy tắc Zero PII Egress to AI bằng PromptAnonymizerFilter; làm sạch audio stream; mã hóa TLS 1.3 cho SMTP/OAuth; Prometheus Egress Byte Counter & cảnh báo spike > 300% |
+| D-071 | Dùng M02-VOCAB-ASSET-CATALOG-1.0 cho danh mục tài sản học liệu | Ánh xạ media M02 với M12 AssetType; xác minh bản quyền REL-04/CT-01 (rightsCleared == true) trước khi đính kèm; chuẩn hóa kỹ thuật MP3/WebP & dung lượng max; trừ 25% QualityScore khi thiếu audio phát âm; tự động gỡ liên kết SLA <= 60s khi M12 thu hồi bản quyền |
 
 ## Khi nào cần thêm quyết định
 
