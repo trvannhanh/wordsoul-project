@@ -136,7 +136,6 @@ Các số là baseline v1.0, không thay provider quota hoặc budget tiền. M1
 
 | Finding ID | Khoảng trống | Baseline an toàn | Task tiếp nhận |
 |---|---|---|---|
-| M12-RATE-F01 | Fail-open/fail-closed và local conservative behavior từng policy chưa chốt chi tiết | C0 deny/conservative; không global allow-all | M12-T035 |
 | M12-RATE-F02 | Budget tiền/provider quota thật chưa có | Capability trả phí không activation chỉ dựa rate count | M12-T046 |
 | M12-RATE-F03 | Bytes/file/asset quota và batch/export size chưa chốt | Reject trước body/queue khi có thể; bounded concurrency | M12-T021–T025; M11-T026 |
 | M12-RATE-F04 | Coverage/runtime/multi-instance/spoof tests chưa có | Không coi catalog là enforcement evidence | M12-T047-A; REL-03 |
@@ -147,7 +146,7 @@ Các số là baseline v1.0, không thay provider quota hoặc budget tiền. M1
 - IP/user/device/account/resource/workload/provider/admin partition đều có trust boundary; XFF/header internal tự khai không tạo bypass.
 - Auth có composite buckets và phản hồi trung tính, phù hợp A-G01; limiter không thay credential/account-state/anomaly/idempotency controls.
 - A-G04/CT-05 có baseline cho aggregate multi-instance, conservative local guard, provider quota, 429/Retry-After, config governance và 12 case.
-- 9 finding hiện trạng cùng 4 finding mở có task tiếp nhận; đặc biệt tách registration, endpoint coverage và distributed enforcement.
+- 9 finding hiện trạng cùng 3 finding mở có task tiếp nhận; M12-RATE-F01 đã đóng bằng M12-FAIL-1.0, đồng thời registration, endpoint coverage và distributed enforcement vẫn được tách rõ.
 - REL-03 vẫn mở vì config thật, proxy topology, host coverage, Redis failure, workload identity, multi-instance và canary evidence chưa có.
 
 ## Lịch sử

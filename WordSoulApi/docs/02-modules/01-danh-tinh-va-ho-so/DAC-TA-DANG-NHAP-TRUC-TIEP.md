@@ -146,7 +146,6 @@ Kết quả quan sát ngày 2026-08-20; chưa phải bằng chứng runtime.
 
 | Mã | Phần chưa chốt | Baseline an toàn | Nguồn/task xử lý |
 |---|---|---|---|
-| M01-LOGIN-F01 | Threshold/source/account limiter và recovery sau limit | Hook trước lookup; không bypass/fail-open; public result chung | M01-T011; M12-T034–T035 |
 | M01-LOGIN-F02 | State-specific UX/action ticket/recovery | Không full session; ticket TTL ngắn, purpose-bound, không lộ state nội bộ | M01-T012, M01-T019 |
 | M01-LOGIN-F03 | Session/token claim, TTL, rotation và multi-device | Không dùng token cũ/shared field làm truth; session store/audit fail-closed | M01-T016–T018 |
 | M01-LOGIN-F04 | Market/age/consent eligibility cuối | Policy unknown/stale không cấp session; không tự coi adult/consented | REL-01; M01-T012 |
@@ -156,7 +155,7 @@ Kết quả quan sát ngày 2026-08-20; chưa phải bằng chứng runtime.
 - M01-T002/M01-T004 đã hoàn thành; email canonical, generic failure và eligibility gate khớp các contract trước.
 - Request/pipeline/response/session handoff/audit boundary xác định rõ và không mở rộng sang threshold/session lifecycle.
 - Hai mươi case bao phủ enumeration, canonicalization, state/policy, limiter, concurrency, audit/session failure, hash migration và timing/redaction.
-- Chín finding triển khai và bốn finding mở có baseline an toàn cùng task/module tiếp nhận.
+- Chín finding triển khai và ba finding mở có baseline an toàn cùng task/module tiếp nhận; M01-LOGIN-F01 đã được đóng bằng M01-ABUSE-1.0/M12-RATE-1.0/M12-FAIL-1.0.
 - A-G01 vẫn mở vì code hiện tại chưa thực thi contract và chưa có runtime evidence.
 
 ## Lịch sử

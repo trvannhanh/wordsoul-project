@@ -31,6 +31,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-023 | Dùng M12-STATE-REG-1.0 làm registry trạng thái chia sẻ | Cache/queue/connection/limiter/lease không là durable truth; local-process không được mô tả là distributed; mọi use case phải có source of truth, namespace, lifetime, consistency/quota, criticality và failure mode trước khi được phụ thuộc |
 | D-024 | Dùng M12-RATE-1.0 làm policy catalog giới hạn lưu lượng | Mọi public/user/admin/callback/workload entry point có policy theo identity server xác lập; nhiều bucket áp dụng đồng thời, C0/C1 cần aggregate xuyên instance, internal worker không được bypass và missing/zero config không được thành unlimited |
 | D-025 | Dùng M12-FAIL-1.0 làm ma trận fail mode và suy giảm | Không có security fail-open được phép; C0 dùng fail-closed/hold hoặc conservative cap, cache chỉ bypass về durable truth, C2 degrade bằng output đã duyệt, C3 luôn off; recovery phải qua health/contract/reconcile/canary thay vì một probe thành công |
+| D-026 | Dùng M01-ABUSE-1.0 để kiểm soát thử đăng nhập bất thường | Áp composite source/account/device/spray/distributed buckets; automated risk chỉ có trạng thái tạm thời và recovery, không dùng khóa quản trị/vĩnh viễn; correct credential trong risk state cần step-up, còn failed attempts đơn thuần không tự thu hồi phiên hiện có |
 
 ## Khi nào cần thêm quyết định
 
