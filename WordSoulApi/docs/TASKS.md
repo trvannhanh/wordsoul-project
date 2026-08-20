@@ -49,7 +49,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | M11-T022 | M11 | Lập từ điển chỉ số quản trị | M11-T001 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G06 | — |
 | M12-T001 | M12 | Thống nhất từ điển tích hợp | Không | Hoàn thành | Đầu ra đạt; tự kiểm A-G04 | M12-DICT-1.0/D-018 chốt 58 thuật ngữ, quyền quyết định, 8 xung đột mã và 4 finding mở có task tiếp nhận; A-G04 vẫn mở. |
 | M12-T002 | M12 | Lập sổ đăng ký năng lực tích hợp | M12-T001 | Hoàn thành | Đầu ra đạt; tự kiểm A-G04, A-G05; REL-03 | M12-CAP-REG-1.0/D-019 kiểm kê 15 capability, activation/data-flow, 8 finding mã và 4 finding mở; không đọc secret, A-G04/A-G05/REL-03 vẫn mở. |
-| M12-T003 | M12 | Phân loại mức quan trọng và tác động | M12-T002 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G04, A-G06; REL-03 | — |
+| M12-T003 | M12 | Phân loại mức quan trọng và tác động | M12-T002 | Hoàn thành | Đầu ra đạt; tự kiểm A-G04, A-G06; REL-03 | M12-CRIT-1.0/D-020 phân loại đủ 15 capability theo lát, C0–C3 tách khỏi SEV-1–SEV-4, sáu loại tác động và 5 finding có task tiếp nhận; A-G04 có baseline, A-G06/REL-03 vẫn mở đến runtime evidence. |
 | M12-T004 | M12 | Đặc tả hợp đồng dữ liệu chuẩn | M12-T002, M12-T003 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G04, A-G05; REL-03 | — |
 | M12-T005 | M12 | Chuẩn hóa trạng thái kết quả và lỗi | M12-T004 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G04; REL-03 | — |
 | M12-T021 | M12 | Lập danh mục loại tài sản số | M12-T002; A0-T004 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G03, A-G05; REL-04 | — |

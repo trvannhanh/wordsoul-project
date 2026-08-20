@@ -25,6 +25,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-017 | Dùng hợp đồng đăng nhập trực tiếp M01-LOGIN-1.0 | Chỉ email canonical là định danh đăng nhập; nonexistent/no-direct-credential/password sai có failure chung; credential đúng vẫn phải qua account/email/policy gate; login không chạy daily quest/reward và chỉ trả token sau session/audit commit |
 | D-018 | Dùng từ điển tích hợp M12-DICT-1.0 | Module nghiệp vụ chỉ phụ thuộc capability/result chuẩn, không phụ thuộc provider; source module sở hữu business operation ID; `null`, timeout và exception không phải kết quả; unknown phải reconcile, cache/shared state không là durable truth |
 | D-019 | Dùng M12-CAP-REG-1.0 làm registry năng lực tích hợp | Tách implementation, configuration và activation; DI/config/credential presence không chứng minh enabled hay healthy; capability chưa có runtime evidence giữ `unknown`/`unverified`; AI sinh nội dung và xử lý giọng nói người dùng vẫn tắt theo D-010 |
+| D-020 | Dùng M12-CRIT-1.0 để phân loại criticality theo lát use case | C0 bảo vệ safety/quyền/durable truth phải fail-closed hoặc dừng lát khi không chắc chắn; C1 giữ hành trình lõi bằng pending/reconcile; C2 được suy giảm mà không đổi truth; C3 không có traffic/thu dữ liệu; severity sự cố được đánh giá riêng theo tác động thật |
 
 ## Khi nào cần thêm quyết định
 
