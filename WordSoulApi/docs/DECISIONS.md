@@ -79,6 +79,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-071 | Dùng M02-VOCAB-ASSET-CATALOG-1.0 cho danh mục tài sản học liệu | Ánh xạ media M02 với M12 AssetType; xác minh bản quyền REL-04/CT-01 (rightsCleared == true) trước khi đính kèm; chuẩn hóa kỹ thuật MP3/WebP & dung lượng max; trừ 25% QualityScore khi thiếu audio phát âm; tự động gỡ liên kết SLA <= 60s khi M12 thu hồi bản quyền |
 | D-072 | Dùng M02-ASSET-MODERATION-1.0 cho chuẩn hóa kiểm duyệt tài sản | Quy trình kiểm duyệt 4 bước (Technical scan, Copyright gate REL-04/CT-01, AI Safety screening, Human Admin review); cấm manual override khi rightsCleared == false; ma trận 7 trạng thái kiểm duyệt; tự động unlinking & purge CDN cache SLA <= 60s khi vi phạm |
 | D-073 | Dùng M02-ASSET-DEGRADATION-1.0 cho xử lý tài sản lỗi hoặc thiếu | Hạ tầng fallback 3 cấp (Client Web Speech API, POS SVG icon placeholder, Text-only mode) cấm crash phiên học M03 SLA < 50ms; minus 25% QualityScore khi thiếu audio; tự động chuyển về InReview khi QualityScore < 80%; cảnh báo > 48h WARN_VOCAB_MISSING_AUDIO & Prometheus metric |
+| D-074 | Dùng M11-SAFE-USER-SEARCH-1.0 cho đặc tả tìm kiếm người dùng an toàn | Tìm kiếm theo exact (UserId/Email/Phone) hoặc wildcard (DisplayName >= 3 char); PII masking mặc định (maskedEmail/maskedPhone); chỉ unmask khi có ticketId vụ việc mở hợp lệ (REL-07); anti-scraping rate limiter max 10 req/min/agent; audit trail ACT-M11-27 |
 
 ## Khi nào cần thêm quyết định
 
