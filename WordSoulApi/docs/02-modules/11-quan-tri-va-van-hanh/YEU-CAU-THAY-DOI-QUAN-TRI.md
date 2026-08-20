@@ -196,7 +196,6 @@ Retry cùng idempotency key nhưng fingerprint khác trả conflict. Timeout khi
 | M11-CR-I05 | Không thấy scheduling, immutable preview/evidence hoặc rollback-plan model | Không thể chứng minh đúng revision/impact/recovery | M11-T009–T017 |
 | M11-CR-F01 | Durable schema/index/idempotency/concurrency và migration | Append-only revision, unique request/revision/key/digest | M11-T009–T011; M11-T049 |
 | M11-CR-F02 | Conflict/schedule và execution binding | Decision lifecycle đã khóa revision/digest + invalidation | M11-T010–T011 |
-| M11-CR-F03 | Conflict/schedule/timezone/lease semantics | UTC source, expiry bound, preliminary conflict fail-closed | M11-T010 |
 | M11-CR-F04 | Module validation/preview/rollback implementations | Missing/stale/unknown evidence không ready | M11-T013–T017; module-owner tasks |
 | M11-CR-F05 | Audit/redaction/durability/runtime regression evidence | Metadata allowlist; audit loss fail-closed | M11-T031–T035, T049; A-G02/A-G06 |
 

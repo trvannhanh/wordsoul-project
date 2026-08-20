@@ -166,7 +166,7 @@ I01–I08 là release gap; catalog mô tả target contract và không xác nh�
 | Finding ID | Khoảng trống | Baseline an toàn | Task tiếp nhận |
 |---|---|---|---|
 | M11-ACT-F01 | Runtime enhanced-control và privilege regression | 44 action đã map EC-1–EC-4/limit; no-temporary/emergency có negative evidence tĩnh | M11-T049; M01-T029–T030 |
-| M11-ACT-F02 | Schedule/execution/case/config/content/job/incident lifecycle details | Change request + decision lifecycle đã chốt; giữ version/preview/audit/reconcile | M11-T010–T021, T027–T030, T038–T048 |
+| M11-ACT-F02 | Execution/case/config/content/job/incident lifecycle details | Request/decision/schedule contract đã chốt; giữ version/preview/audit/reconcile | M11-T011–T021, T027–T030, T038–T048 |
 | M11-ACT-F03 | Audit/redaction/access/retention enforcement | Sensitive action/read thiếu immutable audit bị fail-closed | M11-T031–T035; REL-02 |
 | M11-ACT-F04 | Route/job/CLI coverage mapping và runtime deny tests | Entry point không catalog bị chặn phát hành | M11-T049; A-G02 |
 

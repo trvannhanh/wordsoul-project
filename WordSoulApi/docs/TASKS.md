@@ -103,7 +103,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | M12-T043 | M12 | Chốt che dữ liệu và chính sách log | M12-T040–T042-A; M11-T031–T033 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02, A-G05; REL-03 | — |
 | M11-T008 | M11 | Đặc tả yêu cầu thay đổi | M11-T007 | Hoàn thành | Đầu ra đạt; tự kiểm A-G02, A-G06; REL-02 | M11-CHANGE-REQUEST-1.0/D-039 map 31 mutation/9 type, chốt immutable revision + schema EC, 12 validation, evidence/schedule/RB-1..3, 10 gate/18 case; 13 read action không dùng request để vượt access control. |
 | M11-T009 | M11 | Thiết kế vòng đời quyết định thay đổi | M11-T005, T008 | Hoàn thành | Đầu ra đạt; tự kiểm A-G02; REL-02 | M11-CHANGE-DECISION-1.0/D-040 chốt 16 state/28 transition, decision theo revision+digest, TTL 30d/7d/24h, 10 invalidation, CAS/audit/recovery, 10 gate/20 case; single actor, không approver/temp/emergency. |
-| M11-T010 | M11 | Chốt xung đột và lịch hiệu lực | M11-T009 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02, A-G06 | — |
+| M11-T010 | M11 | Chốt xung đột và lịch hiệu lực | M11-T009 | Hoàn thành | Đầu ra đạt; tự kiểm A-G02, A-G06 | M11-CHANGE-SCHEDULE-1.0/D-041 chốt write/guard/barrier + 4 mode, SQL reservation/lease/fencing, UTC/IANA/DST, cancel/reschedule/race/failure, 10 gate/20 case; unknown overlap fail-closed, missed window không chạy muộn. |
 | M11-T011 | M11 | Thiết kế thực thi và rollback có kiểm chứng | M11-T009, T010 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02, A-G06; REL-02 | — |
 | M11-T013 | M11 | Đặc tả kiểm tra giá trị và phụ thuộc | M11-T012 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02 | — |
 | M11-T014 | M11 | Thiết kế phiên bản cấu hình bất biến | M11-T008, T013 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02, A-G06 | — |

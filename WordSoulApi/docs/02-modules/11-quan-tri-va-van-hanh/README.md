@@ -14,6 +14,7 @@
 - [Phân loại thao tác kiểm soát tăng cường M11](PHAN-LOAI-THAO-TAC-KIEM-SOAT-TANG-CUONG.md)
 - [Đặc tả yêu cầu thay đổi quản trị M11](YEU-CAU-THAY-DOI-QUAN-TRI.md)
 - [Vòng đời quyết định thay đổi quản trị M11](VONG-DOI-QUYET-DINH-THAY-DOI.md)
+- [Xung đột và lịch hiệu lực thay đổi quản trị M11](XUNG-DOT-VA-LICH-HIEU-LUC.md)
 - [Sổ đăng ký cấu hình M11](SO-DANG-KY-CAU-HINH.md)
 - [Từ điển chỉ số quản trị M11](TU-DIEN-CHI-SO-QUAN-TRI.md)
 - [Ma trận nội dung quản trị chéo module M11](MA-TRAN-NOI-DUNG-QUAN-TRI-CHEO-MODULE.md)
