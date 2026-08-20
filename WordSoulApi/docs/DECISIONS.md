@@ -45,6 +45,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-037 | Ghi nhận M11-NO-EMERGENCY-A-1.0 là negative evidence tĩnh | Không thấy explicit temporary/emergency/break-glass/impersonation/auth-bypass model trong 679 tracked file, nhưng không kết luận runtime an toàn: direct role elevation, stale role claim, no grant/tests, internal-header limiter bypass và out-of-repo IAM/config vẫn là release gap có owner |
 | D-038 | Dùng M11-ENHANCED-CONTROL-1.0 để phân loại thao tác quản trị | 44 action map EC-1–EC-4 và 9 lớp hạn mức; R3/R4 luôn re-auth ≤5 phút, context/evidence/limit thiếu thì fail-closed; ngưỡng cao dùng fixed higher role, không tạo duyệt hai người, quyền tạm thời hay đặc quyền khẩn |
 | D-039 | Dùng M11-CHANGE-REQUEST-1.0 làm hồ sơ ý định trước mutation quản trị | 31 mutation action phải dùng revision bất biến + digest, typed operation, validation/evidence, schedule/expiry và RB-1..3; sealed input đổi tạo revision mới, request không cấp authority, không có approver/two-person/temp/emergency bypass |
+| D-040 | Dùng M11-CHANGE-DECISION-1.0 cho vòng đời quyết định một actor | Mỗi revision có state/CAS riêng và decision bất biến khóa digest; creator được tự authorize bằng fixed current permission + re-auth, TTL EC-2/3/4 là 30 ngày/7 ngày/24 giờ; input/authority/control đổi invalidates, partial/unknown không thành success |
 
 ## Khi nào cần thêm quyết định
 

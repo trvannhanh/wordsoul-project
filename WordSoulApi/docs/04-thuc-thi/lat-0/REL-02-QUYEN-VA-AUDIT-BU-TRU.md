@@ -87,3 +87,4 @@ Các mã trên chỉ là định danh dự kiến; không đăng ký như bằng
 | 2026-08-18 | WSA-7K2 | Mở hồ sơ theo workflow một người; xác định chủ trì, hạn theo cổng, phạm vi ban đầu và nơi lưu artifact | D-001, D-008; chưa tạo Evidence ID |
 | 2026-08-20 | WSA-7K2 | Chốt REL02-Q01–Q03 ở mức design/negative evidence; giữ hồ sơ mở cho audit và runtime evidence | D-034–D-038; M11-T002–T007 |
 | 2026-08-20 | WSA-7K2 | Bổ sung immutable change-request schema, evidence/schedule/rollback gate cho 31 mutation action | D-039; M11-T008; chưa phải runtime evidence |
+| 2026-08-20 | WSA-7K2 | Chốt state machine quyết định một actor theo revision/digest, TTL/invalidation/CAS/recovery | D-040; M11-T009; chưa phải runtime evidence |
