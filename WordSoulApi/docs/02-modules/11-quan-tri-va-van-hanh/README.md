@@ -28,6 +28,7 @@
 - [Phân tích tham chiếu trước thay đổi M11](PHAN-TICH-THAM-CHIEU-TRUOC-THAY-DOI.md)
 - [Chốt xử lý chỉnh sửa đồng thời M11](XU-LY-CHINH-SUA-DONG-THOI.md)
 - [Đặc tả sự kiện kiểm toán chuẩn M11](DAC-TA-SU-KIEN-KIEM-TOAN-CHUAN.md)
+- [Phân tách audit, activity và log vận hành M11](PHAN-TACH-AUDIT-ACTIVITY-LOG-VAN-HANH.md)
 - [Task backlog](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 
