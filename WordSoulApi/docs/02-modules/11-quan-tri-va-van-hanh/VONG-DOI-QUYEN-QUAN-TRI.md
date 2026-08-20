@@ -212,7 +212,7 @@ I01–I06 là release blocker; hiện trạng không có runtime evidence cho gr
 | Finding ID | Khoảng trống | Baseline an toàn | Task tiếp nhận |
 |---|---|---|---|
 | M11-GRANT-F01 | Runtime/schema/deployment regression không có temporary/emergency/bypass path | Negative evidence tĩnh đã có; contract cấm và chỉ fixed R13 continuity | M11-T049; A-G02; REL-02/REL-03 |
-| M11-GRANT-F02 | Sensitive change request/decision/effective/rollback | EC-1–EC-4/limit đã chốt; re-auth/reason/audit/idempotency giữ nguyên | M11-T008–T011 |
+| M11-GRANT-F02 | Sensitive decision/effective/execution workflow | EC class/limit + immutable change request đã chốt; re-auth/audit/idempotency giữ nguyên | M11-T009–T011 |
 | M11-GRANT-F03 | Authorization audit/redaction/access/retention implementation | Mutation thiếu audit fail-closed; protected refs only | M11-T031–T035; REL-02 |
 | M11-GRANT-F04 | Grant store/schema/cache/session migration và runtime suite | Legacy broad grants frozen; no release before canary/reconcile | M11-T049; M01-T029–T032; A-G02 |
 

@@ -44,6 +44,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-036 | Dùng M11-GRANT-1.0 cho vòng đời quyền quản trị | Chỉ fixed scoped role; không self/temp/emergency/two-person giả; R12 quản R01–R11 và R13 quản continuity R12/R13; review 90/180 ngày, quá hạn suspend; grant/expand cần session mới, narrow/suspend/revoke tăng authorization version và chặn session cũ ngay |
 | D-037 | Ghi nhận M11-NO-EMERGENCY-A-1.0 là negative evidence tĩnh | Không thấy explicit temporary/emergency/break-glass/impersonation/auth-bypass model trong 679 tracked file, nhưng không kết luận runtime an toàn: direct role elevation, stale role claim, no grant/tests, internal-header limiter bypass và out-of-repo IAM/config vẫn là release gap có owner |
 | D-038 | Dùng M11-ENHANCED-CONTROL-1.0 để phân loại thao tác quản trị | 44 action map EC-1–EC-4 và 9 lớp hạn mức; R3/R4 luôn re-auth ≤5 phút, context/evidence/limit thiếu thì fail-closed; ngưỡng cao dùng fixed higher role, không tạo duyệt hai người, quyền tạm thời hay đặc quyền khẩn |
+| D-039 | Dùng M11-CHANGE-REQUEST-1.0 làm hồ sơ ý định trước mutation quản trị | 31 mutation action phải dùng revision bất biến + digest, typed operation, validation/evidence, schedule/expiry và RB-1..3; sealed input đổi tạo revision mới, request không cấp authority, không có approver/two-person/temp/emergency bypass |
 
 ## Khi nào cần thêm quyết định
 
