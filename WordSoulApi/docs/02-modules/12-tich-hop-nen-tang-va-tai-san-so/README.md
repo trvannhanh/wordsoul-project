@@ -6,6 +6,7 @@
 - [Task backlog](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 - [Đánh giá hiện trạng A-WP04](DANH-GIA-HIEN-TRANG-A-WP04.md)
+- [Từ điển tích hợp M12](TU-DIEN-TICH-HOP.md)
 
 ## Mô tả module
 

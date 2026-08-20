@@ -47,7 +47,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | M11-T012 | M11 | Lập sổ đăng ký cấu hình | M11-T001 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02, A-G06 | — |
 | M11-T018 | M11 | Lập ma trận nội dung quản trị chéo module | M11-T002 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02, A-G03; REL-04 | — |
 | M11-T022 | M11 | Lập từ điển chỉ số quản trị | M11-T001 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G06 | — |
-| M12-T001 | M12 | Thống nhất từ điển tích hợp | Không | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G04 | — |
+| M12-T001 | M12 | Thống nhất từ điển tích hợp | Không | Hoàn thành | Đầu ra đạt; tự kiểm A-G04 | M12-DICT-1.0/D-018 chốt 58 thuật ngữ, quyền quyết định, 8 xung đột mã và 4 finding mở có task tiếp nhận; A-G04 vẫn mở. |
 | M12-T002 | M12 | Lập sổ đăng ký năng lực tích hợp | M12-T001 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G04, A-G05; REL-03 | — |
 | M12-T003 | M12 | Phân loại mức quan trọng và tác động | M12-T002 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G04, A-G06; REL-03 | — |
 | M12-T004 | M12 | Đặc tả hợp đồng dữ liệu chuẩn | M12-T002, M12-T003 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G04, A-G05; REL-03 | — |

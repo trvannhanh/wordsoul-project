@@ -23,6 +23,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-015 | Dùng hợp đồng ghi nhận đồng ý M01-CONS-1.0 | Tách acknowledgement bắt buộc, consent tùy chọn và preference; policy đã publish bất biến, quyết định append-only/idempotent; im lặng không phải đồng ý; thiếu/stale/unknown policy phải fail-closed cho purpose cần consent |
 | D-016 | Dùng điều phối onboarding M01-ONB-1.0 và hợp đồng M06-ONB-A-1.0 | Account commit trước side effect; starter được chọn sau khi đủ điều kiện và do M06 cấp bằng operation idempotent; timeout phải reconcile, không cấp bù mù; không cấp hoặc tạo phụ thuộc AP mới |
 | D-017 | Dùng hợp đồng đăng nhập trực tiếp M01-LOGIN-1.0 | Chỉ email canonical là định danh đăng nhập; nonexistent/no-direct-credential/password sai có failure chung; credential đúng vẫn phải qua account/email/policy gate; login không chạy daily quest/reward và chỉ trả token sau session/audit commit |
+| D-018 | Dùng từ điển tích hợp M12-DICT-1.0 | Module nghiệp vụ chỉ phụ thuộc capability/result chuẩn, không phụ thuộc provider; source module sở hữu business operation ID; `null`, timeout và exception không phải kết quả; unknown phải reconcile, cache/shared state không là durable truth |
 
 ## Khi nào cần thêm quyết định
 
