@@ -165,7 +165,7 @@ I01–I08 là release gap; catalog mô tả target contract và không xác nh�
 
 | Finding ID | Khoảng trống | Baseline an toàn | Task tiếp nhận |
 |---|---|---|---|
-| M11-ACT-F01 | No-temporary/emergency verification và sensitive-action classification | Grant lifecycle đã chốt ở M11-GRANT-1.0; stale authorization không có hiệu lực | M11-T006-A–T007; M01-T029–T030 |
+| M11-ACT-F01 | Sensitive-action classification và runtime privilege regression | No-temporary/emergency có negative evidence tĩnh; grant lifecycle đã chốt | M11-T007, T049; M01-T029–T030 |
 | M11-ACT-F02 | Change/case/config/content/job/incident lifecycle details | R3/R4 giữ re-auth/reason/version/preview/audit/reconcile tối thiểu | M11-T008–T021, T027–T030, T038–T048 |
 | M11-ACT-F03 | Audit/redaction/access/retention enforcement | Sensitive action/read thiếu immutable audit bị fail-closed | M11-T031–T035; REL-02 |
 | M11-ACT-F04 | Route/job/CLI coverage mapping và runtime deny tests | Entry point không catalog bị chặn phát hành | M11-T049; A-G02 |

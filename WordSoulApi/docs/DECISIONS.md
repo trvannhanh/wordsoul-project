@@ -42,6 +42,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-034 | Dùng M11-ROLE-1.0 làm catalog vai trò quản trị | 13 role chuyên biệt có scope ceiling/exclusion; không wildcard/temp/emergency privilege; multi-role chỉ union trong scope không xung đột, cấm tự cấp–tự kiểm toán; Admin/SuperAdmin legacy phải freeze và migrate explicit, deny-most-restrictive khi overlap |
 | D-035 | Dùng M11-PERM-1.0 làm ma trận quyền tối thiểu | 44 Action ID map Permission ID/role/mode/scope/data/obligation; default deny, read không suy từ write, role không wildcard; R3/R4 cần current admin session + re-auth ≤5 phút/reason/audit; legacy claim, null scope, orphan route và unknown policy đều deny |
 | D-036 | Dùng M11-GRANT-1.0 cho vòng đời quyền quản trị | Chỉ fixed scoped role; không self/temp/emergency/two-person giả; R12 quản R01–R11 và R13 quản continuity R12/R13; review 90/180 ngày, quá hạn suspend; grant/expand cần session mới, narrow/suspend/revoke tăng authorization version và chặn session cũ ngay |
+| D-037 | Ghi nhận M11-NO-EMERGENCY-A-1.0 là negative evidence tĩnh | Không thấy explicit temporary/emergency/break-glass/impersonation/auth-bypass model trong 679 tracked file, nhưng không kết luận runtime an toàn: direct role elevation, stale role claim, no grant/tests, internal-header limiter bypass và out-of-repo IAM/config vẫn là release gap có owner |
 
 ## Khi nào cần thêm quyết định
 

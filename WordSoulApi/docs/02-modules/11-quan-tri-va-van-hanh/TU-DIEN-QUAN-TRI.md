@@ -68,7 +68,7 @@
 
 | Mã | Thuật ngữ/cách dùng | Quy tắc chuẩn | Nguồn quyết định | Trạng thái |
 |---|---|---|---|---|
-| M11-DICT-C01 | Quyền tạm thời/đặc quyền khẩn cấp | Không được hỗ trợ trong Giai đoạn A; M11-T006-A kiểm chứng không có đường này | M11-D004 | Khóa theo quyết định |
+| M11-DICT-C01 | Quyền tạm thời/đặc quyền khẩn cấp | Không được hỗ trợ trong Giai đoạn A; M11-T006-A không thấy explicit model nhưng giữ runtime/deployment gaps | M11-D004 | Negative evidence M11-NO-EMERGENCY-A-1.0; runtime mở |
 | M11-DICT-C02 | Duyệt hai người là kiểm soát bắt buộc | Không có bước duyệt hai người bắt buộc; dùng quyền tối thiểu, xác minh lại, lý do và audit | M11-D005–D006 | Khóa theo quyết định |
 | M11-DICT-C03 | Người phê duyệt là vai trò bắt buộc thường trực | Chỉ dùng “reviewer/người xác nhận” cho artifact/gate hoặc authority được giao; không tự tạo workflow hai người | M11-D005–D007 | Chờ rà soát tài liệu cũ |
 | M11-DICT-C04 | Admin/SuperAdmin đủ mô tả quyền | Mọi hành động phải ánh xạ quyền và phạm vi; vai trò rộng là ngoại lệ | M11-D001–D003 | Chờ ma trận M11-T002–T004 |
@@ -141,7 +141,7 @@ I01–I07 là baseline gap, không phải bằng chứng runtime; action catalog
 
 | Finding ID | Khoảng trống | Baseline an toàn | Task tiếp nhận |
 |---|---|---|---|
-| M11-DICT-F02 | No-temporary/emergency verification và sensitive-action governance | Role/permission/grant lifecycle đã chốt; không temporary/emergency privilege | M11-T006-A–T007; M01-T029–T030 |
+| M11-DICT-F02 | Sensitive-action governance và runtime privilege regression | No-temporary/emergency có negative evidence tĩnh; role/permission/grant lifecycle đã chốt | M11-T007, T049; M01-T029–T030 |
 | M11-DICT-F03 | Audit/activity/log schema, integrity, access và retention | Không dùng log/activity thay audit; sensitive mutation thiếu audit fail-closed | M11-T031–T035 |
 | M11-DICT-F04 | Health/job/incident runtime state và evidence | Unknown/degraded không thành healthy; retry/recovery không dựa process memory | M11-T036–T048; A-G06 |
 
