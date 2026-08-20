@@ -14,6 +14,7 @@
 - [Sổ đăng ký use case trạng thái chia sẻ M12](SO-DANG-KY-TRANG-THAI-CHIA-SE.md)
 - [Ma trận giới hạn lưu lượng M12](MA-TRAN-GIOI-HAN-LUU-LUONG.md)
 - [Ma trận fail mode và suy giảm M12](MA-TRAN-FAIL-MODE-VA-SUY-GIAM.md)
+- [Danh mục loại tài sản số M12](DANH-MUC-LOAI-TAI-SAN-SO.md)
 
 ## Mô tả module
 

@@ -72,6 +72,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-064 | Dùng M02-LESSON-CONTENT-1.0 cho nội dung cung cấp module học — lát A | Chuẩn hóa DTO LessonContentPayloadDto cung cấp cho M03; lọc activeSense ngữ cảnh theo bộ từ; ghim revisionDigest bất biến; chốt chỉ nạp từ Published đạt QualityScore >= 80% & rightsCleared == true (REL-04/CT-01); Redis caching key lesson_payload đạt SLA sub-50ms |
 | D-065 | Dùng M02-DEPRECATION-REPLACEMENT-1.0 cho ngừng dùng, hợp nhất và thay thế | Chuẩn hóa 3 giao thức (Deprecate pointer ReplacementVocabId, Merge Headwords reassign SetVocab & SRS progress, Replace in Set); bắt buộc quét tác động tham chiếu 5 tầng (M11-T020/D-052); cấm physical delete; tự động bổ sung WordCanonical cũ làm Variant của từ đích |
 | D-066 | Dùng M02-VOCAB-SET-CRITERIA-1.0 cho chuẩn hóa dữ liệu và tiêu chí bộ từ | Giới hạn số từ 5 <= ItemCount <= 50; điều kiện cứng xuất bản bộ từ hệ thống: 100% từ thành phần đạt QualityScore >= 80% & rightsCleared == true (REL-04/CT-01); 5 danh mục phân loại tiêu chuẩn (Curriculum, ExamPrep, Specialized, Starter, Custom); tự động tính SetDifficultyIndex |
+| D-067 | Dùng M12-ASSET-CATALOG-1.0 cho danh mục loại tài sản số | Chốt 8 loại tài sản số (AUDIO_HEADWORD, AUDIO_EXAMPLE, AUDIO_ATTEMPT, IMAGE_HEADWORD, IMAGE_AVATAR, IMAGE_SET_COVER, IMAGE_PET_SKIN, DOC_TERMS); phân tách Public Bucket (CDN) và Private Bucket (Signed Presigned URL TTL <= 15m); xác minh bản quyền REL-04/CT-01 (rightsCleared == true); dọn dẹp file tạm 14 ngày |
 
 ## Khi nào cần thêm quyết định
 
