@@ -141,7 +141,7 @@ I01–I07 là baseline gap, không phải bằng chứng runtime; action catalog
 
 | Finding ID | Khoảng trống | Baseline an toàn | Task tiếp nhận |
 |---|---|---|---|
-| M11-DICT-F02 | Sensitive-action governance và runtime privilege regression | No-temporary/emergency có negative evidence tĩnh; role/permission/grant lifecycle đã chốt | M11-T007, T049; M01-T029–T030 |
+| M11-DICT-F02 | Runtime enhanced-control và privilege regression | M11-ENHANCED-CONTROL-1.0 + negative evidence tĩnh; không broad/temp/emergency bypass | M11-T049; M01-T029–T030 |
 | M11-DICT-F03 | Audit/activity/log schema, integrity, access và retention | Không dùng log/activity thay audit; sensitive mutation thiếu audit fail-closed | M11-T031–T035 |
 | M11-DICT-F04 | Health/job/incident runtime state và evidence | Unknown/degraded không thành healthy; retry/recovery không dựa process memory | M11-T036–T048; A-G06 |
 

@@ -3,7 +3,7 @@
 | Trường | Nội dung khởi tạo |
 |---|---|
 | Task mở hồ sơ | A0-T002 |
-| Trạng thái | Đã mở — đang chờ chốt phạm vi quyền nhạy cảm và hợp đồng audit |
+| Trạng thái | Đã mở — phạm vi quyền nhạy cảm đã chốt; đang chờ hợp đồng và bằng chứng audit runtime |
 | Chủ trì / tự xác nhận | WSA-7K2 |
 | Cá nhân thực tế | WSA-7K2 |
 | Hạn phản hồi | Trước khi nghiệm thu A-G02/A-G06 và đóng phạm vi phát hành Giai đoạn A |
@@ -39,9 +39,9 @@ Chứng minh rằng quyền tối thiểu, xác minh lại, từ chối mặc đ
 
 | Mã | Câu hỏi | Authority cần trả lời | Task/đầu ra ảnh hưởng | Trạng thái |
 |---|---|---|---|---|
-| REL02-Q01 | Danh mục vai trò, hành động và dữ liệu nhạy cảm trong phạm vi A là gì? | Chủ M11, chủ module và an toàn hệ thống | M11-T002–T004; A-G02 | Chờ xác nhận |
-| REL02-Q02 | Thao tác nào bắt buộc xác minh lại, lý do/vụ việc, hạn mức và audit trước–sau? | Chủ M11 và an toàn hệ thống | M11-T005–T007, M01-T028–T032 | Chờ xác nhận |
-| REL02-Q03 | Mọi đường cấp/nâng quyền nào phải được kiểm chứng không tạo quyền tạm thời/khẩn cấp? | Chủ M11 và an toàn hệ thống | M11-T006-A; G02-C05 | Chờ xác nhận |
+| REL02-Q01 | Danh mục vai trò, hành động và dữ liệu nhạy cảm trong phạm vi A là gì? | Chủ M11, chủ module và an toàn hệ thống | M11-T002–T004; A-G02 | Đã chốt design: M11-ACTION/ROLE/PERM-1.0; runtime evidence còn chờ |
+| REL02-Q02 | Thao tác nào bắt buộc xác minh lại, lý do/vụ việc, hạn mức và audit trước–sau? | Chủ M11 và an toàn hệ thống | M11-T005–T007, M01-T028–T032 | Đã chốt design: M11-GRANT/ENHANCED-CONTROL-1.0; runtime evidence còn chờ |
+| REL02-Q03 | Mọi đường cấp/nâng quyền nào phải được kiểm chứng không tạo quyền tạm thời/khẩn cấp? | Chủ M11 và an toàn hệ thống | M11-T006-A; G02-C05 | Đã chốt negative evidence M11-NO-EMERGENCY-A-1.0; runtime/deployment regression còn chờ |
 | REL02-Q04 | Hợp đồng audit tối thiểu và ranh giới audit/activity/system log là gì? | Chủ audit M11, riêng tư và vận hành | M11-T031–T032 | Chờ xác nhận |
 | REL02-Q05 | Metadata nào được phép lưu; trường/payload/bí mật nào bắt buộc loại hoặc che? | An toàn hệ thống, riêng tư và M12 | M11-T033; A-G02/A-G05 | Chờ xác nhận |
 | REL02-Q06 | Khi audit store/queue lỗi hoặc đầy, thao tác nào fail-closed và cách cảnh báo/phục hồi ra sao? | An toàn hệ thống và vận hành | M11-T034–T035; G02-C07/C08; G06-E01 | Chờ xác nhận |
@@ -52,7 +52,7 @@ Chứng minh rằng quyền tối thiểu, xác minh lại, từ chối mặc đ
 
 | Evidence ID dự kiến | Bằng chứng | Chủ tạo | Người xác nhận | Kết quả yêu cầu | Trạng thái |
 |---|---|---|---|---|---|
-| A0-E005 | Ma trận vai trò–quyền–phạm vi và hành động nhạy cảm | WSA-7K2 | WSA-7K2 tự kiểm A-G02 | Mặc định từ chối; quyền xem/sửa và dữ liệu nhạy cảm tách rõ | Chưa tạo |
+| A0-E005 | Ma trận vai trò–quyền–phạm vi và hành động nhạy cảm | WSA-7K2 | WSA-7K2 tự kiểm A-G02 | Mặc định từ chối; quyền xem/sửa và dữ liệu nhạy cảm tách rõ | Có bộ design M11-ROLE/PERM/ENHANCED-CONTROL-1.0; chưa phải runtime evidence |
 | A0-E006 | Kết quả kiểm thử cho phép/từ chối, xác minh lại và không quyền khẩn cấp | WSA-7K2 | WSA-7K2 tự kiểm A-G02 | G02-C01–C06 đạt, bao gồm M11-T006-A | Chưa tạo |
 | A0-E007 | Audit trước–sau, redaction và kiểm thử không mất audit | WSA-7K2 | WSA-7K2 tự kiểm A-G02/A-G05 | G02-C07–C09 đạt; không chứa payload/bí mật ngoài allowlist | Chưa tạo |
 | A0-E008 | Biên bản diễn tập audit loss và phục hồi | WSA-7K2 | WSA-7K2 tự kiểm A-G06 | G06-E01 đạt hoặc finding có chủ đã re-test | Chưa tạo |
@@ -85,3 +85,4 @@ Các mã trên chỉ là định danh dự kiến; không đăng ký như bằng
 |---|---|---|---|
 | 2026-08-15 | WSA-7K2 | Chuẩn bị baseline, REL02-Q01–Q08, kế hoạch A0-E005–A0-E008 và tiêu chí mở/đóng | Không có quyết định mới; chờ gán authority |
 | 2026-08-18 | WSA-7K2 | Mở hồ sơ theo workflow một người; xác định chủ trì, hạn theo cổng, phạm vi ban đầu và nơi lưu artifact | D-001, D-008; chưa tạo Evidence ID |
+| 2026-08-20 | WSA-7K2 | Chốt REL02-Q01–Q03 ở mức design/negative evidence; giữ hồ sơ mở cho audit và runtime evidence | D-034–D-038; M11-T002–T007 |

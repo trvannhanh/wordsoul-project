@@ -11,6 +11,7 @@
 - [Ma trận quyền tối thiểu M11](MA-TRAN-QUYEN-TOI-THIEU.md)
 - [Vòng đời cấp và thu hồi quyền quản trị M11](VONG-DOI-QUYEN-QUAN-TRI.md)
 - [Kiểm chứng không có quyền tạm thời/khẩn cấp — lát A](KIEM-CHUNG-KHONG-QUYEN-TAM-THOI-KHAN-CAP.md)
+- [Phân loại thao tác kiểm soát tăng cường M11](PHAN-LOAI-THAO-TAC-KIEM-SOAT-TANG-CUONG.md)
 - [Sổ đăng ký cấu hình M11](SO-DANG-KY-CAU-HINH.md)
 - [Từ điển chỉ số quản trị M11](TU-DIEN-CHI-SO-QUAN-TRI.md)
 - [Ma trận nội dung quản trị chéo module M11](MA-TRAN-NOI-DUNG-QUAN-TRI-CHEO-MODULE.md)
