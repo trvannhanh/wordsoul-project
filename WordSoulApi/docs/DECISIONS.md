@@ -118,6 +118,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-110 | Dùng M12-MINIMAL-EXTERNAL-IDENTITY-1.0 cho đặc tả dữ liệu danh tính tối thiểu | 5 allowed minimal external claims (sub, provider, email, email_verified, name); prohibit phone/friends/location/posts collection; mandatory CT-02 guard prohibiting auto-linking by email; OAuth 2.0 PKCE S256 enforcement REL-01, REL-03 |
 | D-111 | Dùng M12-ANTI-FORGERY-REPLAY-1.0 cho thiết kế chống giả mạo và phát lại | 4 anti-forgery guards (State Nonce 256-bit with atomic GET&DEL, PKCE S256, OIDC Nonce 24h Redis cache, Clock Skew Window +-60s); single-use token enforcement; security violation audit trail ACT-M11-07 REL-03 |
 | D-112 | Dùng M12-EXTERNAL-TOKEN-LIFECYCLE-1.0 cho chốt vòng đời token ngoài | Zero-persistence for external access tokens; mandatory AES-256-GCM encryption for stored refresh tokens via Secret Manager; proactive 5m refresh window; instant remote token revocation SLA <= 5s REL-03 |
+| D-113 | Dùng M12-SECRET-LIFECYCLE-1.0 cho thiết kế vòng đời bí mật | 5-state secret lifecycle (DRAFT -> ACTIVE -> ROTATING -> DEPRECATED -> REVOKED); zero-downtime dual-key grace period (7 days); emergency revocation SLA <= 5m with auto SecurityEpoch += 1; audit trail ACT-M11-41-SEC REL-03 |
 
 ## Khi nào cần thêm quyết định
 
