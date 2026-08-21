@@ -165,6 +165,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-157 | Dùng A5-ACCEPTANCE-CRITERIA-AG03-1.0 cho nghiệm thu A-G03 | Verified game economy caps (5,000 Exp & 500 Gems daily limit); anti-cheat speed hack guard (< 500ms answer time flag); M06 idempotency double spending prevention; audit trail ACT-A5-05-AG03 REL-04 |
 | D-158 | Dùng A5-ACCEPTANCE-CRITERIA-AG04-1.0 cho nghiệm thu A-G04 | Verified 3-state circuit breaker tripping (>50% failure threshold over 30s); per-provider bulkhead pool isolation (max 10 slots queue overflow HTTP 429); degraded fallback SLA <= 2ms; audit trail ACT-A5-06-AG04 REL-03 |
 | D-159 | Dùng A5-ACCEPTANCE-CRITERIA-AG05-1.0 cho nghiệm thu A-G05 | 100% RFC 7807 problem details error response standardization (application/problem+json); machine-readable errorCode and traceId; zero production stack trace leakage invariant; audit trail ACT-A5-07-AG05 REL-01, REL-03, REL-04 |
+| D-160 | Dùng A5-ACCEPTANCE-CRITERIA-AG06-1.0 cho nghiệm thu A-G06 | Verified M11 operational readiness; SEV-1 critical incident response SLA <= 15m & MTTR <= 1h; mandatory 48-hour Blameless Post-Mortem SLA; immutable audit ledger integrity; audit trail ACT-A5-08-AG06 REL-02, REL-03 |
 
 ## Khi nào cần thêm quyết định
 
