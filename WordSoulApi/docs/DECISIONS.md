@@ -111,6 +111,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-103 | Dùng M01-IDENTITY-EVENT-CATALOG-1.0 cho xây dựng danh mục sự kiện danh tính | Standard 12 integration events; M12 EventEnvelope schema; Transactional Outbox Pattern for at-least-once delivery; consumer idempotency via EventId & SecurityEpoch; zero direct PII in payloads REL-01 |
 | D-104 | Dùng M01-ANOMALOUS-IDENTITY-ALERT-1.0 cho thiết kế cảnh báo hành vi danh tính bất thường | 5 hard identity risk rules (Impossible Travel, Brute Force Burst, Flapping, Concurrent Subnets, Role Spike); automated step-up auth & session revocation; realtime security alert email/PUSH SLA <= 10s REL-06; audit trail ACT-M11-39 |
 | D-105 | Dùng M01-IDENTITY-HEALTH-METRICS-1.0 cho xác định chỉ số sức khỏe M01 | Standard 8 identity health indicators; non-blocking in-memory Prometheus metric collection SLA <= 1ms; SEV-2/SEV-3 automated escalation to M11; mandatory PII anonymization for cohorts < 10 users REL-01 |
+| D-106 | Dùng M01-IDENTITY-HISTORY-AUTHORIZATION-1.0 cho chuẩn hóa quyền tra cứu lịch sử danh tính | 4 access levels (Self, SupportAgent, SecurityAdmin, SuperAdmin); mandatory active ticket requirement for SupportAgent; ContentAdmin access DENIED; max 20 queries/min rate limiter; audit trail ACT-M11-41 REL-02, REL-07 |
 
 ## Khi nào cần thêm quyết định
 

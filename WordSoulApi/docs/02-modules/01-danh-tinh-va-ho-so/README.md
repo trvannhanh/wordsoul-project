@@ -36,6 +36,7 @@
 - [Xây dựng danh mục sự kiện danh tính M01](XAY-DUNG-DANH-MUC-SU-KIEN-DANH-TINH.md)
 - [Thiết kế cảnh báo hành vi danh tính bất thường M01](THIET-KE-CANH-BAO-HANH-VI-DANH-TINH-BAT-THUONG.md)
 - [Xác định chỉ số sức khỏe M01](XAC-DINH-CHI-SO-SUC-KHOE-M01.md)
+- [Chuẩn hóa quyền tra cứu lịch sử danh tính M01](CHUAN-HOA-QUYEN-TRA-CUU-LICH-SU-DANH-TINH.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 
