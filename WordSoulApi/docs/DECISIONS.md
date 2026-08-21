@@ -105,6 +105,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-097 | Dùng M12-CACHE-TTL-INVALIDATION-1.0 cho thiết kế namespace, TTL và invalidation | Structured key naming hierarchy (wordsoul:{env}:{namespace}:{entityId}); 4-tier TTL classification; event-driven eviction SLA <= 1s via Redis Pub/Sub; DB fallback on Redis failure; zero unmasked secrets/PII in cache REL-03 |
 | D-098 | Dùng M12-DISTRIBUTED-LOCK-1.0 cho chốt khóa phân tán và ownership | Redlock consensus algorithm; unique LockValue GUID per node/thread; atomic release via Lua script checking ownership before DEL; auto-extension heartbeat timer every 1500ms; 429 timeout handling REL-03 |
 | D-099 | Dùng M12-TIMEOUT-DEADLINE-CANCELLATION-1.0 cho chuẩn hóa timeout, deadline và hủy | 4-tier timeout matrix (C0 3s, C1 5s, C2 15s, C3 60s); mandatory CancellationToken propagation; X-Request-Deadline-Utc header propagation; socket abort & Redis lock release on cancellation; HTTP 504/499 error responses REL-03 |
+| D-100 | Dùng M12-RETRY-IDEMPOTENCY-1.0 cho chuẩn hóa retry và idempotency | Exponential backoff with random jitter (max 3 retries for transient errors 502/503/504); immediate fail on non-retryable 4xx errors; mandatory X-Idempotency-Key header on mutation APIs with Redis 24h cached response; IN_PROGRESS state guard HTTP 409 REL-03 |
 
 ## Khi nào cần thêm quyết định
 
