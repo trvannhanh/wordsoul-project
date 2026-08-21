@@ -162,6 +162,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-154 | Dùng A5-TASK-COVERAGE-AUDIT-145-1.0 cho kiểm tra bao phủ 145 task | Automated 100% coverage audit for all 145 tasks across 12 modules and A5; mandatory decision mapping validation D-001 to D-154; closed-loop file:// link verification in module READMEs; audit trail ACT-A5-02-AUDIT |
 | D-155 | Dùng A5-ACCEPTANCE-CRITERIA-AG01-1.0 cho nghiệm thu A-G01 | 100% compliance with 9-section document structure across 145 task artifacts; zero PII egress invariant (Gemini PromptAnonymizerFilter & Salted SHA-256 IP hashing); audit trail ACT-A5-03-AG01 REL-01, REL-07 |
 | D-156 | Dùng A5-ACCEPTANCE-CRITERIA-AG02-1.0 cho nghiệm thu A-G02 | Verified 1,450 total gates and 2,900 test cases across 145 task artifacts; mandatory runtime E2E test suite execution evidence in M11 audit ledger; audit trail ACT-A5-04-AG02 REL-02, REL-07 |
+| D-157 | Dùng A5-ACCEPTANCE-CRITERIA-AG03-1.0 cho nghiệm thu A-G03 | Verified game economy caps (5,000 Exp & 500 Gems daily limit); anti-cheat speed hack guard (< 500ms answer time flag); M06 idempotency double spending prevention; audit trail ACT-A5-05-AG03 REL-04 |
 
 ## Khi nào cần thêm quyết định
 
