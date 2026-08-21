@@ -141,6 +141,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-133 | Dùng M11-SUSTAINABLE-LOG-INGESTION-1.0 cho thiết kế thu nhận log bền vững | Async disk buffer queue (500MB limit); LOCAL_DISK_SPOOLING fallback mode on log sink outage (7-day encrypted retention); LogIngestionShipper worker exponential backoff retry (<= 60s); rate limit 10,000 events/s REL-02, REL-03 |
 | D-134 | Dùng M11-LOG-SEARCH-ACCESS-RETENTION-1.0 cho chốt tìm kiếm, truy cập và lưu giữ log | RBAC log access matrix (audit logs strictly for AuditAdmin/Compliance); mandatory SupportTicketId for unmasking PII; fast index search SLA <= 500ms; 3-tier retention (Hot 30d, Warm 90d, Cold 12m Glacier WORM Vault Lock) REL-02, REL-07 |
 | D-135 | Dùng M11-BACKGROUND-JOB-REGISTRY-1.0 cho lập sổ đăng ký công việc nền | Centralized background job catalog; Redis Redlock / SQL Lease Lock (30s LockTTL + 10s heartbeat renewal) enforcing single leader execution; max job duration SLA <= 15m; audit trail ACT-M11-38-JOB REL-03, REL-07 |
+| D-136 | Dùng M11-BACKGROUND-JOB-EXECUTION-RECOVERY-1.0 cho thiết kế lịch sử chạy và phục hồi công việc | Immutable JobExecutionHistory envelope; 90-day retention policy; mandatory password re-authentication guard <= 5m for manual job retriggers; audit trail ACT-M11-39-JOBRECOVER REL-07 |
 
 ## Khi nào cần thêm quyết định
 

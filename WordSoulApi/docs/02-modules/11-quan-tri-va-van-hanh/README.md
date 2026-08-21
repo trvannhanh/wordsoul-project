@@ -39,6 +39,7 @@
 - [Thiết kế thu nhận log bền vững M11](THIET-KE-THU-NHAN-LOG-BEN-VUNG.md)
 - [Chốt tìm kiếm, truy cập và lưu giữ log M11](CHOT-TIM-KIEM-TRUY-CAP-VA-LUU-GIU-LOG.md)
 - [Lập sổ đăng ký công việc nền M11](LAP-SO-DANG-KY-CONG-VIEC-NEN.md)
+- [Thiết kế lịch sử chạy và phục hồi công việc M11](THIET-KE-LICH-SU-CHAY-VA-PHUC-HOI-CONG-VIEC.md)
 - [Task backlog](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 
