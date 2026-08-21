@@ -41,6 +41,7 @@
 - [Xác định đường hỗ trợ khi mất mọi kênh M01](XAC-DINH-DUONG-HO-TRO-KHI-MAT-MOI-KENH.md)
 - [Xử lý xung đột và gỡ liên kết M01](XU-LY-XUNG-DOT-VA-GO-LIEN-KET.md)
 - [Chuẩn hóa đăng nhập bằng danh tính bên ngoài M01](CHUAN-HOA-DANG-NHAP-BANG-DANH-TINH-BEN-NGOAI.md)
+- [Bảo vệ liên kết tài khoản hiện có M01](BAO-VE-LIEN-KET-TAI-KHOAN-HIEN-CO.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 

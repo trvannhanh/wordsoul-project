@@ -127,6 +127,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-119 | Dùng M12-EXTERNAL-LINK-UNLINK-1.0 cho đặc tả liên kết và ngắt liên kết | Isolated OAuth adapter pattern (IExternalOAuthAdapter for Google, Apple, Facebook); unified remote revocation endpoint SLA <= 5s; strict JWKS RSA signature & claim validation; audit trail ACT-M11-09-ADAPTER REL-03 |
 | D-120 | Dùng M12-EXTERNAL-IDENTITY-DEGRADATION-1.0 cho thiết kế suy giảm khi danh tính ngoài lỗi | Strict fail-closed security invariant (no fail-open); fast-fail circuit breaker SLA <= 2ms (M12-T038); JWKS Redis key escrow cache 24h fallback; graceful channel switch guidance REL-03 |
 | D-121 | Dùng M01-EXTERNAL-LOGIN-1.0 cho chuẩn hóa đăng nhập bằng danh tính bên ngoài | Safe auto-provisioning for new external identity; CT-02 guard prohibiting auto-linking by email; AccountStatus locked/inactive overlay check; zero-persistence for external access tokens; audit trail ACT-M11-13 REL-01, REL-03 |
+| D-122 | Dùng M01-ACCOUNT-LINKING-PROTECTION-1.0 cho bảo vệ liên kết tài khoản hiện có | Mandatory re-authentication guard <= 5m; anti-hijacking email OTP verification for matching emails; max 5 linked providers limit; AES-256-GCM token encryption via Secret Manager; audit trail ACT-M11-14-LINK REL-01, REL-03 |
 
 ## Khi nào cần thêm quyết định
 
