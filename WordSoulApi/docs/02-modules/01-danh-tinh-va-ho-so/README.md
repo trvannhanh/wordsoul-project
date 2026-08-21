@@ -42,6 +42,7 @@
 - [Xử lý xung đột và gỡ liên kết M01](XU-LY-XUNG-DOT-VA-GO-LIEN-KET.md)
 - [Chuẩn hóa đăng nhập bằng danh tính bên ngoài M01](CHUAN-HOA-DANG-NHAP-BANG-DANH-TINH-BEN-NGOAI.md)
 - [Bảo vệ liên kết tài khoản hiện có M01](BAO-VE-LIEN-KET-TAI-KHOAN-HIEN-CO.md)
+- [Thiết kế vòng đời ảnh đại diện M01](THIET-KE-VONG-DOI-ANH-DAI-DIEN.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 

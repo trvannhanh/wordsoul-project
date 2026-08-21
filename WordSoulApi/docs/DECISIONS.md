@@ -135,6 +135,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-127 | Dùng M12-ASSET-ACCESS-DISTRIBUTION-1.0 cho chốt quyền truy cập và phân phối | Public assets via global CDN domain (max-age 1y); private assets via CDN signed URLs/cookies (TTL <= 60m); S3 origin access identity (OAI) blocking direct origin access; global CDN invalidation SLA <= 60s REL-03, REL-04 |
 | D-128 | Dùng M12-ASSET-REPLACEMENT-ORPHAN-CLEANUP-1.0 cho thiết kế thay thế, xóa và orphan cleanup | No physical delete on active references (M11-T020 5-level scan); 90-day soft-deletion state machine with cold storage move; asset replacement creates new AssetId; OrphanAssetCleanupWorker daily 02:00 UTC purge for unreferenced > 30d REL-04, REL-07 |
 | D-129 | Dùng M02-ASSET-REPLACEMENT-LIFECYCLE-1.0 cho thiết kế vòng đời thay thế tài sản | Asset replacement creates new VocabularyRevision (D-063); active M03 learning sessions stay pinned to current version; automatic QualityScore recalculation (+25% boost when audio added); mandatory rights cleared gate (RightsCleared == true) REL-04 |
+| D-130 | Dùng M01-AVATAR-LIFECYCLE-1.0 cho thiết kế vòng đời ảnh đại diện | Pre-signed PUT URL M12 (TTL 15m, max 1MB); mandatory AI safety image moderation gate (< 0.01 threshold); private CDN signed URL distribution (TTL <= 60m); old avatar RefCount decrement M12-T025 REL-04 |
 
 ## Khi nào cần thêm quyết định
 
