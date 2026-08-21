@@ -163,6 +163,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-155 | Dùng A5-ACCEPTANCE-CRITERIA-AG01-1.0 cho nghiệm thu A-G01 | 100% compliance with 9-section document structure across 145 task artifacts; zero PII egress invariant (Gemini PromptAnonymizerFilter & Salted SHA-256 IP hashing); audit trail ACT-A5-03-AG01 REL-01, REL-07 |
 | D-156 | Dùng A5-ACCEPTANCE-CRITERIA-AG02-1.0 cho nghiệm thu A-G02 | Verified 1,450 total gates and 2,900 test cases across 145 task artifacts; mandatory runtime E2E test suite execution evidence in M11 audit ledger; audit trail ACT-A5-04-AG02 REL-02, REL-07 |
 | D-157 | Dùng A5-ACCEPTANCE-CRITERIA-AG03-1.0 cho nghiệm thu A-G03 | Verified game economy caps (5,000 Exp & 500 Gems daily limit); anti-cheat speed hack guard (< 500ms answer time flag); M06 idempotency double spending prevention; audit trail ACT-A5-05-AG03 REL-04 |
+| D-158 | Dùng A5-ACCEPTANCE-CRITERIA-AG04-1.0 cho nghiệm thu A-G04 | Verified 3-state circuit breaker tripping (>50% failure threshold over 30s); per-provider bulkhead pool isolation (max 10 slots queue overflow HTTP 429); degraded fallback SLA <= 2ms; audit trail ACT-A5-06-AG04 REL-03 |
 
 ## Khi nào cần thêm quyết định
 
