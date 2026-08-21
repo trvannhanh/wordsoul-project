@@ -44,6 +44,7 @@
 - [Bảo vệ liên kết tài khoản hiện có M01](BAO-VE-LIEN-KET-TAI-KHOAN-HIEN-CO.md)
 - [Thiết kế vòng đời ảnh đại diện M01](THIET-KE-VONG-DOI-ANH-DAI-DIEN.md)
 - [Thiết kế yêu cầu xuất dữ liệu M01](THIET-KE-YEU-CAU-XUAT-DU-LIEU.md)
+- [Thiết kế yêu cầu xóa tài khoản M01](THIET-KE-YEU-CAU-XOA-TAI-KHOAN.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 

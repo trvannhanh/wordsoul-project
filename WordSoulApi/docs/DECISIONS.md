@@ -153,6 +153,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-145 | Dùng M11-COMMUNICATION-POST-MORTEM-A-1.0 cho thiết kế truyền thông và hậu kiểm — lát A | 2-way communication matrix (Slack #warroom every 15m for internal, Status Page & M10 banner SLA <= 5m for external); mandatory 48-hour Blameless Post-Mortem SLA; assigned Action Item tickets REL-06 |
 | D-146 | Dùng M11-DISASTER-RECOVERY-DRILL-TARGETS-1.0 cho chốt mục tiêu phục hồi và diễn tập | System RTO target <= 1 hour; RPO target <= 5 minutes (continuous WAL & 5m PITR); mandatory quarterly GameDay chaos drills in isolated Staging/Sandbox environments; audit trail ACT-M11-48-DRILL REL-02, REL-03 |
 | D-147 | Dùng M01-DATA-EXPORT-REQUEST-1.0 cho thiết kế yêu cầu xuất dữ liệu | GDPR data portability right; async DataExportWorker producing password-protected AES-256 ZIP archive; mandatory password re-auth <= 5m; 1 request/24h rate limit; 7-day S3 Signed URL expiration REL-01, REL-07 |
+| D-148 | Dùng M01-ACCOUNT-DELETION-REQUEST-1.0 cho thiết kế yêu cầu xóa tài khoản | GDPR Right to be Forgotten; 30-day grace period with PENDING_DELETION state; double verification guard (password re-auth <= 5m AND email OTP); instant session & PUSH revocation (SecurityEpoch += 1 SLA <= 5s); 30d auto anonymization worker REL-01, REL-07 |
 
 ## Khi nào cần thêm quyết định
 
