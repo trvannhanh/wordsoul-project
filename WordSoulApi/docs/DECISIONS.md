@@ -145,6 +145,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-137 | Dùng M11-RECONCILIATION-DISCREPANCY-ALERT-A-1.0 cho thiết kế đối soát và cảnh báo sai lệch — lát A | Daily DataReconciliationWorker (03:00 UTC) covering push devices, asset ref counts, learning cards; auto-healing for discrepancy < 1%; P2_HIGH alert blocking auto-fix for discrepancy >= 1%; mandatory password re-auth <= 5m for manual trigger REL-07 |
 | D-138 | Dùng M11-MAINTENANCE-MODE-A-1.0 cho thiết kế chế độ bảo trì — lát A | 3 maintenance modes (NORMAL_OPERATIONS, READ_ONLY_MAINTENANCE, FULL_MAINTENANCE_LOCKDOWN); MaintenanceModeMiddleware API Gateway enforcement; pre-maintenance broadcast notification 30m prior via M10; Admin IP whitelist bypass REL-03, REL-06 |
 | D-139 | Dùng M11-KILL-SWITCH-EMERGENCY-HALT-1.0 cho thiết kế kill switch và dừng khẩn | Individual feature kill switches (SLA <= 100ms via Redis Pub/Sub); global emergency halt protocol (SLA <= 5s, SecurityEpoch += 1 revoking 100% sessions); mandatory two-person approval + password re-auth <= 5m REL-02, REL-03 |
+| D-140 | Dùng M11-INCIDENT-SEVERITY-MODEL-1.0 cho xây dựng mô hình mức độ sự cố | 4 incident severity levels (SEV-1 Critical to SEV-4 Low); response SLA <= 15m & MTTR <= 1h for SEV-1; automatic SEV-2 to SEV-1 promotion on 30m un-triaged timer; mandatory 48-hour Post-Mortem SLA for SEV-1/SEV-2 REL-03 |
 
 ## Khi nào cần thêm quyết định
 
