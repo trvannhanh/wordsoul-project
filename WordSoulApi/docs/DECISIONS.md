@@ -113,6 +113,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-105 | Dùng M01-IDENTITY-HEALTH-METRICS-1.0 cho xác định chỉ số sức khỏe M01 | Standard 8 identity health indicators; non-blocking in-memory Prometheus metric collection SLA <= 1ms; SEV-2/SEV-3 automated escalation to M11; mandatory PII anonymization for cohorts < 10 users REL-01 |
 | D-106 | Dùng M01-IDENTITY-HISTORY-AUTHORIZATION-1.0 cho chuẩn hóa quyền tra cứu lịch sử danh tính | 4 access levels (Self, SupportAgent, SecurityAdmin, SuperAdmin); mandatory active ticket requirement for SupportAgent; ContentAdmin access DENIED; max 20 queries/min rate limiter; audit trail ACT-M11-41 REL-02, REL-07 |
 | D-107 | Dùng M11-SUPPORT-TIMELINE-BUILDER-1.0 cho xây dựng dòng thời gian hỗ trợ | 5-module event aggregation (M01, M03, M06, M10, M11); 90d active retention window; mandatory active support ticket requirement; default PII masking; degraded fallback IsPartialData=true SLA <= 50ms REL-07 |
+| D-108 | Dùng M11-SUPPORT-TICKET-LIFECYCLE-1.0 cho thiết kế vòng đời vụ việc hỗ trợ | 6-state ticket lifecycle (NEW -> ASSIGNED -> IN_PROGRESS -> ESCALATED -> RESOLVED -> CLOSED); instant PII access revocation SLA <= 1s on RESOLVED/CLOSED; auto-close after 72h inactivity; resolution summary >= 15 chars REL-07 |
 
 ## Khi nào cần thêm quyết định
 

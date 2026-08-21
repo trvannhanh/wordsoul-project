@@ -31,6 +31,7 @@
 - [Phân tách audit, activity và log vận hành M11](PHAN-TACH-AUDIT-ACTIVITY-LOG-VAN-HANH.md)
 - [Đặc tả tìm kiếm người dùng an toàn M11](DAC-TA-TIM-KIEM-NGUOI-DUNG-AN-TOAN.md)
 - [Xây dựng dòng thời gian hỗ trợ M11](XAY-DUNG-DONG-THOI-GIAN-HO-TRO.md)
+- [Thiết kế vòng đời vụ việc hỗ trợ M11](THIET-KE-VONG-DOI-VU-VIEC-HO-TRO.md)
 - [Task backlog](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 
