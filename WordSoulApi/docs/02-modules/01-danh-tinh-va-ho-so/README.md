@@ -30,6 +30,7 @@
 - [Thiết kế thu hồi thiết bị nhận tin — lát A M01](THIET-KE-THU-HOI-THIET-BI-NHAN-TIN-A.md)
 - [Chuẩn hóa khóa và mở tài khoản M01](CHUAN-HOA-KHOA-VA-MO-TAI-KHOAN.md)
 - [Chuẩn hóa thay đổi vai trò M01](CHUAN-HOA-THAY-DOI-VAI-TRO.md)
+- [Thiết kế xử lý thay đổi quản trị đồng thời M01](THIET-KE-XU-LY-THAY-DOI-QUAN-TRI-DONG-THOI.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 
