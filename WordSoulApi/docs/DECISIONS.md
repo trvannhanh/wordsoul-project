@@ -167,6 +167,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-159 | Dùng A5-ACCEPTANCE-CRITERIA-AG05-1.0 cho nghiệm thu A-G05 | 100% RFC 7807 problem details error response standardization (application/problem+json); machine-readable errorCode and traceId; zero production stack trace leakage invariant; audit trail ACT-A5-07-AG05 REL-01, REL-03, REL-04 |
 | D-160 | Dùng A5-ACCEPTANCE-CRITERIA-AG06-1.0 cho nghiệm thu A-G06 | Verified M11 operational readiness; SEV-1 critical incident response SLA <= 15m & MTTR <= 1h; mandatory 48-hour Blameless Post-Mortem SLA; immutable audit ledger integrity; audit trail ACT-A5-08-AG06 REL-02, REL-03 |
 | D-161 | Dùng A5-REL-REQUIREMENTS-CLOSURE-AUDIT-1.0 cho rà soát đóng REL ảnh hưởng A | 100% closure verification across all 5 key reliability requirement groups (REL-01 Security & PII, REL-02 Uptime & Audit, REL-03 Resilience & Circuit Breaker, REL-04 Economy Caps, REL-07 GDPR Retention); audit trail ACT-A5-09-REL REL-01, REL-02, REL-03, REL-04, REL-07 |
+| D-162 | Dùng A5-PHASE-A-GATE-APPROVAL-DECISION-1.0 cho ra quyết định Cổng A | Official Phase A Gate A Sign-Off Certificate APPROVED PASSED; 100% verification across all 145 tasks, 1,450 gates, 2,900 test cases, 6 criteria (A-G01 to A-G06) and 5 REL requirement groups; unlocked Phase B transition; audit trail ACT-A5-10-GATE |
 
 ## Khi nào cần thêm quyết định
 
