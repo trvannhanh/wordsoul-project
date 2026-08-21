@@ -20,6 +20,7 @@
 - [Lập bản đồ dữ liệu rời hệ thống — Lát A M12](BAN-DO-DU-LIEU-ROI-HE-THONG-A.md)
 - [Thiết kế namespace, TTL và invalidation M12](THIET-KE-NAMESPACE-TTL-VA-INVALIDATION.md)
 - [Chốt khóa phân tán và ownership M12](CHOT-KHOA-PHAN-TAN-VA-OWNERSHIP.md)
+- [Chuẩn hóa timeout, deadline và hủy M12](CHUAN-HOA-TIMEOUT-DEADLINE-VA-HUY.md)
 
 ## Mô tả module
 
