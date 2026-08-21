@@ -35,6 +35,7 @@
 - [Chốt thao tác hỗ trợ có kiểm soát M11](CHOT-THAO-TAC-HO-TRO-CO-KIEM-SOAT.md)
 - [Xây dựng quy tắc che dữ liệu và bí mật M11](XAY-DUNG-QUY-TAC-CHE-DU-LIEU-VA-BI-MAT.md)
 - [Lập sổ sức khỏe năng lực và tích hợp M11](LAP-SO-SUC-KHOE-NANG-LUC-VA-TICH-HOP.md)
+- [Thiết kế cảnh báo và escalation M11](THIET-KE-CANH-BAO-VA-ESCALATION.md)
 - [Task backlog](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 

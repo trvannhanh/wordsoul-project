@@ -137,6 +137,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-129 | Dùng M02-ASSET-REPLACEMENT-LIFECYCLE-1.0 cho thiết kế vòng đời thay thế tài sản | Asset replacement creates new VocabularyRevision (D-063); active M03 learning sessions stay pinned to current version; automatic QualityScore recalculation (+25% boost when audio added); mandatory rights cleared gate (RightsCleared == true) REL-04 |
 | D-130 | Dùng M01-AVATAR-LIFECYCLE-1.0 cho thiết kế vòng đời ảnh đại diện | Pre-signed PUT URL M12 (TTL 15m, max 1MB); mandatory AI safety image moderation gate (< 0.01 threshold); private CDN signed URL distribution (TTL <= 60m); old avatar RefCount decrement M12-T025 REL-04 |
 | D-131 | Dùng M11-CAPABILITY-INTEGRATION-HEALTH-REGISTRY-1.0 cho lập sổ sức khỏe năng lực và tích hợp | 4-state capability health envelope (HEALTHY, DEGRADED, UNHEALTHY, CIRCUIT_OPEN); 60s sliding window error rate & p99 aggregation; circuit breaker auto-tripping SLA <= 2ms; half-open recovery after 5m REL-03 |
+| D-132 | Dùng M11-ALERT-ESCALATION-1.0 cho thiết kế cảnh báo và escalation | 4 severity levels (P1_CRITICAL to P4_INFO); P1 immediate alert SLA <= 60s via PagerDuty/Slack; automatic Level 1 to Level 2 Eng Lead escalation timer (15m unacknowledged); 15m alert throttling & deduplication REL-03 |
 
 ## Khi nào cần thêm quyết định
 
