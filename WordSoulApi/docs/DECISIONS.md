@@ -139,6 +139,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-131 | Dùng M11-CAPABILITY-INTEGRATION-HEALTH-REGISTRY-1.0 cho lập sổ sức khỏe năng lực và tích hợp | 4-state capability health envelope (HEALTHY, DEGRADED, UNHEALTHY, CIRCUIT_OPEN); 60s sliding window error rate & p99 aggregation; circuit breaker auto-tripping SLA <= 2ms; half-open recovery after 5m REL-03 |
 | D-132 | Dùng M11-ALERT-ESCALATION-1.0 cho thiết kế cảnh báo và escalation | 4 severity levels (P1_CRITICAL to P4_INFO); P1 immediate alert SLA <= 60s via PagerDuty/Slack; automatic Level 1 to Level 2 Eng Lead escalation timer (15m unacknowledged); 15m alert throttling & deduplication REL-03 |
 | D-133 | Dùng M11-SUSTAINABLE-LOG-INGESTION-1.0 cho thiết kế thu nhận log bền vững | Async disk buffer queue (500MB limit); LOCAL_DISK_SPOOLING fallback mode on log sink outage (7-day encrypted retention); LogIngestionShipper worker exponential backoff retry (<= 60s); rate limit 10,000 events/s REL-02, REL-03 |
+| D-134 | Dùng M11-LOG-SEARCH-ACCESS-RETENTION-1.0 cho chốt tìm kiếm, truy cập và lưu giữ log | RBAC log access matrix (audit logs strictly for AuditAdmin/Compliance); mandatory SupportTicketId for unmasking PII; fast index search SLA <= 500ms; 3-tier retention (Hot 30d, Warm 90d, Cold 12m Glacier WORM Vault Lock) REL-02, REL-07 |
 
 ## Khi nào cần thêm quyết định
 
