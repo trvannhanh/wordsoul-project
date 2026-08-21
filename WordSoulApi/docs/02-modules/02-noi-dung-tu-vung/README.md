@@ -18,6 +18,7 @@
 - [Lập danh mục tài sản học liệu M02](LAP-DANH-MUC-TAI-SAN-HOC-LIEU.md)
 - [Chuẩn hóa kiểm duyệt tài sản M02](CHUAN-HOA-KIEM-DUYET-TAI-SAN.md)
 - [Thiết kế xử lý tài sản lỗi hoặc thiếu M02](THIET-KE-XU-LY-TAI-SAN-LOI-HOAC-THIEU.md)
+- [Thiết kế vòng đời thay thế tài sản M02](THIET-KE-VONG-DOI-THAY-THE-TAI-SAN.md)
 - [Xây dựng ma trận quyền bộ từ M02](MA-TRAN-QUYEN-BO-TU.md)
 - [Thiết kế vòng đời bộ từ M02](THIET-KE-VONG-DOI-BO-TU.md)
 - [Xử lý chủ sở hữu không còn hoạt động M02](XU-LY-CHU-SO-HUU-KHONG-CON-HOAT-DONG.md)
