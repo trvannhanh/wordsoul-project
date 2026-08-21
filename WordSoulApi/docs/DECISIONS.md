@@ -116,6 +116,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-108 | Dùng M11-SUPPORT-TICKET-LIFECYCLE-1.0 cho thiết kế vòng đời vụ việc hỗ trợ | 6-state ticket lifecycle (NEW -> ASSIGNED -> IN_PROGRESS -> ESCALATED -> RESOLVED -> CLOSED); instant PII access revocation SLA <= 1s on RESOLVED/CLOSED; auto-close after 72h inactivity; resolution summary >= 15 chars REL-07 |
 | D-109 | Dùng M11-CONTROLLED-SUPPORT-MUTATION-1.0 cho chốt thao tác hỗ trợ có kiểm soát | Minimal data mutation principle (prohibit direct password/email/role edits); 5 allowed ops (resend email, unblock login, force logout, cancel order, reward compensation <= 100 gold); mandatory agent password re-auth <= 5m; audit trail ACT-M11-30 REL-02, REL-07 |
 | D-110 | Dùng M12-MINIMAL-EXTERNAL-IDENTITY-1.0 cho đặc tả dữ liệu danh tính tối thiểu | 5 allowed minimal external claims (sub, provider, email, email_verified, name); prohibit phone/friends/location/posts collection; mandatory CT-02 guard prohibiting auto-linking by email; OAuth 2.0 PKCE S256 enforcement REL-01, REL-03 |
+| D-111 | Dùng M12-ANTI-FORGERY-REPLAY-1.0 cho thiết kế chống giả mạo và phát lại | 4 anti-forgery guards (State Nonce 256-bit with atomic GET&DEL, PKCE S256, OIDC Nonce 24h Redis cache, Clock Skew Window +-60s); single-use token enforcement; security violation audit trail ACT-M11-07 REL-03 |
 
 ## Khi nào cần thêm quyết định
 
