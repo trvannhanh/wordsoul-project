@@ -132,6 +132,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-124 | Dùng M12-DATA-REDACTION-LOG-POLICY-1.0 cho chốt che dữ liệu và chính sách log | IntegrationHttpRedactionHandler middleware for HTTP headers & body redaction; PromptAnonymizerFilter for AI Gemini PII stripping; zero-ciphertext logging invariant; audit trail ACT-M11-43-LOG REL-03 |
 | D-125 | Dùng M12-SECURE-ASSET-UPLOAD-1.0 cho đặc tả upload an toàn | Pre-signed upload URL pattern (TTL 15m); MIME-type & file size whitelist guards (audio <= 5MB, image <= 2MB); magic byte header verification; staging antivirus scan gate REL-03, REL-04 |
 | D-126 | Dùng M12-ASSET-IMMUTABLE-METADATA-1.0 cho thiết kế metadata và định danh bất biến | Immutable AssetId GUID & SHA-256 binary hash digest (AssetHash); automatic binary deduplication; immutable object key path structure; mandatory rights metadata envelope (RightsCleared == true) REL-04 |
+| D-127 | Dùng M12-ASSET-ACCESS-DISTRIBUTION-1.0 cho chốt quyền truy cập và phân phối | Public assets via global CDN domain (max-age 1y); private assets via CDN signed URLs/cookies (TTL <= 60m); S3 origin access identity (OAI) blocking direct origin access; global CDN invalidation SLA <= 60s REL-03, REL-04 |
 
 ## Khi nào cần thêm quyết định
 
