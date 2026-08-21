@@ -156,6 +156,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-148 | Dùng M01-ACCOUNT-DELETION-REQUEST-1.0 cho thiết kế yêu cầu xóa tài khoản | GDPR Right to be Forgotten; 30-day grace period with PENDING_DELETION state; double verification guard (password re-auth <= 5m AND email OTP); instant session & PUSH revocation (SecurityEpoch += 1 SLA <= 5s); 30d auto anonymization worker REL-01, REL-07 |
 | D-149 | Dùng M01-ANONYMIZATION-DELETION-MATRIX-1.0 cho xây dựng ma trận xóa và ẩn danh hóa | 3 entity handling classes (HARD_DELETE identity/tokens, ANONYMIZE audit logs with Salted SHA-256 & M06 tax records, PRESERVE_AGGREGATE M04 learning stats); S3 avatar RefCount reduction M12-T025 REL-01, REL-07 |
 | D-150 | Dùng M01-RE-REGISTRATION-AFTER-DELETION-1.0 cho xác định quy tắc đăng ký lại sau xóa | Block new registration during 30d grace period (HTTP 400 REGISTRATION_BLOCKED_PENDING_DELETION); fresh account provisioned after 30d; mandatory zero-history inheritance invariant; max 3 re-registrations/year limit REL-01, REL-07 |
+| D-151 | Dùng M01-CROSS-FUNCTIONAL-ACCEPTANCE-A-1.0 cho xây dựng bộ nghiệm thu xuyên chức năng M01 — lát A | 5 E2E integration flows covering identity lifecycle, push revocation, GDPR export/deletion, re-registration; zero PII egress invariant; session revocation SLA <= 5s REL-01, REL-02, REL-07 |
 
 ## Khi nào cần thêm quyết định
 
