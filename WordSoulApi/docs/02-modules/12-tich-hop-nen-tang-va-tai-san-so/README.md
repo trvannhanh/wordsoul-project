@@ -23,6 +23,7 @@
 - [Chuẩn hóa timeout, deadline và hủy M12](CHUAN-HOA-TIMEOUT-DEADLINE-VA-HUY.md)
 - [Chuẩn hóa retry và idempotency M12](CHUAN-HOA-RETRY-VA-IDEMPOTENCY.md)
 - [Thiết kế circuit breaker và bulkhead M12](THIET-KE-CIRCUIT-BREAKER-VA-BULKHEAD.md)
+- [Đặc tả dữ liệu danh tính tối thiểu M12](DAC-TA-DU-LIEU-DANH-TINH-TOI-THIEU.md)
 
 ## Mô tả module
 

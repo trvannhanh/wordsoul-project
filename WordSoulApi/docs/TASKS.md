@@ -92,7 +92,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | M11-T033 | M11 | Xây dựng quy tắc che dữ liệu và bí mật | M11-T032; M12-T040–T043 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02, A-G05; REL-03 | — |
 | M11-T034 | M11 | Thiết kế thu nhận log bền vững | M11-T033; M12-T003 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02, A-G06; REL-02, REL-03 | — |
 | M11-T035 | M11 | Chốt tìm kiếm, truy cập và lưu giữ log | M11-T004, T034 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G02, A-G05; REL-02, REL-07 | — |
-| M12-T006 | M12 | Đặc tả dữ liệu danh tính tối thiểu | M12-T004; M01-T003 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01, A-G05; REL-03 | — |
+| M12-T006 | M12 | Đặc tả dữ liệu danh tính tối thiểu | M12-T004; M01-T003 | Hoàn thành | Đầu ra đạt; tự kiểm A-G01, A-G05; REL-03 | M12-MINIMAL-EXTERNAL-IDENTITY-1.0/D-110 chốt 5 allowed minimal external claims (sub, provider, email, email_verified, name), prohibit phone/friends/location/posts collection, mandatory CT-02 guard prohibiting auto-linking by email, OAuth 2.0 PKCE S256 enforcement REL-01, REL-03, 10 gate và 20 case. |
 | M12-T007 | M12 | Thiết kế chống giả mạo và phát lại | M12-T006 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01, A-G04 | — |
 | M12-T008 | M12 | Chốt vòng đời token ngoài | M12-T006, T007; M12-T040 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01, A-G05; REL-03 | — |
 | M12-T009 | M12 | Đặc tả liên kết và ngắt liên kết | M12-T008; M01-T014–T015 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01 | — |
