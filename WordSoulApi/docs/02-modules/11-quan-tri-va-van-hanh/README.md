@@ -45,6 +45,7 @@
 - [Thiết kế kill switch và dừng khẩn M11](THIET-KE-KILL-SWITCH-VA-DUNG-KHAN.md)
 - [Xây dựng mô hình mức độ sự cố M11](XAY-DUNG-MO-HINH-MUC-DO-SU-CO.md)
 - [Xây dựng playbook sự cố trọng yếu M11](XAY-DUNG-PLAYBOOK-SU-CO-TRONG-YEU.md)
+- [Thiết kế truyền thông và hậu kiểm — lát A M11](THIET-KE-TRUYEN-THONG-VA-HAU-KIEM-LAT-A.md)
 - [Task backlog](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 

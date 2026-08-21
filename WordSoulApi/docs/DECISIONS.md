@@ -150,6 +150,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-142 | Dùng M12-CAPABILITY-SLO-HEALTH-DEFINITIONS-1.0 cho định nghĩa SLO và health từng năng lực | Specific SLO targets for 4 core providers (Google OAuth 99.9% / p95 <= 300ms, Gemini AI 99.5% / p95 <= 1200ms, S3 99.99% / p95 <= 250ms, Firebase Push 99.9% / <= 5s); 60s sliding window evaluation; auto circuit breaker trip SLA <= 2ms on SLO breach REL-03 |
 | D-143 | Dùng M12-USAGE-COST-BUDGET-TRACKING-1.0 cho thiết kế đo usage, chi phí và ngân sách | Detailed token/byte metering; monthly budget caps (Gemini AI $500/m, Slack alert at 80%, auto-kill to static cache at 100%); per-user daily quota limit (50,000 tokens/day SLA <= 1ms HTTP 429) REL-03 |
 | D-144 | Dùng M12-CONTRACT-TESTING-CANARY-A-1.0 cho xây dựng kiểm thử hợp đồng và canary — lát A | Pact consumer-driven contract testing in CI/CD; 1% canary traffic allocation with 5m warm-up monitoring; automated rollback SLA <= 10s on canary error rate > 1% REL-03 |
+| D-145 | Dùng M11-COMMUNICATION-POST-MORTEM-A-1.0 cho thiết kế truyền thông và hậu kiểm — lát A | 2-way communication matrix (Slack #warroom every 15m for internal, Status Page & M10 banner SLA <= 5m for external); mandatory 48-hour Blameless Post-Mortem SLA; assigned Action Item tickets REL-06 |
 
 ## Khi nào cần thêm quyết định
 
