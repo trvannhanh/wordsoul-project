@@ -25,6 +25,7 @@
 - [Thiết kế circuit breaker và bulkhead M12](THIET-KE-CIRCUIT-BREAKER-VA-BULKHEAD.md)
 - [Đặc tả dữ liệu danh tính tối thiểu M12](DAC-TA-DU-LIEU-DANH-TINH-TOI-THIEU.md)
 - [Thiết kế chống giả mạo và phát lại M12](THIET-KE-CHONG-GIA-MAO-VA-PHAT-LAI.md)
+- [Chốt vòng đời token ngoài M12](CHOT-VONG-DOI-TOKEN-NGOAI.md)
 
 ## Mô tả module
 
