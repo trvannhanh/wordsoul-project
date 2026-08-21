@@ -43,6 +43,7 @@
 - [Chuẩn hóa đăng nhập bằng danh tính bên ngoài M01](CHUAN-HOA-DANG-NHAP-BANG-DANH-TINH-BEN-NGOAI.md)
 - [Bảo vệ liên kết tài khoản hiện có M01](BAO-VE-LIEN-KET-TAI-KHOAN-HIEN-CO.md)
 - [Thiết kế vòng đời ảnh đại diện M01](THIET-KE-VONG-DOI-ANH-DAI-DIEN.md)
+- [Thiết kế yêu cầu xuất dữ liệu M01](THIET-KE-YEU-CAU-XUAT-DU-LIEU.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 
