@@ -46,6 +46,7 @@
 - [Xây dựng mô hình mức độ sự cố M11](XAY-DUNG-MO-HINH-MUC-DO-SU-CO.md)
 - [Xây dựng playbook sự cố trọng yếu M11](XAY-DUNG-PLAYBOOK-SU-CO-TRONG-YEU.md)
 - [Thiết kế truyền thông và hậu kiểm — lát A M11](THIET-KE-TRUYEN-THONG-VA-HAU-KIEM-LAT-A.md)
+- [Chốt mục tiêu phục hồi và diễn tập M11](CHOT-MUC-TIEU-PHUC-HOI-VA-DIEN-TAP.md)
 - [Task backlog](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 
