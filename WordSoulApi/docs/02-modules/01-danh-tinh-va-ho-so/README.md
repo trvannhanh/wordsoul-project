@@ -48,6 +48,7 @@
 - [Xây dựng ma trận xóa và ẩn danh hóa M01](XAY-DUNG-MA-TRAN-XOA-VA-AN-DANH-HOA.md)
 - [Xác định quy tắc đăng ký lại sau xóa M01](XAC-DINH-QUY-TAC-DANG-KY-LAI-SAU-XOA.md)
 - [Xây dựng bộ nghiệm thu xuyên chức năng M01 — lát A](XAY-DUNG-BO-NGHIEM-THU-XUYEN-CHUC-NANG-LAT-A.md)
+- [Hoàn thiện tài liệu bàn giao M01 — lát A](HOAN-THIEN-TAI-LIEU-BAN-GIAO-LAT-A.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 
