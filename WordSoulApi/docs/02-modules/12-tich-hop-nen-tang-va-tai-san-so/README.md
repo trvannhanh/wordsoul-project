@@ -18,6 +18,7 @@
 - [Xây dựng sổ quyền tài sản — Lát A M12](SO-QUYEN-TAI-SAN-A.md)
 - [Kiểm kê và phân loại bí mật M12](KIEM-KE-VA-PHAN-LOAI-BI-MAT.md)
 - [Lập bản đồ dữ liệu rời hệ thống — Lát A M12](BAN-DO-DU-LIEU-ROI-HE-THONG-A.md)
+- [Thiết kế namespace, TTL và invalidation M12](THIET-KE-NAMESPACE-TTL-VA-INVALIDATION.md)
 
 ## Mô tả module
 
