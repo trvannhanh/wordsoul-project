@@ -19,6 +19,7 @@
 - [Kiểm kê và phân loại bí mật M12](KIEM-KE-VA-PHAN-LOAI-BI-MAT.md)
 - [Lập bản đồ dữ liệu rời hệ thống — Lát A M12](BAN-DO-DU-LIEU-ROI-HE-THONG-A.md)
 - [Thiết kế namespace, TTL và invalidation M12](THIET-KE-NAMESPACE-TTL-VA-INVALIDATION.md)
+- [Chốt khóa phân tán và ownership M12](CHOT-KHOA-PHAN-TAN-VA-OWNERSHIP.md)
 
 ## Mô tả module
 

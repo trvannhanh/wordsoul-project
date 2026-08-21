@@ -158,7 +158,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | M11-T047-A | M11 | Thiết kế truyền thông và hậu kiểm — lát A | M11-T031, T046 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G06 | — |
 | M11-T048 | M11 | Chốt mục tiêu phục hồi và diễn tập | M11-T045–T047-A; M12-T036–T047-A | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G06; REL-02, REL-03 | — |
 | M12-T032 | M12 | Thiết kế namespace, TTL và invalidation | M12-T031, T040 | Hoàn thành | Đầu ra đạt; tự kiểm A-G04, A-G05; REL-03 | M12-CACHE-TTL-INVALIDATION-1.0/D-097 chốt key naming hierarchy (wordsoul:{env}:{namespace}:{entityId}), 4-tier TTL classification, event-driven eviction SLA <= 1s via Redis Pub/Sub, DB fallback on Redis failure, zero unmasked secrets/PII in cache REL-03, 10 gate và 20 case. |
-| M12-T033 | M12 | Chốt khóa phân tán và ownership | M12-T031 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G04; REL-03 | — |
+| M12-T033 | M12 | Chốt khóa phân tán và ownership | M12-T031 | Hoàn thành | Đầu ra đạt; tự kiểm A-G04; REL-03 | M12-DISTRIBUTED-LOCK-1.0/D-098 chốt Redlock consensus algorithm, unique LockValue GUID per node/thread, atomic release via Lua script checking ownership before DEL, auto-extension heartbeat timer every 1500ms, 429 timeout handling REL-03, 10 gate và 20 case. |
 | M12-T036 | M12 | Chuẩn hóa timeout, deadline và hủy | M12-T003–T005 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G04, A-G06; REL-03 | — |
 | M12-T037 | M12 | Chuẩn hóa retry và idempotency | M12-T005, T036 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G04; REL-03 | — |
 | M12-T038 | M12 | Thiết kế circuit breaker và bulkhead | M12-T003, T036, T037 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G04, A-G06; REL-03 | — |

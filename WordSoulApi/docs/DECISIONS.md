@@ -103,6 +103,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-095 | Dùng M01-CONCURRENT-ADMIN-MUTATION-1.0 cho thiết kế xử lý thay đổi quản trị đồng thời | OCC versionDigest verification via If-Match header (HTTP 409 Conflict on mismatch); priority hierarchy (Account Lock > Demote > Promote > Profile Edit); atomic SecurityEpoch += 1 increment; conflict audit trail ACT-M11-32 |
 | D-096 | Dùng M01-SUPER-ADMIN-PROTECTION-1.0 cho bảo vệ vai trò quản trị cao nhất | 4-eye dual-approval workflow (initiator != approver); min 2 active SuperAdmins invariant; mandatory hardware MFA verification; 48h ticket TTL; critical security alert & audit trail ACT-M11-30 |
 | D-097 | Dùng M12-CACHE-TTL-INVALIDATION-1.0 cho thiết kế namespace, TTL và invalidation | Structured key naming hierarchy (wordsoul:{env}:{namespace}:{entityId}); 4-tier TTL classification; event-driven eviction SLA <= 1s via Redis Pub/Sub; DB fallback on Redis failure; zero unmasked secrets/PII in cache REL-03 |
+| D-098 | Dùng M12-DISTRIBUTED-LOCK-1.0 cho chốt khóa phân tán và ownership | Redlock consensus algorithm; unique LockValue GUID per node/thread; atomic release via Lua script checking ownership before DEL; auto-extension heartbeat timer every 1500ms; 429 timeout handling REL-03 |
 
 ## Khi nào cần thêm quyết định
 
