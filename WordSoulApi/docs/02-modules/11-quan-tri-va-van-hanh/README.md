@@ -42,6 +42,7 @@
 - [Thiết kế lịch sử chạy và phục hồi công việc M11](THIET-KE-LICH-SU-CHAY-VA-PHUC-HOI-CONG-VIEC.md)
 - [Thiết kế đối soát và cảnh báo sai lệch — lát A M11](THIET-KE-DOI-SOAT-VA-CANH-BAO-SAI-LECH-LAT-A.md)
 - [Thiết kế chế độ bảo trì — lát A M11](THIET-KE-CHE-DO-BAO-TRI-LAT-A.md)
+- [Thiết kế kill switch và dừng khẩn M11](THIET-KE-KILL-SWITCH-VA-DUNG-KHAN.md)
 - [Task backlog](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 
