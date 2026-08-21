@@ -35,6 +35,7 @@
 - [Chốt quyền truy cập và phân phối M12](CHOT-QUYEN-TRUY-CAP-VA-PHAN-PHOI.md)
 - [Thiết kế thay thế, xóa và orphan cleanup M12](THIET-KE-THAY-THE-XOA-VA-ORPHAN-CLEANUP.md)
 - [Định nghĩa SLO và health từng năng lực M12](DINH-NGHIA-SLO-VA-HEALTH-TUNG-NANG-LUC.md)
+- [Thiết kế đo usage, chi phí và ngân sách M12](THIET-KE-DO-USAGE-CHI-PHI-VA-NGAN-SACH.md)
 
 ## Mô tả module
 

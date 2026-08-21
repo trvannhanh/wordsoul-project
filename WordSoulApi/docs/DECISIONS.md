@@ -148,6 +148,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-140 | Dùng M11-INCIDENT-SEVERITY-MODEL-1.0 cho xây dựng mô hình mức độ sự cố | 4 incident severity levels (SEV-1 Critical to SEV-4 Low); response SLA <= 15m & MTTR <= 1h for SEV-1; automatic SEV-2 to SEV-1 promotion on 30m un-triaged timer; mandatory 48-hour Post-Mortem SLA for SEV-1/SEV-2 REL-03 |
 | D-141 | Dùng M11-CRITICAL-INCIDENT-PLAYBOOK-1.0 cho xây dựng playbook sự cố trọng yếu | 3 core disaster SOP playbooks (Data Breach isolation, DB Corruption restoration, AI/OAuth Provider fallback); mandatory password re-auth <= 5m for playbook trigger; automated 48-hour Post-Mortem template generation REL-02, REL-03, REL-07 |
 | D-142 | Dùng M12-CAPABILITY-SLO-HEALTH-DEFINITIONS-1.0 cho định nghĩa SLO và health từng năng lực | Specific SLO targets for 4 core providers (Google OAuth 99.9% / p95 <= 300ms, Gemini AI 99.5% / p95 <= 1200ms, S3 99.99% / p95 <= 250ms, Firebase Push 99.9% / <= 5s); 60s sliding window evaluation; auto circuit breaker trip SLA <= 2ms on SLO breach REL-03 |
+| D-143 | Dùng M12-USAGE-COST-BUDGET-TRACKING-1.0 cho thiết kế đo usage, chi phí và ngân sách | Detailed token/byte metering; monthly budget caps (Gemini AI $500/m, Slack alert at 80%, auto-kill to static cache at 100%); per-user daily quota limit (50,000 tokens/day SLA <= 1ms HTTP 429) REL-03 |
 
 ## Khi nào cần thêm quyết định
 
