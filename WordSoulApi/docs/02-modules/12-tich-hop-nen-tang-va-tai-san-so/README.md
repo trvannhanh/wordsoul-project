@@ -34,6 +34,7 @@
 - [Thiết kế metadata và định danh bất biến M12](THIET-KE-METADATA-VA-DINH-DANH-BAT-BIEN.md)
 - [Chốt quyền truy cập và phân phối M12](CHOT-QUYEN-TRUY-CAP-VA-PHAN-PHOI.md)
 - [Thiết kế thay thế, xóa và orphan cleanup M12](THIET-KE-THAY-THE-XOA-VA-ORPHAN-CLEANUP.md)
+- [Định nghĩa SLO và health từng năng lực M12](DINH-NGHIA-SLO-VA-HEALTH-TUNG-NANG-LUC.md)
 
 ## Mô tả module
 
