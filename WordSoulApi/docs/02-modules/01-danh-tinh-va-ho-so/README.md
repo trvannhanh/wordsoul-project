@@ -31,6 +31,7 @@
 - [Chuẩn hóa khóa và mở tài khoản M01](CHUAN-HOA-KHOA-VA-MO-TAI-KHOAN.md)
 - [Chuẩn hóa thay đổi vai trò M01](CHUAN-HOA-THAY-DOI-VAI-TRO.md)
 - [Thiết kế xử lý thay đổi quản trị đồng thời M01](THIET-KE-XU-LY-THAY-DOI-QUAN-TRI-DONG-THOI.md)
+- [Bảo vệ vai trò quản trị cao nhất M01](BAO-VE-VAI-TRO-QUAN-TRI-CAO-NHAT.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 

@@ -101,6 +101,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-093 | Dùng M02-INACTIVE-OWNER-HANDLING-1.0 cho xử lý chủ sở hữu không còn hoạt động | Preserve public custom sets (IsPublic=true) for active learners (M03); auto IsMutationLocked=true; hide private custom sets (IsPublic=false); ContentAdmin fork to System Set preserving OriginalCreatorId REL-04; audit trail ACT-M11-04 |
 | D-094 | Dùng M01-ROLE-CHANGE-1.0 cho chuẩn hóa thay đổi vai trò | Self-Role Mutation Guard (actor != target); SuperAdmin promotion require dual-approval (M01-T030); auto SecurityEpoch += 1 invalidating active JWT tokens SLA <= 5s in Redis; reason >= 15 chars & ticketId required; audit trail ACT-M11-29 |
 | D-095 | Dùng M01-CONCURRENT-ADMIN-MUTATION-1.0 cho thiết kế xử lý thay đổi quản trị đồng thời | OCC versionDigest verification via If-Match header (HTTP 409 Conflict on mismatch); priority hierarchy (Account Lock > Demote > Promote > Profile Edit); atomic SecurityEpoch += 1 increment; conflict audit trail ACT-M11-32 |
+| D-096 | Dùng M01-SUPER-ADMIN-PROTECTION-1.0 cho bảo vệ vai trò quản trị cao nhất | 4-eye dual-approval workflow (initiator != approver); min 2 active SuperAdmins invariant; mandatory hardware MFA verification; 48h ticket TTL; critical security alert & audit trail ACT-M11-30 |
 
 ## Khi nào cần thêm quyết định
 
