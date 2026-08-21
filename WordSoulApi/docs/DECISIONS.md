@@ -159,6 +159,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-151 | Dùng M01-CROSS-FUNCTIONAL-ACCEPTANCE-A-1.0 cho xây dựng bộ nghiệm thu xuyên chức năng M01 — lát A | 5 E2E integration flows covering identity lifecycle, push revocation, GDPR export/deletion, re-registration; zero PII egress invariant; session revocation SLA <= 5s REL-01, REL-02, REL-07 |
 | D-152 | Dùng M01-HANDOVER-DOCS-SLICE-A-1.0 cho hoàn thiện tài liệu bàn giao M01 — lát A | Consolidated handover index covering all 25+ M01 Slice A tasks (D-016 to D-151); Phase A quality criteria mapping (A-G01, A-G02, A-G05); operational runbook & audit trail ACT-M01-43-HANDOVER REL-01, REL-02, REL-07 |
 | D-153 | Dùng A5-PHASE-A-SCOPE-FREEZE-1.0 cho đóng băng phạm vi nghiệm thu A | 100% Phase A baseline scope freeze covering 140+ tasks across Slices 0-4; mandatory Change Control Board (CCB) emergency hotfix approval; baseline Git commit SHA locking; audit trail ACT-A5-01-FREEZE |
+| D-154 | Dùng A5-TASK-COVERAGE-AUDIT-145-1.0 cho kiểm tra bao phủ 145 task | Automated 100% coverage audit for all 145 tasks across 12 modules and A5; mandatory decision mapping validation D-001 to D-154; closed-loop file:// link verification in module READMEs; audit trail ACT-A5-02-AUDIT |
 
 ## Khi nào cần thêm quyết định
 
