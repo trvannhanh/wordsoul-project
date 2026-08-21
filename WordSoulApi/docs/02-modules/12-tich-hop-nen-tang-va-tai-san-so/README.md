@@ -22,6 +22,7 @@
 - [Chốt khóa phân tán và ownership M12](CHOT-KHOA-PHAN-TAN-VA-OWNERSHIP.md)
 - [Chuẩn hóa timeout, deadline và hủy M12](CHUAN-HOA-TIMEOUT-DEADLINE-VA-HUY.md)
 - [Chuẩn hóa retry và idempotency M12](CHUAN-HOA-RETRY-VA-IDEMPOTENCY.md)
+- [Thiết kế circuit breaker và bulkhead M12](THIET-KE-CIRCUIT-BREAKER-VA-BULKHEAD.md)
 
 ## Mô tả module
 
