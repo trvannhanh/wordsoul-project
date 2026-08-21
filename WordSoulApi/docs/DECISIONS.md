@@ -107,6 +107,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-099 | Dùng M12-TIMEOUT-DEADLINE-CANCELLATION-1.0 cho chuẩn hóa timeout, deadline và hủy | 4-tier timeout matrix (C0 3s, C1 5s, C2 15s, C3 60s); mandatory CancellationToken propagation; X-Request-Deadline-Utc header propagation; socket abort & Redis lock release on cancellation; HTTP 504/499 error responses REL-03 |
 | D-100 | Dùng M12-RETRY-IDEMPOTENCY-1.0 cho chuẩn hóa retry và idempotency | Exponential backoff with random jitter (max 3 retries for transient errors 502/503/504); immediate fail on non-retryable 4xx errors; mandatory X-Idempotency-Key header on mutation APIs with Redis 24h cached response; IN_PROGRESS state guard HTTP 409 REL-03 |
 | D-101 | Dùng M12-CIRCUIT-BREAKER-BULKHEAD-1.0 cho thiết kế circuit breaker và bulkhead | 3-state circuit breaker (Closed, Open 30s break, Half-Open 3 trials); >50% failure rate threshold over 30s; provider-isolated bulkhead pools with max 10 queue slots (HTTP 429 on overflow); degraded fallback action SLA <= 2ms REL-03 |
+| D-102 | Dùng M01-CROSS-MODULE-PII-MAP-1.0 cho lập bản đồ dữ liệu cá nhân liên module | 3-tier PII classification (PII_DIRECT, PII_INDIRECT, PII_SENSITIVE); GUID-only cross-module identity references; zero PII egress to AI Gemini (M12 PromptAnonymizerFilter); salted SHA-256 IP hashing in M11 audit logs REL-01, REL-07 |
 
 ## Khi nào cần thêm quyết định
 

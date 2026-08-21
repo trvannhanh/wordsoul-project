@@ -165,7 +165,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | M12-T045 | M12 | Định nghĩa SLO và health từng năng lực | M12-T003, T005; M11-T036 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G04, A-G06; REL-03 | — |
 | M12-T046 | M12 | Thiết kế đo usage, chi phí và ngân sách | M12-T002, T034, T045 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G04, A-G06; REL-03 | — |
 | M12-T047-A | M12 | Xây dựng kiểm thử hợp đồng và canary — lát A | M12-T004, T005; active-provider contracts | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G04, A-G06; REL-03 | — |
-| M01-T033 | M01 | Lập bản đồ dữ liệu cá nhân liên module | M01-T003; M11/M12 registries | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01, A-G05; REL-01, REL-07 | — |
+| M01-T033 | M01 | Lập bản đồ dữ liệu cá nhân liên module | M01-T003; M11/M12 registries | Hoàn thành | Đầu ra đạt; tự kiểm A-G01, A-G05; REL-01, REL-07 | M01-CROSS-MODULE-PII-MAP-1.0/D-102 chốt 3-tier PII classification (PII_DIRECT, PII_INDIRECT, PII_SENSITIVE), GUID-only cross-module identity references, zero PII egress to AI Gemini (M12 PromptAnonymizerFilter), salted SHA-256 IP hashing in M11 audit logs REL-01, REL-07, 10 gate và 20 case. |
 | M01-T034 | M01 | Thiết kế yêu cầu xuất dữ liệu | M01-T019, T033; M11-T029, T038–T040-A | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01, A-G02; REL-07 | — |
 | M01-T035 | M01 | Thiết kế yêu cầu xóa tài khoản | M01-T019, T033; M11-T029, T038–T040-A | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01, A-G02; REL-07 | — |
 | M01-T036 | M01 | Xây dựng ma trận xóa và ẩn danh hóa | M01-T033, T035 | Chưa bắt đầu | Đầu ra đạt; tự kiểm A-G01, A-G05; REL-07 | — |

@@ -32,6 +32,7 @@
 - [Chuẩn hóa thay đổi vai trò M01](CHUAN-HOA-THAY-DOI-VAI-TRO.md)
 - [Thiết kế xử lý thay đổi quản trị đồng thời M01](THIET-KE-XU-LY-THAY-DOI-QUAN-TRI-DONG-THOI.md)
 - [Bảo vệ vai trò quản trị cao nhất M01](BAO-VE-VAI-TRO-QUAN-TRI-CAO-NHAT.md)
+- [Lập bản đồ dữ liệu cá nhân liên module M01](LAP-BAN-DO-DU-LIEU-CA-NHAN-LIEN-MODULE.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 
