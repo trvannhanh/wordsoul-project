@@ -131,6 +131,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-123 | Dùng M11-DATA-REDACTION-LOG-POLICY-1.0 cho xây dựng quy tắc che dữ liệu và bí mật | Zero-secret logging invariant (replace matching fields with ***REDACTED***); PII masking & salted SHA-256 IP hashing; SerilogRedactionEnricher middleware enforcement; audit trail ACT-M11-33-SECRET REL-02, REL-03 |
 | D-124 | Dùng M12-DATA-REDACTION-LOG-POLICY-1.0 cho chốt che dữ liệu và chính sách log | IntegrationHttpRedactionHandler middleware for HTTP headers & body redaction; PromptAnonymizerFilter for AI Gemini PII stripping; zero-ciphertext logging invariant; audit trail ACT-M11-43-LOG REL-03 |
 | D-125 | Dùng M12-SECURE-ASSET-UPLOAD-1.0 cho đặc tả upload an toàn | Pre-signed upload URL pattern (TTL 15m); MIME-type & file size whitelist guards (audio <= 5MB, image <= 2MB); magic byte header verification; staging antivirus scan gate REL-03, REL-04 |
+| D-126 | Dùng M12-ASSET-IMMUTABLE-METADATA-1.0 cho thiết kế metadata và định danh bất biến | Immutable AssetId GUID & SHA-256 binary hash digest (AssetHash); automatic binary deduplication; immutable object key path structure; mandatory rights metadata envelope (RightsCleared == true) REL-04 |
 
 ## Khi nào cần thêm quyết định
 
