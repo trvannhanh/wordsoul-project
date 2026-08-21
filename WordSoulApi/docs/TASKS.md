@@ -189,8 +189,8 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 
 | ID | Module | Task | Phụ thuộc | Trạng thái | Hoàn thành khi | Kết quả |
 |---|---|---|---|---|---|---|
-| M02-T035 | M02 | Chuẩn hóa tìm kiếm mục từ và bộ từ | M02-T003, M02-T016, M02-T032 | Chưa bắt đầu | Kết quả tôn trọng quyền/trạng thái; tiêu chí sắp xếp rõ; trạng thái rỗng và phân trang nhất quán | — |
-| M02-T036 | M02 | Thiết kế duyệt học liệu theo nhóm | M02-T015, M02-T032 | Chưa bắt đầu | Không lặp bộ ngoài chủ đích; nhóm có tiêu chí; nội dung thu hồi biến mất đúng thời gian | — |
+| M02-T035 | M02 | Chuẩn hóa tìm kiếm mục từ và bộ từ | M02-T003, M02-T016, M02-T032 | Hoàn thành | Kết quả tôn trọng quyền/trạng thái; tiêu chí sắp xếp rõ; trạng thái rỗng và phân trang nhất quán | M02-SEARCH-HEADER-SET-1.0/D-164 chốt tìm kiếm không dấu, biến thể M02-T003, tôn trọng ranh giới IsPublic & Publisher status, deterministic pagination, 5 gate và 10 case. |
+| M02-T036 | M02 | Thiết kế duyệt học liệu theo nhóm | M02-T015, M02-T032 | Hoàn thành | Không lặp bộ ngoài chủ đích; nhóm có tiêu chí; nội dung thu hồi biến mất đúng thời gian | M02-CATEGORY-BROWSE-1.0/D-165 chốt 5 nhóm danh mục chuẩn, deduplication 100%, SLA thu hồi bộ từ <= 60s via Redis Pub/Sub, 4 gate và 6 case. |
 | M02-T037 | M02 | Xác định chính sách gợi ý bộ từ | M01-T003, M02-T032, M04, M11 | Chưa bắt đầu | Tín hiệu có mục đích/quyền; có lý do gợi ý; loại trừ bộ không hợp lệ; có phương án người dùng mới | — |
 | M02-T038 | M02 | Xây dựng tiêu chí đo hiệu quả khám phá | M02-T035, M02-T036, M02-T037, M11 | Chưa bắt đầu | Chỉ số có công thức và không nhầm lượt xem với chất lượng học; phân đoạn theo nguồn khám phá | — |
 | M02-T039 | M02 | Chuẩn hóa thêm bộ vào thư viện | M01, M02-T016, M02-T032 | Chưa bắt đầu | Chỉ bộ hợp lệ được thêm; gửi lặp không tạo trùng; M03/M04 nhận trạng thái thống nhất | — |
@@ -199,7 +199,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | M02-T042 | M02 | Chuẩn hóa liên kết bộ với danh mục thưởng | M02-T017, M06 | Chưa bắt đầu | M02 chỉ giữ liên kết/cấu hình; M06 sở hữu cấp thưởng; tài sản ngừng hoạt động bị chặn | — |
 | M02-T043 | M02 | Thiết kế hiệu lực thay đổi cấu hình thưởng | M02-T023, M02-T032, M02-T042, M03, M06 | Chưa bắt đầu | Mỗi cấu hình có phiên bản/thời điểm; hoàn thành xác định được cấu hình áp dụng; thay đổi được truy vết | — |
 | M02-T044 | M02 | Xây dựng kiểm tra hợp lệ cấu hình thưởng | M02-T042, M02-T043, M06, M11 | Chưa bắt đầu | Cấu hình sai bị chặn với lý do; tổng tỷ lệ/điều kiện hợp lệ; có cảnh báo thay đổi tác động lớn | — |
-| M03-T001 | M03 | Chuẩn hóa từ điển phiên học | M01-T001, M02-T001 | Chưa bắt đầu | Thuật ngữ có một nghĩa và phân biệt hoàn thành phiên với thành thạo dài hạn | — |
+| M03-T001 | M03 | Chuẩn hóa từ điển phiên học | M01-T001, M02-T001 | Hoàn thành | Thuật ngữ có một nghĩa và phân biệt hoàn thành phiên với thành thạo dài hạn | M03-SESSION-DICT-1.0/D-166 chốt 35 thuật ngữ phiên học, phân biệt Session Completion vs SRS Long-term Mastery, snapshot bất biến M02, single event completion, 4 gate và 6 case. |
 | M03-T002 | M03 | Phân biệt chính sách phiên học và phiên ôn | M03-T001, M02-T009, M04 | Chưa bắt đầu | Mỗi loại có điều kiện tạo, đầu vào, luồng, hoàn thành và module nhận kết quả | — |
 | M03-T003 | M03 | Xây dựng vòng đời trạng thái phiên | M03-T001, M03-T002 | Chưa bắt đầu | Mỗi chuyển trạng thái có tác nhân, điều kiện, quyền và tác động rõ | — |
 | M03-T004 | M03 | Chuẩn hóa điều kiện tạo phiên học | M01-T012, M02-T017, M02-T039, M03-T003 | Chưa bắt đầu | Chỉ tạo cho bộ hợp lệ; gửi lặp/đồng thời không tạo trùng; trường hợp không đủ từ rõ ràng | — |
@@ -283,7 +283,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | M04-T042 | M04 | Xác định chiến lược dữ liệu khi đổi phiên bản | M04-T024, M04-T041 | Chưa bắt đầu | Quy tắc theo loại thay đổi; lịch sử giữ cả hai phiên bản; không tính lại âm thầm; có thể dừng/phục hồi | — |
 | M04-T043 | M04 | Thiết kế chỉ số chất lượng chính sách | M04-T032–M04-T034, M11 | Chưa bắt đầu | Chỉ số có công thức/phân đoạn/chu kỳ; không dùng chỉ tỷ lệ hoàn thành; có ngưỡng cảnh báo | — |
 | M04-T044 | M04 | Thiết kế cảnh báo và phục hồi chính sách | M04-T019, M04-T041–M04-T043, M11 | Chưa bắt đầu | Mỗi cảnh báo có chủ/thời gian; có dừng phát hành/quay lại; không xóa lịch sử đã phát sinh | — |
-| M06-T001 | M06 | Chuẩn hóa từ điển kinh tế | M01-T001 | Chưa bắt đầu | Thuật ngữ có một nghĩa; phân biệt điều kiện thưởng và cập nhật tài sản | — |
+| M06-T001 | M06 | Chuẩn hóa từ điển kinh tế | M01-T001 | Hoàn thành | Thuật ngữ có một nghĩa; phân biệt điều kiện thưởng và cập nhật tài sản | M06-ASSET-ITEM-DICT-1.0/D-167 chốt Asset Ledger append-only, zero AP invariant (CT-07/D-011), reward idempotency, daily cap 5,000 Gold/Exp REL-04, 4 gate và 6 case. |
 | M06-T002 | M06 | Xác định danh mục đơn vị giá trị | M06-T001, M11 | Chưa bắt đầu | Mỗi loại có nguồn vào/ra, trần/sàn, chủ sở hữu và không dùng hai mục đích mâu thuẫn | — |
 | M06-T003 | M06 | Thiết kế mô hình sổ biến động | M06-T002, M11 | Chưa bắt đầu | Mỗi biến động có mã duy nhất, người, loại, lượng, nguồn, trước/sau, thời điểm và trạng thái | — |
 | M06-T004 | M06 | Thiết kế số dư dẫn xuất và đối soát | M06-T003 | Chưa bắt đầu | Số dư giải thích được; chênh lệch phát hiện được; không âm/tràn ngoài chính sách | — |
@@ -307,7 +307,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | M06-T040 | M06 | Thiết kế đối soát định kỳ | M06-T004, M06-T034, M06-T039, M11 | Chưa bắt đầu | Phát hiện từng loại chênh; có mức độ/chủ xử lý; không tự sửa khi chưa có quy tắc | — |
 | M06-T041 | M06 | Thiết kế xử lý chênh lệch kinh tế | M06-T040, M11 | Chưa bắt đầu | Mỗi chênh lệch có nguyên nhân, quyết định, biến động bù và bằng chứng đóng | — |
 | M06-T042 | M06 | Xác định chỉ số nguồn vào và nguồn ra | M06-T003, M06-T034, M11 | Chưa bắt đầu | Mỗi chỉ số có công thức/chu kỳ/phân đoạn; tổng nguồn vào-ra khớp sổ | — |
-| M07-T001 | M07 | Thống nhất từ điển mục tiêu | Không | Chưa bắt đầu | Không còn thuật ngữ cốt lõi có hai nghĩa; module sở hữu từng khái niệm được chỉ rõ | — |
+| M07-T001 | M07 | Thống nhất từ điển mục tiêu | Không | Hoàn thành | Không còn thuật ngữ cốt lõi có hai nghĩa; module sở hữu từng khái niệm được chỉ rõ | M07-QUEST-DICT-1.0/D-168 chốt từ điển nhiệm vụ ngày, chu kỳ reset 00:00 UTC, single-claim guarantee, progress counter strictly event-driven from M03/M04, 3 gate và 6 case. |
 | M07-T002 | M07 | Phân loại nhiệm vụ và thành tựu | M07-T001 | Chưa bắt đầu | Mỗi loại có nguồn, đơn vị đếm, chu kỳ, giới hạn và ví dụ hợp lệ/không hợp lệ | — |
 | M07-T003 | M07 | Đặc tả định nghĩa mục tiêu | M07-T002 | Chưa bắt đầu | Bao phủ điều kiện, ngưỡng, hiệu lực, đối tượng, nội dung, phần thưởng và chủ sở hữu | — |
 | M07-T004 | M07 | Thiết kế vòng đời quyết định thay đổi | M07-T003 | Chưa bắt đầu | Mỗi chuyển trạng thái có vai trò, điều kiện, kiểm toán và xử lý sai rõ ràng | — |
@@ -344,7 +344,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | M07-T042 | M07 | Chốt quyền và kiểm toán quản trị | M07-T004 | Chưa bắt đầu | Thao tác nhạy cảm có phê duyệt phù hợp; ghi người, thời điểm, lý do và trước/sau | — |
 | M07-T043 | M07 | Xây dựng khung chỉ số hiệu quả | M07-T008, M07-T021, M07-T034 | Chưa bắt đầu | Mỗi chỉ số có công thức, cửa sổ, nguồn và giới hạn; không đồng nhất tương tác với học tốt | — |
 | M07-T044 | M07 | Thiết kế giám sát và thử nghiệm | M07-T042, M07-T043 | Chưa bắt đầu | Có ngưỡng chi phí, gian lận, hoàn thành, chất lượng; nhóm so sánh và tiêu chí dừng rõ | — |
-| M10-T001 | M10 | Thống nhất từ điển thông báo | Không | Chưa bắt đầu | Phân biệt rõ sự kiện–bản logic–lần gửi–tương tác; chủ sở hữu từng trạng thái được chỉ rõ | — |
+| M10-T001 | M10 | Thống nhất từ điển thông báo | Không | Hoàn thành | Phân biệt rõ sự kiện–bản logic–lần gửi–tương tác; chủ sở hữu từng trạng thái được chỉ rõ | M10-NOTIF-INBOX-DICT-1.0/D-169 chốt phân tách In-App Inbox vs Push/Email, Quiet Hours 22:00-07:00 REL-06, Opt-In/Opt-Out matrix, security alert exception, 4 gate và 6 case. |
 | M10-T002 | M10 | Phân loại thông báo | M10-T001 | Chưa bắt đầu | Mỗi loại có chủ nguồn, hành động mong muốn, khẩn cấp, kênh được phép và tiêu chí hết liên quan | — |
 | M10-T003 | M10 | Lập danh mục tín hiệu nguồn | M10-T002 | Chưa bắt đầu | Mỗi tín hiệu có người nhận, thời điểm, định danh, dữ liệu tối thiểu, thời hạn và chính sách hủy | — |
 | M10-T004 | M10 | Đặc tả hợp đồng tín hiệu | M10-T003 | Chưa bắt đầu | Có định danh duy nhất, phiên bản ngữ nghĩa, nguồn, người nhận, xảy ra/tiếp nhận, ưu tiên và hạn | — |
@@ -379,7 +379,7 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | M10-T034 | M10 | Thiết kế đối soát đa kênh | M10-T030–M10-T033 | Chưa bắt đầu | Chênh lệch có trạng thái/chủ; sửa bằng bản ghi bổ sung; không ghi đè lịch sử; thống kê không đếm đôi | — |
 | M10-T044 | M10 | Chốt quyền và kiểm toán vận hành | M10-T012, M10-T037, M11 | Chưa bắt đầu | Thao tác nhạy cảm ghi người, thời điểm, lý do, trước/sau; dữ liệu cá nhân chỉ vai trò cần thiết xem | — |
 | M10-T046 | M10 | Chốt lưu giữ và xóa dữ liệu | M10-T008, M10-T019, M10-T031, M10-T044 | Chưa bắt đầu | Xóa/ẩn danh theo loại; không giữ PII thừa; yêu cầu xóa tài khoản lan truyền; báo cáo tổng hợp vẫn nhất quán | — |
-| M11-T023 | M11 | Phân loại độ mới và cách tổng hợp | M11-T022 | Chưa bắt đầu | Độ mới hiển thị; nguồn đến muộn/đính chính rõ; chỉ số không hứa nhanh hơn khả năng nguồn | — |
+| M11-T023 | M11 | Phân loại độ mới và cách tổng hợp | M11-T022 | Hoàn thành | Độ mới hiển thị; nguồn đến muộn/đính chính rõ; chỉ số không hứa nhanh hơn khả năng nguồn | M11-REALTIME-FRESHNESS-1.0/D-170 chốt Data Freshness SLAs (Realtime 10s, Near Realtime 60s, Batch 15m), Degraded Data Indicator (IsPartialData=true), zero fake healthy status, 3 gate và 4 case. |
 | M11-T024 | M11 | Thiết kế kiểm tra chất lượng dữ liệu | M11-T022, M11-T023 | Chưa bắt đầu | Mỗi chỉ số trọng yếu có kiểm tra; lỗi tạo cảnh báo/vụ việc; dữ liệu nghi ngờ không hiển thị như chắc chắn | — |
 | M11-T025 | M11 | Đặc tả bảng điều hành theo vai trò | M11-T004, M11-T022–M11-T024 | Chưa bắt đầu | Mỗi vai trò chỉ thấy dữ liệu cần; thời điểm/phiên bản/chất lượng rõ; không fallback hiển thị email/PII | — |
 | M11-T026 | M11 | Chốt drill-down và xuất báo cáo | M11-T025 | Chưa bắt đầu | Nhóm nhỏ/PII được che; xuất có lý do, người nhận, hạn, watermark/kiểm toán; khối lượng có giới hạn | — |
