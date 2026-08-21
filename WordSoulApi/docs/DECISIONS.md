@@ -142,6 +142,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-134 | Dùng M11-LOG-SEARCH-ACCESS-RETENTION-1.0 cho chốt tìm kiếm, truy cập và lưu giữ log | RBAC log access matrix (audit logs strictly for AuditAdmin/Compliance); mandatory SupportTicketId for unmasking PII; fast index search SLA <= 500ms; 3-tier retention (Hot 30d, Warm 90d, Cold 12m Glacier WORM Vault Lock) REL-02, REL-07 |
 | D-135 | Dùng M11-BACKGROUND-JOB-REGISTRY-1.0 cho lập sổ đăng ký công việc nền | Centralized background job catalog; Redis Redlock / SQL Lease Lock (30s LockTTL + 10s heartbeat renewal) enforcing single leader execution; max job duration SLA <= 15m; audit trail ACT-M11-38-JOB REL-03, REL-07 |
 | D-136 | Dùng M11-BACKGROUND-JOB-EXECUTION-RECOVERY-1.0 cho thiết kế lịch sử chạy và phục hồi công việc | Immutable JobExecutionHistory envelope; 90-day retention policy; mandatory password re-authentication guard <= 5m for manual job retriggers; audit trail ACT-M11-39-JOBRECOVER REL-07 |
+| D-137 | Dùng M11-RECONCILIATION-DISCREPANCY-ALERT-A-1.0 cho thiết kế đối soát và cảnh báo sai lệch — lát A | Daily DataReconciliationWorker (03:00 UTC) covering push devices, asset ref counts, learning cards; auto-healing for discrepancy < 1%; P2_HIGH alert blocking auto-fix for discrepancy >= 1%; mandatory password re-auth <= 5m for manual trigger REL-07 |
 
 ## Khi nào cần thêm quyết định
 
