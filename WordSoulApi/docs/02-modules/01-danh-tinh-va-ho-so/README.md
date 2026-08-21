@@ -38,6 +38,7 @@
 - [Xác định chỉ số sức khỏe M01](XAC-DINH-CHI-SO-SUC-KHOE-M01.md)
 - [Chuẩn hóa quyền tra cứu lịch sử danh tính M01](CHUAN-HOA-QUYEN-TRA-CUU-LICH-SU-DANH-TINH.md)
 - [Thiết kế đăng xuất và quản lý phiên M01](THIET-KE-DANG-XUAT-VA-QUAN-LY-PHIEN.md)
+- [Xác định đường hỗ trợ khi mất mọi kênh M01](XAC-DINH-DUONG-HO-TRO-KHI-MAT-MOI-KENH.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 
