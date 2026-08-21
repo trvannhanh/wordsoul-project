@@ -129,6 +129,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-121 | Dùng M01-EXTERNAL-LOGIN-1.0 cho chuẩn hóa đăng nhập bằng danh tính bên ngoài | Safe auto-provisioning for new external identity; CT-02 guard prohibiting auto-linking by email; AccountStatus locked/inactive overlay check; zero-persistence for external access tokens; audit trail ACT-M11-13 REL-01, REL-03 |
 | D-122 | Dùng M01-ACCOUNT-LINKING-PROTECTION-1.0 cho bảo vệ liên kết tài khoản hiện có | Mandatory re-authentication guard <= 5m; anti-hijacking email OTP verification for matching emails; max 5 linked providers limit; AES-256-GCM token encryption via Secret Manager; audit trail ACT-M11-14-LINK REL-01, REL-03 |
 | D-123 | Dùng M11-DATA-REDACTION-LOG-POLICY-1.0 cho xây dựng quy tắc che dữ liệu và bí mật | Zero-secret logging invariant (replace matching fields with ***REDACTED***); PII masking & salted SHA-256 IP hashing; SerilogRedactionEnricher middleware enforcement; audit trail ACT-M11-33-SECRET REL-02, REL-03 |
+| D-124 | Dùng M12-DATA-REDACTION-LOG-POLICY-1.0 cho chốt che dữ liệu và chính sách log | IntegrationHttpRedactionHandler middleware for HTTP headers & body redaction; PromptAnonymizerFilter for AI Gemini PII stripping; zero-ciphertext logging invariant; audit trail ACT-M11-43-LOG REL-03 |
 
 ## Khi nào cần thêm quyết định
 
