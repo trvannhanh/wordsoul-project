@@ -30,6 +30,7 @@
 - [Đặc tả liên kết và ngắt liên kết M12](DAC-TA-LIEN-KET-VA-NGAT-LIEN-KET.md)
 - [Thiết kế suy giảm khi danh tính ngoài lỗi M12](THIET-KE-SUY-GIAM-KHI-DANH-TINH-NGOAI-LOI.md)
 - [Chốt che dữ liệu và chính sách log M12](CHOT-CHE-DU-LIEU-VA-CHINH-SACH-LOG.md)
+- [Đặc tả upload an toàn M12](DAC-TA-UPLOAD-AN-TOAN.md)
 
 ## Mô tả module
 

@@ -130,6 +130,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-122 | Dùng M01-ACCOUNT-LINKING-PROTECTION-1.0 cho bảo vệ liên kết tài khoản hiện có | Mandatory re-authentication guard <= 5m; anti-hijacking email OTP verification for matching emails; max 5 linked providers limit; AES-256-GCM token encryption via Secret Manager; audit trail ACT-M11-14-LINK REL-01, REL-03 |
 | D-123 | Dùng M11-DATA-REDACTION-LOG-POLICY-1.0 cho xây dựng quy tắc che dữ liệu và bí mật | Zero-secret logging invariant (replace matching fields with ***REDACTED***); PII masking & salted SHA-256 IP hashing; SerilogRedactionEnricher middleware enforcement; audit trail ACT-M11-33-SECRET REL-02, REL-03 |
 | D-124 | Dùng M12-DATA-REDACTION-LOG-POLICY-1.0 cho chốt che dữ liệu và chính sách log | IntegrationHttpRedactionHandler middleware for HTTP headers & body redaction; PromptAnonymizerFilter for AI Gemini PII stripping; zero-ciphertext logging invariant; audit trail ACT-M11-43-LOG REL-03 |
+| D-125 | Dùng M12-SECURE-ASSET-UPLOAD-1.0 cho đặc tả upload an toàn | Pre-signed upload URL pattern (TTL 15m); MIME-type & file size whitelist guards (audio <= 5MB, image <= 2MB); magic byte header verification; staging antivirus scan gate REL-03, REL-04 |
 
 ## Khi nào cần thêm quyết định
 
