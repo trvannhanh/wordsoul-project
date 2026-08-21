@@ -39,6 +39,7 @@
 - [Chuẩn hóa quyền tra cứu lịch sử danh tính M01](CHUAN-HOA-QUYEN-TRA-CUU-LICH-SU-DANH-TINH.md)
 - [Thiết kế đăng xuất và quản lý phiên M01](THIET-KE-DANG-XUAT-VA-QUAN-LY-PHIEN.md)
 - [Xác định đường hỗ trợ khi mất mọi kênh M01](XAC-DINH-DUONG-HO-TRO-KHI-MAT-MOI-KENH.md)
+- [Xử lý xung đột và gỡ liên kết M01](XU-LY-XUNG-DOT-VA-GO-LIEN-KET.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 

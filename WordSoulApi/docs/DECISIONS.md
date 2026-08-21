@@ -123,6 +123,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-115 | Dùng M02-CONTENT-DECISION-APPEAL-1.0 cho thiết kế khiếu nại quyết định nội dung | 5-state appeal lifecycle (SUBMITTED -> UNDER_REVIEW -> EVIDENCE_REQUESTED -> APPEAL_APPROVED / APPEAL_REJECTED); 14-day appeal window; mandatory copyright evidence REL-04; independent second-level reviewer guard (ReviewerId != OriginalId) REL-04 |
 | D-116 | Dùng M01-LOGOUT-SESSION-MANAGEMENT-1.0 cho thiết kế đăng xuất và quản lý phiên | 3 logout protocols (Single Device, Logout All, Specific Session Revocation); automatic SecurityEpoch += 1 invalidation SLA <= 5s; automatic push device token revocation in M10 (D-091); audit trail ACT-M11-18 REL-01, REL-06 |
 | D-117 | Dùng M01-LOST-CHANNEL-RECOVERY-1.0 cho xác định đường hỗ trợ khi mất mọi kênh | 3 historical evidence criteria (min 2/3 required); dual-control approval guard (SupportAgent verification + SecurityAdmin approval); email update with auto SecurityEpoch += 1; 24h temp recovery code REL-01, REL-07 |
+| D-118 | Dùng M01-LINK-UNLINK-CONFLICT-1.0 cho xử lý xung đột và gỡ liên kết | Last auth method protection guard (prohibit unlinking if no local password & N=1); remote token revocation SLA <= 5s (D-112); identity link conflict resolution HTTP 409; audit trail ACT-M11-15 REL-01 |
 
 ## Khi nào cần thêm quyết định
 
