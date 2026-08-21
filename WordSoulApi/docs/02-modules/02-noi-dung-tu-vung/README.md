@@ -31,6 +31,7 @@
 - [Thiết kế yêu cầu sửa và từ chối M02](THIET-KE-YEU-CAU-SUA-VA-TU-CHOI.md)
 - [Thiết kế xuất bản theo phiên bản M02](THIET-KE-XUAT-BAN-THEO-PHIEN-BAN.md)
 - [Thiết kế báo cáo và thu hồi nội dung M02](THIET-KE-BAO-CAO-VA-THU-HOI-NOI-DUNG.md)
+- [Thiết kế khiếu nại quyết định nội dung M02](THIET-KE-KHIEU-NAI-QUYET-DINH-NOI-DUNG.md)
 - [Backlog task](TASK-BACKLOG.md)
 - [Quyết định mở](QUYET-DINH-MO.md)
 - [Đánh giá hiện trạng A-WP02](DANH-GIA-HIEN-TRANG-A-WP02.md)

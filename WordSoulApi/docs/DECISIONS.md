@@ -120,6 +120,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-112 | Dùng M12-EXTERNAL-TOKEN-LIFECYCLE-1.0 cho chốt vòng đời token ngoài | Zero-persistence for external access tokens; mandatory AES-256-GCM encryption for stored refresh tokens via Secret Manager; proactive 5m refresh window; instant remote token revocation SLA <= 5s REL-03 |
 | D-113 | Dùng M12-SECRET-LIFECYCLE-1.0 cho thiết kế vòng đời bí mật | 5-state secret lifecycle (DRAFT -> ACTIVE -> ROTATING -> DEPRECATED -> REVOKED); zero-downtime dual-key grace period (7 days); emergency revocation SLA <= 5m with auto SecurityEpoch += 1; audit trail ACT-M11-41-SEC REL-03 |
 | D-114 | Dùng M02-REPORT-EMERGENCY-RECALL-1.0 cho thiết kế báo cáo và thu hồi nội dung | 4 report categories (copyright REL-04, pedagogy, toxic, spam); auto-quarantine threshold >= 5 copyright/toxicity reports; emergency recall SLA <= 60s purging Redis cache; active session pinning M03 REL-04 |
+| D-115 | Dùng M02-CONTENT-DECISION-APPEAL-1.0 cho thiết kế khiếu nại quyết định nội dung | 5-state appeal lifecycle (SUBMITTED -> UNDER_REVIEW -> EVIDENCE_REQUESTED -> APPEAL_APPROVED / APPEAL_REJECTED); 14-day appeal window; mandatory copyright evidence REL-04; independent second-level reviewer guard (ReviewerId != OriginalId) REL-04 |
 
 ## Khi nào cần thêm quyết định
 
