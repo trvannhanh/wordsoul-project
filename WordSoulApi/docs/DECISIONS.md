@@ -166,6 +166,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-158 | Dùng A5-ACCEPTANCE-CRITERIA-AG04-1.0 cho nghiệm thu A-G04 | Verified 3-state circuit breaker tripping (>50% failure threshold over 30s); per-provider bulkhead pool isolation (max 10 slots queue overflow HTTP 429); degraded fallback SLA <= 2ms; audit trail ACT-A5-06-AG04 REL-03 |
 | D-159 | Dùng A5-ACCEPTANCE-CRITERIA-AG05-1.0 cho nghiệm thu A-G05 | 100% RFC 7807 problem details error response standardization (application/problem+json); machine-readable errorCode and traceId; zero production stack trace leakage invariant; audit trail ACT-A5-07-AG05 REL-01, REL-03, REL-04 |
 | D-160 | Dùng A5-ACCEPTANCE-CRITERIA-AG06-1.0 cho nghiệm thu A-G06 | Verified M11 operational readiness; SEV-1 critical incident response SLA <= 15m & MTTR <= 1h; mandatory 48-hour Blameless Post-Mortem SLA; immutable audit ledger integrity; audit trail ACT-A5-08-AG06 REL-02, REL-03 |
+| D-161 | Dùng A5-REL-REQUIREMENTS-CLOSURE-AUDIT-1.0 cho rà soát đóng REL ảnh hưởng A | 100% closure verification across all 5 key reliability requirement groups (REL-01 Security & PII, REL-02 Uptime & Audit, REL-03 Resilience & Circuit Breaker, REL-04 Economy Caps, REL-07 GDPR Retention); audit trail ACT-A5-09-REL REL-01, REL-02, REL-03, REL-04, REL-07 |
 
 ## Khi nào cần thêm quyết định
 
