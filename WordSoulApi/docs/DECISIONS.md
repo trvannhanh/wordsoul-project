@@ -124,6 +124,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-116 | Dùng M01-LOGOUT-SESSION-MANAGEMENT-1.0 cho thiết kế đăng xuất và quản lý phiên | 3 logout protocols (Single Device, Logout All, Specific Session Revocation); automatic SecurityEpoch += 1 invalidation SLA <= 5s; automatic push device token revocation in M10 (D-091); audit trail ACT-M11-18 REL-01, REL-06 |
 | D-117 | Dùng M01-LOST-CHANNEL-RECOVERY-1.0 cho xác định đường hỗ trợ khi mất mọi kênh | 3 historical evidence criteria (min 2/3 required); dual-control approval guard (SupportAgent verification + SecurityAdmin approval); email update with auto SecurityEpoch += 1; 24h temp recovery code REL-01, REL-07 |
 | D-118 | Dùng M01-LINK-UNLINK-CONFLICT-1.0 cho xử lý xung đột và gỡ liên kết | Last auth method protection guard (prohibit unlinking if no local password & N=1); remote token revocation SLA <= 5s (D-112); identity link conflict resolution HTTP 409; audit trail ACT-M11-15 REL-01 |
+| D-119 | Dùng M12-EXTERNAL-LINK-UNLINK-1.0 cho đặc tả liên kết và ngắt liên kết | Isolated OAuth adapter pattern (IExternalOAuthAdapter for Google, Apple, Facebook); unified remote revocation endpoint SLA <= 5s; strict JWKS RSA signature & claim validation; audit trail ACT-M11-09-ADAPTER REL-03 |
 
 ## Khi nào cần thêm quyết định
 

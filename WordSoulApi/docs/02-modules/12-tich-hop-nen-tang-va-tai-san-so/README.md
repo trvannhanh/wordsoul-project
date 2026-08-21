@@ -27,6 +27,7 @@
 - [Thiết kế chống giả mạo và phát lại M12](THIET-KE-CHONG-GIA-MAO-VA-PHAT-LAI.md)
 - [Chốt vòng đời token ngoài M12](CHOT-VONG-DOI-TOKEN-NGOAI.md)
 - [Thiết kế vòng đời bí mật M12](THIET-KE-VONG-DOI-BI-MAT.md)
+- [Đặc tả liên kết và ngắt liên kết M12](DAC-TA-LIEN-KET-VA-NGAT-LIEN-KET.md)
 
 ## Mô tả module
 
