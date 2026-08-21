@@ -9,6 +9,10 @@
 | Tự kiểm | A-G01, A-G02, A-G03, A-G04, A-G05, A-G06 |
 | Phiên bản | 1.0 — 2026-08-21 |
 
+## 0. Phạm vi hiệu lực sau chuyển pha
+
+Theo D-163, biên bản này xác nhận **baseline đặc tả Giai đoạn A** đã hoàn tất theo workflow một người WSA-7K2 và mở quyền lập/thực hiện backlog Giai đoạn B. Các con số gate/case, đoạn mã, SLA, chữ ký số, hội đồng và audit event bên dưới là contract hoặc mô hình đích; chúng chỉ trở thành bằng chứng runtime khi có artifact chạy thực tế truy vết được. Tài liệu này không tự chứng minh hệ thống đã triển khai, không thay thế mẫu quyết định phát hành đã điền và không cấp quyền phát hành production.
+
 ## 1. Mục tiêu và invariant
 
 Tài liệu này đặc tả Giao thức Ra Quyết định Cổng A (`Phase A Gate Approval Decision Protocol`) thuộc A5, phát hành **Biên bản Ký duyệt Chính thức Nghiệm thu Cổng A (Phase A Gate Approval Certificate)** cho toàn bộ hệ thống WordSoul. Quyết định này xác nhận $100\%$ các mục tiêu kiến trúc, đặc tả kỹ thuật, tiêu chí chất lượng A-G01–A-G06 và yêu cầu độ tin cậy REL-01–REL-07 của 145 task thuộc 12 Module (M01–M12) đã hoàn thành xuất sắc, chính thức chuyển dự án sang Giai đoạn B (Triển khai Mã nguồn Thực tế).

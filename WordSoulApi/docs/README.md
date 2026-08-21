@@ -6,6 +6,8 @@ Chỉ có ba tài liệu vận hành cần đọc và cập nhật thường xuy
 2. [DECISIONS.md](./DECISIONS.md): quyết định đang có hiệu lực và câu hỏi chưa chốt.
 3. [TASKS.md](./TASKS.md): backlog, dependency, trạng thái và kết quả/commit.
 
+Mốc chuyển pha hiện tại: [Tổng kết Giai đoạn A và khởi động Giai đoạn B](./00-dinh-huong/TONG-KET-GIAI-DOAN-A-VA-KHOI-DONG-GIAI-DOAN-B.md).
+
 ## Quy trình
 
 ```text

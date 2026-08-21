@@ -1,6 +1,6 @@
 # Tasks
 
-Đây là nguồn trạng thái duy nhất của dự án. WSA-7K2 thực hiện toàn bộ 167 task Giai đoạn A; dữ liệu size/điểm và baseline cũ chỉ còn để tham chiếu trong `03-ke-hoach-giai-doan-a/`.
+Đây là nguồn trạng thái duy nhất của dự án. WSA-7K2 đã hoàn thành 167 task Giai đoạn A và theo dõi 202 task Giai đoạn B; dữ liệu size/điểm và baseline cũ chỉ còn để tham chiếu trong `03-ke-hoach-giai-doan-a/`.
 
 ## Cách dùng
 
@@ -181,4 +181,213 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | A5-T007 | Điều phối | Nghiệm thu A-G05 | Lát 1–4 | Hoàn thành | Đầu ra đạt; tự kiểm A-G05; REL-01, REL-03, REL-04 | A5-ACCEPTANCE-CRITERIA-AG05-1.0/D-159 chốt 100% RFC 7807 problem details error response standardization (application/problem+json), machine-readable errorCode and traceId, zero production stack trace leakage invariant, audit trail ACT-A5-07-AG05 REL-01, REL-03, REL-04, 10 gate và 20 case. |
 | A5-T008 | Điều phối | Nghiệm thu A-G06 | Lát 4 | Hoàn thành | Đầu ra đạt; tự kiểm A-G06; REL-02, REL-03 | A5-ACCEPTANCE-CRITERIA-AG06-1.0/D-160 chốt verified M11 operational readiness, SEV-1 critical incident response SLA <= 15m & MTTR <= 1h, mandatory 48-hour Blameless Post-Mortem SLA, immutable audit ledger integrity, audit trail ACT-A5-08-AG06 REL-02, REL-03, 10 gate và 20 case. |
 | A5-T009 | Điều phối | Rà soát đóng REL ảnh hưởng A | A5-T003–T008 | Hoàn thành | Đầu ra đạt; tự kiểm REL-01–REL-04, REL-07 | A5-REL-REQUIREMENTS-CLOSURE-AUDIT-1.0/D-161 chốt 100% closure verification across all 5 key reliability requirement groups (REL-01 Security & PII, REL-02 Uptime & Audit, REL-03 Resilience & Circuit Breaker, REL-04 Economy Caps, REL-07 GDPR Retention), audit trail ACT-A5-09-REL REL-01, REL-02, REL-03, REL-04, REL-07, 10 gate và 20 case. |
-| A5-T010 | Điều phối | Ra quyết định Cổng A | A5-T002–T009 | Hoàn thành | Đầu ra đạt; tự kiểm A-G01–A-G06 | A5-PHASE-A-GATE-APPROVAL-DECISION-1.0/D-162 chốt official Phase A Gate A Sign-Off Certificate APPROVED PASSED, 100% verification across all 145 tasks, 1,450 gates, 2,900 test cases, 6 criteria (A-G01 to A-G06) and 5 REL requirement groups, unlocked Phase B transition, audit trail ACT-A5-10-GATE, 10 gate và 20 case. |
+| A5-T010 | Điều phối | Ra quyết định Cổng A | A5-T002–T009 | Hoàn thành | Đầu ra đạt; tự kiểm A-G01–A-G06 | A5-PHASE-A-GATE-APPROVAL-DECISION-1.0/D-162 chốt baseline đặc tả A và mở chuyển tiếp B; D-163 giới hạn gate/case/code/SLA/chữ ký/audit event chưa có lần chạy ở contract mục tiêu, không phải runtime evidence hay quyền phát hành production. |
+
+## Backlog Giai đoạn B
+
+202 task dưới đây được nhập từ tám `TASK-BACKLOG.md` module theo D-163. ID, dependency và Definition of Done được giữ nguyên; trạng thái ban đầu là `Chưa bắt đầu` để đánh giá hiện trạng trước khi triển khai.
+
+| ID | Module | Task | Phụ thuộc | Trạng thái | Hoàn thành khi | Kết quả |
+|---|---|---|---|---|---|---|
+| M02-T035 | M02 | Chuẩn hóa tìm kiếm mục từ và bộ từ | M02-T003, M02-T016, M02-T032 | Chưa bắt đầu | Kết quả tôn trọng quyền/trạng thái; tiêu chí sắp xếp rõ; trạng thái rỗng và phân trang nhất quán | — |
+| M02-T036 | M02 | Thiết kế duyệt học liệu theo nhóm | M02-T015, M02-T032 | Chưa bắt đầu | Không lặp bộ ngoài chủ đích; nhóm có tiêu chí; nội dung thu hồi biến mất đúng thời gian | — |
+| M02-T037 | M02 | Xác định chính sách gợi ý bộ từ | M01-T003, M02-T032, M04, M11 | Chưa bắt đầu | Tín hiệu có mục đích/quyền; có lý do gợi ý; loại trừ bộ không hợp lệ; có phương án người dùng mới | — |
+| M02-T038 | M02 | Xây dựng tiêu chí đo hiệu quả khám phá | M02-T035, M02-T036, M02-T037, M11 | Chưa bắt đầu | Chỉ số có công thức và không nhầm lượt xem với chất lượng học; phân đoạn theo nguồn khám phá | — |
+| M02-T039 | M02 | Chuẩn hóa thêm bộ vào thư viện | M01, M02-T016, M02-T032 | Chưa bắt đầu | Chỉ bộ hợp lệ được thêm; gửi lặp không tạo trùng; M03/M04 nhận trạng thái thống nhất | — |
+| M02-T040 | M02 | Chuẩn hóa bỏ bộ khỏi thư viện | M02-T039, M03, M04 | Chưa bắt đầu | Không xóa nội dung/tiến độ; phiên đang chạy có hành vi rõ; người dùng xác nhận tác động | — |
+| M02-T041 | M02 | Xử lý bộ bị thu hồi hoặc đổi quyền | M02-T033, M02-T039, M02-T040 | Chưa bắt đầu | Không cho bắt đầu học mới nội dung bị thu hồi; lịch sử được giữ; người dùng nhận trạng thái dễ hiểu | — |
+| M02-T042 | M02 | Chuẩn hóa liên kết bộ với danh mục thưởng | M02-T017, M06 | Chưa bắt đầu | M02 chỉ giữ liên kết/cấu hình; M06 sở hữu cấp thưởng; tài sản ngừng hoạt động bị chặn | — |
+| M02-T043 | M02 | Thiết kế hiệu lực thay đổi cấu hình thưởng | M02-T023, M02-T032, M02-T042, M03, M06 | Chưa bắt đầu | Mỗi cấu hình có phiên bản/thời điểm; hoàn thành xác định được cấu hình áp dụng; thay đổi được truy vết | — |
+| M02-T044 | M02 | Xây dựng kiểm tra hợp lệ cấu hình thưởng | M02-T042, M02-T043, M06, M11 | Chưa bắt đầu | Cấu hình sai bị chặn với lý do; tổng tỷ lệ/điều kiện hợp lệ; có cảnh báo thay đổi tác động lớn | — |
+| M03-T001 | M03 | Chuẩn hóa từ điển phiên học | M01-T001, M02-T001 | Chưa bắt đầu | Thuật ngữ có một nghĩa và phân biệt hoàn thành phiên với thành thạo dài hạn | — |
+| M03-T002 | M03 | Phân biệt chính sách phiên học và phiên ôn | M03-T001, M02-T009, M04 | Chưa bắt đầu | Mỗi loại có điều kiện tạo, đầu vào, luồng, hoàn thành và module nhận kết quả | — |
+| M03-T003 | M03 | Xây dựng vòng đời trạng thái phiên | M03-T001, M03-T002 | Chưa bắt đầu | Mỗi chuyển trạng thái có tác nhân, điều kiện, quyền và tác động rõ | — |
+| M03-T004 | M03 | Chuẩn hóa điều kiện tạo phiên học | M01-T012, M02-T017, M02-T039, M03-T003 | Chưa bắt đầu | Chỉ tạo cho bộ hợp lệ; gửi lặp/đồng thời không tạo trùng; trường hợp không đủ từ rõ ràng | — |
+| M03-T005 | M03 | Chuẩn hóa điều kiện tạo phiên ôn | M01-T012, M03-T003, M04 | Chưa bắt đầu | Không có từ đến hạn trả kết quả rõ; không tạo phiên trùng; nguồn và thời điểm danh sách được ghi | — |
+| M03-T006 | M03 | Xác định giới hạn số từ trong phiên | M02-T015, M03-T002, M04 | Chưa bắt đầu | Có giới hạn theo loại phiên, cách chọn/sắp xếp và xử lý danh sách thiếu | — |
+| M03-T007 | M03 | Thiết kế ảnh chụp học liệu của phiên | M02-T008, M02-T009, M02-T022, M03-T006 | Chưa bắt đầu | Mỗi từ có phiên bản/nghĩa; phiên đang chạy không đổi âm thầm; ảnh chụp lỗi không tạo phiên hoạt động | — |
+| M03-T008 | M03 | Xác định xử lý nội dung bị thu hồi | M02-T033, M02-T041, M03-T007 | Chưa bắt đầu | Phân biệt thu hồi thường/khẩn; không tạo phiên mới; phiên đang chạy có kết quả và thông báo xác định | — |
+| M03-T010 | M03 | Thiết kế tiếp tục phiên chưa hoàn thành | M03-T003, M03-T007, M01-T016 | Chưa bắt đầu | Chỉ chủ phiên tiếp tục; đúng bước/ảnh chụp; không tạo bản sao; hết hạn được xử lý đúng | — |
+| M03-T011 | M03 | Thiết kế tạm dừng và hoạt động lại | M03-T003, M03-T010 | Chưa bắt đầu | Tạm dừng không mất bước; thời gian phản hồi không tính thời gian nghỉ; trạng thái có thể truy vết | — |
+| M03-T012 | M03 | Xác định hết hạn và gia hạn phiên | M03-T003, M03-T011, M11 | Chưa bắt đầu | Có thời hạn theo loại; quá hạn không nhận câu trả lời; gia hạn có quyền/giới hạn; thông báo rõ | — |
+| M03-T013 | M03 | Thiết kế bỏ dở và làm lại phiên | M03-T003, M03-T012, M04, M06 | Chưa bắt đầu | Bỏ dở không phát thưởng; lịch sử được giữ; làm lại không xóa kết quả đã gửi ngoài chính sách | — |
+| M03-T014 | M03 | Chuẩn hóa xử lý phiên bị khóa hoặc kẹt | M03-T003, M11 | Chưa bắt đầu | Có tiêu chí, quyền, lý do, tác động và lịch sử; không tự tạo kết quả hoàn thành | — |
+| M03-T015 | M03 | Lập sơ đồ luồng học mới | M03-T002, M02-T009 | Chưa bắt đầu | Mỗi bước có input, dữ liệu hiển thị, điều kiện đúng/sai, bước tiếp theo và hoàn thành | — |
+| M03-T016 | M03 | Lập sơ đồ luồng ôn | M03-T002, M04 | Chưa bắt đầu | Kết quả gợi nhớ đầu không bị ghi đè; đường đúng/sai và hoàn thành được mô tả đầy đủ | — |
+| M03-T017 | M03 | Thiết kế phiên bản hóa luồng câu hỏi | M03-T015, M03-T016, M11 | Chưa bắt đầu | Phiên gắn một phiên bản; có thời điểm hiệu lực; phiên cũ được hỗ trợ/chuyển đổi theo quy tắc | — |
+| M03-T018 | M03 | Giới hạn vòng lặp khi trả lời sai | M03-T015, M03-T016 | Chưa bắt đầu | Có giới hạn hoặc nhánh hỗ trợ; không tự đánh dấu đúng; kết quả cuối phản ánh số lần thử | — |
+| M03-T019 | M03 | Chuẩn hóa dữ liệu từng loại câu hỏi | M02-T009, M03-T015, M03-T016 | Chưa bắt đầu | Mỗi loại có prompt, input trả lời, tài sản, dữ liệu cấm lộ và phương án thiếu dữ liệu | — |
+| M03-T020 | M03 | Thiết kế phương án nhiễu cho câu lựa chọn | M02-T002, M02-T005, M03-T019 | Chưa bắt đầu | Có đủ lựa chọn; chỉ một đáp án theo nghĩa; không trùng/tiết lộ; thiếu ứng viên có phương án thay thế | — |
+| M03-T021 | M03 | Thiết kế ổn định câu hỏi khi tải lại | M03-T007, M03-T019, M03-T020 | Chưa bắt đầu | Tải lại không đổi đáp án hoặc phương án ngoài chính sách; phiên bản câu hỏi được nhận diện | — |
+| M03-T022 | M03 | Xác định phương án khi tài sản không sẵn sàng | M02-T013, M03-T019, M12 | Chưa bắt đầu | Không chấm sai do tài sản lỗi; có thử lại/đổi dạng/bỏ bước theo quy tắc; lỗi được ghi nhận | — |
+| M03-T023 | M03 | Chuẩn hóa yêu cầu trợ năng cho câu hỏi | M03-T019, M03-T022 | Chưa bắt đầu | Có văn bản thay thế, điều khiển phù hợp và không dùng một kênh duy nhất để truyền ý nghĩa bắt buộc | — |
+| M03-T024 | M03 | Chuẩn hóa dữ liệu lần gửi câu trả lời | M03-T017, M03-T019 | Chưa bắt đầu | Trường bắt buộc rõ; dữ liệu bất thường bị từ chối/đánh dấu; không tin thời gian thiết bị tuyệt đối | — |
+| M03-T025 | M03 | Thiết kế chống gửi lặp | M03-T024 | Chưa bắt đầu | Cùng mã+cùng nội dung trả cùng kết quả; cùng mã+nội dung khác bị từ chối; số lần thử không tăng | — |
+| M03-T026 | M03 | Thiết kế xử lý trả lời đồng thời | M03-T021, M03-T024, M03-T025 | Chưa bắt đầu | Chỉ một chuyển bước hợp lệ; thao tác thua nhận trạng thái mới; không mất/nhân bản lịch sử | — |
+| M03-T027 | M03 | Chuẩn hóa kiểm tra quyền và ngữ cảnh trả lời | M01-T016, M03-T003, M03-T024 | Chưa bắt đầu | Sai chủ/phiên/từ/bước bị từ chối không đổi dữ liệu; lỗi không lộ nội dung người khác | — |
+| M03-T028 | M03 | Chuẩn hóa đáp án văn bản | M02-T002, M02-T003, M03-T019 | Chưa bắt đầu | Có tập ví dụ đạt/không đạt; chỉ nghĩa của phiên được dùng; cùng input cho cùng kết quả | — |
+| M03-T029 | M03 | Quyết định xử lý lỗi chính tả gần đúng | M03-T028, M11 | Chưa bắt đầu | Ngưỡng theo loại/cấp độ rõ; không chấp nhận từ khác nghĩa; phản hồi giải thích được | — |
+| M03-T030 | M03 | Chuẩn hóa gợi ý và chi phí sử dụng | M03-T015, M03-T016, M06 | Chưa bắt đầu | Không dùng sau khi đã gửi; trừ/cấp quyền thuộc M06; kết quả ghi số gợi ý và tác động chấm | — |
+| M03-T032 | M03 | Thiết kế phản hồi đúng thời điểm | M03-T015, M03-T016, M03-T028 | Chưa bắt đầu | Phản hồi phù hợp giai đoạn; không lộ trước; câu sai có hướng sửa; thẻ học không giả tạo độ chính xác | — |
+| M03-T033 | M03 | Chuẩn hóa trạng thái tiến trình từng từ | M03-T017, M03-T025, M03-T026 | Chưa bắt đầu | Trạng thái tái dựng được từ lịch sử; hoàn thành không lặp; bước không thể nhảy trái phép | — |
+| M03-T034 | M03 | Thiết kế ghi kết quả gợi nhớ đầu | M03-T016, M03-T025, M03-T033 | Chưa bắt đầu | Chỉ ghi một lần; gồm đúng/sai, tốc độ, gợi ý, phiên bản; luyện sau không ghi đè | — |
+| M03-T035 | M03 | Chuẩn hóa kết quả hoàn thành từng từ | M03-T028–M03-T034, M04 | Chưa bắt đầu | Có loại phiên, nghĩa/phiên bản, số lần thử, tốc độ, gợi ý, kết quả đầu/cuối và lý do | — |
+| M03-T036 | M03 | Thiết kế phát hành kết quả từ sang M04 | M03-T035, M04 | Chưa bắt đầu | Mỗi kết quả có mã duy nhất; gửi lại không cập nhật M04 lặp; lỗi được theo dõi và xử lý lại | — |
+| M03-T037 | M03 | Chuẩn hóa điều kiện hoàn thành phiên | M03-T003, M03-T033, M03-T035 | Chưa bắt đầu | Còn từ bắt buộc bị chặn; gọi sai loại bị chặn; bỏ dở/hết hạn không hoàn thành | — |
+| M03-T038 | M03 | Thiết kế chốt phiên đúng một lần | M03-T025, M03-T026, M03-T037 | Chưa bắt đầu | Một phiên có một kết quả bất biến; gọi lại trả kết quả cũ; không phát sinh lần chốt thứ hai | — |
+| M03-T039 | M03 | Chuẩn hóa nội dung tổng kết phiên | M03-T035, M03-T038 | Chưa bắt đầu | Chỉ số có định nghĩa; không gọi thành thạo khi chỉ hoàn thành; dữ liệu thiếu có cách hiển thị | — |
+| M03-T040 | M03 | Thiết kế phát hành sự kiện hoàn thành | M03-T038, M03-T039, M04, M06, M07, M11 | Chưa bắt đầu | Sự kiện có mã/phiên bản; gửi lại an toàn; module nhận thất bại không làm đổi trạng thái hoàn thành | — |
+| M03-T041 | M03 | Xác định ranh giới phần thưởng và nhiệm vụ | M03-T040, M06, M07 | Chưa bắt đầu | M03 chỉ xác nhận sự kiện/điều kiện; M06 cấp tài sản; M07 tính mục tiêu; lỗi không tạo lặp | — |
+| M03-T042 | M03 | Xây dựng danh mục sự kiện phiên | M03-T003, M03-T024, M03-T038, M11 | Chưa bắt đầu | Mỗi sự kiện có dữ liệu tối thiểu, mức độ, thời hạn và không lộ đáp án ngoài quyền | — |
+| M03-T043 | M03 | Xác định chỉ số chất lượng phiên | M03-T042, M11 | Chưa bắt đầu | Mỗi chỉ số có công thức, nguồn, phân đoạn theo loại/phiên bản và ngưỡng theo dõi | — |
+| M03-T044 | M03 | Thiết kế tra cứu và xem lại phiên | M01-T028, M03-T042, M11 | Chưa bắt đầu | Người dùng chỉ xem phiên mình; quản trị theo quyền; dữ liệu nhạy cảm được che; lượt xem được ghi | — |
+| M03-T045 | M03 | Thiết kế cảnh báo phiên bất thường | M03-T014, M03-T036, M03-T040, M03-T043, M11 | Chưa bắt đầu | Mỗi cảnh báo có ngưỡng, chủ xử lý, thời gian phản hồi và cách đóng; không tự sửa kết quả học | — |
+| M04-T001 | M04 | Chuẩn hóa từ điển ghi nhớ | M02-T001, M03-T001 | Chưa bắt đầu | Thuật ngữ có một nghĩa; không đồng nhất hoàn thành phiên với thành thạo | — |
+| M04-T002 | M04 | Chốt đơn vị tiến độ người dùng–nghĩa | M02-T002, M02-D001 | Chưa bắt đầu | Mỗi bằng chứng gắn đúng nghĩa; có xử lý dữ liệu cũ; không trộn nghĩa khác nhau | — |
+| M04-T003 | M04 | Xác định điều kiện khởi tạo hồ sơ | M03-T035, M04-T002 | Chưa bắt đầu | Có nguồn/phiên bản; tạo lặp không tạo trùng; nội dung thu hồi bị chặn | — |
+| M04-T004 | M04 | Chuẩn hóa giá trị ban đầu | M04-T003, M04-T039 | Chưa bắt đầu | Giá trị trong giới hạn; có lý do/phiên bản; học mới và đánh dấu đã biết không bị coi như nhau | — |
+| M04-T005 | M04 | Thiết kế đặt lại và đánh dấu đã biết | M04-T002, M04-T004, M11 | Chưa bắt đầu | Không xóa lịch sử; tạo bản ghi điều chỉnh; có xác nhận; trạng thái/ngày ôn sau thao tác rõ | — |
+| M04-T006 | M04 | Chuẩn hóa hợp đồng kết quả M03→M04 | M03-T035, M03-T036, M04-T002 | Chưa bắt đầu | Trường bắt buộc/tùy chọn rõ; chỉ kết quả hoàn thành hợp lệ; thiếu/sai phiên bản bị xử lý xác định | — |
+| M04-T007 | M04 | Thiết kế chống áp dụng kết quả lặp | M04-T006 | Chưa bắt đầu | Một mã nguồn chỉ cập nhật một lần; cùng mã khác nội dung bị từ chối; gửi lại trả kết quả cũ | — |
+| M04-T008 | M04 | Thiết kế xử lý kết quả đến sai thứ tự | M04-T006, M04-T007 | Chưa bắt đầu | Có tiêu chí chấp nhận/từ chối/tính lại; không âm thầm ghi đè hồ sơ mới hơn; quyết định được ghi | — |
+| M04-T009 | M04 | Thiết kế cập nhật đồng thời hồ sơ | M04-T007, M04-T008 | Chưa bắt đầu | Không mất cập nhật; thứ tự được xác định; lịch sử khớp trạng thái cuối; có thể thử lại an toàn | — |
+| M04-T010 | M04 | Xác định bằng chứng được phép chấm | M03-T034, M03-T035 | Chưa bắt đầu | Chỉ bằng chứng nhớ được duyệt làm đổi lịch; luyện sửa ghi riêng; thẻ xem không thành điểm nhớ | — |
+| M04-T011 | M04 | Chuẩn hóa chính sách điểm chất lượng | M04-T010, M11 | Chưa bắt đầu | Cùng input/chính sách cho cùng điểm; mọi mức có lý do; giá trị luôn trong phạm vi | — |
+| M04-T012 | M04 | Chuẩn hóa ngưỡng tốc độ phản hồi | M02-T005, M03-T024, M04-T011 | Chưa bắt đầu | Không dùng thời gian bất thường; có ngưỡng theo ngữ cảnh; thay đổi có phiên bản | — |
+| M04-T013 | M04 | Xác định tác động của gợi ý và sửa sai | M03-T030, M04-T011 | Chưa bắt đầu | Không biến đúng thành sai ngoài chính sách; có giới hạn; kết quả giải thích được cho người dùng | — |
+| M04-T014 | M04 | Xây dựng bộ ví dụ chấm chuẩn | M04-T011–M04-T013 | Chưa bắt đầu | Mỗi mức điểm có ví dụ; edge case dữ liệu thiếu/bất thường; kết quả được chuyên môn duyệt | — |
+| M04-T015 | M04 | Định nghĩa chính thức trạng thái nhớ | M04-T001, M04-T011 | Chưa bắt đầu | Có điều kiện vào/ra, kể cả quên từ đã thuộc; tên trạng thái không gây hiểu lầm | — |
+| M04-T016 | M04 | Chuẩn hóa tính khoảng ôn và tham số | M04-T011, M04-T015, M04-T039 | Chưa bắt đầu | Tham số có giới hạn; mọi mức điểm có kết quả; quên làm lịch gần lại; không sinh khoảng âm | — |
+| M04-T017 | M04 | Chuẩn hóa thời điểm ôn và múi giờ | M01-T025, M04-T016 | Chưa bắt đầu | Lưu thời điểm chuẩn; đổi múi giờ không nhân bản/mất từ; định nghĩa ngày đến hạn rõ | — |
+| M04-T018 | M04 | Chuẩn hóa điểm duy trì | M04-T016 | Chưa bắt đầu | Công thức có phiên bản; giá trị trong phạm vi; tài liệu nói rõ là ước lượng; có kiểm thử biên | — |
+| M04-T019 | M04 | Thiết kế phục hồi khi chính sách lỗi | M04-T016–M04-T018, M11 | Chưa bắt đầu | Không áp cấu hình sai; không thay đổi hồ sơ ngoài dự kiến; cảnh báo có dữ liệu/phiên bản và đường khắc phục | — |
+| M04-T020 | M04 | Chuẩn hóa tiêu chí từ đến hạn | M02-T033, M03-T005, M04-T017 | Chưa bắt đầu | Chỉ hồ sơ hoạt động và nội dung hợp lệ; thời điểm bằng hạn được tính nhất quán; không trùng phiên mở | — |
+| M04-T021 | M04 | Thiết kế điểm ưu tiên danh sách ôn | M04-T018, M04-T020 | Chưa bắt đầu | Có thứ tự tie-break; cùng dữ liệu cho cùng thứ tự; mỗi từ có lý do ưu tiên | — |
+| M04-T022 | M04 | Xử lý khối lượng ôn tồn đọng lớn | M04-T021, M10 | Chưa bắt đầu | Có giới hạn/chiến lược; từ quá hạn lâu không bị bỏ quên; hiển thị khối lượng không gây hiểu lầm | — |
+| M04-T023 | M04 | Chuẩn hóa bàn giao danh sách cho M03 | M03-T005, M03-T006, M04-T021, M04-T022 | Chưa bắt đầu | Danh sách có mã/thời điểm; M03 gửi lại không tạo đặt chỗ trùng; mục thu hồi được xử lý | — |
+| M04-T024 | M04 | Chuẩn hóa bản ghi lịch sử ôn | M04-T007, M04-T011, M04-T016 | Chưa bắt đầu | Mỗi cập nhật có một lịch sử; đủ dữ liệu tái dựng; không chứa dữ liệu vượt mục đích | — |
+| M04-T025 | M04 | Thiết kế lịch sử bất biến và điều chỉnh bù | M04-T024, M11 | Chưa bắt đầu | Không sửa bản gốc; điều chỉnh có người/lý do/trước-sau; trạng thái cuối tái dựng được | — |
+| M04-T026 | M04 | Thiết kế diễn giải ngày ôn cho người học | M04-T015, M04-T017, M04-T024 | Chưa bắt đầu | Người dùng hiểu vì sao từ đến hạn/sớm/muộn; không hứa xác suất chắc chắn; hỗ trợ múi giờ | — |
+| M04-T027 | M04 | Xây dựng quyền tra cứu lịch sử ôn | M01-T028, M04-T024, M11 | Chưa bắt đầu | Quyền tối thiểu; người dùng chỉ xem mình; truy cập quản trị được ghi; dữ liệu nhạy cảm được che | — |
+| M04-T031 | M04 | Chuẩn hóa tiến độ theo bộ từ | M02-T023, M04-T002, M04-T015 | Chưa bắt đầu | Xác định mẫu số/phiên bản; một nghĩa nhiều bộ có quy tắc; bộ đổi thành phần không viết lại lịch sử âm thầm | — |
+| M04-T032 | M04 | Chuẩn hóa chỉ số tiến độ người dùng | M04-T017, M04-T018, M04-T020 | Chưa bắt đầu | Mỗi chỉ số có công thức/nguồn; dữ liệu rỗng rõ; không đếm trùng; múi giờ đúng | — |
+| M04-T033 | M04 | Xác định từ khó và khoảng trống học tập | M04-T024, M04-T032 | Chưa bắt đầu | Có ngưỡng/chu kỳ; điều chỉnh theo số cơ hội; mỗi kết quả có lý do; nội dung thu hồi bị loại | — |
+| M04-T034 | M04 | Chuẩn hóa xu hướng hoạt động và duy trì | M04-T017, M04-T024, M04-T032 | Chưa bắt đầu | Ranh giới ngày đúng múi giờ; không so sánh chính sách không tương thích mà không gắn nhãn | — |
+| M04-T035 | M04 | Xác định dữ liệu cung cấp M09/M11 | M01-T003, M04-T031–M04-T034, M09, M11 | Chưa bắt đầu | Mỗi chỉ số có mục đích/người nhận; M09 không nhận lịch sử chi tiết; M11 có quyền rõ | — |
+| M04-T036 | M04 | Chuẩn hóa tín hiệu lịch ôn thay đổi | M04-T020, M04-T023 | Chưa bắt đầu | Sự kiện có mã/thời điểm/phiên bản; gửi lặp an toàn; có ngưỡng tránh phát quá nhiều | — |
+| M04-T037 | M04 | Thiết kế bàn giao nhắc ôn cho M10 | M01-T025, M04-T036, M10 | Chưa bắt đầu | M10 nhận số lượng/thời điểm/lý do; M04 không gửi tin; tài khoản/tùy chọn do M01/M10 kiểm soát | — |
+| M04-T038 | M04 | Xử lý tín hiệu cũ sau khi lịch đổi | M04-T036, M04-T037, M10 | Chưa bắt đầu | Tín hiệu mới tham chiếu bản cũ; M10 xác định bản hiệu lực; không nhắc từ không còn đến hạn | — |
+| M04-T039 | M04 | Chuẩn hóa danh mục tham số chính sách | M04-T001, M11 | Chưa bắt đầu | Mỗi tham số có đơn vị, giới hạn, mặc định, tác động và quy tắc quan hệ | — |
+| M04-T040 | M04 | Thiết kế kiểm tra và phê duyệt chính sách | M04-T039, M11 | Chưa bắt đầu | Cấu hình sai bị chặn; có người tạo/duyệt/lý do/hiệu lực; mặc định an toàn được xác nhận | — |
+| M04-T041 | M04 | Thiết kế mô phỏng tác động chính sách | M04-T040, M11 | Chưa bắt đầu | Báo cáo nêu thay đổi lịch/khối lượng/phân bố; dữ liệu bảo vệ riêng tư; có ngưỡng không phát hành | — |
+| M04-T042 | M04 | Xác định chiến lược dữ liệu khi đổi phiên bản | M04-T024, M04-T041 | Chưa bắt đầu | Quy tắc theo loại thay đổi; lịch sử giữ cả hai phiên bản; không tính lại âm thầm; có thể dừng/phục hồi | — |
+| M04-T043 | M04 | Thiết kế chỉ số chất lượng chính sách | M04-T032–M04-T034, M11 | Chưa bắt đầu | Chỉ số có công thức/phân đoạn/chu kỳ; không dùng chỉ tỷ lệ hoàn thành; có ngưỡng cảnh báo | — |
+| M04-T044 | M04 | Thiết kế cảnh báo và phục hồi chính sách | M04-T019, M04-T041–M04-T043, M11 | Chưa bắt đầu | Mỗi cảnh báo có chủ/thời gian; có dừng phát hành/quay lại; không xóa lịch sử đã phát sinh | — |
+| M06-T001 | M06 | Chuẩn hóa từ điển kinh tế | M01-T001 | Chưa bắt đầu | Thuật ngữ có một nghĩa; phân biệt điều kiện thưởng và cập nhật tài sản | — |
+| M06-T002 | M06 | Xác định danh mục đơn vị giá trị | M06-T001, M11 | Chưa bắt đầu | Mỗi loại có nguồn vào/ra, trần/sàn, chủ sở hữu và không dùng hai mục đích mâu thuẫn | — |
+| M06-T003 | M06 | Thiết kế mô hình sổ biến động | M06-T002, M11 | Chưa bắt đầu | Mỗi biến động có mã duy nhất, người, loại, lượng, nguồn, trước/sau, thời điểm và trạng thái | — |
+| M06-T004 | M06 | Thiết kế số dư dẫn xuất và đối soát | M06-T003 | Chưa bắt đầu | Số dư giải thích được; chênh lệch phát hiện được; không âm/tràn ngoài chính sách | — |
+| M06-T005 | M06 | Lập kế hoạch chuyển dữ liệu kinh tế hiện có | M06-T003, M06-T004, M11 | Chưa bắt đầu | Mỗi số dư cũ có bản ghi mở đầu; tổng trước/sau khớp; có báo cáo ngoại lệ và phương án quay lại | — |
+| M06-T006 | M06 | Chuẩn hóa mô hình danh mục thú cưng | M06-T001, M12 | Chưa bắt đầu | Trường bắt buộc/quyền rõ; quan hệ dạng hợp lệ; trạng thái không phá sở hữu | — |
+| M06-T007 | M06 | Chuẩn hóa mô hình danh mục vật phẩm | M06-T001, M11 | Chưa bắt đầu | Mỗi loại có ngữ cảnh dùng, cộng dồn, hết hạn, hoàn trả và trạng thái | — |
+| M06-T008 | M06 | Thiết kế vòng đời danh mục tài sản | M06-T006, M06-T007, M11 | Chưa bắt đầu | Không xóa cứng tài sản đã tham chiếu; trạng thái có hiệu lực/phạm vi và lịch sử | — |
+| M06-T011 | M06 | Chuẩn hóa hợp đồng sự kiện thưởng | M03-T040, M05-T034, M07, M08 | Chưa bắt đầu | Trường bắt buộc rõ; chỉ nguồn được phép; mỗi sự kiện nhận diện duy nhất và có thời điểm hiệu lực | — |
+| M06-T012 | M06 | Thiết kế chống cấp thưởng lặp | M06-T003, M06-T011 | Chưa bắt đầu | Một mã chỉ có một kết quả; cùng mã khác nội dung bị từ chối; gửi lại không cộng thêm | — |
+| M06-T013 | M06 | Thiết kế kiểm tra tài khoản và điều kiện nguồn | M01-T012, M06-T011 | Chưa bắt đầu | Tài khoản/sự kiện không hợp lệ có kết quả rõ; không lộ dữ liệu; quyết định có thể truy vết | — |
+| M06-T014 | M06 | Thiết kế tính gói thưởng theo phiên bản | M02-T043, M06-T011, M11 | Chưa bắt đầu | Gói bất biến theo sự kiện; ghi phiên bản/lý do; không dùng cấu hình mới hồi tố ngoài quyết định | — |
+| M06-T015 | M06 | Thiết kế xử lý thưởng nhiều thành phần | M06-T004, M06-T012, M06-T014 | Chưa bắt đầu | Hoặc toàn bộ thành công, hoặc trạng thái xử lý lại rõ; không có phần cộng lặp; kết quả hiển thị đầy đủ | — |
+| M06-T016 | M06 | Thiết kế trạng thái chờ và xử lý lại | M06-T012, M06-T015, M11 | Chưa bắt đầu | Có trạng thái nhận/chờ/thành công/thất bại; thử lại có giới hạn; cảnh báo khi quá thời gian | — |
+| M06-T017 | M06 | Thiết kế thu hồi hoặc bù phần thưởng | M06-T003, M06-T015, M11 | Chưa bắt đầu | Tạo biến động bù liên kết gốc; không âm ngoài chính sách; trường hợp đã tiêu có quyết định xử lý | — |
+| M06-T034 | M06 | Chuẩn hóa quyền sở hữu vật phẩm | M06-T007, M06-T012 | Chưa bắt đầu | Không có bản ghi trùng; số lượng/trạng thái/hạn dùng rõ; thêm lặp không cộng hai lần | — |
+| M06-T035 | M06 | Thiết kế yêu cầu sử dụng vật phẩm | M06-T034, M03, M08 | Chưa bắt đầu | Sai ngữ cảnh/thiếu số lượng bị chặn; yêu cầu có mã; không trừ trước khi đủ điều kiện | — |
+| M06-T036 | M06 | Thiết kế chốt tiêu thụ và hoàn trả | M06-T003, M06-T012, M06-T035 | Chưa bắt đầu | Gửi lại không trừ hai lần; hoàn trả là biến động bù; trạng thái chờ/lỗi có thể đối soát | — |
+| M06-T037 | M06 | Chuẩn hóa vật phẩm hết hạn/ngừng dùng | M06-T007, M06-T008, M06-T034 | Chưa bắt đầu | Không dùng sau hết hạn; người dùng thấy lý do; thay đổi danh mục không xóa kho âm thầm | — |
+| M06-T038 | M06 | Xây dựng ma trận quyền điều chỉnh kinh tế | M01-T028, M06-T002, M11 | Chưa bắt đầu | Quyền tối thiểu; giá trị lớn cần phê duyệt; người thao tác không tự duyệt ngoài ngoại lệ | — |
+| M06-T039 | M06 | Thiết kế luồng điều chỉnh có xem trước | M06-T003, M06-T004, M06-T038 | Chưa bắt đầu | Có trước/sau/lý do/bằng chứng; không sửa lịch sử; vi phạm sàn/trần bị chặn | — |
+| M06-T040 | M06 | Thiết kế đối soát định kỳ | M06-T004, M06-T034, M06-T039, M11 | Chưa bắt đầu | Phát hiện từng loại chênh; có mức độ/chủ xử lý; không tự sửa khi chưa có quy tắc | — |
+| M06-T041 | M06 | Thiết kế xử lý chênh lệch kinh tế | M06-T040, M11 | Chưa bắt đầu | Mỗi chênh lệch có nguyên nhân, quyết định, biến động bù và bằng chứng đóng | — |
+| M06-T042 | M06 | Xác định chỉ số nguồn vào và nguồn ra | M06-T003, M06-T034, M11 | Chưa bắt đầu | Mỗi chỉ số có công thức/chu kỳ/phân đoạn; tổng nguồn vào-ra khớp sổ | — |
+| M07-T001 | M07 | Thống nhất từ điển mục tiêu | Không | Chưa bắt đầu | Không còn thuật ngữ cốt lõi có hai nghĩa; module sở hữu từng khái niệm được chỉ rõ | — |
+| M07-T002 | M07 | Phân loại nhiệm vụ và thành tựu | M07-T001 | Chưa bắt đầu | Mỗi loại có nguồn, đơn vị đếm, chu kỳ, giới hạn và ví dụ hợp lệ/không hợp lệ | — |
+| M07-T003 | M07 | Đặc tả định nghĩa mục tiêu | M07-T002 | Chưa bắt đầu | Bao phủ điều kiện, ngưỡng, hiệu lực, đối tượng, nội dung, phần thưởng và chủ sở hữu | — |
+| M07-T004 | M07 | Thiết kế vòng đời quyết định thay đổi | M07-T003 | Chưa bắt đầu | Mỗi chuyển trạng thái có vai trò, điều kiện, kiểm toán và xử lý sai rõ ràng | — |
+| M07-T005 | M07 | Chốt phiên bản và ảnh chụp | M07-T003, M07-T004 | Chưa bắt đầu | Nhiệm vụ đang chạy không đổi ngầm; có quy tắc hiệu lực và truy vết phiên bản | — |
+| M07-T006 | M07 | Xử lý ngừng dùng và xóa | M07-T004, M07-T005 | Chưa bắt đầu | Không xóa mất bằng chứng hoặc quyền đã phát sinh; hành vi với bản đang chạy được duyệt | — |
+| M07-T007 | M07 | Chốt tiêu chí đủ điều kiện | M07-T003 | Chưa bắt đầu | Mỗi loại điều kiện có nguồn dữ liệu, mặc định khi thiếu và lý do loại trừ | — |
+| M07-T008 | M07 | Thiết kế chiến lược lựa chọn | M07-T007 | Chưa bắt đầu | Không chọn mục tiêu bất khả thi/trùng quá mức; có tiêu chí đa dạng và công bằng | — |
+| M07-T009 | M07 | Xử lý người dùng mới và dữ liệu thiếu | M07-T007, M07-T008 | Chưa bắt đầu | Người mới luôn nhận tập khả thi hoặc trạng thái giải thích được; không suy diễn trình độ sai | — |
+| M07-T010 | M07 | Đảm bảo phân bổ duy nhất | M07-T005, M07-T008, M07-T009 | Chưa bắt đầu | Tạo lại cho cùng chu kỳ không sinh bản trùng; ảnh chụp và lý do chọn được lưu | — |
+| M07-T011 | M07 | Lập danh mục sự kiện nguồn | M07-T002 | Chưa bắt đầu | Mỗi sự kiện có chủ nguồn, thời điểm, trạng thái xác nhận và phạm vi sử dụng | — |
+| M07-T012 | M07 | Đặc tả hợp đồng sự kiện nghiệp vụ | M07-T011 | Chưa bắt đầu | Có định danh duy nhất, người dùng, loại, thời điểm xảy ra/tiếp nhận, kết quả và phiên bản ngữ nghĩa | — |
+| M07-T013 | M07 | Thiết kế chống đếm lặp | M07-T012 | Chưa bắt đầu | Cùng sự kiện gửi bao nhiêu lần cũng chỉ tạo một kết quả tiến độ; có bằng chứng đối soát | — |
+| M07-T014 | M07 | Xử lý thứ tự và đồng thời | M07-T012, M07-T013 | Chưa bắt đầu | Không mất tiến độ, vượt ngưỡng hoặc mở khóa lặp trong các kịch bản đồng thời | — |
+| M07-T015 | M07 | Xử lý sự kiện lỗi và thử lại | M07-T012, M07-T013 | Chưa bắt đầu | Lỗi có lý do; sửa được dữ liệu phù hợp và xử lý lại mà không đếm lặp | — |
+| M07-T016 | M07 | Chốt đính chính và rút lại | M07-T013, M07-T014 | Chưa bắt đầu | Phân biệt lỗi kỹ thuật/gian lận; không sửa lịch sử âm thầm; phần thưởng đã cấp được chuyển sang xử lý M06 | — |
+| M07-T017 | M07 | Đặc tả đơn vị đếm học mới | M07-T011, M07-T012 | Chưa bắt đầu | Nêu rõ học lại, bỏ dở, từ trùng, phiên hủy và giới hạn theo ngày | — |
+| M07-T018 | M07 | Đặc tả đơn vị đếm ôn tập | M07-T011, M07-T012 | Chưa bắt đầu | Chỉ hoạt động ôn hợp lệ được tính; có quy tắc cho quá hạn, làm lại và phiên không hoàn thành | — |
+| M07-T019 | M07 | Đặc tả mục tiêu chất lượng | M07-T011, M07-T012 | Chưa bắt đầu | Mẫu số, ngưỡng tối thiểu, làm tròn, câu bỏ qua và phiên quá ngắn được xác định | — |
+| M07-T020 | M07 | Đặc tả phát âm và thi đấu | M07-T011, M07-T012 | Chưa bắt đầu | Chỉ kết quả cuối cùng hợp lệ được tính; có ngưỡng chất lượng và chống khai thác | — |
+| M07-T021 | M07 | Thiết kế trần và chống cày | M07-T017–M07-T020 | Chưa bắt đầu | Có trần theo loại/chu kỳ, lý do giáo dục, ngoại lệ hợp lệ và chỉ số phát hiện bất thường | — |
+| M07-T022 | M07 | Chốt múi giờ và ranh giới ngày | M07-T001 | Chưa bắt đầu | Mỗi nhiệm vụ lưu ranh giới tuyệt đối; hiển thị theo người dùng; giờ mùa hè được bao phủ | — |
+| M07-T023 | M07 | Chốt chính sách đổi múi giờ | M07-T022 | Chưa bắt đầu | Có giới hạn, thời điểm áp dụng và xử lý đi lại; không nhận hai tập cho cùng ngày nghiệp vụ | — |
+| M07-T024 | M07 | Xử lý sự kiện đến muộn | M07-T012, M07-T022 | Chưa bắt đầu | Kịch bản mất mạng qua nửa đêm, sai giờ thiết bị và chạy bù có kết quả xác định | — |
+| M07-T025 | M07 | Đặc tả kết thúc và tạo chu kỳ | M07-T010, M07-T024 | Chưa bắt đầu | Không mất/chồng kỳ; xử lý lại không đổi kết quả; nhiệm vụ chưa nhận có trạng thái rõ | — |
+| M07-T026 | M07 | Chốt chuyển trạng thái hoàn thành | M07-T014, M07-T021, M07-T025 | Chưa bắt đầu | Hoàn thành chỉ một lần; có thời điểm/bằng chứng; không vượt ngưỡng; đồng thời được bao phủ | — |
+| M07-T030 | M07 | Chốt điều kiện nhận thưởng | M07-T026, M07-T027 | Chưa bắt đầu | Mỗi trạng thái cho biết hành động hợp lệ; người dùng không mất quyền do lỗi hệ thống | — |
+| M07-T031 | M07 | Đặc tả ảnh chụp gói thưởng | M07-T005, M07-T030 | Chưa bắt đầu | Thay đổi sau đó không làm đổi quyền đã hứa; tài sản ngừng dùng có phương án xử lý | — |
+| M07-T032 | M07 | Đặc tả bàn giao phần thưởng cho M06 | M07-T031, M06-T017 | Chưa bắt đầu | M07 chỉ gửi quyền nhận; M06 là nguồn sự thật tài sản; trạng thái và lý do lỗi ánh xạ đầy đủ | — |
+| M07-T033 | M07 | Đảm bảo nhận thưởng đúng một lần | M07-T032 | Chưa bắt đầu | Nhấn lặp, hai thiết bị, mất phản hồi và gửi lại đều không cấp thêm hoặc đánh dấu sai | — |
+| M07-T034 | M07 | Thiết kế phục hồi và đối soát thưởng | M07-T032, M07-T033 | Chưa bắt đầu | Có trạng thái chờ/thành công/thất bại cần xử lý; tự động và thủ công không xung đột; không mất quyền | — |
+| M07-T038 | M07 | Đặc tả danh sách nhiệm vụ hôm nay | M07-T010, M07-T025, M07-T026 | Chưa bắt đầu | Có mục tiêu, tiến độ, thời hạn, cách tính, phần thưởng và trạng thái nhận; không có dữ liệu mâu thuẫn | — |
+| M07-T040 | M07 | Thiết kế lịch sử và giải thích tiến độ | M07-T013, M07-T026, M07-T034 | Chưa bắt đầu | Phân biệt sự kiện, tiến độ, hoàn thành và nhận thưởng; dữ liệu nhạy cảm được giới hạn | — |
+| M07-T041 | M07 | Đặc tả tín hiệu cho M10 | M07-T025, M07-T026, M07-T034 | Chưa bắt đầu | Tín hiệu có định danh chống lặp, thời điểm, mức ưu tiên; M07 không tự quyết kênh gửi | — |
+| M07-T042 | M07 | Chốt quyền và kiểm toán quản trị | M07-T004 | Chưa bắt đầu | Thao tác nhạy cảm có phê duyệt phù hợp; ghi người, thời điểm, lý do và trước/sau | — |
+| M07-T043 | M07 | Xây dựng khung chỉ số hiệu quả | M07-T008, M07-T021, M07-T034 | Chưa bắt đầu | Mỗi chỉ số có công thức, cửa sổ, nguồn và giới hạn; không đồng nhất tương tác với học tốt | — |
+| M07-T044 | M07 | Thiết kế giám sát và thử nghiệm | M07-T042, M07-T043 | Chưa bắt đầu | Có ngưỡng chi phí, gian lận, hoàn thành, chất lượng; nhóm so sánh và tiêu chí dừng rõ | — |
+| M10-T001 | M10 | Thống nhất từ điển thông báo | Không | Chưa bắt đầu | Phân biệt rõ sự kiện–bản logic–lần gửi–tương tác; chủ sở hữu từng trạng thái được chỉ rõ | — |
+| M10-T002 | M10 | Phân loại thông báo | M10-T001 | Chưa bắt đầu | Mỗi loại có chủ nguồn, hành động mong muốn, khẩn cấp, kênh được phép và tiêu chí hết liên quan | — |
+| M10-T003 | M10 | Lập danh mục tín hiệu nguồn | M10-T002 | Chưa bắt đầu | Mỗi tín hiệu có người nhận, thời điểm, định danh, dữ liệu tối thiểu, thời hạn và chính sách hủy | — |
+| M10-T004 | M10 | Đặc tả hợp đồng tín hiệu | M10-T003 | Chưa bắt đầu | Có định danh duy nhất, phiên bản ngữ nghĩa, nguồn, người nhận, xảy ra/tiếp nhận, ưu tiên và hạn | — |
+| M10-T005 | M10 | Thiết kế tiếp nhận đúng một lần | M10-T004 | Chưa bắt đầu | Cùng tín hiệu/lần sửa cho kết quả xác định; gửi lại trả trạng thái cũ; có bằng chứng đối soát | — |
+| M10-T006 | M10 | Chốt hủy và đính chính tín hiệu | M10-T004, M10-T005 | Chưa bắt đầu | Không thu hồi nội dung đã thấy âm thầm; lần chưa gửi được chặn; lịch sử và lý do được giữ | — |
+| M10-T007 | M10 | Xây dựng ma trận lựa chọn nhận tin | M10-T002 | Chưa bắt đầu | Tách thông báo bắt buộc, học tập, xã hội và quảng bá; mọi mặc định có lý do/minh bạch | — |
+| M10-T008 | M10 | Đặc tả bằng chứng đồng ý | M10-T007 | Chưa bắt đầu | Mỗi thay đổi truy vết được; rút đồng ý không xóa lịch sử; phiên bản chính sách được lưu | — |
+| M10-T009 | M10 | Thiết kế trải nghiệm quản lý lựa chọn | M10-T007, M10-T008 | Chưa bắt đầu | Trạng thái hiện hành nhất quán đa thiết bị; tác động mỗi lựa chọn rõ; không dùng mẫu gây ép đồng ý | — |
+| M10-T010 | M10 | Chốt hiệu lực thay đổi và ngoại lệ khẩn | M10-T008, M10-T009 | Chưa bắt đầu | Opt-out chặn phần chưa giao trong thời hạn; ngoại lệ có danh mục/hạn/phê duyệt; không dùng khẩn cấp cho tương tác | — |
+| M10-T011 | M10 | Đặc tả mẫu nội dung | M10-T002 | Chưa bắt đầu | Biến có nguồn/kiểu ý nghĩa; độ dài theo kênh; nội dung mặc định/fallback và người sở hữu rõ | — |
+| M10-T012 | M10 | Thiết kế vòng đời và phiên bản mẫu | M10-T011 | Chưa bắt đầu | Thay đổi đã duyệt tạo phiên bản; nội dung lên lịch không đổi ngầm; ngừng mẫu không phá lịch sử | — |
+| M10-T013 | M10 | Chốt bản địa hóa và fallback | M10-T011, M10-T012 | Chưa bắt đầu | Có ngôn ngữ mặc định được duyệt; thiếu biến/bản dịch chặn hoặc fallback rõ; không trộn ngôn ngữ ngoài chủ ý | — |
+| M10-T014 | M10 | Kiểm soát nội dung màn hình khóa | M10-T011, M01 | Chưa bắt đầu | Không hiển thị thắng thua, tiến độ, phần thưởng hoặc nội dung cá nhân nhạy cảm mặc định trên khóa | — |
+| M10-T015 | M10 | Chốt liên kết hành động an toàn | M10-T011 | Chưa bắt đầu | Chỉ đích được phép; định dạng hợp lệ từng kênh; hết hạn/không quyền có fallback; không chuyển hướng mở | — |
+| M10-T016 | M10 | Đặc tả mô hình hộp thư | M10-T004, M10-T011 | Chưa bắt đầu | Có chủ sở hữu, định danh nguồn, ảnh chụp nội dung, tạo/hết hạn, trạng thái và liên kết | — |
+| M10-T017 | M10 | Đặc tả danh sách và số chưa đọc | M10-T016 | Chưa bắt đầu | Phân trang ổn định; không trùng/bỏ; số chưa đọc nhất quán; thông báo hết hạn/ẩn xử lý rõ | — |
+| M10-T018 | M10 | Chốt đọc, mở và đọc tất cả đúng quyền | M10-T016, M10-T017 | Chưa bắt đầu | Không thể thay đổi bản của người khác; thao tác lặp an toàn; đọc tất cả có mốc và không nuốt bản tạo sau | — |
+| M10-T019 | M10 | Chốt ẩn, xóa trải nghiệm và lưu giữ | M10-T016, M10-T018 | Chưa bắt đầu | Người dùng không còn thấy bản đã ẩn; kiểm toán cần thiết còn lại đúng hạn; xóa tài khoản được bao phủ | — |
+| M10-T020 | M10 | Xây dựng ma trận chọn kênh | M10-T007, M10-T010, M10-T016 | Chưa bắt đầu | Mỗi loại có kênh bắt buộc/tùy chọn/fallback; không gửi kênh chưa đồng ý; quyết định giải thích được | — |
+| M10-T021 | M10 | Chốt khóa chống gửi lặp | M10-T005, M10-T020 | Chưa bắt đầu | Gửi lại/khởi động lại/đồng thời không tạo lần gửi logic trùng; khóa có phạm vi và thời hạn rõ | — |
+| M10-T022 | M10 | Thiết kế giới hạn tần suất | M10-T002, M10-T020 | Chưa bắt đầu | Có cửa sổ/ngưỡng, ngoại lệ, cách xử lý vượt trần và chỉ số mệt mỏi; không reset bằng đọc thông báo | — |
+| M10-T023 | M10 | Thiết kế gom và thay thế thông báo | M10-T021, M10-T022 | Chưa bắt đầu | Không mất hành động/thời hạn; số lượng hiện hành đúng; đã đọc không bị đổi thành chưa đọc ngoài chính sách | — |
+| M10-T024 | M10 | Chốt hết hạn và fallback kênh | M10-T020–M10-T023 | Chưa bắt đầu | Không gửi sau khi sự kiện mất ý nghĩa; fallback được đồng ý và không tạo hai lần; lý do chặn được lưu | — |
+| M10-T025 | M10 | Chốt múi giờ hiệu lực | M01, M10-T020 | Chưa bắt đầu | Mọi lịch lưu mốc tuyệt đối và múi giờ tính; đổi vùng không tạo nhắc đôi/bỏ nhắc; DST có kịch bản | — |
+| M10-T026 | M10 | Thiết kế giờ yên lặng | M10-T010, M10-T025 | Chưa bắt đầu | Tôn trọng theo kênh/loại; khoảng qua nửa đêm đúng; ngoại lệ chỉ loại được duyệt; thời điểm dời không quá hạn | — |
+| M10-T027 | M10 | Đặc tả nhắc ôn tập | M10-T003–M10-T005, M10-T022, M10-T025, M04 | Chưa bắt đầu | Tái kiểm tra còn từ đến hạn trước gửi; chạy lại không trùng; số lượng đúng; không nhắc khi đang/đã ôn | — |
+| M10-T028 | M10 | Đặc tả nhắc nhiệm vụ và sự kiện | M10-T003–M10-T005, M10-T022–M10-T026 | Chưa bắt đầu | Mỗi nguồn có hạn/giờ yên lặng/giới hạn; sự kiện hoàn tất/hủy không còn gửi; nội dung riêng tư đúng | — |
+| M10-T030 | M10 | Đặc tả trạng thái lần gửi theo kênh | M10-T020, M10-T024 | Chưa bắt đầu | Mỗi chuyển có thời điểm, số lần thử, mã lý do; không đồng nhất “giao nhà cung cấp” với “người dùng thấy” | — |
+| M10-T031 | M10 | Chốt vòng đời điểm nhận đa thiết bị | M10-T010, M10-T030, M01 | Chưa bắt đầu | Một người có nhiều điểm nhận; điểm nhận gắn đúng chủ/thiết bị; đăng xuất/xóa tài khoản/invalid được xử lý | — |
+| M10-T032 | M10 | Thiết kế thử lại và chống gửi trùng | M10-T021, M10-T030 | Chưa bắt đầu | Lỗi tạm/cuối rõ; thử lại cùng lần gửi; hết hạn dừng; mất phản hồi không tạo bản logic mới | — |
+| M10-T033 | M10 | Chốt phản hồi và vô hiệu điểm nhận | M10-T031, M10-T032 | Chưa bắt đầu | Mỗi mã có trạng thái/hành động; vô hiệu chỉ đúng điểm nhận; không tiếp tục gửi điểm nhận đã bị từ chối | — |
+| M10-T034 | M10 | Thiết kế đối soát đa kênh | M10-T030–M10-T033 | Chưa bắt đầu | Chênh lệch có trạng thái/chủ; sửa bằng bản ghi bổ sung; không ghi đè lịch sử; thống kê không đếm đôi | — |
+| M10-T044 | M10 | Chốt quyền và kiểm toán vận hành | M10-T012, M10-T037, M11 | Chưa bắt đầu | Thao tác nhạy cảm ghi người, thời điểm, lý do, trước/sau; dữ liệu cá nhân chỉ vai trò cần thiết xem | — |
+| M10-T046 | M10 | Chốt lưu giữ và xóa dữ liệu | M10-T008, M10-T019, M10-T031, M10-T044 | Chưa bắt đầu | Xóa/ẩn danh theo loại; không giữ PII thừa; yêu cầu xóa tài khoản lan truyền; báo cáo tổng hợp vẫn nhất quán | — |
+| M11-T023 | M11 | Phân loại độ mới và cách tổng hợp | M11-T022 | Chưa bắt đầu | Độ mới hiển thị; nguồn đến muộn/đính chính rõ; chỉ số không hứa nhanh hơn khả năng nguồn | — |
+| M11-T024 | M11 | Thiết kế kiểm tra chất lượng dữ liệu | M11-T022, M11-T023 | Chưa bắt đầu | Mỗi chỉ số trọng yếu có kiểm tra; lỗi tạo cảnh báo/vụ việc; dữ liệu nghi ngờ không hiển thị như chắc chắn | — |
+| M11-T025 | M11 | Đặc tả bảng điều hành theo vai trò | M11-T004, M11-T022–M11-T024 | Chưa bắt đầu | Mỗi vai trò chỉ thấy dữ liệu cần; thời điểm/phiên bản/chất lượng rõ; không fallback hiển thị email/PII | — |
+| M11-T026 | M11 | Chốt drill-down và xuất báo cáo | M11-T025 | Chưa bắt đầu | Nhóm nhỏ/PII được che; xuất có lý do, người nhận, hạn, watermark/kiểm toán; khối lượng có giới hạn | — |
+| M11-T041 | M11 | Chuẩn hóa yêu cầu điều chỉnh tài sản | M11-T007–M11-T011, M06 | Chưa bắt đầu | M11 không sửa số dư; định danh chống lặp; xem trước số dư; ngưỡng duyệt; kết quả đối soát được | — |
+| M11-T042 | M11 | Chuẩn hóa chạy bù và sửa dữ liệu | M11-T011, M11-T039, M11-T040 | Chưa bắt đầu | Có xem trước/mẫu/giới hạn; chạy lại an toàn; không sửa audit; trước/sau và sai lệch được báo cáo | — |
+| M12-T026 | M12 | Đặc tả hợp đồng email | M12-T004, M10 | Chưa bắt đầu | Phân biệt accepted/delivered/bounce/complaint/unknown; retry cùng message; nội dung/recipient không log thừa | — |
+| M12-T027 | M12 | Đặc tả hợp đồng push đa thiết bị | M12-T004, M10 | Chưa bắt đầu | Mỗi thiết bị có attempt; invalid token rõ; payload/link tương thích; cùng notification không nhân bản logic | — |
+| M12-T028 | M12 | Đặc tả kết nối thời gian thực | M12-T004, M01, M08, M10 | Chưa bắt đầu | Chỉ đúng người vào group; connection cũ bị thay; event có sequence/version; reconnect lấy state bền vững | — |
+| M12-T029 | M12 | Thiết kế phản hồi và retry kênh | M12-T005, M12-T026–M12-T028 | Chưa bắt đầu | Không retry lỗi cuối/hết hạn; lost response đối soát/idempotent; lỗi một kênh không che kênh khác | — |
+| M12-T030 | M12 | Thiết kế suy giảm kênh gửi/realtime | M12-T003, M12-T029, M08, M10 | Chưa bắt đầu | M10 quyết fallback; M08 không bắt đầu khi sync không đảm bảo; không gửi bù nội dung hết hạn; người dùng được thông tin | — |
+| M12-T039 | M12 | Xây dựng bộ kiểm thử lỗi và suy giảm | M12-T030, M12-T035–M12-T038 | Chưa bắt đầu | Mỗi năng lực trọng yếu có test chậm/lỗi/quota/duplicate; lõi học và state consistency đạt ma trận | — |
