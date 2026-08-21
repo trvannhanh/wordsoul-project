@@ -33,6 +33,7 @@
 - [Đặc tả upload an toàn M12](DAC-TA-UPLOAD-AN-TOAN.md)
 - [Thiết kế metadata và định danh bất biến M12](THIET-KE-METADATA-VA-DINH-DANH-BAT-BIEN.md)
 - [Chốt quyền truy cập và phân phối M12](CHOT-QUYEN-TRUY-CAP-VA-PHAN-PHOI.md)
+- [Thiết kế thay thế, xóa và orphan cleanup M12](THIET-KE-THAY-THE-XOA-VA-ORPHAN-CLEANUP.md)
 
 ## Mô tả module
 
