@@ -99,6 +99,7 @@ Chỉ cập nhật file này khi thay đổi hành vi sản phẩm, kiến trúc
 | D-091 | Dùng M01-REVOKE-PUSH-DEVICE-A-1.0 cho thiết kế thu hồi thiết bị nhận tin — lát A | 3 triggers (Manual, Logout/LogoutAll, SecurityEpoch change); SLA <= 10s halting push delivery in M10; soft-deactivation (IsActive=false, UnregisteredAtUtc); publish PushDeviceRevokedIntegrationEvent to M10 (REL-06) |
 | D-092 | Dùng M01-ACCOUNT-LOCK-UNLOCK-1.0 cho chuẩn hóa khóa và mở tài khoản | 2 lock mechanisms: TEMPORARY_AUTO_LOCK (30m after 5 failed password attempts) & ADMIN_PERMANENT_LOCK (SecurityAdmin require lockReason >= 15 chars & ticketId); auto SecurityEpoch += 1 & Push device deactivation SLA <= 5s; audit trail ACT-M11-31 |
 | D-093 | Dùng M02-INACTIVE-OWNER-HANDLING-1.0 cho xử lý chủ sở hữu không còn hoạt động | Preserve public custom sets (IsPublic=true) for active learners (M03); auto IsMutationLocked=true; hide private custom sets (IsPublic=false); ContentAdmin fork to System Set preserving OriginalCreatorId REL-04; audit trail ACT-M11-04 |
+| D-094 | Dùng M01-ROLE-CHANGE-1.0 cho chuẩn hóa thay đổi vai trò | Self-Role Mutation Guard (actor != target); SuperAdmin promotion require dual-approval (M01-T030); auto SecurityEpoch += 1 invalidating active JWT tokens SLA <= 5s in Redis; reason >= 15 chars & ticketId required; audit trail ACT-M11-29 |
 
 ## Khi nào cần thêm quyết định
 
