@@ -1,0 +1,29 @@
+{
+  "buttons": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "close": "Close",
+    "loading": "Loading...",
+    "retry": "Retry",
+    "search": "Search",
+    "submit": "Submit",
+    "see_more": "See more"
+  },
+  "status": {
+    "success": "Success",
+    "error": "Error occurred",
+    "warning": "Warning",
+    "info": "Information"
+  },
+  "errors": {
+    "general": "An unexpected error occurred. Please try again later.",
+    "network": "Cannot connect to server. Please check your network connection.",
+    "unauthorized": "Session expired. Please log in again.",
+    "forbidden": "You do not have permission to perform this action.",
+    "not_found": "Requested data not found."
+  }
+}

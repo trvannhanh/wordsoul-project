@@ -4,6 +4,7 @@ using Moq;
 using WordSoul.Application.Common;
 using WordSoul.Application.Interfaces;
 using WordSoul.Application.Interfaces.Repositories;
+using WordSoul.Application.Interfaces.Services;
 using WordSoul.Application.Services.SRS;
 using WordSoul.Domain.Entities;
 
@@ -32,7 +33,9 @@ namespace WordSoul.Tests.Services.SRS
             SRSService service,
             Mock<IUnitOfWork> uowMock,
             Mock<IUserVocabularyProgressRepository> progressRepoMock)
-            CreateService(DateTime? now = null)
+            CreateService(
+                DateTime? now = null,
+                SrsAlgorithmSettings? settings = null)
         {
             var uowMock = new Mock<IUnitOfWork>();
             var progressRepoMock = new Mock<IUserVocabularyProgressRepository>();
@@ -50,9 +53,18 @@ namespace WordSoul.Tests.Services.SRS
             var algorithm = new SRSAlgorithm();
             var logger = new Mock<ILogger<SRSService>>();
             var timeProvider = new FixedTime(now ?? FakeNow);
+            var settingsProvider = new Mock<ISrsAlgorithmSettingsProvider>();
+            settingsProvider
+                .Setup(provider => provider.GetSettingsAsync(
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(settings ?? SrsAlgorithmSettings.Default);
 
             var service = new SRSService(
-                uowMock.Object, algorithm, logger.Object, timeProvider);
+                uowMock.Object,
+                algorithm,
+                logger.Object,
+                timeProvider,
+                settingsProvider.Object);
 
             return (service, uowMock, progressRepoMock);
         }
@@ -79,6 +91,8 @@ namespace WordSoul.Tests.Services.SRS
                 NextReviewTime = FakeNow.AddDays(-1),
                 CorrectAttempt = correctAttempt,
                 TotalAttempt = totalAttempt,
+                InitialRecallCorrectCount = correctAttempt,
+                InitialRecallCount = totalAttempt,
                 FirstLearnedAt = firstLearnedAt,
                 MasteredAt = masteredAt,
                 MemoryState = "Review"
@@ -146,6 +160,60 @@ namespace WordSoul.Tests.Services.SRS
             result.NewEaseFactor.Should().BeLessThan(2.5);
             result.NewInterval.Should().Be(0);
             result.Message.Should().Contain("worry");
+        }
+
+        [Fact]
+        public async Task UpdateAfterReviewAsync_DoesNotMutateOutcomeCounters()
+        {
+            var (service, _, progressRepoMock) = CreateService();
+            var progress = MakeProgress(correctAttempt: 7, totalAttempt: 9);
+            progress.CorrectCount = 12;
+            progress.WrongCount = 4;
+            progress.LearningPracticeAttemptCount = 6;
+            progress.LearningPracticeSuccessCount = 5;
+            progress.RemediationAttemptCount = 3;
+            progress.RemediationSuccessCount = 2;
+            progressRepoMock
+                .Setup(r => r.GetUserVocabularyProgressAsync(1, 1, default))
+                .ReturnsAsync(progress);
+
+            await service.UpdateAfterReviewAsync(1, 1, grade: 4);
+
+            progress.InitialRecallCount.Should().Be(9);
+            progress.InitialRecallCorrectCount.Should().Be(7);
+            progress.LearningPracticeAttemptCount.Should().Be(6);
+            progress.LearningPracticeSuccessCount.Should().Be(5);
+            progress.RemediationAttemptCount.Should().Be(3);
+            progress.RemediationSuccessCount.Should().Be(2);
+            progress.TotalAttempt.Should().Be(9);
+            progress.CorrectAttempt.Should().Be(7);
+            progress.CorrectCount.Should().Be(12);
+            progress.WrongCount.Should().Be(4);
+        }
+
+        [Fact]
+        public async Task UpdateAfterReviewAsync_UsesConfiguredPolicyAndReturnsVersion()
+        {
+            var settings = SrsAlgorithmSettings.Default with
+            {
+                PolicyVersion = 7,
+                FirstIntervalDays = 3
+            };
+            var (service, _, progressRepoMock) = CreateService(
+                settings: settings);
+            var progress = MakeProgress(interval: 0, rep: 0);
+            progressRepoMock
+                .Setup(r => r.GetUserVocabularyProgressAsync(1, 1, default))
+                .ReturnsAsync(progress);
+
+            var result = await service.UpdateAfterReviewAsync(
+                1,
+                1,
+                grade: 5);
+
+            result.PolicyVersion.Should().Be(7);
+            result.NewInterval.Should().Be(3);
+            progress.Interval.Should().Be(3);
         }
 
         [Fact]
@@ -325,6 +393,8 @@ namespace WordSoul.Tests.Services.SRS
                     NextReviewTime = dueTime,
                     Repetition = 3,
                     CorrectAttempt = 8, TotalAttempt = 10,
+                    InitialRecallCorrectCount = 8,
+                    InitialRecallCount = 10,
                     Vocabulary = new Vocabulary
                         { Id = 5, Word = "ephemeral", Meaning = "tạm thời" }
                 }
@@ -447,7 +517,9 @@ namespace WordSoul.Tests.Services.SRS
             var progress = new UserVocabularyProgress
             {
                 UserId = 1, VocabularyId = 1,
-                CorrectAttempt = 10, TotalAttempt = 10, Repetition = 0
+                InitialRecallCorrectCount = 10,
+                InitialRecallCount = 10,
+                Repetition = 0
             };
             progressRepoMock
                 .Setup(r => r.GetAllUserVocabularyProgressByUserAsync(1, default))
@@ -470,8 +542,22 @@ namespace WordSoul.Tests.Services.SRS
             var (service, _, progressRepoMock) = CreateService();
             var progresses = new List<UserVocabularyProgress>
             {
-                new() { UserId=1, VocabularyId=1, CorrectAttempt=10, TotalAttempt=10, Repetition=0 },
-                new() { UserId=1, VocabularyId=2, CorrectAttempt=5,  TotalAttempt=10, Repetition=0 },
+                new()
+                {
+                    UserId = 1,
+                    VocabularyId = 1,
+                    InitialRecallCorrectCount = 10,
+                    InitialRecallCount = 10,
+                    Repetition = 0
+                },
+                new()
+                {
+                    UserId = 1,
+                    VocabularyId = 2,
+                    InitialRecallCorrectCount = 5,
+                    InitialRecallCount = 10,
+                    Repetition = 0
+                },
             };
             progressRepoMock
                 .Setup(r => r.GetAllUserVocabularyProgressByUserAsync(1, default))

@@ -63,6 +63,7 @@ export const VocabSetDetailScreen: React.FC<Props> = ({ navigation, route }) => 
       navigation.navigate('LearningSession', {
         sessionId: session.id,
         vocabSetId: setId,
+        mode: 'learning',
       });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Không thể bắt đầu phiên học';

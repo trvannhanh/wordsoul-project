@@ -5,12 +5,14 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Xunit;
 using WordSoul.Api.Extensions;
+using WordSoul.Api.Options;
 
 namespace WordSoul.Tests.RateLimiting;
 
@@ -102,6 +104,8 @@ public class RateLimitRejectionWriterTests
         Assert.Equal(429,                                       root.GetProperty("status").GetInt32());
         Assert.True(root.TryGetProperty("detail", out _));
         Assert.True(root.TryGetProperty("retryAfter", out _));
+        Assert.Equal("RATE_LIMIT_EXCEEDED", root.GetProperty("code").GetString());
+        Assert.True(root.TryGetProperty("traceId", out _));
     }
 
     // ── Guard: response already started ──────────────────────────────────────
@@ -122,7 +126,7 @@ public class RateLimitRejectionWriterTests
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-//  Section 2 — Integration tests using WebApplicationFactory
+//  Section 2 — Integration tests using TestServer
 //
 //  A minimal in-process ASP.NET Core 9 host is constructed with a stub
 //  POST /api/auth/login endpoint and the auth-endpoints rate limiter policy
@@ -183,11 +187,15 @@ public class RateLimitingIntegrationTests : IClassFixture<RateLimitingTestWebApp
         Assert.Equal(429,                                       root.GetProperty("status").GetInt32());
         Assert.Equal("Too Many Requests",                       root.GetProperty("title").GetString());
         Assert.Equal("https://wordsoul.app/errors/rate-limit",  root.GetProperty("type").GetString());
+        Assert.Equal("RATE_LIMIT_EXCEEDED",                     root.GetProperty("code").GetString());
+        Assert.Equal("auth-endpoints",                          root.GetProperty("policy").GetString());
+        Assert.True(root.TryGetProperty("traceId", out _));
 
         // Retry-After header must be present and numeric
         Assert.True(response.Headers.Contains("Retry-After"));
         var retryAfter = response.Headers.GetValues("Retry-After").FirstOrDefault();
-        Assert.True(int.TryParse(retryAfter, out var seconds) && seconds > 0);
+        Assert.True(int.TryParse(retryAfter, out var seconds));
+        Assert.InRange(seconds, 1, 10);
     }
 
     /// <summary>
@@ -230,26 +238,40 @@ public class RateLimitingIntegrationTests : IClassFixture<RateLimitingTestWebApp
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-//  Section 3 — Minimal WebApplicationFactory
+//  Section 3 — Minimal TestServer fixture
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// <summary>
-/// Minimal <see cref="WebApplicationFactory{TProgram}"/> for rate-limiting integration tests.
+/// Minimal in-memory server fixture for rate-limiting integration tests.
 ///
 /// Configures:
 ///   • auth-endpoints policy: PermitLimit=2, Window=10s (fast assertion — 3rd req = 429)
 ///   • POST /api/auth/login stub that returns 401
 ///   • GET /health endpoint with DisableRateLimiting
 /// </summary>
-public class RateLimitingTestWebAppFactory : WebApplicationFactory<RateLimitingTestWebAppFactory>
+public sealed class RateLimitingTestWebAppFactory : IDisposable
 {
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    private readonly TestServer _server;
+
+    public RateLimitingTestWebAppFactory()
     {
+        var builder = new WebHostBuilder();
         builder.UseEnvironment("Testing");
 
         builder.ConfigureServices(services =>
         {
             services.AddLogging(l => l.SetMinimumLevel(LogLevel.Warning));
+            services.AddProblemDetails();
+            services.AddSingleton<IOptions<RateLimitingOptions>>(
+                Options.Create(new RateLimitingOptions
+                {
+                    AuthEndpoints = new FixedWindowPolicyOptions
+                    {
+                        PermitLimit = 2,
+                        WindowSeconds = 10,
+                        QueueLimit = 0
+                    }
+                }));
 
             // Register rate limiter with a test-tuned auth-endpoints policy (2 req / 10s)
             services.AddRateLimiter(options =>
@@ -282,8 +304,8 @@ public class RateLimitingTestWebAppFactory : WebApplicationFactory<RateLimitingT
 
         builder.Configure(app =>
         {
-            app.UseRateLimiter();
             app.UseRouting();
+            app.UseRateLimiter();
 
             app.UseEndpoints(endpoints =>
             {
@@ -297,5 +319,11 @@ public class RateLimitingTestWebAppFactory : WebApplicationFactory<RateLimitingT
                     .DisableRateLimiting();
             });
         });
+
+        _server = new TestServer(builder);
     }
+
+    public HttpClient CreateClient() => _server.CreateClient();
+
+    public void Dispose() => _server.Dispose();
 }

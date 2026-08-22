@@ -1,6 +1,6 @@
 ﻿using WordSoul.Application.DTOs.Achievement;
 using WordSoul.Domain.Enums;
-using WordSoul.Domain.Exceptions;
+using WordSoul.Application.Exceptions;
 
 namespace WordSoul.Application.Interfaces.Services
 {

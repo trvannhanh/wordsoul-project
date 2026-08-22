@@ -18,6 +18,10 @@ namespace WordSoul.Domain.Entities
         [MaxLength(50)]
         public required string DataType { get; set; } // e.g., "Float", "Integer", "String", "Boolean"
 
+        public double? MinValue { get; set; }
+        public double? MaxValue { get; set; }
+        public bool IsLiveEditable { get; set; } = true;
+
         [MaxLength(500)]
         public string? Description { get; set; }
 

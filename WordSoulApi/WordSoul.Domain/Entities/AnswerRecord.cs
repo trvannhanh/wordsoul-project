@@ -6,15 +6,22 @@ namespace WordSoul.Domain.Entities
     public class AnswerRecord
     {
         public int Id { get; set; }
+        public Guid SubmissionId { get; set; }
         public int VocabularyId { get; set; }   // tham chiếu trực tiếp Vocabulary
         public Vocabulary? Vocabulary { get; set; }
         public int LearningSessionId { get; set; }
         public LearningSession? LearningSession { get; set; }
         public QuestionType QuestionType { get; set; } // Loại câu hỏi (Flashcard, MCQ, v.v.)
+        // Nullable for records created before versioned question-flow telemetry.
+        public QuestionPhase? QuestionPhase { get; set; }
+        public int? FlowVersion { get; set; }
+        public int? StageIndexBefore { get; set; }
         [MaxLength(100)]
         public required string Answer { get; set; }
         public bool IsCorrect { get; set; }
         public int AttemptCount { get; set; } = 1;
+        public int ResultingLevel { get; set; }
+        public bool IsVocabularyCompleted { get; set; }
         public int HintCount { get; set; } = 0; // Số gợi ý đã sử dụng trong lần trả lời này
         public double ResponseTimeSeconds { get; set; } // Thời gian phản hồi tính bằng giây
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

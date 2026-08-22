@@ -32,6 +32,7 @@ namespace WordSoul.Application.Interfaces.Services
         /// Lấy danh sách câu hỏi của session.
         /// </summary>
         Task<IEnumerable<QuizQuestionDto>> GetSessionQuestionsAsync(
+            int userId,
             int sessionId,
             CancellationToken ct = default);
 

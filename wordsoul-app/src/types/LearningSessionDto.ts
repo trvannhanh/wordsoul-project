@@ -19,7 +19,10 @@ export interface LearningSessionDto {
 export interface QuizQuestionDto {
   vocabularyId: number;
   questionType: QuestionTypeEnum;
-  word: string;
+  phase: QuestionPhaseEnum;
+  revealsAnswer: boolean;
+  countsAsRecall: boolean;
+  word?: string;
   meaning?: string;
   partOfSpeech?: string;
   cefrLevel?: string;
@@ -27,6 +30,8 @@ export interface QuizQuestionDto {
   imageUrl?: string;
   description?: string;
   options?: string[];
+  hintOptionsToEliminate?: string[];
+  hintText?: string;
   pronunciationUrl?: string;
   isRetry?: boolean;
   exampleSentence?: string;
@@ -42,6 +47,7 @@ export interface QuizQuestionDto {
 
 
 export interface AnswerRequestDto {
+  submissionId: string;
   vocabularyId: number;
   questionType: QuestionTypeEnum;
   answer: string;
@@ -53,7 +59,7 @@ export interface AnswerResponseDto {
   isCorrect: boolean;
   correctAnswer: string;
   attemptNumber: number;
-  newLevel: number; // 0-3: Flashcard → Listening
+  newStageIndex: number; // 0-3: Flashcard → Listening
   isVocabularyCompleted: boolean;
 }
 
@@ -85,3 +91,16 @@ export const QuestionTypeEnum = {
 } as const;
 
 export type QuestionTypeEnum = typeof QuestionTypeEnum[keyof typeof QuestionTypeEnum];
+
+export const QuestionPhaseEnum = {
+  Study: "Study",
+  GuidedRecall: "GuidedRecall",
+  Recognition: "Recognition",
+  ProductiveRecall: "ProductiveRecall",
+  InitialRecall: "InitialRecall",
+  Feedback: "Feedback",
+  CorrectiveRecall: "CorrectiveRecall",
+} as const;
+
+export type QuestionPhaseEnum =
+  typeof QuestionPhaseEnum[keyof typeof QuestionPhaseEnum];

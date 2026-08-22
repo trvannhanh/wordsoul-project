@@ -3,13 +3,14 @@ import api, { authApi, endpoints } from "../services/api";
 import type { UserDto } from "../types/UserDto";
 import { AuthContext } from "./AuthContext";
 import { ACCESS_TOKEN_KEY, clearToken, getToken, REFRESH_TOKEN_KEY, setToken } from "../helpers/authHelpers";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<UserDto | null>(null);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         const initAuth = async () => {
@@ -18,11 +19,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 if (accessToken) {
                     const res = await authApi.get(endpoints.currentUser);
                     setUser(res.data);
-
-                    if (window.location.pathname !== "/home") {
+                    const authEntryPaths = new Set(["/", "/login", "/register"]);
+                    if (authEntryPaths.has(location.pathname)) {
                         navigate("/home", { replace: true });
-                    }
-                }
+                    }                }
             } catch (err) {
                 console.error("Không thể lấy user:", err);
                 setUser(null);
@@ -32,7 +32,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
 
         initAuth();
-    }, []);
+    }, [location.pathname, navigate]);
 
     const login = async (username: string, password: string) => {
         try {

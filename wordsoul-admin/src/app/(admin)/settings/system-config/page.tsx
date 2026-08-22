@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Form, Input, InputNumber, Button, Alert, App } from 'antd';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Form, Input, InputNumber, Switch, Button, Alert, App, Tag } from 'antd';
 import { ReloadOutlined, SaveOutlined } from '@ant-design/icons';
 import { authApi, endpoints } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,6 +12,9 @@ interface SystemConfig {
   dataType: string;
   description: string;
   category: string;
+  minValue?: number;
+  maxValue?: number;
+  isLiveEditable: boolean;
   lastUpdatedAt: string;
   lastUpdatedBy?: string;
 }
@@ -51,11 +54,17 @@ function ConfigSection({
           >
             <Form.Item
               name={c.key}
+              valuePropName={c.dataType === 'Boolean' ? 'checked' : 'value'}
               label={
                 <div>
                   <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'monospace' }}>
                     {c.key}
                   </span>
+                  {!c.isLiveEditable && (
+                    <Tag color="default" style={{ marginLeft: 6, fontSize: 10 }}>
+                      managed
+                    </Tag>
+                  )}
                   {c.description && (
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400, fontFamily: 'inherit', marginTop: 1 }}>
                       {c.description}
@@ -65,14 +74,19 @@ function ConfigSection({
               }
               style={{ marginBottom: 0 }}
             >
-              {isNaN(Number(c.value)) ? (
-                <Input size="small" />
-              ) : (
+              {c.dataType === 'Boolean' ? (
+                <Switch size="small" disabled={!c.isLiveEditable} />
+              ) : c.dataType === 'Integer' || c.dataType === 'Float' ? (
                 <InputNumber
                   size="small"
                   style={{ width: '100%' }}
-                  step={c.key.includes('FACTOR') || c.key.includes('RATE') ? 0.01 : 1}
+                  step={c.dataType === 'Float' ? 0.01 : 1}
+                  min={c.minValue}
+                  max={c.maxValue}
+                  disabled={!c.isLiveEditable}
                 />
+              ) : (
+                <Input size="small" disabled={!c.isLiveEditable} />
               )}
             </Form.Item>
           </div>
@@ -91,14 +105,20 @@ export default function SystemConfigPage() {
   const [form] = Form.useForm();
   const { message } = App.useApp();
 
-  const fetchConfigs = async () => {
+  const fetchConfigs = useCallback(async () => {
     setLoading(true);
     try {
       const { data } = await authApi.get<SystemConfig[]>(endpoints.systemConfig);
       setConfigs(data);
       const initialValues: Record<string, unknown> = {};
       data.forEach(c => {
-        initialValues[c.key] = isNaN(Number(c.value)) ? c.value : Number(c.value);
+        if (c.dataType === 'Boolean') {
+          initialValues[c.key] = c.value.toLowerCase() === 'true';
+        } else if (c.dataType === 'Integer' || c.dataType === 'Float') {
+          initialValues[c.key] = Number(c.value);
+        } else {
+          initialValues[c.key] = c.value;
+        }
       });
       form.setFieldsValue(initialValues);
     } catch {
@@ -106,14 +126,25 @@ export default function SystemConfigPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [form, message]);
 
-  useEffect(() => { if (user?.role === 'SuperAdmin') fetchConfigs(); }, [user]);
+  useEffect(() => {
+    if (user?.role !== 'SuperAdmin') return;
+
+    const timeoutId = window.setTimeout(() => {
+      void fetchConfigs();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [fetchConfigs, user?.role]);
 
   const onFinish = async (values: Record<string, unknown>) => {
     setSaving(true);
     try {
-      const updated = configs.map(c => ({ ...c, value: String(values[c.key]) }));
+      const updated = configs.map(c => ({
+        key: c.key,
+        value: String(values[c.key]),
+      }));
       await authApi.put(endpoints.systemConfig, updated);
       message.success('Configuration saved');
       fetchConfigs();

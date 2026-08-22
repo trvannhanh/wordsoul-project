@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { setupArenaBattle } from '../../services/gym';
 import { useAuth } from '../../hooks/Auth/useAuth';
 import { fetchPets } from '../../services/pet';
+import { extractApiError } from '../../shared/errors';
 
 interface OwnedPet {
     id: number;
@@ -35,7 +36,7 @@ export default function PetSelector() {
                 }));
                 setPets(mapped);
             })
-            .catch(err => console.error(err))
+            .catch((err: unknown) => setError(extractApiError(err).message))
             .finally(() => setLoading(false));
     }, [user]);
 
@@ -56,8 +57,8 @@ export default function PetSelector() {
         try {
             const sessionId = await setupArenaBattle(Number(gymId), selected);
             navigate(`/arena/${sessionId}`);
-        } catch (err: any) {
-            setError(err?.response?.data?.error ?? 'Không thể bắt đầu trận đấu.');
+        } catch (err: unknown) {
+            setError(extractApiError(err).message);
             setStarting(false);
         }
     };

@@ -38,6 +38,14 @@ namespace WordSoul.Domain.Entities
         /// <summary>Thời điểm luyện phát âm gần nhất. Dùng để hiển thị trong UI dashboard.</summary>
         public DateTime? LastPronunciationAt { get; set; }
 
+        // Versioned metrics keep acquisition, unaided review, and remediation separate.
+        public int InitialRecallCount { get; set; }
+        public int InitialRecallCorrectCount { get; set; }
+        public int LearningPracticeAttemptCount { get; set; }
+        public int LearningPracticeSuccessCount { get; set; }
+        public int RemediationAttemptCount { get; set; }
+        public int RemediationSuccessCount { get; set; }
+
         // Computed property for ProficiencyLevel
         public int ProficiencyLevel => Repetition switch
         {

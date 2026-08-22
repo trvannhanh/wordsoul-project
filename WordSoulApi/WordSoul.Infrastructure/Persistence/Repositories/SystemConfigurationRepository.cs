@@ -40,5 +40,16 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
             _context.SystemConfigurations.UpdateRange(configs);
             return Task.CompletedTask;
         }
+
+        public async Task AddAsync(SystemConfiguration config, CancellationToken cancellationToken = default)
+        {
+            await _context.SystemConfigurations.AddAsync(config, cancellationToken);
+        }
+
+        public Task DeleteAsync(SystemConfiguration config, CancellationToken cancellationToken = default)
+        {
+            _context.SystemConfigurations.Remove(config);
+            return Task.CompletedTask;
+        }
     }
 }

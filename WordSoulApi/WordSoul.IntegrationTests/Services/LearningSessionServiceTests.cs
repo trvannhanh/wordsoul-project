@@ -2,6 +2,11 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using WordSoul.Application.DTOs.AnswerRecord;
+using WordSoul.Application.DTOs.SRS;
+using WordSoul.Application.Interfaces.Services;
+using WordSoul.Application.Learning.InitialRecall;
+using WordSoul.Application.Learning.QuestionFlow;
+using WordSoul.Application.Learning.ReviewOutcome;
 using WordSoul.Application.Services;
 using WordSoul.Application.Services.SRS;
 using WordSoul.Domain.Entities;
@@ -26,7 +31,8 @@ namespace WordSoul.IntegrationTests.Services
                 _unitOfWork,
                 _srsAlgorithm,
                 NullLogger<SRSService>.Instance,
-                _timeProvider
+                _timeProvider,
+                new FakeSrsAlgorithmSettingsProvider()
             );
 
             _service = new LearningSessionService(
@@ -41,7 +47,14 @@ namespace WordSoul.IntegrationTests.Services
                 new FakePetBuffService(),
                 _timeProvider,
                 new FakeGymLeaderService(),
-                new FakeSystemConfigurationService()
+                new FakeSystemConfigurationService(),
+                CreateQuestionFlowResolver(),
+                CreateInitialRecallRecorder(),
+                new ReviewOutcomeProcessor(
+                    _unitOfWork,
+                    srsService,
+                    new FakeDailyQuestService(),
+                    _timeProvider)
             );
         }
 
@@ -49,15 +62,17 @@ namespace WordSoul.IntegrationTests.Services
         // CASE 1 — PERFECT RECALL → Grade = 5
         // ======================================================
         [Fact]
+        [Trait("Suite", "MandatoryQuestionFlow")]
         public async Task SubmitAnswer_PerfectRecall_ShouldCreateHistory_WithGrade5()
         {
             var (user, vocab, session) = await SetupReviewSession();
 
             var request = new SubmitAnswerRequestDto
             {
+                SubmissionId = Guid.NewGuid(),
                 VocabularyId = vocab.Id,
                 Answer = vocab.Word,
-                QuestionType = QuestionType.FillInBlank,
+                QuestionType = QuestionType.Listening,
                 HintCount = 0,
                 ResponseTimeSeconds = 2
             };
@@ -75,6 +90,7 @@ namespace WordSoul.IntegrationTests.Services
         // CASE 2 — ONE FINAL CORRECT AT LEVEL 3 → Grade = 5
         // ======================================================
         [Fact]
+        [Trait("Suite", "MandatoryQuestionFlow")]
         public async Task SubmitAnswer_CompleteFromLevel3_ShouldCreateHistory()
         {
             var (user, vocab, session) = await SetupReviewSession();
@@ -83,9 +99,10 @@ namespace WordSoul.IntegrationTests.Services
             await _service.SubmitAnswerAsync(user.Id, session.Id,
                 new SubmitAnswerRequestDto
                 {
+                    SubmissionId = Guid.NewGuid(),
                     VocabularyId = vocab.Id,
                     Answer = vocab.Word,
-                    QuestionType = QuestionType.FillInBlank,
+                    QuestionType = QuestionType.Listening,
                     HintCount = 0,
                     ResponseTimeSeconds = 4
                 });
@@ -100,15 +117,17 @@ namespace WordSoul.IntegrationTests.Services
         // CASE 3 — FAIL → NO HISTORY
         // ======================================================
         [Fact]
+        [Trait("Suite", "MandatoryQuestionFlow")]
         public async Task SubmitAnswer_Failed_ShouldNotCreateHistory()
         {
             var (user, vocab, session) = await SetupReviewSession();
 
             var request = new SubmitAnswerRequestDto
             {
+                SubmissionId = Guid.NewGuid(),
                 VocabularyId = vocab.Id,
                 Answer = "wrong",
-                QuestionType = QuestionType.FillInBlank,
+                QuestionType = QuestionType.Listening,
                 HintCount = 0,
                 ResponseTimeSeconds = 5
             };
@@ -122,15 +141,17 @@ namespace WordSoul.IntegrationTests.Services
         // CASE 4 — HINT USED → Grade < 5
         // ======================================================
         [Fact]
+        [Trait("Suite", "MandatoryQuestionFlow")]
         public async Task SubmitAnswer_WithHints_ShouldLowerGrade()
         {
             var (user, vocab, session) = await SetupReviewSession();
 
             var request = new SubmitAnswerRequestDto
             {
+                SubmissionId = Guid.NewGuid(),
                 VocabularyId = vocab.Id,
                 Answer = vocab.Word,
-                QuestionType = QuestionType.FillInBlank,
+                QuestionType = QuestionType.Listening,
                 HintCount = 2,
                 ResponseTimeSeconds = 2
             };
@@ -141,11 +162,413 @@ namespace WordSoul.IntegrationTests.Services
             history.Grade.Should().BeLessThan(5);
         }
 
+        [Fact]
+        [Trait("Suite", "MandatoryQuestionFlow")]
+        public async Task SubmitAnswer_VersionedReview_FirstRecallCorrect_CompletesWithLockedGrade()
+        {
+            var (user, vocab, session) = await SetupReviewSession(
+                QuestionFlowVersions.Current,
+                currentStageIndex: 0);
+
+            var result = await _service.SubmitAnswerAsync(
+                user.Id,
+                session.Id,
+                new SubmitAnswerRequestDto
+                {
+                    SubmissionId = Guid.NewGuid(),
+                    VocabularyId = vocab.Id,
+                    Answer = vocab.Word,
+                    QuestionType = QuestionType.FillInBlank,
+                    HintCount = 0,
+                    ResponseTimeSeconds = 2
+                });
+
+            result.IsVocabularyCompleted.Should().BeTrue();
+            result.NewStageIndex.Should().Be(3);
+
+            var sessionVocabulary = await _context.SessionVocabularies
+                .AsNoTracking()
+                .SingleAsync(item =>
+                    item.LearningSessionId == session.Id
+                    && item.VocabularyId == vocab.Id);
+            sessionVocabulary.InitialRecallCorrect.Should().BeTrue();
+            sessionVocabulary.InitialRecallGrade.Should().Be(5);
+            sessionVocabulary.InitialRecallGradingPolicyVersion
+                .Should().Be(InitialRecallGradingPolicy.Version);
+            sessionVocabulary.InitialRecallGradeReason
+                .Should().Be(ReviewGradeReason.FastUnaidedRecall);
+            sessionVocabulary.InitialRecallAnswerRecordId.Should().NotBeNull();
+            sessionVocabulary.InitialRecallAt.Should().Be(_timeProvider.UtcNow);
+
+            var initialAnswer = await _context.AnswerRecords
+                .AsNoTracking()
+                .SingleAsync();
+            initialAnswer.Id.Should().Be(
+                sessionVocabulary.InitialRecallAnswerRecordId);
+            initialAnswer.QuestionPhase.Should().Be(QuestionPhase.InitialRecall);
+            initialAnswer.FlowVersion.Should().Be(QuestionFlowVersions.Current);
+            initialAnswer.StageIndexBefore.Should().Be(0);
+            initialAnswer.ResponseTimeSeconds.Should().Be(2);
+            initialAnswer.HintCount.Should().Be(0);
+
+            var history = await _context.VocabularyReviewHistories
+                .AsNoTracking()
+                .SingleAsync();
+            history.InitialRecallAnswerRecordId.Should().Be(initialAnswer.Id);
+            history.IsCorrect.Should().BeTrue();
+            history.Grade.Should().Be(5);
+            history.GradingPolicyVersion
+                .Should().Be(InitialRecallGradingPolicy.Version);
+            history.GradeReason
+                .Should().Be(ReviewGradeReason.FastUnaidedRecall);
+            history.SrsPolicyVersion.Should().Be(
+                SrsAlgorithmSettings.Default.PolicyVersion);
+            history.ResponseTimeSeconds.Should().Be(2);
+            history.HintCount.Should().Be(0);
+
+            var progress = await _context.UserVocabularyProgresses
+                .AsNoTracking()
+                .SingleAsync(item =>
+                    item.UserId == user.Id
+                    && item.VocabularyId == vocab.Id);
+            progress.InitialRecallCount.Should().Be(1);
+            progress.InitialRecallCorrectCount.Should().Be(1);
+            progress.RemediationAttemptCount.Should().Be(0);
+            progress.TotalAttempt.Should().Be(0);
+            progress.CorrectAttempt.Should().Be(0);
+        }
+
+        [Fact]
+        [Trait("Suite", "MandatoryQuestionFlow")]
+        public async Task SubmitAnswer_VersionedReview_FailedRecall_UsesLockedGradeAfterRemediation()
+        {
+            var (user, vocab, session) = await SetupReviewSession(
+                QuestionFlowVersions.Current,
+                currentStageIndex: 0);
+
+            var initialResult = await _service.SubmitAnswerAsync(
+                user.Id,
+                session.Id,
+                new SubmitAnswerRequestDto
+                {
+                    SubmissionId = Guid.NewGuid(),
+                    VocabularyId = vocab.Id,
+                    Answer = "wrong",
+                    QuestionType = QuestionType.FillInBlank,
+                    HintCount = 0,
+                    ResponseTimeSeconds = 7
+                });
+
+            initialResult.IsVocabularyCompleted.Should().BeFalse();
+            initialResult.NewStageIndex.Should().Be(1);
+
+            var outcomeAfterInitial = await _context.VocabularyReviewHistories
+                .AsNoTracking()
+                .SingleAsync();
+            outcomeAfterInitial.IsCorrect.Should().BeFalse();
+            outcomeAfterInitial.Grade.Should().Be(0);
+            outcomeAfterInitial.GradingPolicyVersion
+                .Should().Be(InitialRecallGradingPolicy.Version);
+            outcomeAfterInitial.GradeReason
+                .Should().Be(ReviewGradeReason.FailedInitialRecall);
+            outcomeAfterInitial.SrsPolicyVersion.Should().Be(
+                SrsAlgorithmSettings.Default.PolicyVersion);
+
+            var progressAfterInitial = await _context.UserVocabularyProgresses
+                .AsNoTracking()
+                .SingleAsync(item =>
+                    item.UserId == user.Id
+                    && item.VocabularyId == vocab.Id);
+            progressAfterInitial.LastGrade.Should().Be(0);
+            progressAfterInitial.InitialRecallCount.Should().Be(1);
+            progressAfterInitial.InitialRecallCorrectCount.Should().Be(0);
+            progressAfterInitial.RemediationAttemptCount.Should().Be(0);
+            var nextReviewAfterInitial = progressAfterInitial.NextReviewTime;
+
+            var feedbackResult = await _service.SubmitAnswerAsync(
+                user.Id,
+                session.Id,
+                new SubmitAnswerRequestDto
+                {
+                    SubmissionId = Guid.NewGuid(),
+                    VocabularyId = vocab.Id,
+                    Answer = string.Empty,
+                    QuestionType = QuestionType.Flashcard,
+                    HintCount = 0,
+                    ResponseTimeSeconds = 1
+                });
+
+            feedbackResult.IsVocabularyCompleted.Should().BeFalse();
+            feedbackResult.NewStageIndex.Should().Be(2);
+            _context.VocabularyReviewHistories.Should().ContainSingle();
+
+            var failedCorrectiveResult = await _service.SubmitAnswerAsync(
+                user.Id,
+                session.Id,
+                new SubmitAnswerRequestDto
+                {
+                    SubmissionId = Guid.NewGuid(),
+                    VocabularyId = vocab.Id,
+                    Answer = "still wrong",
+                    QuestionType = QuestionType.Listening,
+                    HintCount = 0,
+                    ResponseTimeSeconds = 3
+                });
+
+            failedCorrectiveResult.IsVocabularyCompleted.Should().BeFalse();
+            failedCorrectiveResult.NewStageIndex.Should().Be(1);
+
+            await _service.SubmitAnswerAsync(
+                user.Id,
+                session.Id,
+                new SubmitAnswerRequestDto
+                {
+                    SubmissionId = Guid.NewGuid(),
+                    VocabularyId = vocab.Id,
+                    Answer = string.Empty,
+                    QuestionType = QuestionType.Flashcard,
+                    ResponseTimeSeconds = 1
+                });
+
+            var correctiveResult = await _service.SubmitAnswerAsync(
+                user.Id,
+                session.Id,
+                new SubmitAnswerRequestDto
+                {
+                    SubmissionId = Guid.NewGuid(),
+                    VocabularyId = vocab.Id,
+                    Answer = vocab.Word,
+                    QuestionType = QuestionType.Listening,
+                    HintCount = 0,
+                    ResponseTimeSeconds = 2
+                });
+
+            correctiveResult.IsVocabularyCompleted.Should().BeTrue();
+            correctiveResult.NewStageIndex.Should().Be(3);
+
+            var sessionVocabulary = await _context.SessionVocabularies
+                .AsNoTracking()
+                .SingleAsync(item =>
+                    item.LearningSessionId == session.Id
+                    && item.VocabularyId == vocab.Id);
+            sessionVocabulary.InitialRecallCorrect.Should().BeFalse();
+            sessionVocabulary.InitialRecallGrade.Should().Be(0);
+            sessionVocabulary.InitialRecallGradeReason
+                .Should().Be(ReviewGradeReason.FailedInitialRecall);
+            sessionVocabulary.InitialRecallAnswerRecordId.Should().NotBeNull();
+
+            var attempts = await _context.AnswerRecords
+                .AsNoTracking()
+                .OrderBy(answer => answer.CreatedAt)
+                .ThenBy(answer => answer.Id)
+                .ToListAsync();
+            var initialAnswer = attempts.Single(answer =>
+                answer.Id == sessionVocabulary.InitialRecallAnswerRecordId);
+            initialAnswer.QuestionPhase.Should().Be(QuestionPhase.InitialRecall);
+            initialAnswer.StageIndexBefore.Should().Be(0);
+            attempts.Where(answer =>
+                    answer.QuestionPhase == QuestionPhase.CorrectiveRecall)
+                .Should().HaveCount(2)
+                .And.OnlyContain(answer => answer.StageIndexBefore == 2);
+
+            var history = await _context.VocabularyReviewHistories
+                .AsNoTracking()
+                .SingleAsync();
+            history.InitialRecallAnswerRecordId.Should().Be(initialAnswer.Id);
+            history.IsCorrect.Should().BeFalse();
+            history.Grade.Should().Be(0);
+            history.ResponseTimeSeconds.Should().Be(7);
+            history.HintCount.Should().Be(0);
+
+            var progress = await _context.UserVocabularyProgresses
+                .AsNoTracking()
+                .SingleAsync(item =>
+                    item.UserId == user.Id
+                    && item.VocabularyId == vocab.Id);
+            progress.LastGrade.Should().Be(0);
+            progress.Repetition.Should().Be(0);
+            progress.NextReviewTime.Should().Be(nextReviewAfterInitial);
+            progress.InitialRecallCount.Should().Be(1);
+            progress.InitialRecallCorrectCount.Should().Be(0);
+            progress.RemediationAttemptCount.Should().Be(2);
+            progress.RemediationSuccessCount.Should().Be(1);
+            progress.TotalAttempt.Should().Be(0);
+            progress.CorrectAttempt.Should().Be(0);
+            progress.WrongCount.Should().Be(0);
+        }
+
+        [Fact]
+        [Trait("Suite", "MandatoryQuestionFlow")]
+        public async Task SubmitAnswer_LearningV2_UsesPracticeCountersOnly()
+        {
+            var (user, vocab, session) = await SetupReviewSession(
+                QuestionFlowVersions.Current,
+                currentStageIndex: 1,
+                sessionType: SessionType.Learning);
+
+            await _service.SubmitAnswerAsync(
+                user.Id,
+                session.Id,
+                new SubmitAnswerRequestDto
+                {
+                    SubmissionId = Guid.NewGuid(),
+                    VocabularyId = vocab.Id,
+                    Answer = vocab.Word,
+                    QuestionType = QuestionType.FillInBlank,
+                    ResponseTimeSeconds = 4
+                });
+
+            var progress = await _context.UserVocabularyProgresses
+                .AsNoTracking()
+                .SingleAsync(item =>
+                    item.UserId == user.Id
+                    && item.VocabularyId == vocab.Id);
+            progress.LearningPracticeAttemptCount.Should().Be(1);
+            progress.LearningPracticeSuccessCount.Should().Be(1);
+            progress.InitialRecallCount.Should().Be(0);
+            progress.RemediationAttemptCount.Should().Be(0);
+            progress.TotalAttempt.Should().Be(0);
+            _context.VocabularyReviewHistories.Should().BeEmpty();
+        }
+
+        [Fact]
+        [Trait("Suite", "MandatoryQuestionFlow")]
+        public async Task SubmitAnswer_VersionedReview_ReplayKeepsSingleInitialRecall()
+        {
+            var (user, vocab, session) = await SetupReviewSession(
+                QuestionFlowVersions.Current,
+                currentStageIndex: 0);
+            var request = new SubmitAnswerRequestDto
+            {
+                SubmissionId = Guid.NewGuid(),
+                VocabularyId = vocab.Id,
+                Answer = vocab.Word,
+                QuestionType = QuestionType.FillInBlank,
+                HintCount = 1,
+                ResponseTimeSeconds = 3
+            };
+
+            var first = await _service.SubmitAnswerAsync(user.Id, session.Id, request);
+            var replay = await _service.SubmitAnswerAsync(user.Id, session.Id, request);
+
+            replay.Should().BeEquivalentTo(first);
+            var answers = await _context.AnswerRecords
+                .AsNoTracking()
+                .ToListAsync();
+            answers.Should().ContainSingle();
+
+            var sessionVocabulary = await _context.SessionVocabularies
+                .AsNoTracking()
+                .SingleAsync();
+            sessionVocabulary.InitialRecallAnswerRecordId
+                .Should().Be(answers[0].Id);
+            sessionVocabulary.InitialRecallGrade.Should().Be(3);
+            sessionVocabulary.InitialRecallGradingPolicyVersion
+                .Should().Be(InitialRecallGradingPolicy.Version);
+            sessionVocabulary.InitialRecallGradeReason
+                .Should().Be(ReviewGradeReason.DifficultOrAssistedRecall);
+
+            var history = await _context.VocabularyReviewHistories
+                .AsNoTracking()
+                .SingleAsync();
+            history.InitialRecallAnswerRecordId.Should().Be(answers[0].Id);
+            history.GradingPolicyVersion
+                .Should().Be(InitialRecallGradingPolicy.Version);
+            history.GradeReason
+                .Should().Be(ReviewGradeReason.DifficultOrAssistedRecall);
+
+            var progress = await _context.UserVocabularyProgresses
+                .AsNoTracking()
+                .SingleAsync(item => item.UserId == user.Id
+                    && item.VocabularyId == vocab.Id);
+            progress.InitialRecallCount.Should().Be(1);
+            progress.InitialRecallCorrectCount.Should().Be(1);
+            progress.RemediationAttemptCount.Should().Be(0);
+        }
+
+        [Fact]
+        [Trait("Suite", "MandatoryQuestionFlow")]
+        public async Task SubmitAnswer_DownstreamFailure_RollsBackAnswerAndProgression()
+        {
+            var (user, vocab, session) = await SetupReviewSession(
+                QuestionFlowVersions.Current,
+                currentStageIndex: 0);
+            var initialConcurrencyToken = await _context.SessionVocabularies
+                .Where(item => item.LearningSessionId == session.Id
+                    && item.VocabularyId == vocab.Id)
+                .Select(item => item.ConcurrencyToken)
+                .SingleAsync();
+            var service = new LearningSessionService(
+                _unitOfWork,
+                NullLogger<LearningSessionService>.Instance,
+                new FakeUserOwnedPetService(),
+                new FakeUserVocabularyProgressService(),
+                new FakeActivityLogService(),
+                new FakeSetRewardPetService(),
+                new ThrowingSrsService(),
+                new FakeDailyQuestService(),
+                new FakePetBuffService(),
+                _timeProvider,
+                new FakeGymLeaderService(),
+                new FakeSystemConfigurationService(),
+                CreateQuestionFlowResolver(),
+                CreateInitialRecallRecorder(),
+                new ReviewOutcomeProcessor(
+                    _unitOfWork,
+                    new ThrowingSrsService(),
+                    new FakeDailyQuestService(),
+                    _timeProvider));
+
+            var request = new SubmitAnswerRequestDto
+            {
+                SubmissionId = Guid.NewGuid(),
+                VocabularyId = vocab.Id,
+                Answer = vocab.Word,
+                QuestionType = QuestionType.FillInBlank,
+                ResponseTimeSeconds = 2
+            };
+
+            var act = () => service.SubmitAnswerAsync(user.Id, session.Id, request);
+
+            await act.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("forced SRS failure");
+
+            var persistedSessionVocabulary = await _context.SessionVocabularies
+                .AsNoTracking()
+                .SingleAsync(item => item.LearningSessionId == session.Id
+                    && item.VocabularyId == vocab.Id);
+            persistedSessionVocabulary.CurrentStageIndex.Should().Be(0);
+            persistedSessionVocabulary.IsCompleted.Should().BeFalse();
+            persistedSessionVocabulary.InitialRecallAnswerRecordId.Should().BeNull();
+            persistedSessionVocabulary.InitialRecallAt.Should().BeNull();
+            persistedSessionVocabulary.InitialRecallGrade.Should().BeNull();
+            persistedSessionVocabulary.InitialRecallGradingPolicyVersion
+                .Should().BeNull();
+            persistedSessionVocabulary.InitialRecallGradeReason.Should().BeNull();
+            persistedSessionVocabulary.ConcurrencyToken
+                .Should().Be(initialConcurrencyToken);
+            var answerCount = await _context.AnswerRecords
+                .AsNoTracking()
+                .CountAsync(answer => answer.LearningSessionId == session.Id);
+            answerCount.Should().Be(0);
+            _context.VocabularyReviewHistories.Should().BeEmpty();
+
+            var progress = await _context.UserVocabularyProgresses
+                .AsNoTracking()
+                .SingleAsync(item => item.UserId == user.Id
+                    && item.VocabularyId == vocab.Id);
+            progress.InitialRecallCount.Should().Be(0);
+            progress.InitialRecallCorrectCount.Should().Be(0);
+        }
+
         // ======================================================
         // HELPER: Setup Review Session
         // ======================================================
         private async Task<(User user, Vocabulary vocab, LearningSession session)>
-            SetupReviewSession()
+            SetupReviewSession(
+                int flowVersion = QuestionFlowVersions.Legacy,
+                int currentStageIndex = 3,
+                SessionType sessionType = SessionType.Review)
         {
             var user = await _dataBuilder.CreateUserAsync("review_user");
             var vocab = await _dataBuilder.CreateVocabularyAsync("apple", "quả táo");
@@ -153,7 +576,8 @@ namespace WordSoul.IntegrationTests.Services
             var session = new LearningSession
             {
                 UserId = user.Id,
-                Type = SessionType.Review,
+                Type = sessionType,
+                FlowVersion = flowVersion,
                 StartTime = _timeProvider.UtcNow,
                 IsCompleted = false
             };
@@ -166,7 +590,7 @@ namespace WordSoul.IntegrationTests.Services
                 LearningSessionId = session.Id,
                 VocabularyId = vocab.Id,
                 Vocabulary = vocab,
-                CurrentLevel = 3,
+                CurrentStageIndex = currentStageIndex,
                 IsCompleted = false,
                 Order = 1
             };
@@ -186,5 +610,41 @@ namespace WordSoul.IntegrationTests.Services
 
             return (user, vocab, session);
         }
+
+        private sealed class ThrowingSrsService : ISRSService
+        {
+            public Task<SRSUpdateResult> UpdateAfterReviewAsync(
+                int userId,
+                int vocabularyId,
+                int grade,
+                CancellationToken ct = default)
+            {
+                throw new InvalidOperationException("forced SRS failure");
+            }
+
+            public Task<List<VocabularyDueDto>> GetDueVocabulariesAsync(
+                int userId,
+                int limit = 20,
+                CancellationToken ct = default) => throw new NotSupportedException();
+
+            public Task<decimal> GetOverallRetentionScoreAsync(
+                int userId,
+                CancellationToken ct = default) => throw new NotSupportedException();
+
+            public Task ApplyPronunciationEffectAsync(
+                int userId,
+                int vocabularyId,
+                PronunciationResult result,
+                CancellationToken ct = default) => throw new NotSupportedException();
+        }
+
+        private static IQuestionFlowResolver CreateQuestionFlowResolver() =>
+            new QuestionFlowResolver(
+                new LegacyQuestionFlowPolicy(),
+                new LearningQuestionFlowPolicy(),
+                new ReviewQuestionFlowPolicy());
+
+        private static IInitialRecallRecorder CreateInitialRecallRecorder() =>
+            new InitialRecallRecorder(new InitialRecallGradingPolicy());
     }
 }

@@ -31,6 +31,7 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
         {
             return await _context.SessionVocabularies
                 .Include(sv => sv.Vocabulary) // Eager load để service không cần query thêm
+                .Include(sv => sv.InitialRecallAnswerRecord)
                 .FirstOrDefaultAsync(sv => sv.LearningSessionId == sessionId && sv.VocabularyId == vocabularyId, cancellationToken);
         }
 

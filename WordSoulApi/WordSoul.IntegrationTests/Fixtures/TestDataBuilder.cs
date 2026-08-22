@@ -115,7 +115,7 @@ namespace WordSoul.IntegrationTests.Fixtures
                 {
                     VocabularyId = v.Id,
                     Order = index + 1,
-                    CurrentLevel = 0,
+                    CurrentStageIndex = 0,
                     IsCompleted = false
                 }).ToList()
             };

@@ -334,8 +334,10 @@ namespace WordSoul.Application.Services
             var avgRetention = progressInSet.Count > 0
                 ? (double)progressInSet.Average(p => p.RetentionScore)
                 : 0;
-            var totalCorrect = progressInSet.Sum(p => p.CorrectCount);
-            var totalWrong   = progressInSet.Sum(p => p.WrongCount);
+            var totalCorrect = progressInSet.Sum(
+                p => p.InitialRecallCorrectCount);
+            var totalWrong = progressInSet.Sum(
+                p => p.InitialRecallCount - p.InitialRecallCorrectCount);
             var correctRate  = (totalCorrect + totalWrong) > 0
                 ? (double)totalCorrect / (totalCorrect + totalWrong) * 100
                 : 0;

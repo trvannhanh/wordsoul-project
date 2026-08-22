@@ -1,9 +1,9 @@
 // BattleArena.tsx — HG/SS Retro Pokemon Style
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useBattleArena } from '../../hooks/useBattleArena';
+import { useBattleArena } from './hooks/useBattleArena';
 import { useAuth } from '../../hooks/Auth/useAuth';
-import type { PetStateDto } from '../../types/BattleArenaTypes';
+import type { PetStateDto } from './types';
 import battleBg from '../../assets/battle-background.png';
 
 import {
@@ -15,8 +15,8 @@ import {
     RoundResultOverlay,
     BattleIntroOverlay,
     FillInBlankInput,
-} from '../../components/Battle';
-import type { SpriteState } from '../../components/Battle';
+} from './components';
+import type { SpriteState } from './components';
 
 // ─── Main BattleArena ──────────────────────────────────────────────────────────
 

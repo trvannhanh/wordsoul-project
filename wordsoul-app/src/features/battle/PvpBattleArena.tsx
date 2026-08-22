@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { usePvpBattle } from '../../hooks/usePvpBattle';
+import { usePvpBattle } from './hooks/usePvpBattle';
 import { useAuth } from '../../hooks/Auth/useAuth';
-import type { PetStateDto } from '../../types/BattleArenaTypes';
+import type { PetStateDto } from './types';
 import battleBg from '../../assets/battle-background.png';
 
 import {
@@ -14,8 +14,8 @@ import {
     RoundResultOverlay,
     BattleIntroOverlay,
     FillInBlankInput,
-} from '../../components/Battle';
-import type { SpriteState } from '../../components/Battle';
+} from './components';
+import type { SpriteState } from './components';
 
 export default function PvpBattleArena() {
     const { sessionId: sessionIdStr } = useParams<{ sessionId: string }>();

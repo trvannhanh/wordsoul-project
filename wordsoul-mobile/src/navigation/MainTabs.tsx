@@ -1,4 +1,5 @@
 import React from 'react';
+import type { NavigatorScreenParams } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -30,7 +31,11 @@ export type HomeStackParamList = {
 export type LearnStackParamList = {
   VocabSetList: undefined;
   VocabSetDetail: { setId: number; title: string };
-  LearningSession: { sessionId: number; vocabSetId: number };
+  LearningSession: {
+    sessionId: number;
+    vocabSetId?: number;
+    mode?: 'learning' | 'review';
+  };
 };
 
 export type BattleStackParamList = {
@@ -54,7 +59,7 @@ export type ProfileStackParamList = {
 
 export type MainTabParamList = {
   HomeTab: undefined;
-  LearnTab: undefined;
+  LearnTab: NavigatorScreenParams<LearnStackParamList> | undefined;
   BattleTab: undefined;
   PetsTab: undefined;
   ProfileTab: undefined;

@@ -3,15 +3,11 @@ import type { PetDetailDto, PetDto, UpgradePetResponseDto } from "../types/PetDt
 import { authApi, endpoints } from "./api";
 
 export const fetchPets = async (filters: { name?: string; rarity?: string; type?: string; isOwned?: boolean; vocabularySetId?: number }): Promise<PetDto[]> => {
-  try {
-    const response = await authApi.get<PetDto[]>(endpoints.pets ,{
-      params: filters,
-    });
-    return response.data as PetDto[];
-  } catch (error) {
-    console.error('Error fetching pets:', error);
-    return [];
-  }
+  const response = await authApi.get<PetDto[]>(endpoints.pets, {
+    params: filters,
+    errorHandling: { suppressToast: true },
+  });
+  return response.data;
 };
 
 export const fetchPetById = async (id: number): Promise<PetDto> => {

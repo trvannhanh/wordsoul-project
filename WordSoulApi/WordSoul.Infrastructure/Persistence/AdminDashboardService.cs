@@ -320,8 +320,10 @@ namespace WordSoul.Infrastructure.Persistence
                 .OrderBy(d => d)
                 .FirstOrDefault();
 
-            var totalCorrect = progress.Sum(p => p.CorrectCount);
-            var totalWrong   = progress.Sum(p => p.WrongCount);
+            var totalCorrect = progress.Sum(
+                p => p.InitialRecallCorrectCount);
+            var totalWrong = progress.Sum(
+                p => p.InitialRecallCount - p.InitialRecallCorrectCount);
             var totalAnswers = totalCorrect + totalWrong;
             var accuracyRate = totalAnswers == 0 ? 0 :
                 Math.Round((double)totalCorrect / totalAnswers * 100, 1);
@@ -330,14 +332,17 @@ namespace WordSoul.Infrastructure.Persistence
                 Math.Round((double)progress.Average(p => (double)p.RetentionScore), 1);
 
             var struggleWords = progress
-                .Where(p => p.WrongCount > 0)
-                .OrderByDescending(p => p.WrongCount)
+                .Where(p =>
+                    p.InitialRecallCount - p.InitialRecallCorrectCount > 0)
+                .OrderByDescending(p =>
+                    p.InitialRecallCount - p.InitialRecallCorrectCount)
                 .Take(10)
                 .Select(p => new StruggleWordEntry
                 {
                     Word           = p.Vocabulary?.Word ?? string.Empty,
                     Meaning        = p.Vocabulary?.Meaning,
-                    WrongCount     = p.WrongCount,
+                    WrongCount =
+                        p.InitialRecallCount - p.InitialRecallCorrectCount,
                     RetentionScore = (double)p.RetentionScore,
                 })
                 .ToList();

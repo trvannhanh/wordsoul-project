@@ -385,5 +385,53 @@ namespace WordSoul.Tests.Services.SRS
             else
                 result.NewRepetition.Should().Be(0, because: reason);
         }
+
+        [Fact]
+        public void CalculateNext_CustomSettings_ControlIntervalsAndMastery()
+        {
+            var algorithm = new SRSAlgorithm();
+            var settings = SrsAlgorithmSettings.Default with
+            {
+                FirstIntervalDays = 2,
+                SecondIntervalDays = 8,
+                MasteredIntervalDays = 30
+            };
+
+            var first = algorithm.CalculateNext(
+                grade: 5,
+                currentEF: 2.5,
+                currentInterval: 0,
+                currentRepetition: 0,
+                settings: settings);
+            var second = algorithm.CalculateNext(
+                grade: 5,
+                currentEF: first.NewEaseFactor,
+                currentInterval: first.NewInterval,
+                currentRepetition: first.NewRepetition,
+                settings: settings);
+
+            first.NewInterval.Should().Be(2);
+            second.NewInterval.Should().Be(8);
+            second.MemoryState.Should().Be("Learning");
+        }
+
+        [Fact]
+        public void CalculateRetentionScore_CustomSettings_ControlRepetitionBonus()
+        {
+            var algorithm = new SRSAlgorithm();
+            var settings = SrsAlgorithmSettings.Default with
+            {
+                RetentionBonusPerRepetition = 1m,
+                RetentionBonusMaximum = 5m
+            };
+
+            var score = algorithm.CalculateRetentionScore(
+                correctCount: 7,
+                wrongCount: 3,
+                repetition: 20,
+                settings: settings);
+
+            score.Should().Be(75);
+        }
     }
 }

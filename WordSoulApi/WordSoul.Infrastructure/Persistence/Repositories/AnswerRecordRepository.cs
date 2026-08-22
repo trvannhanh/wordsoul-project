@@ -44,13 +44,12 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
         // Đếm số lần attempt cho 1 từ + loại câu hỏi
         public async Task<int> GetAttemptCountAsync(int sessionId, int vocabId, QuestionType questionType, CancellationToken cancellationToken = default)
         {
-            var record = await _context.AnswerRecords
+            return await _context.AnswerRecords
                 .Where(a => a.LearningSessionId == sessionId &&
                             a.VocabularyId == vocabId &&
                             a.QuestionType == questionType)
-                .Select(a => a.AttemptCount)
-                .FirstOrDefaultAsync(cancellationToken);
-            return record;
+                .MaxAsync(a => (int?)a.AttemptCount, cancellationToken)
+                ?? 0;
         }
 
         public async Task<int> GetCorrectAnswerRecordNumberFromSession(int sessionId, CancellationToken cancellationToken = default)
@@ -59,6 +58,20 @@ namespace WordSoul.Infrastructure.Persistence.Repositories
                 .Where(a => a.LearningSessionId == sessionId && a.IsCorrect)
                 .CountAsync(cancellationToken);
             return record;
+        }
+
+        public async Task<AnswerRecord?> GetBySubmissionIdAsync(
+            int sessionId,
+            Guid submissionId,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.AnswerRecords
+                .AsNoTracking()
+                .Include(a => a.Vocabulary)
+                .FirstOrDefaultAsync(
+                    a => a.LearningSessionId == sessionId
+                      && a.SubmissionId == submissionId,
+                    cancellationToken);
         }
 
         public async Task<List<AnswerRecord>> GetAllAnswerRecordAttemptsForVocabInSession(

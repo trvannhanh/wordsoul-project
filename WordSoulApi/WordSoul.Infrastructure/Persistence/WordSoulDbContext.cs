@@ -76,6 +76,10 @@ namespace WordSoul.Infrastructure.Persistence
                 .HasForeignKey(a => a.LearningSessionId)
                 .OnDelete(DeleteBehavior.Cascade); // Cascade: deleting a session removes its answer records
 
+            modelBuilder.Entity<LearningSession>()
+                .Property(ls => ls.FlowVersion)
+                .HasDefaultValue(1);
+
 
             // User 1 - N LearningSession relationship
             modelBuilder.Entity<User>() 
@@ -250,6 +254,20 @@ namespace WordSoul.Infrastructure.Persistence
                 .HasForeignKey(sv => sv.VocabularyId)
                 .OnDelete(DeleteBehavior.Restrict); // Restrict delete if vocabulary is deleted, to prevent accidental loss of session vocabularies
 
+            modelBuilder.Entity<SessionVocabulary>()
+                .HasOne(sv => sv.InitialRecallAnswerRecord)
+                .WithMany()
+                .HasForeignKey(sv => sv.InitialRecallAnswerRecordId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<SessionVocabulary>()
+                .HasIndex(sv => sv.InitialRecallAnswerRecordId)
+                .IsUnique();
+
+            modelBuilder.Entity<AnswerRecord>()
+                .HasIndex(a => new { a.LearningSessionId, a.SubmissionId })
+                .IsUnique();
+
             modelBuilder.Entity<UserVocabularyProgress>()
                 .Property(x => x.RetentionScore)
                 .HasPrecision(5, 2);
@@ -266,6 +284,16 @@ namespace WordSoul.Infrastructure.Persistence
                 .WithMany()
                 .HasForeignKey(vrh => vrh.VocabularyId)
                 .OnDelete(DeleteBehavior.Restrict); // Prevent accidental deletion of vocabulary
+
+            modelBuilder.Entity<VocabularyReviewHistory>()
+                .HasOne(vrh => vrh.InitialRecallAnswerRecord)
+                .WithMany()
+                .HasForeignKey(vrh => vrh.InitialRecallAnswerRecordId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<VocabularyReviewHistory>()
+                .HasIndex(vrh => vrh.InitialRecallAnswerRecordId)
+                .IsUnique();
 
             // Indexes for ActivityLog to optimize common queries
             modelBuilder.Entity<ActivityLog>()
@@ -485,17 +513,42 @@ namespace WordSoul.Infrastructure.Persistence
             // ── System Configuration Seeding ─────────────────────────────────
             var seedTime = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             modelBuilder.Entity<SystemConfiguration>().HasData(
-                new SystemConfiguration { Key = "SrsMinEf",              Value = "1.3",   DataType = "Float",   Category = "SRS",          Description = "Minimum Ease Factor for SM-2 Algorithm",                                             LastUpdatedBy = "System", LastUpdatedAt = seedTime },
-                new SystemConfiguration { Key = "SrsInitialInterval1",   Value = "1",     DataType = "Integer", Category = "SRS",          Description = "First interval (days) for SM-2",                                                    LastUpdatedBy = "System", LastUpdatedAt = seedTime },
-                new SystemConfiguration { Key = "SrsInitialInterval2",   Value = "6",     DataType = "Integer", Category = "SRS",          Description = "Second interval (days) for SM-2",                                                   LastUpdatedBy = "System", LastUpdatedAt = seedTime },
-                new SystemConfiguration { Key = "CatchRateWrongPenalty", Value = "0.05",  DataType = "Float",   Category = "GAME_BALANCE", Description = "Penalty applied to catch rate for each wrong answer (e.g. 0.05 = 5%)",           LastUpdatedBy = "System", LastUpdatedAt = seedTime },
-                new SystemConfiguration { Key = "XpRewardNewSession",    Value = "20",    DataType = "Integer", Category = "GAME_BALANCE", Description = "XP rewarded for completing a learning session with new words",                  LastUpdatedBy = "System", LastUpdatedAt = seedTime },
-                new SystemConfiguration { Key = "XpRewardReviewSession", Value = "100",   DataType = "Integer", Category = "GAME_BALANCE", Description = "XP rewarded for completing a review session",                                   LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "SrsPolicyVersion", Value = "1", DataType = "Integer", Category = "SRS", Description = "Automatically incremented whenever SRS algorithm settings change", MinValue = 1, IsLiveEditable = false, LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "SrsMinEf", Value = "1.3", DataType = "Float", Category = "SRS", Description = "Minimum Ease Factor for SM-2 Algorithm", MinValue = 1, MaxValue = 3, LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "SrsMaxEf", Value = "4.0", DataType = "Float", Category = "SRS", Description = "Maximum Ease Factor for SM-2 Algorithm", MinValue = 1.3, MaxValue = 5, LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "SrsDefaultEf", Value = "2.5", DataType = "Float", Category = "SRS", Description = "Initial Ease Factor assigned to new vocabulary progress", MinValue = 1.3, MaxValue = 4, LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "SrsInitialInterval1", Value = "1", DataType = "Integer", Category = "SRS", Description = "First interval in days for SM-2", MinValue = 0, MaxValue = 30, LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "SrsInitialInterval2", Value = "6", DataType = "Integer", Category = "SRS", Description = "Second interval in days for SM-2", MinValue = 1, MaxValue = 90, LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "SrsMasteredIntervalDays", Value = "21", DataType = "Integer", Category = "SRS", Description = "Minimum interval in days for a vocabulary to be considered mastered", MinValue = 7, MaxValue = 365, LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "SrsRetentionBonusPerRepetition", Value = "2", DataType = "Float", Category = "SRS", Description = "Retention score bonus per successful repetition", MinValue = 0, MaxValue = 10, LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "SrsRetentionBonusMax", Value = "20", DataType = "Float", Category = "SRS", Description = "Maximum retention score bonus from repetitions", MinValue = 0, MaxValue = 100, LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "WordsPerSession", Value = "5", DataType = "Integer", Category = "LEARNING", Description = "Number of vocabulary items included in each learning or review session", MinValue = 1, MaxValue = 30, LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "CatchRateWrongPenalty", Value = "0.05", DataType = "Float", Category = "GAME_BALANCE", Description = "Penalty applied to catch rate for each wrong answer (e.g. 0.05 = 5%)", MinValue = 0, MaxValue = 1, LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "XpRewardNewSession", Value = "20", DataType = "Integer", Category = "GAME_BALANCE", Description = "XP rewarded for completing a learning session with new words", MinValue = 0, MaxValue = 10000, LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "XpRewardReviewSession", Value = "100", DataType = "Integer", Category = "GAME_BALANCE", Description = "XP rewarded for completing a review session", MinValue = 0, MaxValue = 10000, LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "ReviewBaseAP", Value = "3", DataType = "Integer", Category = "GAME_BALANCE", Description = "Base AP rewarded for completing a review session", MinValue = 0, MaxValue = 1000, LastUpdatedBy = "System", LastUpdatedAt = seedTime },
                 // General Settings
                 new SystemConfiguration { Key = "AllowRegistration",     Value = "true",  DataType = "Boolean", Category = "GENERAL",      Description = "Allow new users to register on the platform",                                 LastUpdatedBy = "System", LastUpdatedAt = seedTime },
                 new SystemConfiguration { Key = "MaintenanceMode",       Value = "false", DataType = "Boolean", Category = "GENERAL",      Description = "Show maintenance notice to regular users (does not affect admins)",           LastUpdatedBy = "System", LastUpdatedAt = seedTime },
                 new SystemConfiguration { Key = "MaxGroupSize",          Value = "50",    DataType = "Integer", Category = "GENERAL",      Description = "Maximum number of members allowed in a single user group",                    LastUpdatedBy = "System", LastUpdatedAt = seedTime },
                 new SystemConfiguration { Key = "AppDisplayName",        Value = "VocaMon", DataType = "String", Category = "GENERAL",     Description = "Application display name shown to users in the UI",                          LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                
+                // Admin branding configurations
+                new SystemConfiguration { Key = "AdminAppName",        Value = "VocaMon Admin", DataType = "String", Category = "GENERAL",     Description = "Application name for the Admin portal",                       LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "AdminAppLogo",        Value = "https://res.cloudinary.com/dqpkxxzaf/image/upload/v1759222012/egg-logo_pflvdz.png", DataType = "String", Category = "GENERAL",     Description = "Logo URL for the Admin portal",                               LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                
+                // Web App branding configurations
+                new SystemConfiguration { Key = "WebAppName",          Value = "VocaMon", DataType = "String", Category = "GENERAL",     Description = "Application name for the client Web App",                    LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "WebAppSubtitle",      Value = "Học từ vựng cùng thú cưng", DataType = "String", Category = "GENERAL",     Description = "Subtitle/Slogan for the client Web App",                     LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "WebAppLogo",          Value = "https://res.cloudinary.com/dqpkxxzaf/image/upload/v1759222012/egg-logo_pflvdz.png", DataType = "String", Category = "GENERAL",     Description = "Logo URL for the client Web App",                            LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "WebAppFavicon",       Value = "https://res.cloudinary.com/dqpkxxzaf/image/upload/v1759222012/egg-logo_pflvdz.png", DataType = "String", Category = "GENERAL",     Description = "Favicon URL for the client Web App",                         LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                
+                // Recommended configurations
+                new SystemConfiguration { Key = "ContactEmail",        Value = "support@vocamon.online", DataType = "String", Category = "GENERAL",     Description = "Support/contact email address shown to users",               LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "AllowGoogleLogin",     Value = "true",  DataType = "Boolean", Category = "GENERAL",      Description = "Enable or disable Google OAuth registration and login",       LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "FooterCopyright",      Value = "© 2026 VocaMon. All rights reserved.", DataType = "String", Category = "GENERAL",     Description = "Copyright text shown in the Web App footer",                 LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+                new SystemConfiguration { Key = "FacebookUrl",          Value = "https://www.facebook.com/giidavibe/", DataType = "String", Category = "GENERAL",     Description = "Official Facebook Fanpage link",                            LastUpdatedBy = "System", LastUpdatedAt = seedTime },
+
                 // System Settings
                 new SystemConfiguration { Key = "LogRetentionDays",      Value = "7",     DataType = "Integer", Category = "SYSTEM",       Description = "Number of days to keep system logs before auto-deleting",                     LastUpdatedBy = "System", LastUpdatedAt = seedTime }
             );

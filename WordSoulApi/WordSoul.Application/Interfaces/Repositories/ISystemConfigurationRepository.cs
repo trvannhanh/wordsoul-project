@@ -8,5 +8,7 @@ namespace WordSoul.Application.Interfaces.Repositories
         Task<List<SystemConfiguration>> GetAllAsync(CancellationToken cancellationToken = default);
         Task UpdateAsync(SystemConfiguration config, CancellationToken cancellationToken = default);
         Task UpdateBulkAsync(IEnumerable<SystemConfiguration> configs, CancellationToken cancellationToken = default);
+        Task AddAsync(SystemConfiguration config, CancellationToken cancellationToken = default);
+        Task DeleteAsync(SystemConfiguration config, CancellationToken cancellationToken = default);
     }
 }

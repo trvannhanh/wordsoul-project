@@ -65,7 +65,9 @@ namespace WordSoul.Api.Controllers
 
         // PUT: api/admin/configurations
         [HttpPut("configurations")]
-        public async Task<IActionResult> UpdateConfigurations([FromBody] List<SystemConfiguration> configurations)
+        public async Task<IActionResult> UpdateConfigurations(
+            [FromBody] List<UpdateSystemConfigurationDto> configurations,
+            CancellationToken ct)
         {
             if (configurations == null || !configurations.Any())
             {
@@ -74,8 +76,21 @@ namespace WordSoul.Api.Controllers
 
             try
             {
-                await _systemConfigService.UpdateConfigurationsAsync(configurations);
+                await _systemConfigService.UpdateConfigurationsAsync(
+                    configurations,
+                    User.Identity?.Name ?? "SuperAdmin",
+                    ct);
                 return Ok(new { Message = "Configurations updated successfully." });
+            }
+            catch (Exception ex) when (
+                ex is ArgumentException
+                or InvalidOperationException
+                or KeyNotFoundException)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "Rejected invalid system configuration update.");
+                return BadRequest(new { Message = ex.Message });
             }
             catch (Exception ex)
             {

@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Form, Input, Button, App, Divider } from 'antd';
 import { UserOutlined, LockOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import axios from 'axios';
 import { api, endpoints } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -10,6 +12,24 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const { message } = App.useApp();
+  const [branding, setBranding] = useState<{ logo?: string; name?: string }>({});
+
+  useEffect(() => {
+    const fetchBranding = async () => {
+      try {
+        const { data } = await api.get<Array<{ key: string; value: string }>>('/settings/public');
+        const logo = data.find(item => item.key === 'AdminAppLogo')?.value;
+        const name = data.find(item => item.key === 'AdminAppName')?.value;
+        setBranding({ logo, name });
+        if (name) {
+          document.title = `Login - ${name}`;
+        }
+      } catch (err) {
+        console.error('Failed to load login page branding', err);
+      }
+    };
+    fetchBranding();
+  }, []);
 
   const onFinish = async (values: { username: string; password: string }) => {
     setLoading(true);
@@ -21,11 +41,11 @@ export default function LoginPage() {
       const { accessToken } = response.data;
       try {
         login(accessToken);
-      } catch (roleError: any) {
-        message.error(roleError.message);
+      } catch (roleError: unknown) {
+        message.error(roleError instanceof Error ? roleError.message : 'You do not have access to the admin portal.');
       }
-    } catch (error: any) {
-      if (error.response?.status === 401) {
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
         message.error('Invalid username or password.');
       } else {
         message.error('Login failed. Please try again.');
@@ -60,12 +80,23 @@ export default function LoginPage() {
       >
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 40 }}>
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-            <rect width="28" height="28" rx="8" fill="var(--accent)" opacity="0.12" />
-            <path d="M7 9h14M7 14h8M7 19h11" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" />
-          </svg>
+          {branding.logo ? (
+            <Image
+              src={branding.logo}
+              alt="logo"
+              width={28}
+              height={28}
+              style={{ objectFit: 'contain', flexShrink: 0 }}
+              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+            />
+          ) : (
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <rect width="28" height="28" rx="8" fill="var(--accent)" opacity="0.12" />
+              <path d="M7 9h14M7 14h8M7 19h11" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          )}
           <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>
-            Vocamon
+            {branding.name || 'Vocamon'}
           </span>
           <span
             style={{
@@ -194,7 +225,7 @@ export default function LoginPage() {
                 htmlType="submit"
                 loading={loading}
                 icon={<ArrowRightOutlined />}
-                iconPosition="end"
+                iconPlacement="end"
                 style={{ width: '100%', height: 42, fontWeight: 600 }}
               >
                 Sign in

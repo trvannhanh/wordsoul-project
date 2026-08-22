@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { connectMatchmakingHub, disconnectBattleHub } from '../../services/battleHub';
+import { connectMatchmakingHub, disconnectBattleHub } from './services/battleHub';
 import { joinMatchmakingQueue, leaveMatchmakingQueue } from '../../services/pvp';
 import { ACCESS_TOKEN_KEY, getToken } from '../../helpers/authHelpers';
 

@@ -86,7 +86,7 @@ body {
 }
 
 .loading-background {
-  background: url("../src/assets/loadingscreen.gif") ;
+  background: url("./assets/sky-stars.png") ;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

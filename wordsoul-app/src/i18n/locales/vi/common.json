@@ -1,0 +1,29 @@
+{
+  "buttons": {
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "confirm": "Xác nhận",
+    "delete": "Xóa",
+    "edit": "Chỉnh sửa",
+    "back": "Quay lại",
+    "close": "Đóng",
+    "loading": "Đang tải...",
+    "retry": "Thử lại",
+    "search": "Tìm kiếm",
+    "submit": "Gửi",
+    "see_more": "Xem thêm"
+  },
+  "status": {
+    "success": "Thành công",
+    "error": "Có lỗi xảy ra",
+    "warning": "Cảnh báo",
+    "info": "Thông tin"
+  },
+  "errors": {
+    "general": "Đã xảy ra lỗi không xác định. Vui lòng thử lại sau.",
+    "network": "Không thể kết nối tới máy chủ. Vui lòng kiểm tra kết nối mạng.",
+    "unauthorized": "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+    "forbidden": "Bạn không có quyền thực hiện thao tác này.",
+    "not_found": "Không tìm thấy dữ liệu yêu cầu."
+  }
+}

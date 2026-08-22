@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
-import Card from '../components/Card';
-import HeroSection from '../components/HeroSection';
+import { useTranslation } from 'react-i18next';
+import Card from '../shared/components/Card';
+import HeroSection from '../shared/components/HeroSection';
 import { fetchVocabularySets } from '../services/vocabularySet';
-import Skeleton from '../components/Skeleton';
+import Skeleton from '../shared/components/Skeleton';
 import type { VocabularySetDto } from '../types/VocabularySetDto';
 import OnboardingFlow from '../features/onboarding/OnboardingFlow';
 import { useAuth } from '../hooks/Auth/useAuth';
+import { getLocalizedErrorMessage } from '../utils/errorMapper';
 
 const Home: React.FC = () => {
+  const { t } = useTranslation(['common', 'vocabulary']);
   const { user } = useAuth();
   const [vocabularySets, setVocabularySets] = useState<VocabularySetDto[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -21,24 +24,28 @@ const Home: React.FC = () => {
         setVocabularySets(data);
         setLoading(false);
       })
-      .catch((error) => {
-        setError(error.message || 'Failed to load vocabulary sets');
+      .catch((err) => {
+        setError(getLocalizedErrorMessage(err));
         setLoading(false);
-        console.error('Error fetching vocabulary sets:', error);
+        console.error('Error fetching vocabulary sets:', err);
       });
   }, []);
 
   const heroButtonProps = user
-    ? {} // Logged-in users: button navigates to /register as usual (or can be hidden with hidden=true if desired)
+    ? {} // Logged-in users: button navigates to /register as usual
     : { onButtonClick: () => setShowOnboarding(true) };
+
+  const heroTitle = t('vocabulary:title');
+  const heroDesc = "Hành trình giải mã những văn tự cổ, giải thoát những sinh vật bí ẩn, xây dựng kiến thức lâu dài.";
+  const heroBtn = t('common:buttons.see_more');
 
   if (loading) {
     return (
       <>
         <HeroSection
-          title="Chào mừng bạn đến với Eralis"
-          description="Hành trình giải mã những văn tự cố, giải thoát những sinh vật bí ẩn, xây dựng kiến thức lâu dài."
-          textButton="Bắt đầu hành trình"
+          title={heroTitle}
+          description={heroDesc}
+          textButton={heroBtn}
           height="29rem"
           hidden={false}
           {...heroButtonProps}
@@ -53,9 +60,9 @@ const Home: React.FC = () => {
     return (
       <>
         <HeroSection
-          title="Chào mừng bạn đến với Eralis"
-          description="Hành trình giải mã những văn tự cố, giải thoát những sinh vật bí ẩn, xây dựng kiến thức lâu dài."
-          textButton="Bắt đầu hành trình"
+          title={heroTitle}
+          description={heroDesc}
+          textButton={heroBtn}
           height="29rem"
           hidden={false}
           {...heroButtonProps}
@@ -70,9 +77,9 @@ const Home: React.FC = () => {
   return (
     <>
       <HeroSection
-        title="Chào mừng bạn đến với Eralis"
-        description="Hành trình giải mã những văn tự cố, giải thoát những sinh vật bí ẩn, xây dựng kiến thức lâu dài."
-        textButton="Bắt đầu hành trình"
+        title={heroTitle}
+        description={heroDesc}
+        textButton={heroBtn}
         height="35rem"
         hidden={false}
         {...heroButtonProps}
@@ -84,7 +91,7 @@ const Home: React.FC = () => {
             All things you can learn
           </div>
           <p className="mb-5 text-lg font-extralight text-center">
-            Hành trình giải mã những văn tự cố, giải thoát những sinh vật bí ẩn, xây dựng kiến thức lâu dài.
+            {heroDesc}
           </p>
         </div>
       </div>
@@ -108,7 +115,7 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      {/* Onboarding full-screen overlay — triggered when guest presses "Bắt đầu" */}
+      {/* Onboarding full-screen overlay */}
       {showOnboarding && (
         <OnboardingFlow onClose={() => setShowOnboarding(false)} />
       )}

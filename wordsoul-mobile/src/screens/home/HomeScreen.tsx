@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   Image,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -22,6 +23,7 @@ import { Button } from '../../components/ui/Button';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { MainTabParamList } from '../../navigation/MainTabs';
+import { createReviewSession } from '../../services/learningSession';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'HomeMain'>;
 
@@ -35,6 +37,26 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [progress, setProgress] = useState<UserProgressDto | null>(null);
   const [quests, setQuests] = useState<UserDailyQuestDto[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [startingReview, setStartingReview] = useState(false);
+
+  const handleStartReview = useCallback(async () => {
+    if (startingReview) return;
+    setStartingReview(true);
+    try {
+      const session = await createReviewSession();
+      tabNav.navigate('LearnTab', {
+        screen: 'LearningSession',
+        params: {
+          sessionId: session.id,
+          mode: 'review',
+        },
+      });
+    } catch {
+      Alert.alert('Lỗi', 'Không thể bắt đầu phiên ôn tập');
+    } finally {
+      setStartingReview(false);
+    }
+  }, [startingReview, tabNav]);
 
   const loadData = useCallback(async () => {
     try {
@@ -146,7 +168,8 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             <TouchableOpacity
               className="bg-blue-600 rounded-2xl p-4 flex-row items-center justify-between"
               activeOpacity={0.9}
-              onPress={() => tabNav.navigate('LearnTab')}
+              onPress={() => void handleStartReview()}
+              disabled={startingReview}
             >
               <View>
                 <Text className="text-white font-bold text-base">

@@ -33,17 +33,17 @@ const GoogleCallback: React.FC = () => {
       }
 
       try {
-        // Lưu token vào cookie
+        // Set token
         setToken(ACCESS_TOKEN_KEY, accessToken);
         setToken(REFRESH_TOKEN_KEY, refreshToken);
 
-        // Lấy thông tin user
+        // Get user info
         const res = await authApi.get(endpoints.currentUser, {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
         setUser(res.data);
 
-        // Xóa pet ID tạm thời ở localStorage
+        // Remove pet temp ID in localStorage
         localStorage.removeItem('onboarding_starter_pet_id');
 
         navigate("/home", { replace: true });
@@ -53,7 +53,7 @@ const GoogleCallback: React.FC = () => {
     };
 
     handleCallback();
-  }, []);
+  }, [navigate, searchParams, setUser]);
 
   return (
     <div className="w-full h-screen flex items-center justify-center bg-gradient-to-b from-[rgb(3,7,33)] to-[rgb(5,11,75)]">

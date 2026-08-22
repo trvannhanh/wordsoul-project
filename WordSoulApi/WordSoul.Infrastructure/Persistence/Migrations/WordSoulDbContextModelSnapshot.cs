@@ -115,13 +115,22 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("FlowVersion")
+                        .HasColumnType("int");
+
                     b.Property<int>("HintCount")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsCorrect")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsVocabularyCompleted")
+                        .HasColumnType("bit");
+
                     b.Property<int>("LearningSessionId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("QuestionPhase")
                         .HasColumnType("int");
 
                     b.Property<int>("QuestionType")
@@ -130,12 +139,24 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.Property<double>("ResponseTimeSeconds")
                         .HasColumnType("float");
 
+                    b.Property<int>("ResultingLevel")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("StageIndexBefore")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("SubmissionId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("VocabularyId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("VocabularyId");
+
+                    b.HasIndex("LearningSessionId", "SubmissionId")
+                        .IsUnique();
 
                     b.HasIndex("LearningSessionId", "VocabularyId", "QuestionType");
 
@@ -565,6 +586,11 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("FlowVersion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("bit");
 
@@ -757,7 +783,29 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.Property<int>("VocabularyId")
                         .HasColumnType("int");
 
-                    b.Property<int>("CurrentLevel")
+                    b.Property<Guid>("ConcurrencyToken")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("CurrentStageIndex")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("InitialRecallAnswerRecordId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("InitialRecallAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool?>("InitialRecallCorrect")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("InitialRecallGrade")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("InitialRecallGradeReason")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("InitialRecallGradingPolicyVersion")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsCompleted")
@@ -767,6 +815,10 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("LearningSessionId", "VocabularyId");
+
+                    b.HasIndex("InitialRecallAnswerRecordId")
+                        .IsUnique()
+                        .HasFilter("[InitialRecallAnswerRecordId] IS NOT NULL");
 
                     b.HasIndex("VocabularyId");
 
@@ -844,12 +896,21 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<bool>("IsLiveEditable")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime>("LastUpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("LastUpdatedBy")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<double?>("MaxValue")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("MinValue")
+                        .HasColumnType("float");
 
                     b.Property<string>("Value")
                         .IsRequired()
@@ -863,22 +924,66 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.HasData(
                         new
                         {
+                            Key = "SrsPolicyVersion",
+                            Category = "SRS",
+                            DataType = "Integer",
+                            Description = "Automatically incremented whenever SRS algorithm settings change",
+                            IsLiveEditable = false,
+                            LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            LastUpdatedBy = "System",
+                            MinValue = 1.0,
+                            Value = "1"
+                        },
+                        new
+                        {
                             Key = "SrsMinEf",
                             Category = "SRS",
                             DataType = "Float",
                             Description = "Minimum Ease Factor for SM-2 Algorithm",
+                            IsLiveEditable = true,
                             LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             LastUpdatedBy = "System",
+                            MaxValue = 3.0,
+                            MinValue = 1.0,
                             Value = "1.3"
+                        },
+                        new
+                        {
+                            Key = "SrsMaxEf",
+                            Category = "SRS",
+                            DataType = "Float",
+                            Description = "Maximum Ease Factor for SM-2 Algorithm",
+                            IsLiveEditable = true,
+                            LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            LastUpdatedBy = "System",
+                            MaxValue = 5.0,
+                            MinValue = 1.3,
+                            Value = "4.0"
+                        },
+                        new
+                        {
+                            Key = "SrsDefaultEf",
+                            Category = "SRS",
+                            DataType = "Float",
+                            Description = "Initial Ease Factor assigned to new vocabulary progress",
+                            IsLiveEditable = true,
+                            LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            LastUpdatedBy = "System",
+                            MaxValue = 4.0,
+                            MinValue = 1.3,
+                            Value = "2.5"
                         },
                         new
                         {
                             Key = "SrsInitialInterval1",
                             Category = "SRS",
                             DataType = "Integer",
-                            Description = "First interval (days) for SM-2",
+                            Description = "First interval in days for SM-2",
+                            IsLiveEditable = true,
                             LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             LastUpdatedBy = "System",
+                            MaxValue = 30.0,
+                            MinValue = 0.0,
                             Value = "1"
                         },
                         new
@@ -886,10 +991,65 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                             Key = "SrsInitialInterval2",
                             Category = "SRS",
                             DataType = "Integer",
-                            Description = "Second interval (days) for SM-2",
+                            Description = "Second interval in days for SM-2",
+                            IsLiveEditable = true,
                             LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             LastUpdatedBy = "System",
+                            MaxValue = 90.0,
+                            MinValue = 1.0,
                             Value = "6"
+                        },
+                        new
+                        {
+                            Key = "SrsMasteredIntervalDays",
+                            Category = "SRS",
+                            DataType = "Integer",
+                            Description = "Minimum interval in days for a vocabulary to be considered mastered",
+                            IsLiveEditable = true,
+                            LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            LastUpdatedBy = "System",
+                            MaxValue = 365.0,
+                            MinValue = 7.0,
+                            Value = "21"
+                        },
+                        new
+                        {
+                            Key = "SrsRetentionBonusPerRepetition",
+                            Category = "SRS",
+                            DataType = "Float",
+                            Description = "Retention score bonus per successful repetition",
+                            IsLiveEditable = true,
+                            LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            LastUpdatedBy = "System",
+                            MaxValue = 10.0,
+                            MinValue = 0.0,
+                            Value = "2"
+                        },
+                        new
+                        {
+                            Key = "SrsRetentionBonusMax",
+                            Category = "SRS",
+                            DataType = "Float",
+                            Description = "Maximum retention score bonus from repetitions",
+                            IsLiveEditable = true,
+                            LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            LastUpdatedBy = "System",
+                            MaxValue = 100.0,
+                            MinValue = 0.0,
+                            Value = "20"
+                        },
+                        new
+                        {
+                            Key = "WordsPerSession",
+                            Category = "LEARNING",
+                            DataType = "Integer",
+                            Description = "Number of vocabulary items included in each learning or review session",
+                            IsLiveEditable = true,
+                            LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            LastUpdatedBy = "System",
+                            MaxValue = 30.0,
+                            MinValue = 1.0,
+                            Value = "5"
                         },
                         new
                         {
@@ -897,8 +1057,11 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                             Category = "GAME_BALANCE",
                             DataType = "Float",
                             Description = "Penalty applied to catch rate for each wrong answer (e.g. 0.05 = 5%)",
+                            IsLiveEditable = true,
                             LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             LastUpdatedBy = "System",
+                            MaxValue = 1.0,
+                            MinValue = 0.0,
                             Value = "0.05"
                         },
                         new
@@ -907,8 +1070,11 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                             Category = "GAME_BALANCE",
                             DataType = "Integer",
                             Description = "XP rewarded for completing a learning session with new words",
+                            IsLiveEditable = true,
                             LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             LastUpdatedBy = "System",
+                            MaxValue = 10000.0,
+                            MinValue = 0.0,
                             Value = "20"
                         },
                         new
@@ -917,9 +1083,25 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                             Category = "GAME_BALANCE",
                             DataType = "Integer",
                             Description = "XP rewarded for completing a review session",
+                            IsLiveEditable = true,
                             LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             LastUpdatedBy = "System",
+                            MaxValue = 10000.0,
+                            MinValue = 0.0,
                             Value = "100"
+                        },
+                        new
+                        {
+                            Key = "ReviewBaseAP",
+                            Category = "GAME_BALANCE",
+                            DataType = "Integer",
+                            Description = "Base AP rewarded for completing a review session",
+                            IsLiveEditable = true,
+                            LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            LastUpdatedBy = "System",
+                            MaxValue = 1000.0,
+                            MinValue = 0.0,
+                            Value = "3"
                         },
                         new
                         {
@@ -927,6 +1109,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                             Category = "GENERAL",
                             DataType = "Boolean",
                             Description = "Allow new users to register on the platform",
+                            IsLiveEditable = true,
                             LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             LastUpdatedBy = "System",
                             Value = "true"
@@ -937,6 +1120,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                             Category = "GENERAL",
                             DataType = "Boolean",
                             Description = "Show maintenance notice to regular users (does not affect admins)",
+                            IsLiveEditable = true,
                             LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             LastUpdatedBy = "System",
                             Value = "false"
@@ -947,6 +1131,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                             Category = "GENERAL",
                             DataType = "Integer",
                             Description = "Maximum number of members allowed in a single user group",
+                            IsLiveEditable = true,
                             LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             LastUpdatedBy = "System",
                             Value = "50"
@@ -957,9 +1142,120 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                             Category = "GENERAL",
                             DataType = "String",
                             Description = "Application display name shown to users in the UI",
+                            IsLiveEditable = true,
                             LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             LastUpdatedBy = "System",
                             Value = "VocaMon"
+                        },
+                        new
+                        {
+                            Key = "AdminAppName",
+                            Category = "GENERAL",
+                            DataType = "String",
+                            Description = "Application name for the Admin portal",
+                            IsLiveEditable = true,
+                            LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            LastUpdatedBy = "System",
+                            Value = "VocaMon Admin"
+                        },
+                        new
+                        {
+                            Key = "AdminAppLogo",
+                            Category = "GENERAL",
+                            DataType = "String",
+                            Description = "Logo URL for the Admin portal",
+                            IsLiveEditable = true,
+                            LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            LastUpdatedBy = "System",
+                            Value = "https://res.cloudinary.com/dqpkxxzaf/image/upload/v1759222012/egg-logo_pflvdz.png"
+                        },
+                        new
+                        {
+                            Key = "WebAppName",
+                            Category = "GENERAL",
+                            DataType = "String",
+                            Description = "Application name for the client Web App",
+                            IsLiveEditable = true,
+                            LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            LastUpdatedBy = "System",
+                            Value = "VocaMon"
+                        },
+                        new
+                        {
+                            Key = "WebAppSubtitle",
+                            Category = "GENERAL",
+                            DataType = "String",
+                            Description = "Subtitle/Slogan for the client Web App",
+                            IsLiveEditable = true,
+                            LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            LastUpdatedBy = "System",
+                            Value = "Học từ vựng cùng thú cưng"
+                        },
+                        new
+                        {
+                            Key = "WebAppLogo",
+                            Category = "GENERAL",
+                            DataType = "String",
+                            Description = "Logo URL for the client Web App",
+                            IsLiveEditable = true,
+                            LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            LastUpdatedBy = "System",
+                            Value = "https://res.cloudinary.com/dqpkxxzaf/image/upload/v1759222012/egg-logo_pflvdz.png"
+                        },
+                        new
+                        {
+                            Key = "WebAppFavicon",
+                            Category = "GENERAL",
+                            DataType = "String",
+                            Description = "Favicon URL for the client Web App",
+                            IsLiveEditable = true,
+                            LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            LastUpdatedBy = "System",
+                            Value = "https://res.cloudinary.com/dqpkxxzaf/image/upload/v1759222012/egg-logo_pflvdz.png"
+                        },
+                        new
+                        {
+                            Key = "ContactEmail",
+                            Category = "GENERAL",
+                            DataType = "String",
+                            Description = "Support/contact email address shown to users",
+                            IsLiveEditable = true,
+                            LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            LastUpdatedBy = "System",
+                            Value = "support@vocamon.online"
+                        },
+                        new
+                        {
+                            Key = "AllowGoogleLogin",
+                            Category = "GENERAL",
+                            DataType = "Boolean",
+                            Description = "Enable or disable Google OAuth registration and login",
+                            IsLiveEditable = true,
+                            LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            LastUpdatedBy = "System",
+                            Value = "true"
+                        },
+                        new
+                        {
+                            Key = "FooterCopyright",
+                            Category = "GENERAL",
+                            DataType = "String",
+                            Description = "Copyright text shown in the Web App footer",
+                            IsLiveEditable = true,
+                            LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            LastUpdatedBy = "System",
+                            Value = "© 2026 VocaMon. All rights reserved."
+                        },
+                        new
+                        {
+                            Key = "FacebookUrl",
+                            Category = "GENERAL",
+                            DataType = "String",
+                            Description = "Official Facebook Fanpage link",
+                            IsLiveEditable = true,
+                            LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            LastUpdatedBy = "System",
+                            Value = "https://www.facebook.com/giidavibe/"
                         },
                         new
                         {
@@ -967,6 +1263,7 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                             Category = "SYSTEM",
                             DataType = "Integer",
                             Description = "Number of days to keep system logs before auto-deleting",
+                            IsLiveEditable = true,
                             LastUpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             LastUpdatedBy = "System",
                             Value = "7"
@@ -1351,6 +1648,12 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("FirstLearnedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("InitialRecallCorrectCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("InitialRecallCount")
+                        .HasColumnType("int");
+
                     b.Property<int>("Interval")
                         .HasColumnType("int");
 
@@ -1362,6 +1665,12 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
                     b.Property<DateTime>("LastUpdated")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("LearningPracticeAttemptCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LearningPracticeSuccessCount")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("MasteredAt")
                         .HasColumnType("datetime2");
@@ -1377,6 +1686,12 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("PronunciationWrongCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RemediationAttemptCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RemediationSuccessCount")
                         .HasColumnType("int");
 
                     b.Property<int>("Repetition")
@@ -1496,7 +1811,16 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.Property<int>("Grade")
                         .HasColumnType("int");
 
+                    b.Property<int?>("GradeReason")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("GradingPolicyVersion")
+                        .HasColumnType("int");
+
                     b.Property<int>("HintCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("InitialRecallAnswerRecordId")
                         .HasColumnType("int");
 
                     b.Property<int>("IntervalAfter")
@@ -1523,6 +1847,9 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("ReviewTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("SrsPolicyVersion")
+                        .HasColumnType("int");
+
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
@@ -1530,6 +1857,10 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("InitialRecallAnswerRecordId")
+                        .IsUnique()
+                        .HasFilter("[InitialRecallAnswerRecordId] IS NOT NULL");
 
                     b.HasIndex("UserId");
 
@@ -1782,6 +2113,11 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("WordSoul.Domain.Entities.SessionVocabulary", b =>
                 {
+                    b.HasOne("WordSoul.Domain.Entities.AnswerRecord", "InitialRecallAnswerRecord")
+                        .WithMany()
+                        .HasForeignKey("InitialRecallAnswerRecordId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("WordSoul.Domain.Entities.LearningSession", "LearningSession")
                         .WithMany("SessionVocabularies")
                         .HasForeignKey("LearningSessionId")
@@ -1793,6 +2129,8 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                         .HasForeignKey("VocabularyId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("InitialRecallAnswerRecord");
 
                     b.Navigation("LearningSession");
 
@@ -2002,6 +2340,11 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("WordSoul.Domain.Entities.VocabularyReviewHistory", b =>
                 {
+                    b.HasOne("WordSoul.Domain.Entities.AnswerRecord", "InitialRecallAnswerRecord")
+                        .WithMany()
+                        .HasForeignKey("InitialRecallAnswerRecordId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("WordSoul.Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -2013,6 +2356,8 @@ namespace WordSoul.Infrastructure.Persistence.Migrations
                         .HasForeignKey("VocabularyId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("InitialRecallAnswerRecord");
 
                     b.Navigation("User");
 

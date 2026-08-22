@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import Image from 'next/image';
 import {
   Form, Switch, InputNumber, Input, Button, Alert, App,
-  Typography, Divider,
+  Typography,
 } from 'antd';
 import { ReloadOutlined, SaveOutlined } from '@ant-design/icons';
 import { authApi, endpoints } from '@/services/api';
@@ -39,6 +40,46 @@ const KEY_META: Record<string, { label: string; description: string }> = {
     label: 'App Display Name',
     description: 'Name shown to users throughout the UI (e.g. in the browser tab and welcome message).',
   },
+  AdminAppName: {
+    label: 'Admin Portal Name',
+    description: 'Application name displayed on the Admin Portal sidebar and tab title.',
+  },
+  AdminAppLogo: {
+    label: 'Admin Portal Logo URL',
+    description: 'URL of the logo image displayed on the Admin Portal sidebar.',
+  },
+  WebAppName: {
+    label: 'Web App Name',
+    description: 'Application name displayed on the Client Web App.',
+  },
+  WebAppSubtitle: {
+    label: 'Web App Subtitle',
+    description: 'Subtitle/slogan shown next to the Web App name or tab title.',
+  },
+  WebAppLogo: {
+    label: 'Web App Logo URL',
+    description: 'URL of the main logo image for the Client Web App.',
+  },
+  WebAppFavicon: {
+    label: 'Web App Favicon URL',
+    description: 'URL of the tab favicon for the Client Web App.',
+  },
+  ContactEmail: {
+    label: 'Support Contact Email',
+    description: 'Support/contact email address displayed in footers or pages.',
+  },
+  AllowGoogleLogin: {
+    label: 'Allow Google Login',
+    description: 'Enable or disable Google OAuth authentication options.',
+  },
+  FooterCopyright: {
+    label: 'Footer Copyright Text',
+    description: 'Copyright statement shown in the Web App footer.',
+  },
+  FacebookUrl: {
+    label: 'Facebook Fanpage URL',
+    description: 'Official link to the Facebook Fanpage.',
+  },
 };
 
 // ─── Single setting row ───────────────────────────────────────────────────────
@@ -66,10 +107,46 @@ function SettingRow({ config }: { config: SystemConfig }) {
         </Form.Item>
       );
     }
+
+    const isImageKey = config.key.toLowerCase().includes('logo') || config.key.toLowerCase().includes('favicon');
+
     return (
-      <Form.Item name={config.key} style={{ marginBottom: 0 }}>
-        <Input size="small" style={{ width: 240 }} />
-      </Form.Item>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
+        <Form.Item name={config.key} style={{ marginBottom: 0 }}>
+          <Input size="small" style={{ width: 240 }} />
+        </Form.Item>
+        {isImageKey && (
+          <Form.Item shouldUpdate style={{ marginBottom: 0 }}>
+            {({ getFieldValue }) => {
+              const val = getFieldValue(config.key);
+              if (!val) return null;
+              return (
+                <div style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 4,
+                  border: '1px solid var(--border)',
+                  background: 'var(--bg-muted)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  overflow: 'hidden',
+                  marginTop: 4
+                }}>
+                  <Image
+                    src={val}
+                    alt="preview"
+                    width={32}
+                    height={32}
+                    style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                  />
+                </div>
+              );
+            }}
+          </Form.Item>
+        )}
+      </div>
     );
   })();
 
@@ -102,13 +179,12 @@ function SettingRow({ config }: { config: SystemConfig }) {
 export default function GeneralsPage() {
   const { user } = useAuth();
   const [allConfigs, setAllConfigs] = useState<SystemConfig[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form] = Form.useForm();
   const { message } = App.useApp();
 
-  const fetchConfigs = async () => {
-    setLoading(true);
+  const fetchConfigs = useCallback(async () => {
     try {
       const { data } = await authApi.get<SystemConfig[]>(endpoints.systemConfig);
       setAllConfigs(data);
@@ -132,9 +208,22 @@ export default function GeneralsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [form, message]);
 
-  useEffect(() => { if (user?.role === 'SuperAdmin') fetchConfigs(); }, [user]);
+  useEffect(() => {
+    if (user?.role !== 'SuperAdmin') return;
+
+    const timeoutId = window.setTimeout(() => {
+      void fetchConfigs();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [fetchConfigs, user?.role]);
+
+  const refreshConfigs = () => {
+    setLoading(true);
+    void fetchConfigs();
+  };
 
   const onFinish = async (values: Record<string, unknown>) => {
     setSaving(true);
@@ -150,7 +239,8 @@ export default function GeneralsPage() {
       });
       await authApi.put(endpoints.systemConfig, updated);
       message.success('General settings saved');
-      fetchConfigs();
+      setLoading(true);
+      await fetchConfigs();
     } catch {
       message.error('Failed to save settings');
     } finally {
@@ -186,7 +276,7 @@ export default function GeneralsPage() {
           <p className="page-subtitle">Platform-wide flags and display preferences.</p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <Button size="small" icon={<ReloadOutlined />} onClick={fetchConfigs} loading={loading}>
+          <Button size="small" icon={<ReloadOutlined />} onClick={refreshConfigs} loading={loading}>
             Refresh
           </Button>
           <Button

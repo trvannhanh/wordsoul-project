@@ -1,18 +1,18 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import GameScreen from "../../components/LearningSession/GameScreen";
-import AnswerScreen from "../../components/LearningSession/AnswerScreen";
-import ReviewLayout, { type ReviewLayoutHandle } from "../../components/LearningSession/ReviewLayout";
-import PetScreen from "../../components/LearningSession/PetScreen";
-import PokemonEncounterIntro from "../../components/LearningSession/PokemonEncounterIntro";
-import MilestoneOverlay from "../../components/LearningSession/MilestoneOverlay";
-import PokemonProgressBar from "../../components/LearningSession/PokemonProgressBar";
-import BuffBadge from "../../components/LearningSession/BuffBadge";
-import { useQuizSession } from "../../hooks/LearningSession/useQuizSession";
+import GameScreen from "./components/GameScreen";
+import AnswerScreen from "./components/AnswerScreen";
+import ReviewLayout, { type ReviewLayoutHandle } from "./components/ReviewLayout";
+import PetScreen from "./components/PetScreen";
+import PokemonEncounterIntro from "./components/PetEncounterIntro";
+import MilestoneOverlay from "./components/MilestoneOverlay";
+import PokemonProgressBar from "./components/PetProgressBar";
+import BuffBadge from "./components/BuffBadge";
+import { useQuizSession } from "./hooks/useQuizSession";
 import type { QuizQuestionDto } from "../../types/LearningSessionDto";
 import type { PetDto } from "../../types/PetDto";
-import LoadingScreen from "../../components/LearningSession/LoadingScreen";
+import LoadingScreen from "./components/LoadingScreen";
 import { useAuth } from "../../hooks/Auth/useAuth";
 import { fetchPetById } from "../../services/pet";
 
@@ -84,7 +84,7 @@ const LearningSession: React.FC = () => {
 
   // audio ref for auto-play in vocabulary card
   const cardAudioRef = useRef<HTMLAudioElement | null>(null);
-  const audioTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const audioTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isPlayingWordAudio, setIsPlayingWordAudio] = useState(false);
   const [isPlayingExampleAudio, setIsPlayingExampleAudio] = useState(false);
 
@@ -443,7 +443,7 @@ const LearningSession: React.FC = () => {
                   </span>
                 )}
                 <button
-                  onClick={() => playWordAudio(answeredQuestion.word, answeredQuestion.pronunciationUrl)}
+                  onClick={() => playWordAudio(answeredQuestion.word ?? "", answeredQuestion.pronunciationUrl)}
                   disabled={isPlayingWordAudio}
                   className="text-yellow-400 hover:text-yellow-300 disabled:opacity-50 transition-colors p-1"
                   title="Phát âm từ"
@@ -478,7 +478,7 @@ const LearningSession: React.FC = () => {
               {answeredQuestion.imageUrl && (
                 <img
                   src={answeredQuestion.imageUrl}
-                  alt={answeredQuestion.word}
+                  alt={answeredQuestion.word ?? "Vocabulary illustration"}
                   className="w-32 h-32 object-contain mx-auto mb-4 rounded border border-gray-600 shadow"
                 />
               )}

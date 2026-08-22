@@ -1,0 +1,8 @@
+{
+  "title": "PvP Arena",
+  "find_match": "Find Match",
+  "searching": "Searching for opponent...",
+  "victory": "Victory!",
+  "defeat": "Defeat!",
+  "rank": "Rank {{rank}}"
+}

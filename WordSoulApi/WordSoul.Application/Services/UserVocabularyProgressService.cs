@@ -81,15 +81,19 @@ namespace WordSoul.Application.Services
 
             // Những từ vựng sai nhiều nhất (Struggle words)
             var struggleWords = progresses
-                .Where(p => p.WrongCount > 0 && p.Vocabulary != null)
-                .OrderByDescending(p => p.WrongCount)
+                .Where(p =>
+                    p.InitialRecallCount - p.InitialRecallCorrectCount > 0
+                    && p.Vocabulary != null)
+                .OrderByDescending(
+                    p => p.InitialRecallCount - p.InitialRecallCorrectCount)
                 .Take(10)
                 .Select(p => new StruggleWordDto
                 {
                     VocabularyId = p.VocabularyId,
                     Word = p.Vocabulary!.Word,
                     Meaning = p.Vocabulary.Meaning,
-                    WrongCount = p.WrongCount
+                    WrongCount =
+                        p.InitialRecallCount - p.InitialRecallCorrectCount
                 })
                 .ToList();
 
@@ -104,8 +108,8 @@ namespace WordSoul.Application.Services
                 .ToList();
 
             // 2. Tính tỷ lệ ghi nhớ trung bình (% Retention Rate)
-            int totalCorrect = progresses.Sum(p => p.CorrectAttempt);
-            int totalAttempt = progresses.Sum(p => p.TotalAttempt);
+            int totalCorrect = progresses.Sum(p => p.InitialRecallCorrectCount);
+            int totalAttempt = progresses.Sum(p => p.InitialRecallCount);
             double retentionRate = totalAttempt > 0
                 ? Math.Round((double)totalCorrect / totalAttempt * 100, 1)
                 : 0.0;

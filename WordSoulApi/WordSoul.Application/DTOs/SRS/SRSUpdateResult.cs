@@ -9,6 +9,7 @@ namespace WordSoul.Application.DTOs.SRS
     public class SRSUpdateResult
     {
         public bool Success { get; set; }
+        public int PolicyVersion { get; set; }
         public double NewEaseFactor { get; set; }
         public int NewInterval { get; set; }
         public DateTime NextReviewDate { get; set; }

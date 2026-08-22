@@ -1,16 +1,24 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Particles from 'react-particles';
-import { loadSlim } from "@tsparticles/slim";
 import { createReviewSession } from '../services/learningSession';
 import { getUserProgress } from '../services/user';
-import ReviewBox from '../components/UserDashboard/ReviewBox';
-import SrsStatsDashboard from '../components/UserDashboard/SrsStatsDashboard';
-import StruggleWordsBox from '../components/UserDashboard/StruggleWordsBox';
-import ProfileCard from '../components/UserProfile/ProfileCard';
-import QuestList from '../components/DailyQuest/QuestList';
-import PronunciationWidget from '../components/UserDashboard/PronunciationWidget';
+import ReviewBox from '../shared/components/UserDashboard/ReviewBox';
+import SrsStatsDashboard from '../shared/components/UserDashboard/SrsStatsDashboard';
+import StruggleWordsBox from '../shared/components/UserDashboard/StruggleWordsBox';
+import ProfileCard from '../shared/components/UserProfile/ProfileCard';
+import QuestList from '../shared/components/DailyQuest/QuestList';
+import PronunciationWidget from '../shared/components/UserDashboard/PronunciationWidget';
 import type { UserProgressDto } from '../types/UserDto';
+import { extractApiError } from '../shared/errors';
+
+const dashboardParticles = Array.from({ length: 20 }, (_, index) => ({
+  id: index,
+  left: `${(index * 37) % 100}%`,
+  top: `${(index * 53) % 100}%`,
+  size: 1 + (index % 2),
+  delay: `${(index % 7) * 0.45}s`,
+  duration: `${3 + (index % 5) * 0.35}s`,
+}));
 
 const UserDashboard: React.FC = () => {
   const [dashboard, setDashboard] = useState<UserProgressDto | null>(null);
@@ -18,10 +26,6 @@ const UserDashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const particlesInit = async (main: any) => {
-    await loadSlim(main);
-  };
 
   const handleCreateReviewSession = async () => {
     setError(null);
@@ -31,9 +35,8 @@ const UserDashboard: React.FC = () => {
       navigate(`/learningSession/${session.id}?mode=review`, {
         state: { currentCorrectAnswered: session.currentCorrectAnswered },
       });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      setError(error?.response?.data?.message || 'Lỗi tạo phiên ôn tập');
+    } catch (error: unknown) {
+      setError(extractApiError(error).message);
     } finally {
       setLoading(false);
     }
@@ -49,9 +52,8 @@ const UserDashboard: React.FC = () => {
           return { level, count: found ? found.count : 0 };
         });
         setDashboard({ ...data, vocabularyStats: filledStats });
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (err) {
-        setError('Không thể tải dữ liệu tiến trình');
+      } catch (err: unknown) {
+        setError(extractApiError(err).message);
       } finally {
         setLoading(false);
       }
@@ -70,30 +72,38 @@ const UserDashboard: React.FC = () => {
   if (error) {
     return (
       <div className="bg-black text-white h-screen flex items-center justify-center">
-        <div className="font-pixel text-red-500 text-xl">{error}</div>
+        <div className="text-center">
+          <div className="font-pixel text-red-500 text-xl">{error}</div>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="mt-6 rounded-lg bg-blue-600 px-4 py-2 font-pixel text-sm text-white hover:bg-blue-500"
+          >
+            Thử lại
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="review-box-background bg-fixed text-white min-h-screen font-pixel relative overflow-auto">
-      <Particles
-        id="tsparticles"
-        init={particlesInit}
-        options={{
-          particles: {
-            number: { value: 20, density: { enable: true, value_area: 800 } }, // Giảm số particles trên mobile
-            size: { value: { min: 1, max: 2 } }, // Kích thước nhỏ hơn trên mobile
-            move: { enable: true, speed: 0.5, direction: 'none', random: true },
-            opacity: { value: { min: 0.2, max: 0.5 } },
-            color: { value: '#FFD700' },
-          },
-          interactivity: { events: { onHover: { enable: false } } },
-          retina_detect: true,
-        }}
-        className="absolute inset-0"
-      />
-      <div className="container mx-auto w-full sm:w-10/12 lg:w-8/12 xl:w-7/12 flex flex-col sm:flex-row items-start gap-6 sm:gap-8 pt-16 sm:pt-20 pb-6 sm:pb-10 relative z-10">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        {dashboardParticles.map((particle) => (
+          <span
+            key={particle.id}
+            className="absolute rounded-full bg-yellow-300/70 shadow-[0_0_8px_rgba(250,204,21,0.7)] animate-pulse"
+            style={{
+              left: particle.left,
+              top: particle.top,
+              width: particle.size,
+              height: particle.size,
+              animationDelay: particle.delay,
+              animationDuration: particle.duration,
+            }}
+          />
+        ))}
+      </div>      <div className="container mx-auto w-full sm:w-10/12 lg:w-8/12 xl:w-7/12 flex flex-col sm:flex-row items-start gap-6 sm:gap-8 pt-16 sm:pt-20 pb-6 sm:pb-10 relative z-10">
         {/* Cột trái: Review, Biểu đồ thống kê và Từ vựng cần rèn luyện */}
         <div className="w-full sm:w-7/12 space-y-6">
           <ReviewBox

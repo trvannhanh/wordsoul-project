@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDebounce } from 'use-debounce';
+import { useTranslation } from 'react-i18next';
 import { deleteVocabularySet, fetchGroupedVocabularySets, fetchUserVocabularySets, fetchVocabularySets } from '../../services/vocabularySet';
-import Card from '../../components/Card';
-import Skeleton from '../../components/Skeleton';
+import Card from '../../shared/components/Card';
+import Skeleton from '../../shared/components/Skeleton';
 import { useNavigate } from 'react-router-dom';
 import type { VocabularySetDto } from '../../types/VocabularySetDto';
 import { useAuth } from '../../hooks/Auth/useAuth';
 import WorldMap, { HOTSPOTS } from './WorldMap';
-import RecommendedSetsBox from '../../components/UserDashboard/RecommendedSetsBox';
+import RecommendedSetsBox from '../../shared/components/UserDashboard/RecommendedSetsBox';
 import { getUserProgress } from '../../services/user';
 import type { RecommendedSetDto } from '../../types/UserDto';
 
@@ -132,6 +133,7 @@ const THEME_LABELS: Record<string, string> = {
 };
 
 const VocabularySetsPage = () => {
+    const { t } = useTranslation(['vocabulary', 'common']);
     const { user } = useAuth();
     const navigate = useNavigate();
 
@@ -251,7 +253,7 @@ const VocabularySetsPage = () => {
                 type="text"
                 value={searchTitle}
                 onChange={e => setSearchTitle(e.target.value)}
-                placeholder="Tìm kiếm bộ từ vựng theo tiêu đề..."
+                placeholder={t('vocabulary:search_placeholder')}
                 className="w-full p-2 sm:p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {isSearching && <Spinner />}
@@ -274,7 +276,7 @@ const VocabularySetsPage = () => {
             <div className="background-color pt-13 text-white min-h-screen overflow-auto">
                 <div className="container mx-auto p-4 sm:p-6 lg:p-8 w-full sm:w-10/12 lg:w-7/12 text-center py-8">
                     <p className="text-base sm:text-lg text-red-500">{error}</p>
-                    <button onClick={() => window.location.reload()} className="mt-2 text-blue-500 hover:text-blue-400">Retry</button>
+                    <button onClick={() => window.location.reload()} className="mt-2 text-blue-500 hover:text-blue-400">{t('common:buttons.retry')}</button>
                 </div>
             </div>
         );
@@ -296,7 +298,7 @@ const VocabularySetsPage = () => {
                                 : 'text-gray-400 hover:text-white hover:bg-gray-700'
                                 }`}
                         >
-                            {tab === 'list' ? 'Danh sách' : 'Bản đồ'}
+                            {tab === 'list' ? t('vocabulary:title') : 'Map'}
                         </button>
                     ))}
                 </div>

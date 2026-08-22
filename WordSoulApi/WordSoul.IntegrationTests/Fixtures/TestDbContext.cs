@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.Sqlite;
 using WordSoul.Infrastructure.Persistence;
 
 namespace WordSoul.IntegrationTests.Fixtures
@@ -10,8 +11,11 @@ namespace WordSoul.IntegrationTests.Fixtures
     {
         public static WordSoulDbContext Create()
         {
+            var connection = new SqliteConnection("Data Source=:memory:");
+            connection.Open();
+
             var options = new DbContextOptionsBuilder<WordSoulDbContext>()
-                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .UseSqlite(connection, contextOwnsConnection: true)
                 .Options;
 
             var context = new WordSoulDbContext(options);

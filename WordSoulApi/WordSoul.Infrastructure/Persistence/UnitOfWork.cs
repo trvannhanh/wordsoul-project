@@ -98,6 +98,8 @@ namespace WordSoul.Infrastructure.Persistence
         public IPronunciationAttemptRepository PronunciationAttempt =>
             _pronunciationAttempt ??= new PronunciationAttemptRepository(_context);
 
+        public bool HasActiveTransaction => _context.Database.CurrentTransaction != null;
+
         public async Task<int> SaveChangesAsync(CancellationToken ct = default)
         {
             return await _context.SaveChangesAsync(ct);
@@ -106,6 +108,11 @@ namespace WordSoul.Infrastructure.Persistence
         public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken ct = default)
         {
             return await _context.Database.BeginTransactionAsync(ct);
+        }
+
+        public void ClearTrackedChanges()
+        {
+            _context.ChangeTracker.Clear();
         }
 
         public void Dispose()

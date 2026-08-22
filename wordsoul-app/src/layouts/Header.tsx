@@ -1,12 +1,18 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { deleteNotification, fetchNotifications, markReadAllNotifications, markReadNotifications } from "../services/notification";
 import { useNotifications } from "../hooks/Notification/useNotifications";
 import { useAuth } from "../hooks/Auth/useAuth";
+import { useSettings } from "../store/SettingsContext";
 import { useFCM } from "../hooks/useFCM";
+import type { NotificationDto } from "../types/NotificationDto";
+import { LanguageSwitcher } from "../shared/components/LanguageSwitcher";
 
 const Header: React.FC = () => {
+    const { t } = useTranslation(['header', 'common']);
     const { user, logout } = useAuth();
+    const { getSetting } = useSettings();
     const { notifications, setNotifications } = useNotifications(user?.id);
     useFCM(!!user);
     const [isNotificationSidebarOpen, setIsNotificationSidebarOpen] = useState(false);
@@ -84,7 +90,7 @@ const Header: React.FC = () => {
             .catch((error) => console.error("Failed to mark all as read:", error));
     };
 
-    const handleActionClick = (notif: any) => {
+    const handleActionClick = (notif: NotificationDto) => {
         if (!notif.isRead) {
             handleMarkRead(notif.id);
         }
@@ -103,20 +109,21 @@ const Header: React.FC = () => {
                     <h2 className="flex items-center cursor-pointer">
                         <div>
                             <img
-                                src="https://res.cloudinary.com/dqpkxxzaf/image/upload/v1759222012/egg-logo_pflvdz.png"
+                                src={getSetting('WebAppLogo') || "https://res.cloudinary.com/dqpkxxzaf/image/upload/v1759222012/egg-logo_pflvdz.png"}
                                 width="35"
                                 height="35"
-                                alt="coin logo"
+                                alt="logo"
                                 className="animate-pulse "
+                                style={{ objectFit: 'contain' }}
                             />
                         </div>
                         {user ? (
                             <Link to="/home" className="ml-2 text-xs sm:text-sm font-press hover:text-blue-700 custom-cursor">
-                                Vocamon
+                                {getSetting('WebAppName') || "Vocamon"}
                             </Link>
                         ) : (
                             <Link to="/" className="ml-2 text-xs sm:text-sm font-press  hover:text-blue-700 custom-cursor">
-                                Vocamon
+                                {getSetting('WebAppName') || "Vocamon"}
                             </Link>
                         )}
                     </h2>
@@ -135,45 +142,35 @@ const Header: React.FC = () => {
                         <div className="relative">
                             <Link to="/vocabularySet">
                                 <button className="flex items-center gap-1 px-3 py-2  hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-md custom-cursor">
-                                    Bộ từ vựng
-                                    {/* <span>
-                                        <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                                            <path fillRule="evenodd" clipRule="evenodd" d="M5.83317 6.6665H4.1665V8.33317H5.83317V9.99984H7.49984V11.6665H9.1665V13.3332H10.8332V11.6665H12.4998V9.99984H14.1665V8.33317H15.8332V6.6665H14.1665V8.33317H12.4998V9.99984H10.8332V11.6665H9.1665V9.99984H7.49984V8.33317H5.83317V6.6665Z" fill="#64748B" />
-                                        </svg>
-                                    </span> */}
+                                    {t('header:nav.vocabulary_sets')}
                                 </button>
                             </Link>
                         </div>
                         <div>
                             <Link to="/pets">
                                 <button className="px-3 py-2 hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-md custom-cursor">
-                                    Vocadex
+                                    {t('header:nav.vocadex')}
                                 </button>
                             </Link>
                         </div>
                         <div>
                             <Link to="/gym">
                                 <button className="px-3 py-2 hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-md custom-cursor">
-                                    Chinh phục
+                                    {t('header:nav.gym')}
                                 </button>
                             </Link>
                         </div>
                         <div>
                             <Link to="/pvp">
                                 <button className="px-3 py-2 hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-md custom-cursor">
-                                    Đấu trường
+                                    {t('header:nav.pvp')}
                                 </button>
                             </Link>
                         </div>
                         <div className="relative">
                             <Link to="/community">
                                 <button className="flex items-center gap-1 px-3 py-2  hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-md custom-cursor">
-                                    Cộng đồng
-                                    {/* <span>
-                                        <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                                            <path fillRule="evenodd" clipRule="evenodd" d="M5.83317 6.6665H4.1665V8.33317H5.83317V9.99984H7.49984V11.6665H9.1665V13.3332H10.8332V11.6665H12.4998V9.99984H14.1665V8.33317H15.8332V6.6665H14.1665V8.33317H12.4998V9.99984H10.8332V11.6665H9.1665V9.99984H7.49984V8.33317H5.83317V6.6665Z" fill="#64748B" />
-                                        </svg>
-                                    </span> */}
+                                    {t('header:nav.community')}
                                 </button>
                             </Link>
                         </div>
@@ -181,6 +178,9 @@ const Header: React.FC = () => {
 
                     {/* User Actions */}
                     <div className="flex items-center gap-2 sm:gap-4">
+                        {/* Language Switcher */}
+                        <LanguageSwitcher />
+
                         {/* Notification Bell */}
                         {user ? (
                             <div className="relative icon-container nes-pointer">
@@ -217,19 +217,18 @@ const Header: React.FC = () => {
                             )}
                         </button>
 
-
                         {/* Login/Logout button */}
                         {user ? (
                             <button
                                 onClick={logout}
                                 className="px-2 py-1 text-xs bg-yellow-300 text-black rounded hover:bg-yellow-200 font-pixel custom-cursor"
                             >
-                                Đăng xuất
+                                {t('header:user.logout')}
                             </button>
                         ) : (
                             <Link to="/login" className="no-underline">
                                 <button className="px-2 py-1 text-xs bg-yellow-300 text-black rounded hover:bg-yellow-200 font-pixel custom-cursor">
-                                    Đăng nhập
+                                    {t('header:user.login')}
                                 </button>
                             </Link>
                         )}
@@ -239,22 +238,22 @@ const Header: React.FC = () => {
 
             {/* Mobile Menu Dropdown */}
             {isMobileMenuOpen && (
-                <div className="font-pixel fixed md:hidden bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2 absolute top-[48px] left-0 w-full z-40">
+                <div className="font-pixel fixed md:hidden bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2 top-[48px] left-0 w-full z-40">
                     <div className="flex flex-col gap-2">
                         <Link to="/vocabularySet" className="py-2 hover:text-blue-400" onClick={toggleMobileMenu}>
-                            Bộ từ vựng
+                            {t('header:nav.vocabulary_sets')}
                         </Link>
                         <Link to="/pets" className="py-2 hover:text-blue-400" onClick={toggleMobileMenu}>
-                            Vocadex
+                            {t('header:nav.vocadex')}
                         </Link>
                         <Link to="/gym" className="py-2 hover:text-blue-400" onClick={toggleMobileMenu}>
-                            Chinh phục
+                            {t('header:nav.gym')}
                         </Link>
                         <Link to="/pvp" className="py-2 hover:text-blue-400" onClick={toggleMobileMenu}>
-                            Đấu trường
+                            {t('header:nav.pvp')}
                         </Link>
                         <Link to="/community" className="py-2 hover:text-blue-400" onClick={toggleMobileMenu}>
-                            Cộng đồng
+                            {t('header:nav.community')}
                         </Link>
                     </div>
                 </div>
@@ -268,13 +267,13 @@ const Header: React.FC = () => {
                 <div className="flex flex-col h-full">
                     {/* Header của Sidebar */}
                     <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
-                        <h3 className="text-xl text-color font-semibold">Thông báo</h3>
+                        <h3 className="text-xl text-color font-semibold">{t('header:notifications.title')}</h3>
                         <div className="flex gap-2">
                             <button
                                 onClick={handleMarkAllRead}
                                 className="text-xs text-blue-500 hover:text-blue-700 custom-cursor"
                             >
-                                Đánh dấu tất cả đã đọc
+                                {t('header:notifications.mark_all_read')}
                             </button>
                             <button
                                 onClick={toggleNotificationSidebar}
@@ -306,7 +305,7 @@ const Header: React.FC = () => {
                                                 onClick={() => handleActionClick(notif)}
                                                 className="text-xs text-green-500 hover:text-green-700 custom-cursor font-bold"
                                             >
-                                                Xem ngay
+                                                {t('header:notifications.view_now')}
                                             </button>
                                         )}
                                         {!notif.isRead && (
@@ -314,20 +313,20 @@ const Header: React.FC = () => {
                                                 onClick={() => handleMarkRead(notif.id)}
                                                 className="text-xs text-blue-500 hover:text-blue-700 custom-cursor"
                                             >
-                                                Đánh dấu đã đọc
+                                                {t('header:notifications.mark_read')}
                                             </button>
                                         )}
                                         <button
                                             onClick={() => handleDelete(notif.id)}
                                             className="text-xs text-red-500 hover:text-red-700 custom-cursor"
                                         >
-                                            Xóa
+                                            {t('header:notifications.delete')}
                                         </button>
                                     </div>
                                 </div>
                             ))
                         ) : (
-                            <div className="text-xs text-color text-center py-4">Không có thông báo</div>
+                            <div className="text-xs text-color text-center py-4">{t('header:notifications.no_notifications')}</div>
                         )}
                     </div>
                 </div>

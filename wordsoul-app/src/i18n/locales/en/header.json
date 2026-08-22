@@ -1,0 +1,33 @@
+{
+  "nav": {
+    "vocabulary_sets": "Vocabulary Sets",
+    "vocadex": "Vocadex",
+    "gym": "Gym Arena",
+    "pvp": "PvP Battle",
+    "community": "Community"
+  },
+  "user": {
+    "login": "Log in",
+    "logout": "Log out",
+    "profile": "Profile"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "mark_all_read": "Mark all as read",
+    "mark_read": "Mark as read",
+    "view_now": "View now",
+    "delete": "Delete",
+    "no_notifications": "No notifications",
+    "unread_count_one": "You have {{count}} new notification",
+    "unread_count_other": "You have {{count}} new notifications"
+  },
+  "theme": {
+    "light": "Light mode",
+    "dark": "Dark mode"
+  },
+  "language": {
+    "vi": "Tiếng Việt",
+    "en": "English",
+    "switch": "Switch language"
+  }
+}
