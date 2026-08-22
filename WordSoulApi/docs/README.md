@@ -8,6 +8,8 @@ Chỉ có ba tài liệu vận hành cần đọc và cập nhật thường xuy
 
 Mốc chuyển pha hiện tại: [Tổng kết Giai đoạn A và khởi động Giai đoạn B](./00-dinh-huong/TONG-KET-GIAI-DOAN-A-VA-KHOI-DONG-GIAI-DOAN-B.md).
 
+Mốc mới nhất: [Tổng kết Giai đoạn B và đánh giá chuyển tiếp C](./00-dinh-huong/TONG-KET-GIAI-DOAN-B-VA-CHUYEN-TIEP-C.md). Trước khi publish, đọc [đánh giá xuất bản tài liệu lên repository public](./00-dinh-huong/DANH-GIA-XUAT-BAN-TAI-LIEU-REPO-PUBLIC.md).
+
 ## Quy trình
 
 ```text

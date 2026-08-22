@@ -25,6 +25,14 @@ WordSoul là hệ sinh thái học từ vựng tiếng Anh có ôn tập lặp l
 - Chỉ đọc tài liệu module, REL/CT hoặc gate khi task đang làm liên kết tới phạm vi đó.
 - Tài liệu trong các thư mục đánh số là nguồn tham khảo chi tiết, không phải tracker hoạt động.
 
+## Ranh giới xuất bản
+
+- Public origin chỉ nhận code/tài liệu đã được phân loại `PUBLIC` và qua kiểm tra lịch sử; không suy `đã commit` thành `được phép công khai`.
+- Task tracker, roadmap chi tiết, threat/finding, secret inventory, data map, quyền quản trị, runbook sự cố, SLO/chi phí và bằng chứng vận hành mặc định là `INTERNAL` hoặc `RESTRICTED`.
+- Secret, token, PII thật và raw provider/runtime payload là `NEVER-GIT`; phát hiện phải xoay/thu hồi trước khi làm sạch lịch sử.
+- Push ra remote là thay đổi trạng thái bên ngoài và cần chủ repository cho phép rõ. `.gitignore` không loại nội dung đã nằm trong commit.
+- Khi code cần public nhưng tài liệu cần kín, ưu tiên repository private riêng cho full docs và chỉ sinh bản public bằng allowlist đã được làm sạch.
+
 ## Definition of Done chung
 
 Một task được hoàn thành khi:

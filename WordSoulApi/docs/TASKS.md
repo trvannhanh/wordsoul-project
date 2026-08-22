@@ -1,6 +1,6 @@
 # Tasks
 
-Đây là nguồn trạng thái duy nhất của dự án. WSA-7K2 đã hoàn thành 167 task Giai đoạn A và theo dõi 202 task Giai đoạn B; dữ liệu size/điểm và baseline cũ chỉ còn để tham chiếu trong `03-ke-hoach-giai-doan-a/`.
+Đây là nguồn trạng thái duy nhất của dự án. WSA-7K2 đã hoàn thành 167 task Giai đoạn A và 202 task Giai đoạn B; các task C0 theo dõi chuyển tiếp sang Giai đoạn C. Dữ liệu size/điểm và baseline cũ chỉ còn để tham chiếu trong `03-ke-hoach-giai-doan-a/`.
 
 ## Cách dùng
 
@@ -391,3 +391,11 @@ Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang thực hiện`, `Bị ch�
 | M12-T029 | M12 | Thiết kế phản hồi và retry kênh | M12-T005, M12-T026–M12-T028 | Hoàn thành | Không retry lỗi cuối/hết hạn; lost response đối soát/idempotent; lỗi một kênh không che kênh khác | M12-CHANNEL-RESPONSE-RETRY-1.0/D-348 chốt isolated channel circuit breakers, no retry on terminal or expired errors, 2 gate và 3 case. |
 | M12-T030 | M12 | Thiết kế suy giảm kênh gửi/realtime | M12-T003, M12-T029, M08, M10 | Hoàn thành | M10 quyết fallback; M08 không bắt đầu khi sync không đảm bảo; không gửi bù nội dung hết hạn; người dùng được thông tin | M12-CHANNEL-DEGRADATION-POLICY-1.0/D-349 chốt ChannelHealthDegradedEvent, M08 PvP match pause on SignalR degradation, 2 gate và 3 case. |
 | M12-T039 | M12 | Xây dựng bộ kiểm thử lỗi và suy giảm | M12-T030, M12-T035–M12-T038 | Hoàn thành | Mỗi năng lực trọng yếu có test chậm/lỗi/quota/duplicate; lõi học và state consistency đạt ma trận | M12-FAULT-DEGRADATION-TEST-SUITE-1.0/D-369 chốt core learning resilience invariant, <30s automated chaos recovery SLA, 2 gate và 3 case. |
+
+## Chuyển tiếp Giai đoạn C
+
+| ID | Module | Task | Phụ thuộc | Trạng thái | Hoàn thành khi | Kết quả |
+|---|---|---|---|---|---|---|
+| C0-T001 | Điều phối | Tổng kết Giai đoạn B và lập baseline chuyển tiếp C | B-WP01–B-WP08 | Hoàn thành | Registry/artifact/decision được đối chiếu; evidence boundary, phạm vi C và rủi ro publish rõ | PHASE-B-SUMMARY-AND-C-READINESS-1.0/D-370–D-371 xác nhận 202/202 task B, phục hồi 202 decision row, giữ public push và mở planning C có điều kiện. |
+| C0-T002 | Điều phối | Thu thập bằng chứng runtime B-G01–B-G06 | C0-T001 | Bị chặn | Build/test/runtime evidence truy vết được chứng minh hành trình học, học thuật, tài sản, nhiệm vụ, thông báo và vận hành | Mới có contract/self-check tài liệu; thiếu execution ID, test log, deployment/environment và metric/runtime evidence nên chưa mở thực thi C. |
+| C0-T003 | Điều phối | Chốt phạm vi và nhập backlog Giai đoạn C | C0-T002 | Chưa bắt đầu | Task C được chọn từ 214 task C–E, giữ ID/dependency/DoD và có gate riêng | — |
